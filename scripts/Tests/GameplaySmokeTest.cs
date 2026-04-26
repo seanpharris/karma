@@ -505,6 +505,9 @@ public partial class GameplaySmokeTest : Node
         var interestSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId);
         ExpectEqual(2, interestSnapshot.Players.Count, "interest snapshot includes self and nearby players");
         ExpectEqual(MatchStatus.Running, interestSnapshot.Match.Status, "interest snapshot includes match status");
+        ExpectFalse(interestSnapshot.SyncHint.IsDelta, "full interest snapshot reports non-delta sync hint");
+        ExpectEqual(0L, interestSnapshot.SyncHint.AfterTick, "full interest snapshot records zero after-tick");
+        ExpectEqual(2, interestSnapshot.SyncHint.ServerEventCount, "interest snapshot sync hint counts visible server events");
         ExpectTrue(interestSnapshot.Players.Any(player => player.Id == GameState.LocalPlayerId), "interest snapshot includes local player");
         ExpectTrue(interestSnapshot.Players.Any(player => player.Id == "peer_stand_in"), "interest snapshot includes nearby peer");
         ExpectFalse(interestSnapshot.Players.Any(player => player.Id == "rival_paragon"), "interest snapshot excludes distant rival");
@@ -512,6 +515,8 @@ public partial class GameplaySmokeTest : Node
         server.SetTileMap(generatedA.TileMap);
         var mapChunkSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId);
         ExpectTrue(mapChunkSnapshot.MapChunks.Any(chunk => chunk.Tiles.Any(tile => tile.FloorId == WorldTileIds.ClinicFloor)), "interest snapshot includes nearby map chunk tiles");
+        ExpectEqual(mapChunkSnapshot.MapChunks.Count, mapChunkSnapshot.SyncHint.VisibleMapChunkCount, "interest snapshot sync hint counts visible map chunks");
+        ExpectTrue(mapChunkSnapshot.SyncHint.VisibleMapRevision != 0, "interest snapshot sync hint carries visible map revision checksum");
         ExpectTrue(interestSnapshot.Dialogues.Any(dialogue => dialogue.NpcId == StarterNpcs.Mara.Id), "interest snapshot includes visible NPC dialogue");
         ExpectTrue(
             interestSnapshot.Dialogues.Any(dialogue => dialogue.Choices.Any(choice => choice.Id == "help_filters")),
@@ -643,6 +648,10 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(state.LocalKarma.Score > 0, "rejected stale intent does not mutate karma");
         var deltaInterestSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId, afterTick: 2);
         ExpectEqual(8, deltaInterestSnapshot.ServerEvents.Count, "interest snapshot can return visible events after a tick");
+        ExpectTrue(deltaInterestSnapshot.SyncHint.IsDelta, "delta interest snapshot reports delta sync hint");
+        ExpectEqual(2L, deltaInterestSnapshot.SyncHint.AfterTick, "delta interest snapshot records requested after-tick");
+        ExpectEqual(deltaInterestSnapshot.ServerEvents.Count, deltaInterestSnapshot.SyncHint.ServerEventCount, "delta sync hint counts returned server events");
+        ExpectEqual(deltaInterestSnapshot.WorldEvents.Count, deltaInterestSnapshot.SyncHint.WorldEventCount, "delta sync hint counts returned world events");
         ExpectFalse(server.ProcessIntent(new ServerIntent(
             "rival_paragon",
             1,

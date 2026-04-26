@@ -86,6 +86,10 @@ Targets:
 - Map chunk snapshots include stable chunk keys and deterministic revisions so
   clients can skip unchanged terrain payloads as players move through large
   worlds.
+- Interest snapshots carry sync hints with the requested delta tick, visible
+  event counts, visible map chunk count, and a map revision checksum. This keeps
+  network clients from guessing whether a snapshot is a full refresh or a
+  smaller incremental update.
 - The prototype world renderer consumes map chunks from the local server
   snapshot, keeping terrain rendering on the same path as future network clients.
 - The client renderer keeps a loaded chunk cache and evicts chunks that leave the

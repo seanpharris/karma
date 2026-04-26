@@ -98,6 +98,14 @@ public sealed record NpcDialogueSnapshot(
     string Prompt,
     IReadOnlyList<NpcDialogueChoice> Choices);
 
+public sealed record InterestSnapshotSyncHint(
+    long AfterTick,
+    bool IsDelta,
+    int ServerEventCount,
+    int WorldEventCount,
+    int VisibleMapChunkCount,
+    int VisibleMapRevision);
+
 public sealed record ClientInterestSnapshot(
     string WorldId,
     long Tick,
@@ -113,9 +121,10 @@ public sealed record ClientInterestSnapshot(
     LeaderboardSnapshot Leaderboard,
     MatchSnapshot Match,
     IReadOnlyList<Duel> Duels,
+    InterestSnapshotSyncHint SyncHint,
     IReadOnlyList<ServerEvent> ServerEvents,
     IReadOnlyList<WorldEvent> WorldEvents)
 {
     public string Summary =>
-        $"{Players.Count} visible players, {Npcs.Count} visible NPCs, {Dialogues.Count} dialogues, {Quests.Count} quests, {MapChunks.Count} map chunks, {WorldItems.Count} visible items, {Duels.Count} duels, {Match.Summary}, {ServerEvents.Count} server events, {WorldEvents.Count} world events";
+        $"{Players.Count} visible players, {Npcs.Count} visible NPCs, {Dialogues.Count} dialogues, {Quests.Count} quests, {MapChunks.Count} map chunks, {WorldItems.Count} visible items, {Duels.Count} duels, {Match.Summary}, {SyncHint.ServerEventCount} server events, {SyncHint.WorldEventCount} world events";
 }

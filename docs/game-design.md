@@ -37,6 +37,8 @@ Client interest snapshots carry nearby map chunk data, so terrain streaming can
 follow the same server-owned visibility path as NPCs, items, and players.
 Chunks carry stable keys and deterministic revisions, which lets clients keep
 cached terrain when the visible chunk has not changed.
+Interest snapshots also carry a compact sync hint so future network clients can
+show/debug whether they received a full refresh or an incremental update.
 The current prototype renderer draws those server-provided chunks with
 placeholder colors until the tileset atlas mapping is ready.
 Renderer state is chunk-cached, so visible chunks can be added, updated, and

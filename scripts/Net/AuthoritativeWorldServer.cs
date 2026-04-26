@@ -237,8 +237,39 @@ public sealed class AuthoritativeWorldServer
             SnapshotBuilder.LeaderboardFrom(standing),
             _match.Snapshot(standing),
             visibleDuels,
+            CreateSyncHint(afterTick, visibleMapChunks, events, worldEvents),
             events,
             worldEvents);
+    }
+
+    private static InterestSnapshotSyncHint CreateSyncHint(
+        long afterTick,
+        IReadOnlyList<MapChunkSnapshot> visibleMapChunks,
+        IReadOnlyList<ServerEvent> events,
+        IReadOnlyList<WorldEvent> worldEvents)
+    {
+        return new InterestSnapshotSyncHint(
+            afterTick,
+            afterTick > 0,
+            events.Count,
+            worldEvents.Count,
+            visibleMapChunks.Count,
+            CalculateVisibleMapRevision(visibleMapChunks));
+    }
+
+    private static int CalculateVisibleMapRevision(IReadOnlyList<MapChunkSnapshot> visibleMapChunks)
+    {
+        unchecked
+        {
+            var hash = 19;
+            foreach (var chunk in visibleMapChunks.OrderBy(chunk => chunk.ChunkKey))
+            {
+                hash = (hash * 31) + StableStringHash(chunk.ChunkKey);
+                hash = (hash * 31) + chunk.Revision;
+            }
+
+            return hash;
+        }
     }
 
     private IReadOnlyList<MapChunkSnapshot> CreateVisibleMapChunks(string playerId)

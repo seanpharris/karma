@@ -118,7 +118,9 @@ public partial class PrototypeServerSession : Node
         var eventText = snapshot.ServerEvents.Count == 0
             ? "Events: quiet"
             : $"Events: {snapshot.ServerEvents[^1].Description}";
+        var syncMode = snapshot.SyncHint.IsDelta ? "delta" : "full";
+        var syncText = $"Sync: {syncMode}, after tick {snapshot.SyncHint.AfterTick}, map rev {snapshot.SyncHint.VisibleMapRevision}";
 
-        return $"{snapshot.Summary}\n{dialogueText} | {questText}\n{eventText}";
+        return $"{snapshot.Summary}\n{dialogueText} | {questText}\n{eventText}\n{syncText}";
     }
 }
