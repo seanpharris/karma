@@ -26,6 +26,8 @@ highest karma and current Scourge lowest karma are both match winners.
 This creates two viable races in the same server: Ascend hard enough to become
 the Saint, or Descend hard enough to become the Scourge. Karma Breaks still
 matter because death resets a player's path status during the match.
+When a match ends, the locked Saint and Scourge winners receive server-owned
+scrip payouts in addition to their leaderboard status.
 
 Scrip is the prototype currency. It is separate from karma: karma is the
 Ascend/Descend match score and social identity, while scrip is spendable money

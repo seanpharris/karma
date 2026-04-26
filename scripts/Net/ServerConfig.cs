@@ -22,6 +22,7 @@ public sealed record ServerConfig(
     public const int AbsoluteMaxPlayers = 100;
     public const int DefaultMatchDurationSeconds = 30 * 60;
     public const int DefaultChunkSizeTiles = 32;
+    public const int DefaultMatchWinnerScripReward = 25;
 
     public int InterestRadiusChunks =>
         Math.Max(1, (int)Math.Ceiling(InterestRadiusTiles / (double)ChunkSizeTiles));

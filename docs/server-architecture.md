@@ -122,6 +122,8 @@ Targets:
   clients can render the timer/winners without computing authority locally.
 - Include current Saint/Scourge leaders in running match snapshots, then locked
   Saint/Scourge winners after finish.
+- Pay match winner scrip rewards once, at the same server-owned transition that
+  locks the Saint/Scourge winners.
 - Once a match is finished, reject score-changing intents so the locked
   Saint/Scourge result cannot be mutated after the timer expires.
 - Validate PvP attack intents on the server: connected target, range check,

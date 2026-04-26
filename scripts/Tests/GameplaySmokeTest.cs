@@ -93,12 +93,21 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual("rival_renegade", matchServer.Match.CurrentScourgeId, "running match snapshot exposes current Scourge leader");
         matchServer.AdvanceMatchTime((30 * 60) - 1);
         ExpectEqual(MatchStatus.Running, matchServer.Match.Status, "match stays running before timer expires");
+        var saintScripBeforeMatchEnd = state.Players["rival_paragon"].Scrip;
+        var scourgeScripBeforeMatchEnd = state.Players["rival_renegade"].Scrip;
         matchServer.AdvanceMatchTime(1);
         ExpectEqual(MatchStatus.Finished, matchServer.Match.Status, "match finishes when timer expires");
         ExpectEqual("rival_paragon", matchServer.Match.SaintWinnerId, "finished match locks current Saint winner");
         ExpectEqual("rival_renegade", matchServer.Match.ScourgeWinnerId, "finished match locks current Scourge winner");
+        ExpectEqual(saintScripBeforeMatchEnd + ServerConfig.DefaultMatchWinnerScripReward, state.Players["rival_paragon"].Scrip, "finished match pays Saint scrip reward");
+        ExpectEqual(scourgeScripBeforeMatchEnd + ServerConfig.DefaultMatchWinnerScripReward, state.Players["rival_renegade"].Scrip, "finished match pays Scourge scrip reward");
         ExpectTrue(matchServer.Match.Summary.Contains("Match complete"), "finished match summary reports completion");
         ExpectTrue(matchServer.EventLog.Any(serverEvent => serverEvent.EventId.Contains("match_finished")), "finished match emits server event");
+        var matchFinishedEvent = matchServer.EventLog.First(serverEvent => serverEvent.EventId.Contains("match_finished"));
+        ExpectEqual(ServerConfig.DefaultMatchWinnerScripReward.ToString(), matchFinishedEvent.Data["saintScripReward"], "finished match event reports Saint scrip reward");
+        ExpectEqual(ServerConfig.DefaultMatchWinnerScripReward.ToString(), matchFinishedEvent.Data["scourgeScripReward"], "finished match event reports Scourge scrip reward");
+        matchServer.AdvanceMatchTime(60);
+        ExpectEqual(saintScripBeforeMatchEnd + ServerConfig.DefaultMatchWinnerScripReward, state.Players["rival_paragon"].Scrip, "finished match does not pay Saint reward twice");
         ExpectEqual("rival_paragon", matchServer.CreateInterestSnapshot(GameState.LocalPlayerId).Match.SaintWinnerId, "interest snapshot includes Saint match winner");
         var karmaBeforePostMatchIntent = state.LocalKarma.Score;
         var postMatchScoreIntent = matchServer.ProcessIntent(new ServerIntent(

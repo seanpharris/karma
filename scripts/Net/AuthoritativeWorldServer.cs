@@ -18,6 +18,7 @@ public sealed class AuthoritativeWorldServer
     private readonly MatchState _match;
     private GeneratedTileMap _tileMap;
     private long _tick;
+    private bool _matchRewardsPaid;
 
     public AuthoritativeWorldServer(GameState state, string worldId, ServerConfig config = null)
     {
@@ -51,6 +52,7 @@ public sealed class AuthoritativeWorldServer
         if (previousStatus != MatchStatus.Finished && _match.Status == MatchStatus.Finished)
         {
             var snapshot = Match;
+            PayMatchRewards(snapshot);
             AppendEvent(
                 "match_finished",
                 snapshot.Summary,
@@ -58,10 +60,39 @@ public sealed class AuthoritativeWorldServer
                 {
                     ["saintWinnerId"] = snapshot.SaintWinnerId,
                     ["saintWinnerScore"] = snapshot.SaintWinnerScore.ToString(),
+                    ["saintScripReward"] = GetWinnerReward(snapshot.SaintWinnerId).ToString(),
                     ["scourgeWinnerId"] = snapshot.ScourgeWinnerId,
-                    ["scourgeWinnerScore"] = snapshot.ScourgeWinnerScore.ToString()
+                    ["scourgeWinnerScore"] = snapshot.ScourgeWinnerScore.ToString(),
+                    ["scourgeScripReward"] = GetWinnerReward(snapshot.ScourgeWinnerId).ToString()
                 });
         }
+    }
+
+    private void PayMatchRewards(MatchSnapshot snapshot)
+    {
+        if (_matchRewardsPaid)
+        {
+            return;
+        }
+
+        PayWinner(snapshot.SaintWinnerId);
+        PayWinner(snapshot.ScourgeWinnerId);
+        _matchRewardsPaid = true;
+    }
+
+    private void PayWinner(string playerId)
+    {
+        if (string.IsNullOrWhiteSpace(playerId))
+        {
+            return;
+        }
+
+        _state.AddScrip(playerId, ServerConfig.DefaultMatchWinnerScripReward);
+    }
+
+    private static int GetWinnerReward(string playerId)
+    {
+        return string.IsNullOrWhiteSpace(playerId) ? 0 : ServerConfig.DefaultMatchWinnerScripReward;
     }
 
     public void SeedWorldItem(string entityId, GameItem item, TilePosition position)
