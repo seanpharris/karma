@@ -116,11 +116,25 @@ Recommended next standard:
   - `melee_thrust`
   - `ranged_aim/shoot`
   - `carry/hold`
-  - `hurt/downed`
+  - `downed_idle`
+  - `downed_crawl`
+  - `revive/help_up`
+  - `carry_walk/drag`
+  - `carried_body`
+  - `hurt_to_downed`
 - **Fallbacks:** not every layer/item must support every group immediately. A
-  layer manifest can declare fallback groups, e.g. `run -> walk`, `ranged -> hold`.
+  layer manifest can declare fallback groups, e.g. `run -> walk`, `ranged -> hold`,
+  `revive/help_up -> interact`, or `carry_walk/drag -> walk`.
 - **Manifest-first:** every sheet should ship with metadata describing frame
   size, direction order, animation groups, layer type, z-order, and fallbacks.
+
+## Downed/carry gameplay implications
+
+Karma's future downed/rescue loop needs to be part of the art contract, not an
+afterthought. If a player can be downed, helped up, carried to a clinic, abandoned,
+or executed for karma consequences, the base body must establish compatible poses
+for those states early. See [`downed-carry-rescue-mechanics.md`](downed-carry-rescue-mechanics.md)
+for the gameplay loop and animation requirements.
 
 ## Practical path from current prototype
 
