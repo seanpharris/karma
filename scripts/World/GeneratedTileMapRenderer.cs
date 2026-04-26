@@ -15,12 +15,14 @@ public partial class GeneratedTileMapRenderer : Node2D
     private string _atlasPath = string.Empty;
 
     public int LoadedChunkCount => _loadedChunks.Count;
+    public int LastUpdatedChunkCount { get; private set; }
     public bool PreferAtlasArt { get; set; }
 
     public void SetTileMap(GeneratedTileMap tileMap, ThemeArtSet artSet)
     {
         _tileMap = tileMap;
         _loadedChunks.Clear();
+        LastUpdatedChunkCount = 0;
         SetArtSet(artSet);
         QueueRedraw();
     }
@@ -28,6 +30,7 @@ public partial class GeneratedTileMapRenderer : Node2D
     public void SetChunks(IReadOnlyList<MapChunkSnapshot> chunks, ThemeArtSet artSet)
     {
         _tileMap = null;
+        LastUpdatedChunkCount = 0;
         SetArtSet(artSet);
         var visibleChunkKeys = chunks
             .Select(chunk => new GeneratedChunkCoordinate(chunk.ChunkX, chunk.ChunkY))
@@ -36,11 +39,21 @@ public partial class GeneratedTileMapRenderer : Node2D
         foreach (var removedKey in _loadedChunks.Keys.Where(key => !visibleChunkKeys.Contains(key)).ToArray())
         {
             _loadedChunks.Remove(removedKey);
+            LastUpdatedChunkCount++;
         }
 
         foreach (var chunk in chunks)
         {
-            _loadedChunks[new GeneratedChunkCoordinate(chunk.ChunkX, chunk.ChunkY)] = chunk;
+            var key = new GeneratedChunkCoordinate(chunk.ChunkX, chunk.ChunkY);
+            if (_loadedChunks.TryGetValue(key, out var existingChunk) &&
+                existingChunk.ChunkKey == chunk.ChunkKey &&
+                existingChunk.Revision == chunk.Revision)
+            {
+                continue;
+            }
+
+            _loadedChunks[key] = chunk;
+            LastUpdatedChunkCount++;
         }
 
         QueueRedraw();

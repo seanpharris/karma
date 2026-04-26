@@ -33,6 +33,8 @@ The default chunk size is `32 x 32` tiles, giving the large target roughly
 `32 x 32` chunks for streaming and interest management.
 Client interest snapshots carry nearby map chunk data, so terrain streaming can
 follow the same server-owned visibility path as NPCs, items, and players.
+Chunks carry stable keys and deterministic revisions, which lets clients keep
+cached terrain when the visible chunk has not changed.
 The current prototype renderer draws those server-provided chunks with
 placeholder colors until the tileset atlas mapping is ready.
 Renderer state is chunk-cached, so visible chunks can be added, updated, and

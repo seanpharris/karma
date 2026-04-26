@@ -126,10 +126,16 @@ public partial class GameplaySmokeTest : Node
             new[] { ToMapChunkSnapshot(generatedA.TileMap.GetChunk(new GeneratedChunkCoordinate(0, 0))) },
             artSet);
         ExpectEqual(1, renderer.LoadedChunkCount, "tile renderer caches visible chunks");
+        ExpectEqual(1, renderer.LastUpdatedChunkCount, "tile renderer records newly streamed chunks");
+        renderer.SetChunks(
+            new[] { ToMapChunkSnapshot(generatedA.TileMap.GetChunk(new GeneratedChunkCoordinate(0, 0))) },
+            artSet);
+        ExpectEqual(0, renderer.LastUpdatedChunkCount, "tile renderer skips unchanged chunk revisions");
         renderer.SetChunks(
             new[] { ToMapChunkSnapshot(generatedA.TileMap.GetChunk(new GeneratedChunkCoordinate(1, 0))) },
             artSet);
         ExpectEqual(1, renderer.LoadedChunkCount, "tile renderer evicts chunks that leave interest");
+        ExpectEqual(2, renderer.LastUpdatedChunkCount, "tile renderer records chunk eviction and replacement");
         ExpectEqual(WorldTileIds.ClinicFloor, generatedA.TileMap.Get(3, 3).FloorId, "world generation assigns starter clinic floor tiles");
         ExpectEqual(WorldTileIds.WallMetal, generatedA.TileMap.Get(2, 2).StructureId, "world generation assigns starter clinic wall structures");
         ExpectEqual(WorldTileIds.DoorAirlock, generatedA.TileMap.Get(5, 7).StructureId, "world generation assigns starter clinic door structure");
@@ -748,6 +754,8 @@ public partial class GameplaySmokeTest : Node
     private static MapChunkSnapshot ToMapChunkSnapshot(GeneratedTileChunk chunk)
     {
         return new MapChunkSnapshot(
+            $"{chunk.Coordinate.X}:{chunk.Coordinate.Y}",
+            CalculateChunkRevision(chunk),
             chunk.Coordinate.X,
             chunk.Coordinate.Y,
             chunk.Left,
@@ -762,6 +770,45 @@ public partial class GameplaySmokeTest : Node
                     tile.StructureId,
                     tile.ZoneId))
                 .ToArray());
+    }
+
+    private static int CalculateChunkRevision(GeneratedTileChunk chunk)
+    {
+        unchecked
+        {
+            var hash = 17;
+            hash = (hash * 31) + chunk.Coordinate.X;
+            hash = (hash * 31) + chunk.Coordinate.Y;
+            hash = (hash * 31) + chunk.Left;
+            hash = (hash * 31) + chunk.Top;
+            hash = (hash * 31) + chunk.Width;
+            hash = (hash * 31) + chunk.Height;
+
+            foreach (var tile in chunk.Tiles)
+            {
+                hash = (hash * 31) + tile.X;
+                hash = (hash * 31) + tile.Y;
+                hash = (hash * 31) + StableStringHash(tile.FloorId);
+                hash = (hash * 31) + StableStringHash(tile.StructureId);
+                hash = (hash * 31) + StableStringHash(tile.ZoneId);
+            }
+
+            return hash;
+        }
+    }
+
+    private static int StableStringHash(string value)
+    {
+        unchecked
+        {
+            var hash = 23;
+            foreach (var character in value ?? string.Empty)
+            {
+                hash = (hash * 31) + character;
+            }
+
+            return hash;
+        }
     }
 
     private void ExpectFalse(bool condition, string description)

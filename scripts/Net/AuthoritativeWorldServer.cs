@@ -1022,6 +1022,8 @@ public sealed class AuthoritativeWorldServer
     private static MapChunkSnapshot ToSnapshot(GeneratedTileChunk chunk)
     {
         return new MapChunkSnapshot(
+            CreateChunkKey(chunk.Coordinate),
+            CalculateChunkRevision(chunk),
             chunk.Coordinate.X,
             chunk.Coordinate.Y,
             chunk.Left,
@@ -1036,6 +1038,50 @@ public sealed class AuthoritativeWorldServer
                     tile.StructureId,
                     tile.ZoneId))
                 .ToArray());
+    }
+
+    private static string CreateChunkKey(GeneratedChunkCoordinate coordinate)
+    {
+        return $"{coordinate.X}:{coordinate.Y}";
+    }
+
+    private static int CalculateChunkRevision(GeneratedTileChunk chunk)
+    {
+        unchecked
+        {
+            var hash = 17;
+            hash = (hash * 31) + chunk.Coordinate.X;
+            hash = (hash * 31) + chunk.Coordinate.Y;
+            hash = (hash * 31) + chunk.Left;
+            hash = (hash * 31) + chunk.Top;
+            hash = (hash * 31) + chunk.Width;
+            hash = (hash * 31) + chunk.Height;
+
+            foreach (var tile in chunk.Tiles)
+            {
+                hash = (hash * 31) + tile.X;
+                hash = (hash * 31) + tile.Y;
+                hash = (hash * 31) + StableStringHash(tile.FloorId);
+                hash = (hash * 31) + StableStringHash(tile.StructureId);
+                hash = (hash * 31) + StableStringHash(tile.ZoneId);
+            }
+
+            return hash;
+        }
+    }
+
+    private static int StableStringHash(string value)
+    {
+        unchecked
+        {
+            var hash = 23;
+            foreach (var character in value ?? string.Empty)
+            {
+                hash = (hash * 31) + character;
+            }
+
+            return hash;
+        }
     }
 
     private static NpcSnapshot ToSnapshot(NpcEntity entity)

@@ -64,6 +64,8 @@ public sealed record MapTileSnapshot(
     string ZoneId);
 
 public sealed record MapChunkSnapshot(
+    string ChunkKey,
+    int Revision,
     int ChunkX,
     int ChunkY,
     int Left,
