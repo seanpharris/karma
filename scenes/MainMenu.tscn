@@ -82,7 +82,7 @@ autowrap_mode = 3
 
 [node name="OptionsPanel" type="PanelContainer" parent="Root"]
 visible = false
-custom_minimum_size = Vector2(520, 260)
+custom_minimum_size = Vector2(700, 620)
 layout_mode = 2
 
 [node name="PanelMargin" type="MarginContainer" parent="Root/OptionsPanel"]
@@ -102,15 +102,134 @@ text = "Options Prototype"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 28
 
-[node name="OptionsBody" type="RichTextLabel" parent="Root/OptionsPanel/PanelMargin/OptionsContent"]
-custom_minimum_size = Vector2(0, 120)
+[node name="VideoTitle" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent"]
+layout_mode = 2
+text = "Video"
+theme_override_font_sizes/font_size = 20
+
+[node name="VideoGrid" type="GridContainer" parent="Root/OptionsPanel/PanelMargin/OptionsContent"]
+layout_mode = 2
+columns = 3
+
+[node name="ResolutionLabel" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent/VideoGrid"]
+layout_mode = 2
+text = "Resolution"
+
+[node name="ResolutionOption" type="OptionButton" parent="Root/OptionsPanel/PanelMargin/OptionsContent/VideoGrid"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+
+[node name="DetectResolutionButton" type="Button" parent="Root/OptionsPanel/PanelMargin/OptionsContent/VideoGrid"]
+layout_mode = 2
+text = "Detect Display"
+
+[node name="FullscreenLabel" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent/VideoGrid"]
+layout_mode = 2
+text = "Window Mode"
+
+[node name="FullscreenToggle" type="CheckButton" parent="Root/OptionsPanel/PanelMargin/OptionsContent/VideoGrid"]
+layout_mode = 2
+text = "Fullscreen"
+
+[node name="FullscreenHint" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent/VideoGrid"]
+layout_mode = 2
+text = "Off = windowed"
+
+[node name="VsyncLabel" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent/VideoGrid"]
+layout_mode = 2
+text = "VSync"
+
+[node name="VsyncToggle" type="CheckButton" parent="Root/OptionsPanel/PanelMargin/OptionsContent/VideoGrid"]
+layout_mode = 2
+button_pressed = true
+text = "Enabled"
+
+[node name="VsyncHint" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent/VideoGrid"]
+layout_mode = 2
+text = "Smooth prototype rendering"
+
+[node name="DetectedResolutionLabel" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent"]
+layout_mode = 2
+text = "Detected display: unknown"
+autowrap_mode = 3
+
+[node name="AudioTitle" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent"]
+layout_mode = 2
+text = "Audio"
+theme_override_font_sizes/font_size = 20
+
+[node name="AudioGrid" type="GridContainer" parent="Root/OptionsPanel/PanelMargin/OptionsContent"]
+layout_mode = 2
+columns = 3
+
+[node name="MasterVolumeLabel" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid"]
+layout_mode = 2
+text = "Master"
+
+[node name="MasterVolumeSlider" type="HSlider" parent="Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid"]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+max_value = 100.0
+step = 1.0
+value = 80.0
+
+[node name="MasterVolumeValue" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid"]
+layout_mode = 2
+text = "80%"
+
+[node name="MusicVolumeLabel" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid"]
+layout_mode = 2
+text = "Music"
+
+[node name="MusicVolumeSlider" type="HSlider" parent="Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid"]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+max_value = 100.0
+step = 1.0
+value = 70.0
+
+[node name="MusicVolumeValue" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid"]
+layout_mode = 2
+text = "70%"
+
+[node name="EffectsVolumeLabel" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid"]
+layout_mode = 2
+text = "Effects"
+
+[node name="EffectsVolumeSlider" type="HSlider" parent="Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid"]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+max_value = 100.0
+step = 1.0
+value = 80.0
+
+[node name="EffectsVolumeValue" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid"]
+layout_mode = 2
+text = "80%"
+
+[node name="ControlsTitle" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent"]
+layout_mode = 2
+text = "Controls / Accessibility"
+theme_override_font_sizes/font_size = 20
+
+[node name="ControlsBody" type="RichTextLabel" parent="Root/OptionsPanel/PanelMargin/OptionsContent"]
+custom_minimum_size = Vector2(0, 95)
 layout_mode = 2
 bbcode_enabled = true
-text = "[center]Audio, controls, video, accessibility, and multiplayer/session settings will live here.\n\nFor now this panel proves the menu flow without touching the gameplay prototype.[/center]"
+text = "Move: WASD / Arrow Keys     Sprint: Shift     Interact: E\nCombat/Prototype: H/J/K and number-row social actions\nFuture: remapping, subtitles, color-blind palettes, text scale, controller support."
 fit_content = true
 scroll_active = false
 
-[node name="CloseOptionsButton" type="Button" parent="Root/OptionsPanel/PanelMargin/OptionsContent"]
+[node name="OptionsActions" type="HBoxContainer" parent="Root/OptionsPanel/PanelMargin/OptionsContent"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="ApplyOptionsButton" type="Button" parent="Root/OptionsPanel/PanelMargin/OptionsContent/OptionsActions"]
+layout_mode = 2
+text = "Apply / Save"
+
+[node name="CloseOptionsButton" type="Button" parent="Root/OptionsPanel/PanelMargin/OptionsContent/OptionsActions"]
 layout_mode = 2
 text = "Back"
 

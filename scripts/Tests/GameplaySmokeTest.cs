@@ -34,6 +34,10 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(menuInstance.GetNodeOrNull<Button>("Root/MenuPanel/MenuMargin/MenuButtons/StartButton") is not null, "main menu exposes a start game button");
         ExpectTrue(menuInstance.GetNodeOrNull<Button>("Root/MenuPanel/MenuMargin/MenuButtons/OptionsButton") is not null, "main menu exposes an options button");
         ExpectTrue(menuInstance.GetNodeOrNull<Control>("Root/OptionsPanel") is not null, "main menu includes an options panel prototype");
+        ExpectTrue(menuInstance.GetNodeOrNull<OptionButton>("Root/OptionsPanel/PanelMargin/OptionsContent/VideoGrid/ResolutionOption") is not null, "options menu includes resolution selection");
+        ExpectTrue(menuInstance.GetNodeOrNull<Button>("Root/OptionsPanel/PanelMargin/OptionsContent/VideoGrid/DetectResolutionButton") is not null, "options menu includes display resolution detection");
+        ExpectTrue(menuInstance.GetNodeOrNull<HSlider>("Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid/MasterVolumeSlider") is not null, "options menu includes audio volume sliders");
+        ExpectTrue(menuInstance.GetNodeOrNull<Button>("Root/OptionsPanel/PanelMargin/OptionsContent/OptionsActions/ApplyOptionsButton") is not null, "options menu includes apply/save action");
         menuInstance.QueueFree();
 
         var state = GetNode<GameState>("/root/GameState");
