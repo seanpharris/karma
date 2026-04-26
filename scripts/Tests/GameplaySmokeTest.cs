@@ -94,6 +94,13 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(new Vector2(120f, 0f), PlayerController.CalculateVelocity(Vector2.Right, 120f, 1.6f, false), "player walk velocity uses base speed");
         ExpectEqual(new Vector2(192f, 0f), PlayerController.CalculateVelocity(Vector2.Right, 120f, 1.6f, true), "player sprint velocity uses sprint multiplier");
         ExpectEqual(new Vector2(120f, 0f), PlayerController.CalculateVelocity(Vector2.Right, 120f, 0.5f, true), "player sprint multiplier cannot slow movement");
+        ExpectTrue(PlayerController.CanSprint(Vector2.Right, true, 1f), "player can sprint while moving with stamina");
+        ExpectFalse(PlayerController.CanSprint(Vector2.Zero, true, 100f), "player cannot sprint while idle");
+        ExpectFalse(PlayerController.CanSprint(Vector2.Right, true, 0f), "player cannot sprint without stamina");
+        ExpectEqual(76f, PlayerController.CalculateNextStamina(100f, 1.0, true, 100f, 24f, 18f), "sprinting drains stamina");
+        ExpectEqual(94f, PlayerController.CalculateNextStamina(76f, 1.0, false, 100f, 24f, 18f), "not sprinting recovers stamina");
+        ExpectEqual(0f, PlayerController.CalculateNextStamina(5f, 1.0, true, 100f, 24f, 18f), "stamina drain clamps at zero");
+        ExpectEqual(100f, PlayerController.CalculateNextStamina(95f, 1.0, false, 100f, 24f, 18f), "stamina recovery clamps at maximum");
         var matchServer = new AuthoritativeWorldServer(state, "match-test-world");
         ExpectEqual(MatchStatus.Running, matchServer.Match.Status, "new server match starts running");
         ExpectEqual(30 * 60, matchServer.Match.RemainingSeconds, "new server match starts with full duration remaining");

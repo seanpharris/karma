@@ -203,13 +203,15 @@ Near the stand-in, the prototype also exposes quick keys for combat/tool loops:
 loose inventory item, `R` uses a repair kit on the stand-in, and `7` gifts 5
 scrip.
 Movement uses WASD, and holding left Shift sprints at a modest speed boost for
-faster prototype traversal.
+faster prototype traversal. Sprinting drains stamina while held and stamina
+recovers when the player stops sprinting.
 
 ## Prototype HUD
 
 The HUD is intentionally debug-forward for now. It shows local karma, inventory,
 leaderboard standing, perks, relationships, factions, quests, combat,
-entanglements, duels, recent rumors, and the local server interest snapshot.
+entanglements, duels, sprint stamina, recent rumors, and the local server
+interest snapshot.
 The sync line includes nearby server-approved dialogue choices and visible quest
 state so we can confirm the client is rendering from authoritative state instead
 of trusting scene-only assumptions.

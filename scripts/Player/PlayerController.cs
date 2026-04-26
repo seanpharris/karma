@@ -11,6 +11,9 @@ public partial class PlayerController : CharacterBody2D
 {
     [Export] public float Speed { get; set; } = 120f;
     [Export] public float SprintMultiplier { get; set; } = 1.6f;
+    [Export] public float MaxStamina { get; set; } = 100f;
+    [Export] public float SprintStaminaCostPerSecond { get; set; } = 24f;
+    [Export] public float StaminaRecoveryPerSecond { get; set; } = 18f;
     [Export] public float MinCameraZoom { get; set; } = 1.25f;
     [Export] public float MaxCameraZoom { get; set; } = 5f;
     [Export] public float CameraZoomStep { get; set; } = 0.25f;
@@ -21,6 +24,7 @@ public partial class PlayerController : CharacterBody2D
     private Camera2D _camera;
     private TilePosition? _lastSentTile;
     private Vector2I _lastFacing = Vector2I.Down;
+    private float _stamina;
 
     public override void _Ready()
     {
@@ -28,6 +32,8 @@ public partial class PlayerController : CharacterBody2D
         _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         _hud = GetNodeOrNull<HudController>("/root/Main/Hud");
         _camera = GetNodeOrNull<Camera2D>("Camera2D");
+        _stamina = MaxStamina;
+        UpdateStaminaHud();
         SendMoveIfTileChanged();
     }
 
@@ -41,7 +47,17 @@ public partial class PlayerController : CharacterBody2D
                 : new Vector2I(0, direction.Y > 0 ? 1 : -1);
         }
 
-        Velocity = CalculateVelocity(direction, Speed, SprintMultiplier, Input.IsActionPressed("sprint"));
+        var wantsSprint = Input.IsActionPressed("sprint");
+        var isSprinting = CanSprint(direction, wantsSprint, _stamina);
+        Velocity = CalculateVelocity(direction, Speed, SprintMultiplier, isSprinting);
+        _stamina = CalculateNextStamina(
+            _stamina,
+            delta,
+            isSprinting,
+            MaxStamina,
+            SprintStaminaCostPerSecond,
+            StaminaRecoveryPerSecond);
+        UpdateStaminaHud();
         MoveAndSlide();
 
         SendMoveIfTileChanged();
@@ -108,6 +124,33 @@ public partial class PlayerController : CharacterBody2D
     {
         var multiplier = isSprinting ? Mathf.Max(1f, sprintMultiplier) : 1f;
         return direction * speed * multiplier;
+    }
+
+    public static bool CanSprint(Vector2 direction, bool wantsSprint, float stamina)
+    {
+        return wantsSprint && direction.LengthSquared() > 0f && stamina > 0f;
+    }
+
+    public static float CalculateNextStamina(
+        float currentStamina,
+        double delta,
+        bool isSprinting,
+        float maxStamina,
+        float sprintCostPerSecond,
+        float recoveryPerSecond)
+    {
+        var rate = isSprinting
+            ? -Mathf.Max(0f, sprintCostPerSecond)
+            : Mathf.Max(0f, recoveryPerSecond);
+        return Mathf.Clamp(
+            currentStamina + ((float)delta * rate),
+            0f,
+            Mathf.Max(0f, maxStamina));
+    }
+
+    private void UpdateStaminaHud()
+    {
+        _hud?.ShowStamina($"Stamina: {Mathf.RoundToInt(_stamina)}/{Mathf.RoundToInt(MaxStamina)}");
     }
 
     private void EquipThroughServer(string itemId)

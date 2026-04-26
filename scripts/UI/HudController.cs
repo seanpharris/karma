@@ -8,6 +8,7 @@ public partial class HudController : CanvasLayer
 {
     private Label _karmaLabel = new();
     private Label _eventLabel = new();
+    private Label _staminaLabel = new();
     private Label _inventoryLabel = new();
     private Label _leaderboardLabel = new();
     private Label _perksLabel = new();
@@ -74,6 +75,11 @@ public partial class HudController : CanvasLayer
         _promptPanel.Visible = false;
     }
 
+    public void ShowStamina(string staminaText)
+    {
+        _staminaLabel.Text = staminaText;
+    }
+
     private void BuildUi()
     {
         var root = new Control
@@ -108,6 +114,16 @@ public partial class HudController : CanvasLayer
             Text = "Find someone to help, prank, or betray."
         };
         root.AddChild(_eventLabel);
+
+        _staminaLabel = new Label
+        {
+            OffsetLeft = 300,
+            OffsetTop = 16,
+            OffsetRight = 520,
+            OffsetBottom = 46,
+            Text = "Stamina: 100/100"
+        };
+        root.AddChild(_staminaLabel);
 
         _inventoryLabel = new Label
         {
