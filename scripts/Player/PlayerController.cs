@@ -14,6 +14,7 @@ public partial class PlayerController : CharacterBody2D
     [Export] public float MaxStamina { get; set; } = 100f;
     [Export] public float SprintStaminaCostPerSecond { get; set; } = 24f;
     [Export] public float StaminaRecoveryPerSecond { get; set; } = 18f;
+    [Export] public float SprintResumeStamina { get; set; } = 25f;
     [Export] public float MinCameraZoom { get; set; } = 1.25f;
     [Export] public float MaxCameraZoom { get; set; } = 5f;
     [Export] public float CameraZoomStep { get; set; } = 0.25f;
@@ -25,6 +26,7 @@ public partial class PlayerController : CharacterBody2D
     private TilePosition? _lastSentTile;
     private Vector2I _lastFacing = Vector2I.Down;
     private float _stamina;
+    private bool _isExhausted;
 
     public override void _Ready()
     {
@@ -48,7 +50,8 @@ public partial class PlayerController : CharacterBody2D
         }
 
         var wantsSprint = Input.IsActionPressed("sprint");
-        var isSprinting = CanSprint(direction, wantsSprint, _stamina);
+        _isExhausted = CalculateExhausted(_isExhausted, _stamina, SprintResumeStamina);
+        var isSprinting = CanSprint(direction, wantsSprint, _stamina, _isExhausted);
         Velocity = CalculateVelocity(direction, Speed, SprintMultiplier, isSprinting);
         _stamina = CalculateNextStamina(
             _stamina,
@@ -57,6 +60,7 @@ public partial class PlayerController : CharacterBody2D
             MaxStamina,
             SprintStaminaCostPerSecond,
             StaminaRecoveryPerSecond);
+        _isExhausted = CalculateExhausted(_isExhausted, _stamina, SprintResumeStamina);
         UpdateStaminaHud();
         MoveAndSlide();
 
@@ -126,9 +130,9 @@ public partial class PlayerController : CharacterBody2D
         return direction * speed * multiplier;
     }
 
-    public static bool CanSprint(Vector2 direction, bool wantsSprint, float stamina)
+    public static bool CanSprint(Vector2 direction, bool wantsSprint, float stamina, bool isExhausted)
     {
-        return wantsSprint && direction.LengthSquared() > 0f && stamina > 0f;
+        return wantsSprint && !isExhausted && direction.LengthSquared() > 0f && stamina > 0f;
     }
 
     public static float CalculateNextStamina(
@@ -148,9 +152,33 @@ public partial class PlayerController : CharacterBody2D
             Mathf.Max(0f, maxStamina));
     }
 
+    public static bool CalculateExhausted(bool wasExhausted, float stamina, float resumeStamina)
+    {
+        if (stamina <= 0f)
+        {
+            return true;
+        }
+
+        return wasExhausted && stamina < Mathf.Max(0f, resumeStamina);
+    }
+
+    public static string FormatStamina(float stamina, float maxStamina, bool isExhausted)
+    {
+        var roundedStamina = Mathf.RoundToInt(stamina);
+        var roundedMax = Mathf.RoundToInt(maxStamina);
+        if (isExhausted)
+        {
+            return $"Stamina: {roundedStamina}/{roundedMax} (winded)";
+        }
+
+        return maxStamina > 0f && stamina / maxStamina <= 0.25f
+            ? $"Stamina: {roundedStamina}/{roundedMax} (low)"
+            : $"Stamina: {roundedStamina}/{roundedMax}";
+    }
+
     private void UpdateStaminaHud()
     {
-        _hud?.ShowStamina($"Stamina: {Mathf.RoundToInt(_stamina)}/{Mathf.RoundToInt(MaxStamina)}");
+        _hud?.ShowStamina(FormatStamina(_stamina, MaxStamina, _isExhausted));
     }
 
     private void EquipThroughServer(string itemId)

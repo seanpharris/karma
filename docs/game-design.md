@@ -204,7 +204,8 @@ loose inventory item, `R` uses a repair kit on the stand-in, and `7` gifts 5
 scrip.
 Movement uses WASD, and holding left Shift sprints at a modest speed boost for
 faster prototype traversal. Sprinting drains stamina while held and stamina
-recovers when the player stops sprinting.
+recovers when the player stops sprinting. Empty stamina makes the player winded;
+sprint resumes only after stamina recovers to a small buffer.
 
 ## Prototype HUD
 
