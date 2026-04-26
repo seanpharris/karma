@@ -432,6 +432,18 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(PrototypeSpriteKind.Dallen, PrototypeSpriteCatalog.GetKindForNpc(StarterNpcs.Dallen.Id), "prototype sprite catalog maps Dallen NPC visuals");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Dallen).HasAtlasRegion, "prototype Dallen sprite can use character atlas art");
         ExpectTrue(ServerNpcObject.FormatPrompt("Dallen Venn", "Trader", "Free Settlers").Contains("Faction: Free Settlers"), "server NPC prompt formats faction");
+        var vendorPrompt = ServerNpcObject.FormatVendorPrompt(
+            "Dallen Venn",
+            "Trader",
+            "Free Settlers",
+            new[]
+            {
+                new ShopOfferSnapshot("offer_one", StarterNpcs.Dallen.Id, StarterItems.WhoopieCushionId, "Whoopie Cushion", ItemCategory.Oddity, 7, "scrip"),
+                new ShopOfferSnapshot("offer_two", StarterNpcs.Dallen.Id, StarterItems.RepairKitId, "Repair Kit", ItemCategory.Tool, 18, "scrip")
+            },
+            1);
+        ExpectTrue(vendorPrompt.Contains("9 - Buy Repair Kit"), "server NPC vendor prompt shows selected offer");
+        ExpectTrue(vendorPrompt.Contains("Browse shop (2/2)"), "server NPC vendor prompt shows browse position");
         ExpectTrue(whoopieSprite.Layers.Any(layer => layer.Shape == PrototypeSpriteShape.Circle), "prototype item sprite supports rounded prop art");
         ExpectEqual(PrototypeSpriteCatalog.UtilityItemAtlasPath, whoopieSprite.AtlasPath, "prototype item sprite records utility atlas path");
         ExpectTrue(whoopieSprite.HasAtlasRegion, "prototype item sprite can use item atlas art");
@@ -983,6 +995,7 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(interestSnapshot.Players.Any(player => player.Id == "rival_paragon"), "interest snapshot excludes distant rival");
         ExpectTrue(interestSnapshot.Npcs.Any(npc => npc.Id == StarterNpcs.Mara.Id), "interest snapshot includes visible NPCs");
         ExpectTrue(interestSnapshot.Npcs.Any(npc => npc.Id == StarterNpcs.Dallen.Id), "interest snapshot includes visible vendor NPCs");
+        ExpectTrue(interestSnapshot.ShopOffers.Any(offer => offer.VendorNpcId == StarterNpcs.Dallen.Id), "interest snapshot includes visible vendor offers");
         ExpectTrue(interestSnapshot.Structures.Any(structure => structure.StructureId == StructureArtCatalog.Get(StructureSpriteKind.GreenhouseStandard).Id), "interest snapshot includes visible structures");
         ExpectTrue(interestSnapshot.Structures.Count >= 3, "interest snapshot includes starter greenhouse structure set");
         ExpectTrue(interestSnapshot.Structures.All(structure => structure.WidthPx > 0 && structure.HeightPx > 0), "structure snapshots include render footprint");

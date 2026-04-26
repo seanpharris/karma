@@ -37,9 +37,9 @@ relationship consequences.
 The first prototype shop is Dallen's stall, which sells starter objects through
 server-validated offers. Nearby vendor offers are exposed through interest
 snapshots, so distant shops remain hidden until the player is in range. Dallen
-now renders from the server NPC snapshot as the first lightweight vendor body.
-The prototype interaction prompt can browse visible offers with `-` and `=`, then
-buy the selected offer with `9`.
+now renders from the server NPC snapshot as the first lightweight vendor body,
+and that body can browse visible offers with `-` and `=` or buy the selected
+offer with `9`.
 Shop prices are calculated by the server for each player, so economy perks such
 as Trusted Discount and Shifty Prices change both the displayed offer price and
 the authoritative wallet debit.
