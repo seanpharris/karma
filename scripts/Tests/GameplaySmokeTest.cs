@@ -50,7 +50,7 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(100, ServerConfig.Large100Player.MaxPlayers, "large server profile supports 100 players");
         ExpectEqual(4, server.ConnectedPlayerIds.Count, "prototype server starts with four connected player slots");
         ExpectFalse(server.JoinPlayer("overflow_player", "Overflow Player").WasAccepted, "prototype server rejects players beyond capacity");
-        ExpectEqual(320, WorldConfig.FromServerConfig(
+        ExpectEqual(1000, WorldConfig.FromServerConfig(
             "scale-test",
             new WorldSeed(1, "Scale Test", "test"),
             ServerConfig.Large100Player).WidthTiles, "large world profile expands map size");

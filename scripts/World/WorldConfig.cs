@@ -24,7 +24,7 @@ public sealed record WorldConfig(
         {
             WorldScale.Small => 64,
             WorldScale.Medium => 160,
-            WorldScale.Large => 320,
+            WorldScale.Large => 1000,
             _ => 64
         };
 

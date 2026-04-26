@@ -16,6 +16,20 @@ combination of all of those.
 6. Extreme karma unlocks perks, status, and social power.
 7. Death causes a Karma Break and resets the player's path.
 
+## First Game Mode: Match
+
+The first shipped game type should be a timed match. Players join a generated
+world and compete for 30 minutes. At the end of the timer, the current Saint
+highest karma and current Scourge lowest karma are both match winners.
+
+This creates two viable races in the same server: Ascend hard enough to become
+the Saint, or Descend hard enough to become the Scourge. Karma Breaks still
+matter because death resets a player's path status during the match.
+
+Prototype matches stay small, but the production large-world target is
+`1000 x 1000` tiles at `16px` logical tile scale. Large worlds must be treated
+as streamed/chunked spaces, not fully simulated or rendered to every client.
+
 ## Procedural World Data
 
 World generation should produce structured data first:

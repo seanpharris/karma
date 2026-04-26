@@ -50,7 +50,10 @@ testing larger worlds up to 100 players if the design moves that direction.
 Targets:
 
 - Prototype: 4 players per world
+- Prototype map: `64 x 64` tiles
+- Production large world target: `1000 x 1000` tiles
 - Stress target: 100 players per world
+- First match type: 30-minute Saint/Scourge race
 - Authoritative host/server
 - Deterministic karma calculations
 - Event log for replay/debugging
@@ -69,6 +72,8 @@ Targets:
   visible world events, and server events after the client's last known tick.
 - Generate logical tiles with stable ids first, then let the client map those
   ids to theme-specific tileset art.
+- Treat large worlds as chunked/streamed spaces. Clients should receive only
+  nearby chunks/entities through interest snapshots.
 - Let the local prototype client read the same interest snapshot summary that a
   real network client would consume, so UI/debug feedback is based on server
   visibility rather than scene assumptions.
@@ -140,7 +145,8 @@ eventual server handoff.
 Initial profiles:
 
 - `Prototype4Player`: 4 max players, small map, wider interest radius
-- `Large100Player`: 100 max players, large map, tighter interest radius
+- `Large100Player`: 100 max players, `1000 x 1000` tile map target, tighter
+  interest radius
 
 Both profiles also define a short combat range so PvP remains server-validated
 instead of trusting client-side hit claims.
