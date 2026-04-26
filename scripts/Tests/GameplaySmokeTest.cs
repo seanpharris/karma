@@ -3,6 +3,7 @@ using System.Linq;
 using Godot;
 using Karma.Core;
 using Karma.Data;
+using Karma.Generation;
 using Karma.Net;
 using Karma.World;
 
@@ -223,6 +224,24 @@ public partial class GameplaySmokeTest : Node
             }
         };
         ExpectFalse(WorldContentProposalValidator.Validate(badProposal).IsValid, "invalid LLM-style proposal is rejected");
+        var contentModel = new DeterministicWorldContentModel();
+        var modelPrompt = new WorldContentPrompt(
+            "test-world",
+            "junkyard-fantasy",
+            TargetNpcCount: 3,
+            TargetQuestCount: 2,
+            TargetFactionCount: 2,
+            Seed: 42);
+        var generatedContent = contentModel.Generate(modelPrompt);
+        ExpectTrue(generatedContent.IsUsable, "content generation model returns validated proposals");
+        ExpectEqual(contentModel.ModelId, generatedContent.ModelId, "content generation result records model id");
+        ExpectEqual(3, generatedContent.Proposal.Npcs.Count, "content generation model respects requested NPC count");
+        var contentService = new WorldContentGenerationService(contentModel);
+        var generatedApply = contentService.GenerateAndApply(generatedA.ToAdapter(), modelPrompt);
+        ExpectTrue(generatedApply.WasApplied, "content generation service applies usable model proposals");
+        ExpectTrue(generatedApply.ApplyResult.World.Npcs.Any(npc => npc.Id.StartsWith("generated_npc_42_")), "content generation service adds generated NPCs through adapter boundary");
+        var repeatedContent = contentModel.Generate(modelPrompt);
+        ExpectEqual(generatedContent.Proposal.Npcs[0].Name, repeatedContent.Proposal.Npcs[0].Name, "deterministic content model is stable for a prompt seed");
 
         ExpectEqual(0, state.LocalKarma.Score, "new players start at neutral karma");
         ExpectEqual("Unmarked", state.LocalKarma.TierName, "new players start unmarked");

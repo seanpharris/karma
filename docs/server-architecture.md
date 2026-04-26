@@ -41,6 +41,9 @@ LLM proposal validation rules:
 - generated text is bounded
 - accepted proposals are converted into server DTOs
 - rejected proposals never mutate live state
+- model providers are hidden behind a content generation interface, so Codex,
+  hosted APIs, local models, and deterministic test generators can be swapped
+  without changing server gameplay systems
 
 ## Multiplayer Scale
 

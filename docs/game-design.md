@@ -77,6 +77,9 @@ World generation should produce structured data first:
 
 LLM-generated content should enter as proposed structured data, then the server
 validates it before it becomes live state.
+Model access is routed through a content generation adapter. During prototyping
+that adapter can be deterministic or Codex-backed; later it can point at a
+smaller local model as long as it returns the same proposal schema.
 
 Tile art should map onto stable logical ids such as `clinic_floor`,
 `wall_metal`, `door_airlock`, and `duel_ring_floor`. This lets us keep
