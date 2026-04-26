@@ -41,6 +41,7 @@ public partial class HudController : CanvasLayer
     private Label _inventoryOverlayLabel = new();
     private PanelContainer _developerPanel = new();
     private Label _developerOverlayLabel = new();
+    private int _developerPageIndex;
     private ClientInterestSnapshot _lastSnapshot;
     private PanelContainer _escapeMenuPanel = new();
     private Control _escapeOptionsPanel = new();
@@ -166,6 +167,13 @@ public partial class HudController : CanvasLayer
             return;
         }
 
+        if (_developerPanel.Visible && key.Keycode == Key.Tab)
+        {
+            CycleDeveloperOverlayPage(key.ShiftPressed ? -1 : 1);
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
         if (key.Keycode == Key.I)
         {
             ToggleInventoryOverlay();
@@ -215,6 +223,18 @@ public partial class HudController : CanvasLayer
         {
             RefreshDeveloperOverlay();
         }
+    }
+
+    public void CycleDeveloperOverlayPage(int delta)
+    {
+        _developerPageIndex = WrapDeveloperPageIndex(_developerPageIndex + delta);
+        RefreshDeveloperOverlay();
+    }
+
+    public static int WrapDeveloperPageIndex(int index)
+    {
+        const int pageCount = 4;
+        return ((index % pageCount) + pageCount) % pageCount;
     }
 
     public void ToggleEscapeMenu()
@@ -714,7 +734,7 @@ public partial class HudController : CanvasLayer
 
     private void RefreshDeveloperOverlay()
     {
-        _developerOverlayLabel.Text = FormatDeveloperOverlay(_lastSnapshot, _perfLabel.Text);
+        _developerOverlayLabel.Text = FormatDeveloperOverlay(_lastSnapshot, _perfLabel.Text, _developerPageIndex);
     }
 
     private void SetHealth(int health, int maxHealth)
@@ -1176,44 +1196,85 @@ public partial class HudController : CanvasLayer
 
     public static string FormatDeveloperOverlay(ClientInterestSnapshot snapshot, string perfLine)
     {
+        return FormatDeveloperOverlay(snapshot, perfLine, 0);
+    }
+
+    public static string FormatDeveloperOverlay(ClientInterestSnapshot snapshot, string perfLine, int pageIndex)
+    {
         if (snapshot is null)
         {
-            return "Developer Overlay (~)\nWaiting for local snapshot.";
+            return "Developer Overlay (~)\nWaiting for local snapshot. Tab cycles pages.";
         }
 
-        var local = snapshot.Players.FirstOrDefault(player => player.Id == snapshot.PlayerId) ?? snapshot.Players.FirstOrDefault();
+        pageIndex = WrapDeveloperPageIndex(pageIndex);
         var lines = new List<string>
         {
-            "Developer Overlay (~)",
-            perfLine,
-            $"World: {snapshot.WorldId} | Tick: {snapshot.Tick} | Radius: {snapshot.InterestRadiusTiles}",
-            $"Map chunks: {snapshot.MapChunks.Count} | Items: {snapshot.WorldItems.Count} | Structures: {snapshot.Structures.Count}",
-            $"Events: server {snapshot.SyncHint.ServerEventCount}, world {snapshot.SyncHint.WorldEventCount}",
-            string.Empty,
-            "Local player:"
+            $"Developer Overlay (~) | Page {pageIndex + 1}/4: {FormatDeveloperPageName(pageIndex)}",
+            "Tab next | Shift+Tab previous | ~ close",
+            string.Empty
         };
 
+        switch (pageIndex)
+        {
+            case 0:
+                AppendDeveloperLocalPage(lines, snapshot, perfLine);
+                break;
+            case 1:
+                AppendDeveloperCharactersPage(lines, snapshot);
+                break;
+            case 2:
+                AppendDeveloperWorldPage(lines, snapshot);
+                break;
+            default:
+                AppendDeveloperEventsPage(lines, snapshot);
+                break;
+        }
+
+        return string.Join("\n", lines);
+    }
+
+    private static string FormatDeveloperPageName(int pageIndex)
+    {
+        return pageIndex switch
+        {
+            0 => "Local",
+            1 => "Characters",
+            2 => "World",
+            _ => "Events"
+        };
+    }
+
+    private static void AppendDeveloperLocalPage(List<string> lines, ClientInterestSnapshot snapshot, string perfLine)
+    {
+        var local = snapshot.Players.FirstOrDefault(player => player.Id == snapshot.PlayerId) ?? snapshot.Players.FirstOrDefault();
+        lines.Add(perfLine);
+        lines.Add($"World: {snapshot.WorldId} | Tick: {snapshot.Tick} | Radius: {snapshot.InterestRadiusTiles}");
+        lines.Add($"Match: {snapshot.Match.Summary}");
+        lines.Add(string.Empty);
+        lines.Add("Local player:");
         if (local is null)
         {
             lines.Add("missing");
-        }
-        else
-        {
-            lines.Add($"{local.DisplayName} ({local.Id}) @ {local.TileX},{local.TileY}");
-            lines.Add($"Karma {local.Karma:+#;-#;0} | {local.Tier} rank {local.KarmaRank} | {local.KarmaProgress}");
-            lines.Add($"HP {local.Health}/{local.MaxHealth} | Scrip {local.Scrip} | Standing {local.Standing}");
-            lines.Add($"Inventory: {local.InventoryItemIds.Count} | Equipment: {string.Join(", ", local.EquipmentItemIds.Select(pair => $"{pair.Key}:{pair.Value}"))}");
-            lines.Add($"Status: {(local.StatusEffects.Count == 0 ? "none" : string.Join(", ", local.StatusEffects))}");
+            return;
         }
 
-        lines.Add(string.Empty);
+        lines.Add($"{local.DisplayName} ({local.Id}) @ {local.TileX},{local.TileY}");
+        lines.Add($"Karma {local.Karma:+#;-#;0} | {local.Tier} rank {local.KarmaRank} | {local.KarmaProgress}");
+        lines.Add($"HP {local.Health}/{local.MaxHealth} | Scrip {local.Scrip} | Standing {local.Standing}");
+        lines.Add($"Inventory: {local.InventoryItemIds.Count} | Equipment: {string.Join(", ", local.EquipmentItemIds.Select(pair => $"{pair.Key}:{pair.Value}"))}");
+        lines.Add($"Status: {(local.StatusEffects.Count == 0 ? "none" : string.Join(", ", local.StatusEffects))}");
+    }
+
+    private static void AppendDeveloperCharactersPage(List<string> lines, ClientInterestSnapshot snapshot)
+    {
         lines.Add("Nearby players:");
-        foreach (var player in snapshot.Players.Where(player => player.Id != snapshot.PlayerId).Take(8))
+        var nearbyPlayers = snapshot.Players.Where(player => player.Id != snapshot.PlayerId).Take(8).ToArray();
+        foreach (var player in nearbyPlayers)
         {
             lines.Add($"- {player.DisplayName} ({player.Id}) @ {player.TileX},{player.TileY} HP {player.Health}/{player.MaxHealth} Karma {player.Karma:+#;-#;0} {player.Tier}");
         }
 
-        if (snapshot.Players.Count <= 1)
+        if (nearbyPlayers.Length == 0)
         {
             lines.Add("none");
         }
@@ -1231,10 +1292,58 @@ public partial class HudController : CanvasLayer
         {
             lines.Add("none");
         }
+    }
+
+    private static void AppendDeveloperWorldPage(List<string> lines, ClientInterestSnapshot snapshot)
+    {
+        lines.Add($"Map chunks: {snapshot.MapChunks.Count} | Items: {snapshot.WorldItems.Count} | Structures: {snapshot.Structures.Count}");
+        lines.Add($"Sync: after {snapshot.SyncHint.AfterTick} | delta {snapshot.SyncHint.IsDelta} | map rev {snapshot.SyncHint.VisibleMapRevision}");
+        lines.Add(string.Empty);
+        lines.Add("Visible items:");
+        foreach (var item in snapshot.WorldItems.Take(10))
+        {
+            lines.Add($"- {item.ItemId} ({item.EntityId}) @ {item.TileX},{item.TileY}");
+        }
+
+        if (snapshot.WorldItems.Count == 0)
+        {
+            lines.Add("none");
+        }
 
         lines.Add(string.Empty);
-        lines.Add("Tilde closes this overlay. Esc opens the non-pausing menu.");
-        return string.Join("\n", lines);
+        lines.Add("Visible structures:");
+        foreach (var structure in snapshot.Structures.Take(8))
+        {
+            lines.Add($"- {structure.Name} ({structure.EntityId}) @ {structure.TileX},{structure.TileY} {structure.Condition}/{structure.Integrity}%");
+        }
+    }
+
+    private static void AppendDeveloperEventsPage(List<string> lines, ClientInterestSnapshot snapshot)
+    {
+        lines.Add($"Events: server {snapshot.SyncHint.ServerEventCount}, world {snapshot.SyncHint.WorldEventCount}");
+        lines.Add(string.Empty);
+        lines.Add("Recent server events:");
+        foreach (var serverEvent in snapshot.ServerEvents.TakeLast(8))
+        {
+            lines.Add($"- [{serverEvent.Tick}] {serverEvent.EventId}: {serverEvent.Description}");
+        }
+
+        if (snapshot.ServerEvents.Count == 0)
+        {
+            lines.Add("none");
+        }
+
+        lines.Add(string.Empty);
+        lines.Add("Recent world events:");
+        foreach (var worldEvent in snapshot.WorldEvents.TakeLast(8))
+        {
+            lines.Add($"- {worldEvent.Type}: {worldEvent.Summary}");
+        }
+
+        if (snapshot.WorldEvents.Count == 0)
+        {
+            lines.Add("none");
+        }
     }
 
     private static string FormatEquipped(

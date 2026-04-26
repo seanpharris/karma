@@ -52,6 +52,9 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/DeveloperPanel/DeveloperMargin/DeveloperOverlayLabel") is not null, "developer overlay includes detailed character label");
         hudProbe.ToggleDeveloperOverlay();
         ExpectTrue(hudProbe.GetNode<PanelContainer>("HudRoot/DeveloperPanel").Visible, "tilde developer overlay can be toggled visible");
+        ExpectEqual(0, HudController.WrapDeveloperPageIndex(4), "developer overlay page index wraps forward");
+        ExpectEqual(3, HudController.WrapDeveloperPageIndex(-1), "developer overlay page index wraps backward");
+        ExpectTrue(HudController.FormatDeveloperOverlay(null, "Perf: test", 2).Contains("Tab cycles pages"), "developer overlay empty state explains page controls");
         ExpectFalse(GetTree().Paused, "Escape menu prototype does not pause the running tree");
         hudProbe.QueueFree();
 
