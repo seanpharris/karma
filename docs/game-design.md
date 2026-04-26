@@ -43,7 +43,8 @@ The local prototype client now applies snapshots through a cache that tracks
 visible chunk revisions, matching the shape a real network client will need.
 The server has an in-process network protocol adapter with explicit envelopes
 for joins, intents, snapshot requests, pings, and errors, ready to sit behind a
-real transport later.
+real transport later. Those envelopes can be serialized as readable JSON for
+debugging, replay, and future socket messages.
 The current prototype renderer draws those server-provided chunks with
 placeholder colors until the tileset atlas mapping is ready.
 Renderer state is chunk-cached, so visible chunks can be added, updated, and

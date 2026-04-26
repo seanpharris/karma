@@ -1,3 +1,6 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace Karma.Net;
 
 public enum NetworkClientMessageType
@@ -168,5 +171,39 @@ public static class AuthoritativeNetworkProtocol
         var result = server.ProcessIntent(message.Intent);
         var snapshot = server.CreateInterestSnapshot(message.Intent.PlayerId, message.AfterTick);
         return NetworkServerMessage.FromIntent(message.MessageId, server.WorldId, server.Tick, result, snapshot);
+    }
+}
+
+public static class NetworkProtocolJson
+{
+    private static readonly JsonSerializerOptions Options = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        WriteIndented = false
+    };
+
+    static NetworkProtocolJson()
+    {
+        Options.Converters.Add(new JsonStringEnumConverter());
+    }
+
+    public static string WriteClient(NetworkClientMessage message)
+    {
+        return JsonSerializer.Serialize(message, Options);
+    }
+
+    public static NetworkClientMessage ReadClient(string json)
+    {
+        return JsonSerializer.Deserialize<NetworkClientMessage>(json, Options);
+    }
+
+    public static string WriteServer(NetworkServerMessage message)
+    {
+        return JsonSerializer.Serialize(message, Options);
+    }
+
+    public static NetworkServerMessage ReadServer(string json)
+    {
+        return JsonSerializer.Deserialize<NetworkServerMessage>(json, Options);
     }
 }

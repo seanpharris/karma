@@ -104,6 +104,8 @@ Targets:
   intent, snapshot request, ping, and response/error messages. The current
   in-process protocol adapter uses those envelopes before any socket layer is
   introduced.
+- Network envelopes can be encoded as JSON with readable enum names so the same
+  protocol can be logged, replayed, or sent over a later transport.
 - Keep NPC simulation tiered: active nearby NPCs update often, distant NPCs
   update in coarse batches.
 - Keep LLM generation out of the live tick loop.

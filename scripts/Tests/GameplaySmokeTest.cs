@@ -765,6 +765,12 @@ public partial class GameplaySmokeTest : Node
             NetworkClientMessage.Ping("msg_ping", GameState.LocalPlayerId));
         ExpectEqual(NetworkServerMessageType.Pong, pingResponse.Type, "network protocol responds to ping messages");
         ExpectEqual("msg_ping", pingResponse.CorrelationId, "network protocol preserves message correlation ids");
+        var pingResponseJson = NetworkProtocolJson.WriteServer(pingResponse);
+        ExpectTrue(pingResponseJson.Contains("\"Type\":\"Pong\""), "network protocol JSON writes readable server message types");
+        ExpectEqual(
+            NetworkServerMessageType.Pong,
+            NetworkProtocolJson.ReadServer(pingResponseJson).Type,
+            "network protocol JSON round-trips server messages");
 
         var snapshotResponse = AuthoritativeNetworkProtocol.Handle(
             largeServer,
@@ -785,6 +791,21 @@ public partial class GameplaySmokeTest : Node
                         ["x"] = "7",
                         ["y"] = "8"
                     })));
+        var protocolMoveJson = NetworkProtocolJson.WriteClient(NetworkClientMessage.SendIntent(
+            "msg_move_json",
+            new ServerIntent(
+                GameState.LocalPlayerId,
+                20,
+                IntentType.Move,
+                new System.Collections.Generic.Dictionary<string, string>
+                {
+                    ["x"] = "9",
+                    ["y"] = "10"
+                })));
+        var protocolMoveFromJson = NetworkProtocolJson.ReadClient(protocolMoveJson);
+        ExpectEqual(NetworkClientMessageType.Intent, protocolMoveFromJson.Type, "network protocol JSON round-trips client message types");
+        ExpectEqual(IntentType.Move, protocolMoveFromJson.Intent.Type, "network protocol JSON round-trips intent types");
+        ExpectEqual("9", protocolMoveFromJson.Intent.Payload["x"], "network protocol JSON round-trips intent payloads");
         ExpectEqual(NetworkServerMessageType.IntentResult, protocolMove.Type, "network protocol handles sequenced player intents");
         ExpectTrue(protocolMove.IntentResult.WasAccepted, "network protocol returns accepted intent result");
         ExpectEqual(7, state.LocalPlayer.Position.X, "network protocol accepted intent mutates authoritative state");
