@@ -714,6 +714,14 @@ public partial class GameplaySmokeTest : Node
         generatedContentState.RegisterPlayer(GameState.LocalPlayerId, "Generated Content Tester");
         var generatedContentServer = new AuthoritativeWorldServer(generatedContentState, "generated-content-test");
         generatedContentServer.SeedGeneratedWorldContent(generatedA);
+        var seededGeneratedNpcCount = generatedA.Npcs.Count(npc => npc.Id != StarterNpcs.Mara.Id && npc.Id != StarterNpcs.Dallen.Id);
+        ExpectEqual(2 + seededGeneratedNpcCount, generatedContentServer.Npcs.Count, "server seeds generated NPC placements without duplicating starter NPCs");
+        var firstGeneratedNpcPlacement = generatedA.NpcPlacements.First(placement => placement.NpcId != StarterNpcs.Mara.Id && placement.NpcId != StarterNpcs.Dallen.Id);
+        generatedContentState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(firstGeneratedNpcPlacement.X, firstGeneratedNpcPlacement.Y));
+        var generatedNpcSnapshot = generatedContentServer.CreateInterestSnapshot(GameState.LocalPlayerId);
+        ExpectTrue(
+            generatedNpcSnapshot.Npcs.Any(npc => npc.Id == firstGeneratedNpcPlacement.NpcId && npc.TileX == firstGeneratedNpcPlacement.X && npc.TileY == firstGeneratedNpcPlacement.Y),
+            "interest snapshot exposes seeded generated NPCs near the player");
         ExpectEqual(generatedA.OddityPlacements.Count, generatedContentServer.WorldItems.Count, "server seeds generated oddity placements as world items");
         var firstOddityPlacement = generatedA.OddityPlacements[0];
         generatedContentState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(firstOddityPlacement.X, firstOddityPlacement.Y));

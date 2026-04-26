@@ -28,6 +28,7 @@ and the next practical build slices.
 - Stations include clinics, markets, repair yards, rumor boards, saloons, restricted sheds, oddity yards, duel rings, farm plots, black markets, apology engines, broadcast towers, war memorials, and witness courts.
 - Each station carries a role, theme tag, karma hook, and suggested faction.
 - NPCs derive from stations, giving them roles, needs, secrets, likes/dislikes, factions, and station placements.
+- Generated NPC placements are seeded into the authoritative server world and show up through interest snapshots/rendering.
 - Oddities now have generated placements with local gameplay reasons tied to nearby stations.
 - Generated oddities are seeded into the authoritative server world as pickup items and show up through interest snapshots.
 - A reusable deterministic best-candidate / blue-noise-style placement sampler spaces stations and oddities more naturally.
@@ -49,7 +50,8 @@ and the next practical build slices.
 
 ### Gameplay integration
 
-- Generated stations/NPC placements are data-rich, but not all are rendered or interactable yet.
+- Generated station locations are data-rich, but station markers/structures are not all rendered or interactable yet.
+- Generated NPCs are server-visible, but their station-specific dialogue choices and quests are not fully generated yet.
 - Generated oddities are server-seeded, but pickup placement needs more visual/station context and balancing.
 - Generated NPC needs/secrets should feed real quests, dialogue choices, rumors, bounties, and faction consequences.
 - Structure repair/sabotage should expand beyond the starter greenhouse into generated station-specific objects.
@@ -84,14 +86,15 @@ and the next practical build slices.
 
 ## What we need to do next
 
-1. **Make generated NPC stations visible in-game.** Either seed generated NPCs or create station markers/interactables.
+1. **Create station markers/interactables.** Make generated station locations visible as signs, props, or structures.
 2. **Build context-aware respawns.** Reuse the placement sampler for safe respawn candidate pools.
 3. **Generate quests from social stations.** Convert station `KarmaHook` and NPC `Need` into small repair, rumor, theft, apology, bounty, and delivery tasks.
-4. **Expand generated structures.** Add station-specific repair/sabotage targets with integrity and faction consequences.
-5. **Wire one more perk.** Good candidates: `Paragon Favor`, `Abyssal Mark`, or deeper `Renegade Nerve` intimidation behavior.
-6. **Improve world layout.** Generate roads/paths between stations and shape districts around the station graph.
-7. **Balance generated oddities.** Tune station proximity, rarity, and item selection so pickups support interesting choices instead of noise.
-8. **Keep documentation current.** Update this file after each meaningful gameplay slice.
+4. **Generate station dialogue choices.** Give generated NPCs local choices tied to their station role instead of only generic profile text.
+5. **Expand generated structures.** Add station-specific repair/sabotage targets with integrity and faction consequences.
+6. **Wire one more perk.** Good candidates: `Paragon Favor`, `Abyssal Mark`, or deeper `Renegade Nerve` intimidation behavior.
+7. **Improve world layout.** Generate roads/paths between stations and shape districts around the station graph.
+8. **Balance generated oddities.** Tune station proximity, rarity, and item selection so pickups support interesting choices instead of noise.
+9. **Keep documentation current.** Update this file after each meaningful gameplay slice.
 
 ## Verification standard
 

@@ -139,6 +139,17 @@ public sealed class AuthoritativeWorldServer
 
     public void SeedGeneratedWorldContent(GeneratedWorld generatedWorld)
     {
+        var npcsById = generatedWorld.Npcs.ToDictionary(npc => npc.Id);
+        foreach (var placement in generatedWorld.NpcPlacements.OrderBy(placement => placement.NpcId))
+        {
+            if (!npcsById.TryGetValue(placement.NpcId, out var profile) || _npcs.ContainsKey(profile.Id))
+            {
+                continue;
+            }
+
+            _npcs[profile.Id] = new NpcEntity(profile, new TilePosition(placement.X, placement.Y));
+        }
+
         var odditiesById = generatedWorld.Oddities.ToDictionary(item => item.Id);
         for (var i = 0; i < generatedWorld.OddityPlacements.Count; i++)
         {
