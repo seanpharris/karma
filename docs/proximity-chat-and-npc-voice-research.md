@@ -3,6 +3,10 @@
 This note captures the likely communication direction for Karma: local text chat,
 proximity voice chat between players, and longer-term spoken NPC conversations.
 
+Current priority decision: **stick with player-to-player proximity voice/text as
+the practical feature path**. NPC speech-to-text / LLM / text-to-speech remains a
+research backlog item until the player communication stack is stable.
+
 ## Goals
 
 - Let nearby players communicate naturally without global voice chaos.
@@ -108,6 +112,22 @@ Voice needs more safety/settings than most features:
 
 ## NPC voice conversations
 
+NPC voice conversations are intentionally **research/to-do**, not the first
+implementation target. The current NPC interaction model remains: walk up to an
+NPC, inspect their prompt, and choose from a few server-generated options.
+
+The long-term idea is to make that feel more organic without losing game-state
+authority:
+
+- NPCs can greet the player with a contextual line or exclamation when approached.
+- The player can still choose options, type a freeform line, or eventually speak
+  a line through push-to-talk speech-to-text.
+- An LLM-style dialogue layer can respond more naturally using bounded context:
+  NPC personality, station state, quest state, faction, relationship, and player
+  karma.
+- The response text can later be voiced through TTS and played spatially from the
+  NPC's world position.
+
 The player-to-NPC voice idea is plausible, but it is a larger research track than
 player proximity voice. It has four separate hard problems:
 
@@ -125,18 +145,24 @@ NPC dialogue grounded in server-owned game state.
 
 ### Recommended NPC approach
 
-Start text-first, then voice-enable later:
+Start with a more natural **text-first interaction shell**, then voice-enable later:
 
-1. Player opens NPC interaction.
-2. Player can type a freeform line or choose from generated choices.
-3. Server sends compact NPC context:
+1. Player approaches NPC.
+2. NPC may emit a short contextual greeting/exclamation, e.g. station stabilized,
+   station compromised, faction-friendly, suspicious, quest-ready, etc.
+3. Player opens NPC interaction.
+4. Player can choose from generated choices, type a freeform line, or eventually
+   speak via STT.
+5. Server sends compact NPC context:
    - NPC id/personality/faction
    - station state
    - quest state
    - player karma/faction/relationship context
-4. Dialogue system returns text.
-5. Optional later: TTS turns that text into audio.
-6. NPC audio plays spatially with proximity falloff.
+   - recent safe conversation summary, if any
+6. Dialogue system returns text constrained to allowed intents/options.
+7. Server-owned systems decide any real quest/reward/karma/item changes.
+8. Optional later: TTS turns the returned text into audio.
+9. NPC audio plays spatially with proximity falloff and subtitles.
 
 For spoken input later:
 

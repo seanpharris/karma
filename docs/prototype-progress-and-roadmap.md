@@ -71,7 +71,8 @@ and the next practical build slices.
 - Main menu, HUD, developer overlay, and Escape menu visuals/settings are still prototype UI and need final styling, broader audio bus wiring, shared options persistence, full control remapping/accessibility settings, searchable/filterable debug views, and eventual multiplayer/session entry flows.
 - Character art still needs a professional v2 standard: likely `48x48` or `64x64`, true 8-direction, layered paper-doll sheets, animation-group manifests, and a compositor/export pipeline.
 - Downed/rescue/carry/execute mechanics are now documented as a future core karma loop that also informs v2 character animations.
-- Proximity communication research now covers server-routed local text chat, distance-faded player voice chat, and optional player-to-NPC spoken conversation via STT/dialogue/TTS/spatial playback.
+- Proximity communication research now prioritizes player-to-player proximity voice/text first, with NPC speech-to-text/LLM/text-to-speech interactions parked as research/to-do.
+- NPC voice research direction is to keep current walk-up options, then later make interactions feel more organic with contextual greetings/exclamations, optional spoken/freeform player input, bounded LLM responses, subtitles, and spatial NPC voice playback.
 - Generated station locations have inspectable markers and interactable fixtures, but their art is still placeholder greenhouse components and needs proper sign/landmark visuals.
 - Generated NPCs have first-pass station dialogue/quests, but those choices are still broad templates rather than bespoke quest chains.
 - Generated oddities are server-seeded, but pickup placement needs more visual/station context and balancing.
@@ -108,8 +109,9 @@ and the next practical build slices.
 ## What we need to do next
 
 1. **Deepen station quests/dialogue.** Turn broad generated choices into multi-step repair, rumor, theft, apology, bounty, delivery, and mediation tasks.
-2. **Improve generated structure consequences.** Tune faction-specific rewards/penalties by station role and let stabilized/compromised station state affect local prices and richer quest branches.
-3. **Improve respawn candidate pools.** Prefer safe stations/landmarks and avoid active combat heat, not just death/player positions.
+2. **Prototype player communication.** Start with server-routed local text chat and the audibility/falloff model that will later drive player-to-player proximity voice.
+3. **Improve generated structure consequences.** Tune faction-specific rewards/penalties by station role and let stabilized/compromised station state affect local prices and richer quest branches.
+4. **Improve respawn candidate pools.** Prefer safe stations/landmarks and avoid active combat heat, not just death/player positions.
 5. **Improve station presentation.** Replace placeholder station marker art with signs, landmarks, or theme-specific props.
 6. **Wire one more perk.** Good candidates: `Paragon Favor`, `Abyssal Mark`, or deeper `Renegade Nerve` intimidation behavior.
 7. **Improve world layout.** Generate roads/paths between stations and shape districts around the station graph.
