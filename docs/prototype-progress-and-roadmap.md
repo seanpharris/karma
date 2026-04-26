@@ -5,6 +5,13 @@ and the next practical build slices.
 
 ## What we have done
 
+### Main menu and entry flow
+
+- The project now boots into a separate `MainMenu.tscn` prototype instead of directly into the gameplay sandbox.
+- The menu has Start Local Prototype, Options, Credits, and Quit controls.
+- Start Local Prototype loads the existing gameplay prototype scene (`Main.tscn`) without folding menu UI into the world prototype.
+- Options and credits are lightweight panels that establish the flow for future settings and presentation work.
+
 ### Server-owned karma loop
 
 - Saint/Scourge match mode has clearer match-end UI and locked results.
@@ -55,6 +62,7 @@ and the next practical build slices.
 
 ### Gameplay integration
 
+- Main menu visuals/settings are still prototype UI and need final styling, saved settings, audio/control/video options, and eventual multiplayer/session entry flows.
 - Generated station locations have inspectable markers and interactable fixtures, but their art is still placeholder greenhouse components and needs proper sign/landmark visuals.
 - Generated NPCs have first-pass station dialogue/quests, but those choices are still broad templates rather than bespoke quest chains.
 - Generated oddities are server-seeded, but pickup placement needs more visual/station context and balancing.

@@ -1,0 +1,149 @@
+[gd_scene load_steps=2 format=3 uid="uid://karma_main_menu"]
+
+[ext_resource type="Script" path="res://scripts/UI/MainMenuController.cs" id="1_menu"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menu")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0352941, 0.0470588, 0.0627451, 1)
+
+[node name="Root" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MenuPanel" type="PanelContainer" parent="Root"]
+custom_minimum_size = Vector2(520, 440)
+layout_mode = 2
+
+[node name="MenuMargin" type="MarginContainer" parent="Root/MenuPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 28
+
+[node name="MenuButtons" type="VBoxContainer" parent="Root/MenuPanel/MenuMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="TitleLabel" type="Label" parent="Root/MenuPanel/MenuMargin/MenuButtons"]
+layout_mode = 2
+text = "KARMA"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 48
+
+[node name="SubtitleLabel" type="Label" parent="Root/MenuPanel/MenuMargin/MenuButtons"]
+layout_mode = 2
+text = "Saints, Scourges, and bad decisions"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="Root/MenuPanel/MenuMargin/MenuButtons"]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+
+[node name="StartButton" type="Button" parent="Root/MenuPanel/MenuMargin/MenuButtons"]
+layout_mode = 2
+text = "Start Local Prototype"
+
+[node name="OptionsButton" type="Button" parent="Root/MenuPanel/MenuMargin/MenuButtons"]
+layout_mode = 2
+text = "Options"
+
+[node name="CreditsButton" type="Button" parent="Root/MenuPanel/MenuMargin/MenuButtons"]
+layout_mode = 2
+text = "Credits"
+
+[node name="QuitButton" type="Button" parent="Root/MenuPanel/MenuMargin/MenuButtons"]
+layout_mode = 2
+text = "Quit"
+
+[node name="StatusLabel" type="Label" parent="Root/MenuPanel/MenuMargin/MenuButtons"]
+layout_mode = 2
+text = "Prototype entry point: local sandbox match."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="OptionsPanel" type="PanelContainer" parent="Root"]
+visible = false
+custom_minimum_size = Vector2(520, 260)
+layout_mode = 2
+
+[node name="PanelMargin" type="MarginContainer" parent="Root/OptionsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 24
+
+[node name="OptionsContent" type="VBoxContainer" parent="Root/OptionsPanel/PanelMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="OptionsTitle" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent"]
+layout_mode = 2
+text = "Options Prototype"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 28
+
+[node name="OptionsBody" type="RichTextLabel" parent="Root/OptionsPanel/PanelMargin/OptionsContent"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+bbcode_enabled = true
+text = "[center]Audio, controls, video, accessibility, and multiplayer/session settings will live here.\n\nFor now this panel proves the menu flow without touching the gameplay prototype.[/center]"
+fit_content = true
+scroll_active = false
+
+[node name="CloseOptionsButton" type="Button" parent="Root/OptionsPanel/PanelMargin/OptionsContent"]
+layout_mode = 2
+text = "Back"
+
+[node name="CreditsPanel" type="PanelContainer" parent="Root"]
+visible = false
+custom_minimum_size = Vector2(520, 260)
+layout_mode = 2
+
+[node name="PanelMargin" type="MarginContainer" parent="Root/CreditsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 24
+
+[node name="CreditsContent" type="VBoxContainer" parent="Root/CreditsPanel/PanelMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CreditsTitle" type="Label" parent="Root/CreditsPanel/PanelMargin/CreditsContent"]
+layout_mode = 2
+text = "Credits"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 28
+
+[node name="CreditsBody" type="RichTextLabel" parent="Root/CreditsPanel/PanelMargin/CreditsContent"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+bbcode_enabled = true
+text = "[center]Karma prototype by Sean and Codex.\n\nBuilt in Godot 4 with server-owned karma, social stations, and questionable life choices.[/center]"
+fit_content = true
+scroll_active = false
+
+[node name="CloseCreditsButton" type="Button" parent="Root/CreditsPanel/PanelMargin/CreditsContent"]
+layout_mode = 2
+text = "Back"

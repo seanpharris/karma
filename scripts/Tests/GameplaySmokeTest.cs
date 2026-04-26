@@ -26,6 +26,16 @@ public partial class GameplaySmokeTest : Node
 
     private void Run()
     {
+        ExpectEqual("res://scenes/MainMenu.tscn", ProjectSettings.GetSetting("application/run/main_scene").AsString(), "project boots into the main menu scene");
+        ExpectTrue(ResourceLoader.Exists("res://scenes/MainMenu.tscn"), "main menu prototype scene exists");
+        ExpectTrue(ResourceLoader.Exists(MainMenuController.GameplayScenePath), "main menu start target gameplay scene exists");
+        var menuScene = ResourceLoader.Load<PackedScene>("res://scenes/MainMenu.tscn");
+        var menuInstance = menuScene.Instantiate<Control>();
+        ExpectTrue(menuInstance.GetNodeOrNull<Button>("Root/MenuPanel/MenuMargin/MenuButtons/StartButton") is not null, "main menu exposes a start game button");
+        ExpectTrue(menuInstance.GetNodeOrNull<Button>("Root/MenuPanel/MenuMargin/MenuButtons/OptionsButton") is not null, "main menu exposes an options button");
+        ExpectTrue(menuInstance.GetNodeOrNull<Control>("Root/OptionsPanel") is not null, "main menu includes an options panel prototype");
+        menuInstance.QueueFree();
+
         var state = GetNode<GameState>("/root/GameState");
         state.TriggerKarmaBreak();
         var localSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
