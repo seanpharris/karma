@@ -41,6 +41,9 @@ Interest snapshots also carry a compact sync hint so future network clients can
 show/debug whether they received a full refresh or an incremental update.
 The local prototype client now applies snapshots through a cache that tracks
 visible chunk revisions, matching the shape a real network client will need.
+The server has an in-process network protocol adapter with explicit envelopes
+for joins, intents, snapshot requests, pings, and errors, ready to sit behind a
+real transport later.
 The current prototype renderer draws those server-provided chunks with
 placeholder colors until the tileset atlas mapping is ready.
 Renderer state is chunk-cached, so visible chunks can be added, updated, and

@@ -760,6 +760,40 @@ public partial class GameplaySmokeTest : Node
 
         var largeServer = new AuthoritativeWorldServer(state, "large-test-world", ServerConfig.Large100Player);
         ExpectTrue(largeServer.JoinPlayer("large_extra_player", "Large Extra Player").WasAccepted, "large server profile accepts extra player slots");
+        var pingResponse = AuthoritativeNetworkProtocol.Handle(
+            largeServer,
+            NetworkClientMessage.Ping("msg_ping", GameState.LocalPlayerId));
+        ExpectEqual(NetworkServerMessageType.Pong, pingResponse.Type, "network protocol responds to ping messages");
+        ExpectEqual("msg_ping", pingResponse.CorrelationId, "network protocol preserves message correlation ids");
+
+        var snapshotResponse = AuthoritativeNetworkProtocol.Handle(
+            largeServer,
+            NetworkClientMessage.RequestSnapshot("msg_snapshot", GameState.LocalPlayerId, afterTick: 2));
+        ExpectEqual(NetworkServerMessageType.Snapshot, snapshotResponse.Type, "network protocol returns interest snapshots");
+        ExpectTrue(snapshotResponse.Snapshot.SyncHint.IsDelta, "network protocol snapshot request preserves delta cursor");
+
+        var protocolMove = AuthoritativeNetworkProtocol.Handle(
+            largeServer,
+            NetworkClientMessage.SendIntent(
+                "msg_move",
+                new ServerIntent(
+                    GameState.LocalPlayerId,
+                    1,
+                    IntentType.Move,
+                    new System.Collections.Generic.Dictionary<string, string>
+                    {
+                        ["x"] = "7",
+                        ["y"] = "8"
+                    })));
+        ExpectEqual(NetworkServerMessageType.IntentResult, protocolMove.Type, "network protocol handles sequenced player intents");
+        ExpectTrue(protocolMove.IntentResult.WasAccepted, "network protocol returns accepted intent result");
+        ExpectEqual(7, state.LocalPlayer.Position.X, "network protocol accepted intent mutates authoritative state");
+        ExpectTrue(protocolMove.Snapshot.Players.Any(player => player.Id == GameState.LocalPlayerId), "network protocol intent response includes follow-up snapshot");
+
+        var malformedResponse = AuthoritativeNetworkProtocol.Handle(
+            largeServer,
+            new NetworkClientMessage("msg_bad", GameState.LocalPlayerId, NetworkClientMessageType.Intent, string.Empty, 0, null));
+        ExpectEqual(NetworkServerMessageType.Error, malformedResponse.Type, "network protocol rejects malformed intent messages");
 
         if (_failures == 0)
         {

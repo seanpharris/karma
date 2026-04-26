@@ -100,6 +100,10 @@ Targets:
 - Let the local prototype client read the same interest snapshot summary that a
   real network client would consume, so UI/debug feedback is based on server
   visibility rather than scene assumptions.
+- Route future transports through explicit network message envelopes for join,
+  intent, snapshot request, ping, and response/error messages. The current
+  in-process protocol adapter uses those envelopes before any socket layer is
+  introduced.
 - Keep NPC simulation tiered: active nearby NPCs update often, distant NPCs
   update in coarse batches.
 - Keep LLM generation out of the live tick loop.
