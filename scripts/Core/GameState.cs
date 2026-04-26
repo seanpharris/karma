@@ -588,7 +588,7 @@ public partial class GameState : Node
     private void ApplyRelationshipDelta(string playerId, KarmaAction action)
     {
         var delta = RelationshipRules.CalculateDelta(action);
-        delta = ApplyRelationshipPerks(playerId, delta);
+        delta = ApplyRelationshipPerks(playerId, action, delta);
         if (delta == 0)
         {
             return;
@@ -597,7 +597,7 @@ public partial class GameState : Node
         Relationships.Apply(action.TargetId, playerId, delta);
     }
 
-    private int ApplyRelationshipPerks(string playerId, int delta)
+    private int ApplyRelationshipPerks(string playerId, KarmaAction action, int delta)
     {
         if (delta >= 0 || !_players.TryGetValue(playerId, out var player))
         {
@@ -605,9 +605,22 @@ public partial class GameState : Node
         }
 
         var perks = PerkCatalog.GetForPlayer(player, GetLeaderboardStanding());
-        return perks.Any(perk => perk.Id == PerkCatalog.CalmingPresenceId)
-            ? Math.Min(0, (int)Math.Ceiling(delta * 0.5f))
-            : delta;
+        if (perks.Any(perk => perk.Id == PerkCatalog.CalmingPresenceId))
+        {
+            return Math.Min(0, (int)Math.Ceiling(delta * 0.5f));
+        }
+
+        if (perks.Any(perk => perk.Id == PerkCatalog.DreadReputationId) && IsDreadReactionAction(action))
+        {
+            return Math.Min(0, (int)Math.Ceiling(delta * 0.75f));
+        }
+
+        return delta;
+    }
+
+    private static bool IsDreadReactionAction(KarmaAction action)
+    {
+        return action.Tags.Any(tag => tag is "harmful" or "violent" or "deceptive" or "humiliating");
     }
 
     private void ApplyFactionDelta(string playerId, KarmaAction action)

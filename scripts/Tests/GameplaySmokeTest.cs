@@ -447,6 +447,15 @@ public partial class GameplaySmokeTest : Node
 
         state.ApplyLocalShift(PrototypeActions.AttackPeer());
         ExpectTrue(state.LocalPerks.Any(perk => perk.Name == "Shifty Prices"), "negative karma unlocks descension perks");
+        state.ApplyLocalShift(PrototypeActions.AttackPeer());
+        ExpectTrue(state.LocalPerks.Any(perk => perk.Id == PerkCatalog.DreadReputationId), "negative karma unlocks Dread Reputation");
+        var maraOpinionBeforeDreadMock = state.Relationships.GetOpinion(StarterNpcs.Mara.Id, GameState.LocalPlayerId);
+        state.ApplyLocalShift(PrototypeActions.MockMaraWithBalloon());
+        ExpectEqual(
+            maraOpinionBeforeDreadMock - 11,
+            state.Relationships.GetOpinion(StarterNpcs.Mara.Id, GameState.LocalPlayerId),
+            "Dread Reputation softens intimidation-style NPC reaction damage");
+
         for (var i = 0; i < 8; i++)
         {
             state.ApplyLocalShift(new KarmaAction(
@@ -458,7 +467,7 @@ public partial class GameplaySmokeTest : Node
         }
         ExpectTrue(state.LocalKarma.Score < -100, "karma can fall below old negative cap");
         ExpectEqual("Abyssal 2", state.LocalKarma.TierName, "low negative karma gains infinite Abyssal rank");
-        ExpectEqual("Progress: 3/100 toward Abyssal 3", state.LocalKarma.RankProgress.Summary, "low negative karma shows progress toward next Abyssal rank");
+        ExpectEqual("Progress: 23/100 toward Abyssal 3", state.LocalKarma.RankProgress.Summary, "low negative karma shows progress toward next Abyssal rank");
         ExpectTrue(state.LocalPerks.Any(perk => perk.Name == "Abyssal 2"), "repeat Abyssal ranks unlock repeat descension perks");
         ExpectEqual("You", state.GetLeaderboardStanding().ScourgeName, "lowest negative player gets Scourge standing");
 

@@ -55,7 +55,7 @@ Descension examples:
 - -10: Shifty Prices
 - -20: Rumorcraft
 - -35: Renegade Nerve (reduced sprint stamina cost)
-- -50: Dread Reputation
+- -50: Dread Reputation (fear softens some negative NPC reactions)
 - -100: Abyssal Mark
 - Every -100 after that: repeat Abyssal rank perk
 

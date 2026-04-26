@@ -75,6 +75,10 @@ evicted as players move through larger worlds.
 Atlas rendering is opt-in per logical tile id. Until exact source regions are
 mapped from the sheet, placeholder colors remain the readable fallback.
 
+Calming Presence softens negative NPC relationship reactions through goodwill,
+while Dread Reputation softens some harmful, violent, deceptive, or humiliating
+NPC reactions through fear.
+
 Match time is server-owned and deterministic. The server advances elapsed match
 seconds, emits a `match_finished` event when time expires, and locks the Saint
 and Scourge winners from the leaderboard at that moment.

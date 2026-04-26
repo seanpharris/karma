@@ -24,6 +24,7 @@ public static class PerkCatalog
     public const string CalmingPresenceId = "calming_presence";
     public const string BeaconAuraId = "beacon_aura";
     public const string RenegadeNerveId = "renegade_nerve";
+    public const string DreadReputationId = "dread_reputation";
 
     private static readonly KarmaPerk[] AscensionPerks =
     {
@@ -39,7 +40,7 @@ public static class PerkCatalog
         new(ShiftyPricesId, "Shifty Prices", PerkPath.Descension, 10, "Shady traders offer better deals."),
         new("rumorcraft", "Rumorcraft", PerkPath.Descension, 20, "Rumors spread farther when you start them."),
         new(RenegadeNerveId, "Renegade Nerve", PerkPath.Descension, 35, "Intimidation attempts become more reliable, and sprinting costs less stamina."),
-        new("dread_reputation", "Dread Reputation", PerkPath.Descension, 50, "Weaker NPCs may comply out of fear."),
+        new(DreadReputationId, "Dread Reputation", PerkPath.Descension, 50, "Fear softens negative NPC reactions to harmful, violent, or deceptive actions."),
         new("abyssal_mark", "Abyssal Mark", PerkPath.Descension, 100, "Criminal factions may protect you.")
     };
 
