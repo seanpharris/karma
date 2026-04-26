@@ -5,11 +5,19 @@ namespace Karma.Art;
 
 public static class AtlasTextureLoader
 {
-    public static Texture2D Load(string atlasPath, bool removeDarkBackground = false)
+    public static Texture2D Load(string atlasPath, bool removeDarkBackground = false, bool forceImageLoad = false)
     {
         if (string.IsNullOrWhiteSpace(atlasPath))
         {
             return null;
+        }
+
+        if (forceImageLoad)
+        {
+            var forcedImage = LoadImage(atlasPath);
+            return forcedImage is null || forcedImage.IsEmpty()
+                ? null
+                : ImageTexture.CreateFromImage(forcedImage);
         }
 
         if (removeDarkBackground)

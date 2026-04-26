@@ -18,7 +18,12 @@ public sealed record WorldEvent(
     WorldEventType Type,
     string Summary,
     string SourcePlayerId,
-    string TargetId);
+    string TargetId)
+{
+    public const string GlobalTargetId = "*";
+
+    public bool IsGlobal => TargetId == GlobalTargetId;
+}
 
 public sealed class WorldEventLog
 {

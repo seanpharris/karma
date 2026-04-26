@@ -14,6 +14,7 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, int> _lastSequenceByPlayer = new();
     private readonly Dictionary<string, long> _lastAttackTickByPlayer = new();
     private readonly Dictionary<string, long> _karmaBreakGraceUntilTickByPlayer = new();
+    private readonly Dictionary<string, Queue<DropClaim>> _dropClaimsByHolderItem = new();
     private readonly HashSet<string> _connectedPlayerIds = new();
     private readonly Dictionary<string, WorldItemEntity> _worldItems = new();
     private readonly Dictionary<string, WorldStructureEntity> _worldStructures = new();
@@ -25,6 +26,7 @@ public sealed class AuthoritativeWorldServer
     private bool _matchRewardsPaid;
     private const long AttackCooldownTicks = 3;
     private const long KarmaBreakGraceTicks = 5;
+    private sealed record DropClaim(string OwnerId, string OwnerName);
 
     public AuthoritativeWorldServer(GameState state, string worldId, ServerConfig config = null)
     {
@@ -77,9 +79,11 @@ public sealed class AuthoritativeWorldServer
                 new Dictionary<string, string>
                 {
                     ["saintWinnerId"] = snapshot.SaintWinnerId,
+                    ["saintWinnerName"] = snapshot.SaintWinnerName,
                     ["saintWinnerScore"] = snapshot.SaintWinnerScore.ToString(),
                     ["saintScripReward"] = GetWinnerReward(snapshot.SaintWinnerId).ToString(),
                     ["scourgeWinnerId"] = snapshot.ScourgeWinnerId,
+                    ["scourgeWinnerName"] = snapshot.ScourgeWinnerName,
                     ["scourgeWinnerScore"] = snapshot.ScourgeWinnerScore.ToString(),
                     ["scourgeScripReward"] = GetWinnerReward(snapshot.ScourgeWinnerId).ToString()
                 });
@@ -113,9 +117,20 @@ public sealed class AuthoritativeWorldServer
         return string.IsNullOrWhiteSpace(playerId) ? 0 : ServerConfig.DefaultMatchWinnerScripReward;
     }
 
-    public void SeedWorldItem(string entityId, GameItem item, TilePosition position)
+    public void SeedWorldItem(
+        string entityId,
+        GameItem item,
+        TilePosition position,
+        string dropOwnerId = "",
+        string dropOwnerName = "")
     {
-        _worldItems[entityId] = new WorldItemEntity(entityId, item, position, IsAvailable: true);
+        _worldItems[entityId] = new WorldItemEntity(
+            entityId,
+            item,
+            position,
+            IsAvailable: true,
+            dropOwnerId,
+            dropOwnerName);
     }
 
     public void SeedWorldStructure(string entityId, string structureId, TilePosition position)
@@ -129,8 +144,9 @@ public sealed class AuthoritativeWorldServer
             position,
             IsVisible: true,
             IsInteractable: true,
-            InteractionPrompt: $"Press E to inspect {definition.DisplayName}.",
-            InteractionResult: $"{definition.DisplayName} climate controls hum with suspicious optimism.");
+            InteractionPrompt: FormatStructurePrompt(definition.DisplayName, 75),
+            InteractionResult: $"{definition.DisplayName} climate controls hum with suspicious optimism.",
+            Integrity: 75);
     }
 
     public ServerJoinResult JoinPlayer(string playerId, string displayName)
@@ -469,7 +485,10 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, $"Interact entity is out of range: {entityId}.");
         }
 
-        var dropOwnerId = GetDropOwnerId(entity.EntityId);
+        var dropOwnerId = entity.DropOwnerId;
+        var dropOwnerName = string.IsNullOrWhiteSpace(entity.DropOwnerName)
+            ? dropOwnerId
+            : entity.DropOwnerName;
         var karmaAmount = 0;
         if (!string.IsNullOrWhiteSpace(dropOwnerId) && dropOwnerId != intent.PlayerId)
         {
@@ -479,11 +498,16 @@ public sealed class AuthoritativeWorldServer
                     intent.PlayerId,
                     dropOwnerId,
                     new[] { "harmful", "selfish" },
-                    $"{_state.Players[intent.PlayerId].DisplayName} claimed {entity.Item.Name} from {dropOwnerId}'s Karma Break drop."));
+                    $"{_state.Players[intent.PlayerId].DisplayName} claimed {entity.Item.Name} from {dropOwnerName}'s Karma Break drop."));
             karmaAmount = shift.Amount;
         }
 
         _state.AddItem(intent.PlayerId, entity.Item);
+        if (!string.IsNullOrWhiteSpace(dropOwnerId) && dropOwnerId != intent.PlayerId)
+        {
+            RememberDropClaim(intent.PlayerId, entity.Item.Id, dropOwnerId, dropOwnerName);
+        }
+
         _worldItems[entityId] = entity with { IsAvailable = false };
         var serverEvent = AppendEvent(
             "item_picked_up",
@@ -494,6 +518,7 @@ public sealed class AuthoritativeWorldServer
                 ["entityId"] = entity.EntityId,
                 ["itemId"] = entity.Item.Id,
                 ["dropOwnerId"] = dropOwnerId,
+                ["dropOwnerName"] = dropOwnerName,
                 ["karmaAmount"] = karmaAmount.ToString()
             });
 
@@ -516,24 +541,136 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, $"Structure is out of range: {structure.EntityId}.");
         }
 
+        var action = intent.Payload.TryGetValue("action", out var payloadAction)
+            ? payloadAction
+            : "inspect";
+        if (action != "inspect" && action != "repair" && action != "sabotage")
+        {
+            return Reject(intent, $"Unknown structure interaction action: {action}.");
+        }
+
+        var result = structure.InteractionResult;
+        var karmaAmount = 0;
+        var scripReward = 0;
+        var factionDelta = 0;
+        var factionReputation = _state.Factions.GetReputation(StarterFactions.CivicRepairGuildId, intent.PlayerId);
+        var nextIntegrity = structure.Integrity;
+        if (action == "repair")
+        {
+            if (!HasStructureRepairTool(intent.PlayerId))
+            {
+                return Reject(intent, "Repairing a structure requires a multi-tool or welding torch.");
+            }
+
+            nextIntegrity = Math.Clamp(structure.Integrity + 20, 0, 100);
+            var repairAmount = nextIntegrity - structure.Integrity;
+            var shift = _state.ApplyShift(
+                intent.PlayerId,
+                new KarmaAction(
+                    intent.PlayerId,
+                    structure.EntityId,
+                    new[] { "helpful", "protective" },
+                    $"{player.DisplayName} repaired {structure.Name}."));
+            karmaAmount = shift.Amount;
+            if (repairAmount > 0)
+            {
+                scripReward = Math.Max(1, repairAmount / 5);
+                factionDelta = 4;
+                factionReputation = _state.ApplyFactionReputation(StarterFactions.CivicRepairGuildId, intent.PlayerId, factionDelta);
+                _state.AddScrip(intent.PlayerId, scripReward);
+            }
+
+            result = nextIntegrity == structure.Integrity
+                ? $"{structure.Name} is already fully repaired."
+                : $"{structure.Name} integrity restored to {nextIntegrity}%. Repair bounty: {scripReward} scrip.";
+        }
+        else if (action == "sabotage")
+        {
+            nextIntegrity = Math.Clamp(structure.Integrity - 25, 0, 100);
+            var shift = _state.ApplyShift(
+                intent.PlayerId,
+                new KarmaAction(
+                    intent.PlayerId,
+                    structure.EntityId,
+                    new[] { "harmful", "destructive", "deceptive" },
+                    $"{player.DisplayName} sabotaged {structure.Name}."));
+            karmaAmount = shift.Amount;
+            if (nextIntegrity < structure.Integrity)
+            {
+                factionDelta = -6;
+                factionReputation = _state.ApplyFactionReputation(StarterFactions.CivicRepairGuildId, intent.PlayerId, factionDelta);
+            }
+
+            result = nextIntegrity == structure.Integrity
+                ? $"{structure.Name} is already wrecked."
+                : $"{structure.Name} integrity dropped to {nextIntegrity}%.";
+        }
+
+        structure = structure with
+        {
+            Integrity = nextIntegrity,
+            InteractionPrompt = FormatStructurePrompt(structure.Name, nextIntegrity)
+        };
+        _worldStructures[structure.EntityId] = structure;
+
         _state.AddWorldEvent(
             WorldEventType.Structure,
-            $"{player.DisplayName} inspected {structure.Name}: {structure.InteractionResult}",
+            $"{player.DisplayName} {FormatStructureAction(action)} {structure.Name}: {result}",
             intent.PlayerId,
             structure.EntityId);
 
         var serverEvent = AppendEvent(
             "structure_interacted",
-            $"{intent.PlayerId} interacted with {structure.StructureId}",
+            $"{intent.PlayerId} {action} {structure.StructureId}",
             new Dictionary<string, string>
             {
                 ["playerId"] = intent.PlayerId,
                 ["entityId"] = structure.EntityId,
                 ["structureId"] = structure.StructureId,
-                ["result"] = structure.InteractionResult
+                ["action"] = action,
+                ["result"] = result,
+                ["integrity"] = nextIntegrity.ToString(),
+                ["condition"] = FormatStructureCondition(nextIntegrity),
+                ["karmaAmount"] = karmaAmount.ToString(),
+                ["scripReward"] = scripReward.ToString(),
+                ["factionId"] = StarterFactions.CivicRepairGuildId,
+                ["factionDelta"] = factionDelta.ToString(),
+                ["factionReputation"] = factionReputation.ToString()
             });
 
         return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private bool HasStructureRepairTool(string playerId)
+    {
+        return _state.HasItem(playerId, StarterItems.MultiToolId) ||
+               _state.HasItem(playerId, StarterItems.WeldingTorchId);
+    }
+
+    private static string FormatStructurePrompt(string structureName, int integrity)
+    {
+        return $"Press E to inspect {structureName}. J repair / K sabotage. Integrity: {integrity}% ({FormatStructureCondition(integrity)}).";
+    }
+
+    private static string FormatStructureCondition(int integrity)
+    {
+        return integrity switch
+        {
+            >= 90 => "pristine",
+            >= 60 => "stable",
+            >= 30 => "damaged",
+            _ => "critical"
+        };
+    }
+
+    private static string FormatStructureAction(string action)
+    {
+        return action switch
+        {
+            "repair" => "repaired",
+            "sabotage" => "sabotaged",
+            _ => "inspected"
+        };
     }
 
     private ServerProcessResult ProcessRequestDuel(ServerIntent intent)
@@ -1135,7 +1272,15 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, $"Transfer failed for item: {item.Name}.");
         }
 
-        var karmaAction = mode == "steal"
+        var returnedOwner = new DropClaim(string.Empty, string.Empty);
+        var returnedDrop = mode == "gift" && TryReturnDropClaim(fromPlayerId, toPlayerId, itemId, out returnedOwner);
+        var karmaAction = returnedDrop
+            ? new KarmaAction(
+                intent.PlayerId,
+                targetId,
+                new[] { "helpful", "generous", "protective" },
+                $"{_state.Players[intent.PlayerId].DisplayName} returned {item.Name} from {returnedOwner.OwnerName}'s Karma Break drop.")
+            : mode == "steal"
             ? new KarmaAction(
                 intent.PlayerId,
                 targetId,
@@ -1146,6 +1291,11 @@ public sealed class AuthoritativeWorldServer
                 targetId,
                 new[] { "helpful", "generous" },
                 $"{_state.Players[intent.PlayerId].DisplayName} gave {item.Name} to {_state.Players[targetId].DisplayName}.");
+        if (!returnedDrop)
+        {
+            MoveDropClaim(fromPlayerId, toPlayerId, itemId);
+        }
+
         var shift = _state.ApplyShift(intent.PlayerId, karmaAction);
         var serverEvent = AppendEvent(
             "item_transferred",
@@ -1158,6 +1308,9 @@ public sealed class AuthoritativeWorldServer
                 ["toPlayerId"] = toPlayerId,
                 ["itemId"] = item.Id,
                 ["mode"] = mode,
+                ["returnedDrop"] = returnedDrop.ToString(),
+                ["dropOwnerId"] = returnedDrop ? returnedOwner.OwnerId : string.Empty,
+                ["dropOwnerName"] = returnedDrop ? returnedOwner.OwnerName : string.Empty,
                 ["karmaAmount"] = shift.Amount.ToString()
             });
 
@@ -1172,6 +1325,14 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, "TransferCurrency intent requires targetId and integer amount.");
         }
 
+        var mode = intent.Payload.TryGetValue("mode", out var payloadMode)
+            ? payloadMode
+            : "gift";
+        if (mode != "gift" && mode != "steal")
+        {
+            return Reject(intent, $"Unknown currency transfer mode: {mode}.");
+        }
+
         if (amount <= 0)
         {
             return Reject(intent, "TransferCurrency amount must be positive.");
@@ -1182,26 +1343,37 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, rejectionReason);
         }
 
-        if (!_state.TransferScrip(intent.PlayerId, targetId, amount))
+        var fromPlayerId = mode == "steal" ? targetId : intent.PlayerId;
+        var toPlayerId = mode == "steal" ? intent.PlayerId : targetId;
+        if (!_state.TransferScrip(fromPlayerId, toPlayerId, amount))
         {
             return Reject(intent, $"Transfer failed for {amount} scrip.");
         }
 
-        var karmaAction = new KarmaAction(
-            intent.PlayerId,
-            targetId,
-            new[] { "helpful", "generous" },
-            $"{_state.Players[intent.PlayerId].DisplayName} gave {amount} scrip to {_state.Players[targetId].DisplayName}.");
+        var karmaAction = mode == "steal"
+            ? new KarmaAction(
+                intent.PlayerId,
+                targetId,
+                new[] { "harmful", "selfish", "deceptive" },
+                $"{_state.Players[intent.PlayerId].DisplayName} stole {amount} scrip from {_state.Players[targetId].DisplayName}.")
+            : new KarmaAction(
+                intent.PlayerId,
+                targetId,
+                new[] { "helpful", "generous" },
+                $"{_state.Players[intent.PlayerId].DisplayName} gave {amount} scrip to {_state.Players[targetId].DisplayName}.");
         var shift = _state.ApplyShift(intent.PlayerId, karmaAction);
         var serverEvent = AppendEvent(
             "currency_transferred",
-            $"{intent.PlayerId} transferred {amount} scrip to {targetId}",
+            $"{intent.PlayerId} {mode} transferred {amount} scrip with {targetId}",
             new Dictionary<string, string>
             {
                 ["playerId"] = intent.PlayerId,
                 ["targetId"] = targetId,
+                ["fromPlayerId"] = fromPlayerId,
+                ["toPlayerId"] = toPlayerId,
                 ["amount"] = amount.ToString(),
                 ["currency"] = "scrip",
+                ["mode"] = mode,
                 ["karmaAmount"] = shift.Amount.ToString()
             });
 
@@ -1322,7 +1494,7 @@ public sealed class AuthoritativeWorldServer
             var offset = GetDropOffset(index);
             var position = new TilePosition(player.Position.X + offset.X, player.Position.Y + offset.Y);
             var entityId = $"drop_{playerId}_{_tick}_{index}_{item.Id}";
-            SeedWorldItem(entityId, item, position);
+            SeedWorldItem(entityId, item, position, player.Id, player.DisplayName);
             droppedEntityIds.Add(entityId);
             index++;
         }
@@ -1412,11 +1584,62 @@ public sealed class AuthoritativeWorldServer
         };
     }
 
-    private string GetDropOwnerId(string entityId)
+    private void RememberDropClaim(string holderId, string itemId, string ownerId, string ownerName)
     {
-        return _connectedPlayerIds
-            .OrderByDescending(playerId => playerId.Length)
-            .FirstOrDefault(playerId => entityId.StartsWith($"drop_{playerId}_")) ?? string.Empty;
+        var key = CreateDropClaimKey(holderId, itemId);
+        if (!_dropClaimsByHolderItem.TryGetValue(key, out var claims))
+        {
+            claims = new Queue<DropClaim>();
+            _dropClaimsByHolderItem[key] = claims;
+        }
+
+        claims.Enqueue(new DropClaim(ownerId, ownerName));
+    }
+
+    private bool TryReturnDropClaim(string fromPlayerId, string toPlayerId, string itemId, out DropClaim returnedOwner)
+    {
+        returnedOwner = null;
+        var fromKey = CreateDropClaimKey(fromPlayerId, itemId);
+        if (!_dropClaimsByHolderItem.TryGetValue(fromKey, out var claims) || claims.Count == 0)
+        {
+            return false;
+        }
+
+        var claim = claims.Peek();
+        if (claim.OwnerId != toPlayerId)
+        {
+            return false;
+        }
+
+        returnedOwner = claims.Dequeue();
+        if (claims.Count == 0)
+        {
+            _dropClaimsByHolderItem.Remove(fromKey);
+        }
+
+        return true;
+    }
+
+    private void MoveDropClaim(string fromPlayerId, string toPlayerId, string itemId)
+    {
+        var fromKey = CreateDropClaimKey(fromPlayerId, itemId);
+        if (!_dropClaimsByHolderItem.TryGetValue(fromKey, out var claims) || claims.Count == 0)
+        {
+            return;
+        }
+
+        var claim = claims.Dequeue();
+        if (claims.Count == 0)
+        {
+            _dropClaimsByHolderItem.Remove(fromKey);
+        }
+
+        RememberDropClaim(toPlayerId, itemId, claim.OwnerId, claim.OwnerName);
+    }
+
+    private static string CreateDropClaimKey(string holderId, string itemId)
+    {
+        return $"{holderId}\u001f{itemId}";
     }
 
     private static bool IsEventVisibleTo(ServerEvent serverEvent, IReadOnlySet<string> visiblePlayerIds)
@@ -1438,7 +1661,7 @@ public sealed class AuthoritativeWorldServer
 
     private static bool IsWorldEventVisibleTo(WorldEvent worldEvent, IReadOnlySet<string> visiblePlayerIds)
     {
-        if (worldEvent.Type == WorldEventType.System)
+        if (worldEvent.Type == WorldEventType.System || worldEvent.IsGlobal)
         {
             return true;
         }
@@ -1455,7 +1678,9 @@ public sealed class AuthoritativeWorldServer
             entity.Item.Name,
             entity.Item.Category,
             entity.Position.X,
-            entity.Position.Y);
+            entity.Position.Y,
+            entity.DropOwnerId,
+            entity.DropOwnerName);
     }
 
     private static WorldStructureSnapshot ToSnapshot(WorldStructureEntity entity)
@@ -1471,7 +1696,9 @@ public sealed class AuthoritativeWorldServer
             (int)definition.Size.X,
             (int)definition.Size.Y,
             entity.IsInteractable,
-            entity.InteractionPrompt);
+            entity.InteractionPrompt,
+            entity.Integrity,
+            FormatStructureCondition(entity.Integrity));
     }
 
     private static ShopOfferSnapshot ToSnapshot(ShopOffer offer, PlayerState player, LeaderboardStanding standing)

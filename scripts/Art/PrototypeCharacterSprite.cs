@@ -3,6 +3,18 @@ using Karma.Util;
 
 namespace Karma.Art;
 
+public enum CharacterFacingDirection
+{
+    Down,
+    DownRight,
+    Right,
+    UpRight,
+    Up,
+    UpLeft,
+    Left,
+    DownLeft
+}
+
 public partial class PrototypeCharacterSprite : Node2D
 {
     public const string IdleDownAnimation = "idle-down";
@@ -13,6 +25,14 @@ public partial class PrototypeCharacterSprite : Node2D
     public const string WalkUpAnimation = "walk-up";
     public const string WalkLeftAnimation = "walk-left";
     public const string WalkRightAnimation = "walk-right";
+    public const string IdleDownRightAnimation = "idle-down-right";
+    public const string IdleUpRightAnimation = "idle-up-right";
+    public const string IdleUpLeftAnimation = "idle-up-left";
+    public const string IdleDownLeftAnimation = "idle-down-left";
+    public const string WalkDownRightAnimation = "walk-down-right";
+    public const string WalkUpRightAnimation = "walk-up-right";
+    public const string WalkUpLeftAnimation = "walk-up-left";
+    public const string WalkDownLeftAnimation = "walk-down-left";
 
     [Export] public PrototypeSpriteKind Kind { get; set; } = PrototypeSpriteKind.Player;
     [Export] public bool DrawShadow { get; set; } = true;
@@ -21,7 +41,7 @@ public partial class PrototypeCharacterSprite : Node2D
     private AnimatedSprite2D _sprite;
     private PrototypeSprite _fallback;
     private PrototypeSpriteKind _loadedKind;
-    private CardinalDirection _lastFacing = CardinalDirection.Down;
+    private CharacterFacingDirection _lastFacing = CharacterFacingDirection.Down;
 
     public override void _Ready()
     {
@@ -38,10 +58,10 @@ public partial class PrototypeCharacterSprite : Node2D
         var velocity = GetParentVelocity();
         if (velocity.LengthSquared() > 0.01f)
         {
-            _lastFacing = DirectionHelper.ToCardinalDirection(velocity);
+            _lastFacing = ToFacingDirection(velocity);
         }
 
-        var animationName = ResolveAnimationName(velocity, _lastFacing);
+        var animationName = ResolveAvailableAnimation(_sprite.SpriteFrames, ResolveAnimationName(velocity, _lastFacing));
         if (_sprite.Animation != animationName)
         {
             _sprite.Play(animationName);
@@ -72,24 +92,109 @@ public partial class PrototypeCharacterSprite : Node2D
 
     public static string ResolveAnimationName(Vector2 velocity, CardinalDirection idleDirection)
     {
+        return ResolveAnimationName(velocity, idleDirection switch
+        {
+            CardinalDirection.Up => CharacterFacingDirection.Up,
+            CardinalDirection.Left => CharacterFacingDirection.Left,
+            CardinalDirection.Right => CharacterFacingDirection.Right,
+            _ => CharacterFacingDirection.Down
+        });
+    }
+
+    public static string ResolveAnimationName(Vector2 velocity, CharacterFacingDirection idleDirection)
+    {
         if (velocity.LengthSquared() <= 0.01f)
         {
             return idleDirection switch
             {
-                CardinalDirection.Up => IdleUpAnimation,
-                CardinalDirection.Left => IdleLeftAnimation,
-                CardinalDirection.Right => IdleRightAnimation,
+                CharacterFacingDirection.Up => IdleUpAnimation,
+                CharacterFacingDirection.Left => IdleLeftAnimation,
+                CharacterFacingDirection.Right => IdleRightAnimation,
+                CharacterFacingDirection.DownRight => IdleDownRightAnimation,
+                CharacterFacingDirection.UpRight => IdleUpRightAnimation,
+                CharacterFacingDirection.UpLeft => IdleUpLeftAnimation,
+                CharacterFacingDirection.DownLeft => IdleDownLeftAnimation,
                 _ => IdleDownAnimation
             };
         }
 
-        return DirectionHelper.ToCardinalDirection(velocity) switch
+        return ToFacingDirection(velocity) switch
         {
-            CardinalDirection.Up => WalkUpAnimation,
-            CardinalDirection.Left => WalkLeftAnimation,
-            CardinalDirection.Right => WalkRightAnimation,
+            CharacterFacingDirection.Up => WalkUpAnimation,
+            CharacterFacingDirection.Left => WalkLeftAnimation,
+            CharacterFacingDirection.Right => WalkRightAnimation,
+            CharacterFacingDirection.DownRight => WalkDownRightAnimation,
+            CharacterFacingDirection.UpRight => WalkUpRightAnimation,
+            CharacterFacingDirection.UpLeft => WalkUpLeftAnimation,
+            CharacterFacingDirection.DownLeft => WalkDownLeftAnimation,
             _ => WalkDownAnimation
         };
+    }
+
+    public static CharacterFacingDirection ToFacingDirection(Vector2 velocity)
+    {
+        if (velocity.LengthSquared() <= 0.01f)
+        {
+            return CharacterFacingDirection.Down;
+        }
+
+        var normalized = velocity.Normalized();
+        if (normalized.Y <= -0.5f)
+        {
+            if (normalized.X >= 0.5f)
+            {
+                return CharacterFacingDirection.UpRight;
+            }
+
+            if (normalized.X <= -0.5f)
+            {
+                return CharacterFacingDirection.UpLeft;
+            }
+
+            return CharacterFacingDirection.Up;
+        }
+
+        if (normalized.Y >= 0.5f)
+        {
+            if (normalized.X >= 0.5f)
+            {
+                return CharacterFacingDirection.DownRight;
+            }
+
+            if (normalized.X <= -0.5f)
+            {
+                return CharacterFacingDirection.DownLeft;
+            }
+
+            return CharacterFacingDirection.Down;
+        }
+
+        return normalized.X < 0f
+            ? CharacterFacingDirection.Left
+            : CharacterFacingDirection.Right;
+    }
+
+    public static string ResolveAvailableAnimation(SpriteFrames frames, string requestedAnimation)
+    {
+        if (frames.HasAnimation(requestedAnimation))
+        {
+            return requestedAnimation;
+        }
+
+        var fallback = requestedAnimation switch
+        {
+            IdleDownRightAnimation => IdleDownAnimation,
+            IdleDownLeftAnimation => IdleDownAnimation,
+            IdleUpRightAnimation => IdleUpAnimation,
+            IdleUpLeftAnimation => IdleUpAnimation,
+            WalkDownRightAnimation => WalkDownAnimation,
+            WalkDownLeftAnimation => WalkDownAnimation,
+            WalkUpRightAnimation => WalkUpAnimation,
+            WalkUpLeftAnimation => WalkUpAnimation,
+            _ => IdleDownAnimation
+        };
+
+        return frames.HasAnimation(fallback) ? fallback : IdleDownAnimation;
     }
 
     public static SpriteFrames CreateSpriteFrames(Texture2D texture, PrototypeSpriteDefinition definition)
@@ -152,7 +257,10 @@ public partial class PrototypeCharacterSprite : Node2D
             return;
         }
 
-        var texture = AtlasTextureLoader.Load(definition.AtlasPath, removeDarkBackground: true);
+        var texture = AtlasTextureLoader.Load(
+            definition.AtlasPath,
+            removeDarkBackground: true,
+            forceImageLoad: definition.AtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath);
         if (texture is null)
         {
             AddFallback();

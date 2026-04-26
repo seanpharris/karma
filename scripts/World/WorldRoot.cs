@@ -147,8 +147,15 @@ public partial class WorldRoot : Node2D
 
         foreach (var structure in snapshot.Structures)
         {
-            if (_renderedServerStructures.ContainsKey(structure.EntityId))
+            if (_renderedServerStructures.TryGetValue(structure.EntityId, out var existing))
             {
+                if (existing is ServerStructureObject existingStructure)
+                {
+                    existingStructure.StructureName = structure.Name;
+                    existingStructure.InteractionPrompt = structure.InteractionPrompt;
+                    existingStructure.IsInteractable = structure.IsInteractable;
+                }
+
                 continue;
             }
 
@@ -211,6 +218,7 @@ public partial class WorldRoot : Node2D
                 Name = item.EntityId,
                 EntityId = item.EntityId,
                 ItemId = item.ItemId,
+                DropOwnerName = item.DropOwnerName,
                 Position = new Vector2(item.TileX * 32f, item.TileY * 32f)
             };
             node.ZIndex = TopDownDepth.CalculateZIndex(node.Position.Y, TopDownDepth.ItemOffsetZ);

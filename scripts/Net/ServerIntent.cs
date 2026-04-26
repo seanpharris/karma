@@ -49,7 +49,9 @@ public sealed record WorldItemEntity(
     string EntityId,
     GameItem Item,
     TilePosition Position,
-    bool IsAvailable);
+    bool IsAvailable,
+    string DropOwnerId = "",
+    string DropOwnerName = "");
 
 public sealed record WorldItemSnapshot(
     string EntityId,
@@ -57,7 +59,9 @@ public sealed record WorldItemSnapshot(
     string Name,
     ItemCategory Category,
     int TileX,
-    int TileY);
+    int TileY,
+    string DropOwnerId = "",
+    string DropOwnerName = "");
 
 public sealed record WorldStructureEntity(
     string EntityId,
@@ -68,7 +72,8 @@ public sealed record WorldStructureEntity(
     bool IsVisible,
     bool IsInteractable,
     string InteractionPrompt,
-    string InteractionResult);
+    string InteractionResult,
+    int Integrity = 100);
 
 public sealed record WorldStructureSnapshot(
     string EntityId,
@@ -80,7 +85,9 @@ public sealed record WorldStructureSnapshot(
     int WidthPx,
     int HeightPx,
     bool IsInteractable,
-    string InteractionPrompt);
+    string InteractionPrompt,
+    int Integrity,
+    string Condition);
 
 public sealed record ShopOfferSnapshot(
     string OfferId,

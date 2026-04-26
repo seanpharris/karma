@@ -20,6 +20,7 @@ public static class CharacterSheetLayout
     public const int StandardFrameSize = 32;
     public const int StandardDirectionCount = 8;
     public const int StandardWalkFrameCount = 4;
+    public const float StandardWalkAnimationSpeed = 8f;
     public const int StandardIdleRow = 0;
     public const int StandardWalkStartRow = 1;
     public const int StandardRunRow = 5;
@@ -39,10 +40,10 @@ public static class CharacterSheetLayout
             new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleUpAnimation, 1f, new[] { RectAt(origin, 1, 0, size) }),
             new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleLeftAnimation, 1f, new[] { RectAt(origin, 2, 0, size) }),
             new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleRightAnimation, 1f, new[] { RectAt(origin, 3, 0, size) }),
-            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkDownAnimation, 6f, Row(origin, 0, 1, size, walkFramesPerDirection)),
-            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkUpAnimation, 6f, Row(origin, 0, 2, size, walkFramesPerDirection)),
-            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkLeftAnimation, 6f, Row(origin, 0, 3, size, walkFramesPerDirection)),
-            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkRightAnimation, 6f, Row(origin, 0, 4, size, walkFramesPerDirection))
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkDownAnimation, StandardWalkAnimationSpeed, Row(origin, 0, 1, size, walkFramesPerDirection)),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkUpAnimation, StandardWalkAnimationSpeed, Row(origin, 0, 2, size, walkFramesPerDirection)),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkLeftAnimation, StandardWalkAnimationSpeed, Row(origin, 0, 3, size, walkFramesPerDirection)),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkRightAnimation, StandardWalkAnimationSpeed, Row(origin, 0, 4, size, walkFramesPerDirection))
         };
     }
 
@@ -55,13 +56,21 @@ public static class CharacterSheetLayout
         return new[]
         {
             new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleDownAnimation, 1f, new[] { DirectionFrame(origin, CharacterSheetDirection.Front, StandardIdleRow, size) }),
-            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleUpAnimation, 1f, new[] { DirectionFrame(origin, CharacterSheetDirection.Back, StandardIdleRow, size) }),
-            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleLeftAnimation, 1f, new[] { DirectionFrame(origin, CharacterSheetDirection.Left, StandardIdleRow, size) }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleDownRightAnimation, 1f, new[] { DirectionFrame(origin, CharacterSheetDirection.FrontRight, StandardIdleRow, size) }),
             new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleRightAnimation, 1f, new[] { DirectionFrame(origin, CharacterSheetDirection.Right, StandardIdleRow, size) }),
-            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkDownAnimation, 6f, DirectionColumn(origin, CharacterSheetDirection.Front, StandardWalkStartRow, size, walkFramesPerDirection)),
-            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkUpAnimation, 6f, DirectionColumn(origin, CharacterSheetDirection.Back, StandardWalkStartRow, size, walkFramesPerDirection)),
-            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkLeftAnimation, 6f, DirectionColumn(origin, CharacterSheetDirection.Left, StandardWalkStartRow, size, walkFramesPerDirection)),
-            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkRightAnimation, 6f, DirectionColumn(origin, CharacterSheetDirection.Right, StandardWalkStartRow, size, walkFramesPerDirection))
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleUpRightAnimation, 1f, new[] { DirectionFrame(origin, CharacterSheetDirection.BackRight, StandardIdleRow, size) }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleUpAnimation, 1f, new[] { DirectionFrame(origin, CharacterSheetDirection.Back, StandardIdleRow, size) }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleUpLeftAnimation, 1f, new[] { DirectionFrame(origin, CharacterSheetDirection.BackLeft, StandardIdleRow, size) }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleLeftAnimation, 1f, new[] { DirectionFrame(origin, CharacterSheetDirection.Left, StandardIdleRow, size) }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleDownLeftAnimation, 1f, new[] { DirectionFrame(origin, CharacterSheetDirection.FrontLeft, StandardIdleRow, size) }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkDownAnimation, StandardWalkAnimationSpeed, SmoothDirectionWalk(origin, CharacterSheetDirection.Front, size, walkFramesPerDirection)),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkDownRightAnimation, StandardWalkAnimationSpeed, SmoothDirectionWalk(origin, CharacterSheetDirection.FrontRight, size, walkFramesPerDirection)),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkRightAnimation, StandardWalkAnimationSpeed, SmoothDirectionWalk(origin, CharacterSheetDirection.Right, size, walkFramesPerDirection)),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkUpRightAnimation, StandardWalkAnimationSpeed, SmoothDirectionWalk(origin, CharacterSheetDirection.BackRight, size, walkFramesPerDirection)),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkUpAnimation, StandardWalkAnimationSpeed, SmoothDirectionWalk(origin, CharacterSheetDirection.Back, size, walkFramesPerDirection)),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkUpLeftAnimation, StandardWalkAnimationSpeed, SmoothDirectionWalk(origin, CharacterSheetDirection.BackLeft, size, walkFramesPerDirection)),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkLeftAnimation, StandardWalkAnimationSpeed, SmoothDirectionWalk(origin, CharacterSheetDirection.Left, size, walkFramesPerDirection)),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkDownLeftAnimation, StandardWalkAnimationSpeed, SmoothDirectionWalk(origin, CharacterSheetDirection.FrontLeft, size, walkFramesPerDirection))
         };
     }
 
@@ -80,6 +89,30 @@ public static class CharacterSheetLayout
         int rowCount = StandardInteractRow + 1)
     {
         return new Vector2(directionCount * frameSize, rowCount * frameSize);
+    }
+
+    private static IReadOnlyList<Rect2> SmoothDirectionWalk(
+        Vector2 origin,
+        CharacterSheetDirection direction,
+        Vector2 size,
+        int count)
+    {
+        var sourceFrames = DirectionColumn(origin, direction, StandardWalkStartRow, size, count);
+        if (sourceFrames.Count < 4)
+        {
+            return sourceFrames;
+        }
+
+        return new[]
+        {
+            sourceFrames[0],
+            sourceFrames[1],
+            DirectionFrame(origin, direction, StandardIdleRow, size),
+            sourceFrames[2],
+            sourceFrames[3],
+            sourceFrames[2],
+            sourceFrames[1]
+        };
     }
 
     private static IReadOnlyList<Rect2> DirectionColumn(

@@ -14,6 +14,8 @@ public partial class PlayerController : CharacterBody2D
 {
     [Export] public float Speed { get; set; } = 120f;
     [Export] public float SprintMultiplier { get; set; } = 1.6f;
+    [Export] public float Acceleration { get; set; } = 1200f;
+    [Export] public float Friction { get; set; } = 1800f;
     [Export] public float MaxStamina { get; set; } = 100f;
     [Export] public float SprintStaminaCostPerSecond { get; set; } = 24f;
     [Export] public float StaminaRecoveryPerSecond { get; set; } = 18f;
@@ -68,7 +70,15 @@ public partial class PlayerController : CharacterBody2D
         _isExhausted = CalculateExhausted(_isExhausted, _stamina, SprintResumeStamina);
         var isSprinting = CanSprint(direction, wantsSprint, _stamina, _isExhausted);
         var perks = _gameState.LocalPerks;
-        Velocity = CalculateVelocity(direction, Speed, SprintMultiplier, isSprinting);
+        Velocity = CalculateSmoothedVelocity(
+            Velocity,
+            direction,
+            Speed,
+            SprintMultiplier,
+            isSprinting,
+            Acceleration,
+            Friction,
+            (float)delta);
         _stamina = CalculateNextStamina(
             _stamina,
             delta,
@@ -149,6 +159,23 @@ public partial class PlayerController : CharacterBody2D
     {
         var multiplier = isSprinting ? Mathf.Max(1f, sprintMultiplier) : 1f;
         return direction * speed * multiplier;
+    }
+
+    public static Vector2 CalculateSmoothedVelocity(
+        Vector2 currentVelocity,
+        Vector2 direction,
+        float speed,
+        float sprintMultiplier,
+        bool isSprinting,
+        float acceleration,
+        float friction,
+        float delta)
+    {
+        var targetVelocity = CalculateVelocity(direction, speed, sprintMultiplier, isSprinting);
+        var rate = direction.LengthSquared() > 0f
+            ? Mathf.Max(0f, acceleration)
+            : Mathf.Max(0f, friction);
+        return currentVelocity.MoveToward(targetVelocity, rate * Mathf.Max(0f, delta));
     }
 
     public static bool CanSprint(Vector2 direction, bool wantsSprint, float stamina, bool isExhausted)

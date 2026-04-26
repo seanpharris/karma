@@ -98,6 +98,14 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(new Vector2(120f, 0f), PlayerController.CalculateVelocity(Vector2.Right, 120f, 1.6f, false), "player walk velocity uses base speed");
         ExpectEqual(new Vector2(192f, 0f), PlayerController.CalculateVelocity(Vector2.Right, 120f, 1.6f, true), "player sprint velocity uses sprint multiplier");
         ExpectEqual(new Vector2(120f, 0f), PlayerController.CalculateVelocity(Vector2.Right, 120f, 0.5f, true), "player sprint multiplier cannot slow movement");
+        ExpectEqual(
+            new Vector2(60f, 0f),
+            PlayerController.CalculateSmoothedVelocity(Vector2.Zero, Vector2.Right, 120f, 1.6f, false, 600f, 900f, 0.1f),
+            "player movement accelerates toward target velocity");
+        ExpectEqual(
+            new Vector2(30f, 0f),
+            PlayerController.CalculateSmoothedVelocity(new Vector2(120f, 0f), Vector2.Zero, 120f, 1.6f, false, 600f, 900f, 0.1f),
+            "player movement uses stronger friction when input stops");
         ExpectEqual(Vector2I.Right, DirectionHelper.ToCardinalVector(new Vector2(0.8f, 0.2f)), "direction helper resolves dominant horizontal movement");
         ExpectEqual(Vector2I.Down, DirectionHelper.ToCardinalVector(new Vector2(0.2f, 0.8f)), "direction helper resolves dominant vertical movement");
         ExpectEqual(CardinalDirection.Left, DirectionHelper.ToCardinalDirection(Vector2I.Left), "direction helper maps vectors to cardinal directions");
@@ -120,6 +128,14 @@ public partial class GameplaySmokeTest : Node
             PrototypeCharacterSprite.IdleLeftAnimation,
             PrototypeCharacterSprite.ResolveAnimationName(Vector2.Zero, CardinalDirection.Left),
             "native character sprite preserves last facing direction while idle");
+        ExpectEqual(
+            PrototypeCharacterSprite.WalkUpRightAnimation,
+            PrototypeCharacterSprite.ResolveAnimationName(new Vector2(1f, -1f)),
+            "native character sprite resolves diagonal movement to an eight-way animation when available");
+        ExpectEqual(
+            CharacterFacingDirection.DownLeft,
+            PrototypeCharacterSprite.ToFacingDirection(new Vector2(-1f, 1f)),
+            "native character sprite tracks diagonal facing direction");
         var gridAnimations = PrototypeSpriteCatalog.FourDirectionGridAnimations(Vector2.Zero);
         ExpectEqual(
             new Rect2(0f, 32f, 32f, 32f),
@@ -143,9 +159,21 @@ public partial class GameplaySmokeTest : Node
             templateAnimations.First(animation => animation.Name == PrototypeCharacterSprite.WalkRightAnimation).Frames[0],
             "eight-direction character template maps walk-right to the right column");
         ExpectEqual(
-            new Rect2(6 * 32, 4 * 32, 32, 32),
+            new Rect2(1 * 32, 1 * 32, 32, 32),
+            templateAnimations.First(animation => animation.Name == PrototypeCharacterSprite.WalkDownRightAnimation).Frames[0],
+            "eight-direction character template maps walk-front-right to the front-right column");
+        ExpectEqual(
+            new Rect2(2 * 32, 0, 32, 32),
+            templateAnimations.First(animation => animation.Name == PrototypeCharacterSprite.WalkRightAnimation).Frames[2],
+            "eight-direction character template inserts idle as a mid-step walk frame");
+        ExpectEqual(
+            new Rect2(6 * 32, 2 * 32, 32, 32),
             templateAnimations.First(animation => animation.Name == PrototypeCharacterSprite.WalkLeftAnimation).Frames[^1],
-            "eight-direction character template maps walk-left down its direction column");
+            "eight-direction character template returns through the pass step for smoother looping");
+        ExpectEqual(
+            new Rect2(2 * 32, 4 * 32, 32, 32),
+            templateAnimations.First(animation => animation.Name == PrototypeCharacterSprite.WalkRightAnimation).Frames[4],
+            "eight-direction character template keeps the strongest stride frame in the walk cycle");
         var testImage = Image.CreateEmpty(128, 160, false, Image.Format.Rgba8);
         var testTexture = ImageTexture.CreateFromImage(testImage);
         var testDefinition = new PrototypeSpriteDefinition(
@@ -162,6 +190,10 @@ public partial class GameplaySmokeTest : Node
             4,
             nativeFrames.GetFrameCount(PrototypeCharacterSprite.WalkRightAnimation),
             "native character sprite creates multi-frame walk animations");
+        ExpectEqual(
+            PrototypeCharacterSprite.WalkUpAnimation,
+            PrototypeCharacterSprite.ResolveAvailableAnimation(nativeFrames, PrototypeCharacterSprite.WalkUpRightAnimation),
+            "native character sprite falls back from diagonal to cardinal animations for four-direction sheets");
         var testPropDefinition = new PrototypeSpriteDefinition(
             PrototypeSpriteKind.WhoopieCushion,
             "Test Prop",
@@ -170,6 +202,9 @@ public partial class GameplaySmokeTest : Node
             "res://test-prop.png",
             new Rect2(8f, 10f, 96f, 72f),
             HasAtlasRegion: true);
+        ExpectTrue(
+            AtlasTextureLoader.Load(PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath, forceImageLoad: true) is not null,
+            "atlas texture loader can force raw image loading for generated transparent runtime sheets");
         var testPropAtlas = PrototypeAtlasSprite.CreateAtlasTexture(testTexture, testPropDefinition);
         ExpectEqual(
             testPropDefinition.AtlasRegion,
@@ -195,9 +230,29 @@ public partial class GameplaySmokeTest : Node
             "project uses nearest-neighbor texture filtering for pixel art");
         var artAssets = ArtAssetManifest.GetUniqueAssets();
         ExpectTrue(artAssets.Count >= 8, "art manifest discovers cataloged atlas assets");
+        var expectedPlayerAtlasPath = FileAccess.FileExists(PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath)
+            ? PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath
+            : PrototypeSpriteCatalog.EngineerPlayerAtlasPath;
+        var expectedPlayerSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath
+            ? new Vector2(32f, 32f)
+            : new Vector2(30f, 40f);
+        if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath)
+        {
+            var engineerImage = Image.LoadFromFile(expectedPlayerAtlasPath);
+            ExpectEqual(256, engineerImage.GetWidth(), "engineer 8-direction runtime sheet has expected width");
+            ExpectEqual(288, engineerImage.GetHeight(), "engineer 8-direction runtime sheet has expected height");
+            ExpectTrue(CountTransparentPixels(engineerImage) > 0, "engineer 8-direction runtime sheet keeps transparent background pixels");
+            ExpectTrue(
+                CountPixelDifferences(engineerImage, new Vector2I(1, 0), new Vector2I(2, 0)) > 0,
+                "engineer 8-direction runtime sheet gives front-right a distinct placeholder frame");
+            ExpectTrue(
+                CountPixelDifferences(engineerImage, new Vector2I(3, 0), new Vector2I(2, 0)) > 0,
+                "engineer 8-direction runtime sheet gives back-right a distinct placeholder frame");
+        }
+
         ExpectTrue(
-            artAssets.Any(asset => asset.Path == PrototypeSpriteCatalog.EngineerPlayerAtlasPath),
-            "art manifest includes generated engineer character sheet");
+            artAssets.Any(asset => asset.Path == expectedPlayerAtlasPath),
+            "art manifest includes active generated engineer character sheet");
         ExpectTrue(
             artAssets.Any(asset => asset.Path == StructureArtCatalog.GreenhouseAtlasPath),
             "art manifest includes greenhouse structure sheet");
@@ -224,11 +279,11 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual("Stamina: 0/100 (winded)", PlayerController.FormatStamina(0f, 100f, true), "winded stamina label is visible");
         ExpectEqual(new Vector2(96f, 128f), PlayerController.CalculateWorldPosition(3, 4), "player controller maps authoritative tiles to world pixels");
         ExpectEqual(
-            PrototypeSpriteCatalog.EngineerPlayerAtlasPath,
+            expectedPlayerAtlasPath,
             PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Player).AtlasPath,
-            "local player uses generated engineer character sheet");
+            "local player uses active generated engineer character sheet");
         ExpectEqual(
-            new Vector2(30f, 40f),
+            expectedPlayerSize,
             PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Player).Size,
             "generated engineer player renders with corrected proportions");
         ExpectEqual(
@@ -283,6 +338,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(peerPrompt.Contains("Attack blocked by Karma Break grace"), "peer prompt explains blocked attacks during grace");
         ExpectTrue(peerPrompt.Contains("Duel already pending/active"), "peer prompt explains unavailable duel requests");
         ExpectTrue(peerPrompt.Contains("Let them duel strike you"), "peer prompt labels peer-authored duel attacks");
+        ExpectTrue(peerPrompt.Contains("Swipe 3 scrip"), "peer prompt exposes scrip theft test action");
         ExpectTrue(peerPrompt.Contains("Satchel: stolen"), "peer prompt includes satchel state");
         ExpectTrue(
             NpcController.FormatQuestPromptLine(QuestStatus.Available, "Clinic Filters", "Repair Kit", false, 12).Contains("Start Clinic Filters"),
@@ -332,12 +388,16 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(saintScripBeforeMatchEnd + ServerConfig.DefaultMatchWinnerScripReward, state.Players["rival_paragon"].Scrip, "finished match pays Saint scrip reward");
         ExpectEqual(scourgeScripBeforeMatchEnd + ServerConfig.DefaultMatchWinnerScripReward, state.Players["rival_renegade"].Scrip, "finished match pays Scourge scrip reward");
         ExpectTrue(matchServer.Match.Summary.Contains("Match complete"), "finished match summary reports completion");
+        ExpectTrue(HudController.FormatMatchStatus(matchServer.Match).Contains("RESULTS LOCKED"), "HUD match status makes locked results obvious");
+        ExpectTrue(HudController.FormatMatchStatus(matchServer.Match).Contains("Post-match free roam"), "HUD match status explains post-match limits");
         ExpectTrue(matchServer.EventLog.Any(serverEvent => serverEvent.EventId.Contains("match_finished")), "finished match emits server event");
         var matchFinishedEvent = matchServer.EventLog.First(serverEvent => serverEvent.EventId.Contains("match_finished"));
+        ExpectEqual("Helpful Rival", matchFinishedEvent.Data["saintWinnerName"], "finished match event reports Saint winner name");
+        ExpectEqual("Shady Rival", matchFinishedEvent.Data["scourgeWinnerName"], "finished match event reports Scourge winner name");
         ExpectEqual(ServerConfig.DefaultMatchWinnerScripReward.ToString(), matchFinishedEvent.Data["saintScripReward"], "finished match event reports Saint scrip reward");
         ExpectEqual(ServerConfig.DefaultMatchWinnerScripReward.ToString(), matchFinishedEvent.Data["scourgeScripReward"], "finished match event reports Scourge scrip reward");
         ExpectTrue(
-            HudController.FormatLatestServerEvent(new[] { matchFinishedEvent }).Contains("Match complete"),
+            HudController.FormatLatestServerEvent(new[] { matchFinishedEvent }).Contains("results locked"),
             "HUD formats match finished events");
         matchServer.AdvanceMatchTime(60);
         ExpectEqual(saintScripBeforeMatchEnd + ServerConfig.DefaultMatchWinnerScripReward, state.Players["rival_paragon"].Scrip, "finished match does not pay Saint reward twice");
@@ -506,12 +566,33 @@ public partial class GameplaySmokeTest : Node
                 .Players.First(player => player.Id == "grace_target")
                 .StatusEffects.Any(status => status.Contains("Karma Break Grace")),
             "interest snapshot exposes Karma Break grace status");
+        var karmaBreakDrop = graceServer.WorldItems.Values.First(entity =>
+            entity.EntityId.StartsWith("drop_grace_target") &&
+            entity.Item.Id == StarterItems.WhoopieCushionId &&
+            entity.Position == TilePosition.Origin);
+        ExpectEqual("grace_target", karmaBreakDrop.DropOwnerId, "Karma Break drops remember owner id");
+        ExpectEqual("Grace Target", karmaBreakDrop.DropOwnerName, "Karma Break drops remember owner display name");
         ExpectTrue(
-            graceServer.WorldItems.Values.Any(entity =>
-                entity.EntityId.StartsWith("drop_grace_target") &&
-                entity.Item.Id == StarterItems.WhoopieCushionId &&
-                entity.Position == TilePosition.Origin),
-            "lethal Karma Break drops loose inventory at the defeat tile before respawn");
+            graceServer.CreateInterestSnapshot(GameState.LocalPlayerId).WorldItems.Any(entity =>
+                entity.EntityId == karmaBreakDrop.EntityId &&
+                entity.DropOwnerId == "grace_target" &&
+                entity.DropOwnerName == "Grace Target"),
+            "interest snapshot exposes Karma Break drop ownership");
+        var localKarmaBeforeClaimingDrop = graceState.LocalKarma.Score;
+        var claimedDrop = graceServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            2,
+            IntentType.Interact,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["entityId"] = karmaBreakDrop.EntityId
+            }));
+        ExpectTrue(claimedDrop.WasAccepted, "server accepts claiming another player's Karma Break drop");
+        ExpectTrue(graceState.LocalKarma.Score < localKarmaBeforeClaimingDrop, "claiming another player's Karma Break drop descends picker karma");
+        ExpectEqual("Grace Target", claimedDrop.Event.Data["dropOwnerName"], "drop pickup event reports owner display name");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { claimedDrop.Event }).Contains("Grace Target's Karma Break drop"),
+            "HUD formats Karma Break drop ownership");
         graceState.SetPlayerPosition("grace_attacker_two", new TilePosition(3, 4));
         var graceRejectedAttack = graceServer.ProcessIntent(new ServerIntent(
             "grace_attacker_two",
@@ -585,8 +666,22 @@ public partial class GameplaySmokeTest : Node
         var whoopieSprite = PrototypeSpriteCatalog.Get(PrototypeSpriteKind.WhoopieCushion);
         ExpectEqual("Player", playerSprite.DisplayName, "prototype sprite catalog names player model");
         ExpectTrue(playerSprite.Layers.Count >= 8, "prototype player sprite has layered pixel art");
-        ExpectEqual(PrototypeSpriteCatalog.EngineerPlayerAtlasPath, playerSprite.AtlasPath, "prototype player sprite records engineer atlas path");
+        ExpectEqual(expectedPlayerAtlasPath, playerSprite.AtlasPath, "prototype player sprite records active engineer atlas path");
         ExpectTrue(playerSprite.HasAtlasRegion, "prototype player sprite can use character atlas art");
+        var expectedPlayerWalkFrameCount = expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath
+            ? 7
+            : 4;
+        ExpectEqual(
+            expectedPlayerWalkFrameCount,
+            playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkDownAnimation).Frames.Count,
+            "prototype player sprite maps multi-frame walk animations");
+        var expectedWalkRightFinalFrame = expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath
+            ? new Rect2(64f, 64f, 32f, 32f)
+            : new Rect2(963f, 860f, 120f, 190f);
+        ExpectEqual(
+            expectedWalkRightFinalFrame,
+            playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkRightAnimation).Frames[^1],
+            "prototype player sprite maps the active engineer sheet walk-right row");
         ExpectEqual(PrototypeSpriteKind.Dallen, PrototypeSpriteCatalog.GetKindForNpc(StarterNpcs.Dallen.Id), "prototype sprite catalog maps Dallen NPC visuals");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Dallen).HasAtlasRegion, "prototype Dallen sprite can use character atlas art");
         ExpectTrue(ServerNpcObject.FormatPrompt("Dallen Venn", "Trader", "Free Settlers").Contains("Faction: Free Settlers"), "server NPC prompt formats faction");
@@ -913,6 +1008,21 @@ public partial class GameplaySmokeTest : Node
 
         state.ApplyLocalShift(PrototypeActions.AttackPeer());
         ExpectTrue(state.LocalPerks.Any(perk => perk.Name == "Shifty Prices"), "negative karma unlocks descension perks");
+        ExpectTrue(state.LocalPerks.Any(perk => perk.Id == PerkCatalog.RumorcraftId), "negative karma unlocks Rumorcraft");
+        ExpectTrue(state.StartEntanglement(
+            GameState.LocalPlayerId,
+            StarterNpcs.Mara.Id,
+            StarterNpcs.Dallen.Id,
+            EntanglementType.Debt,
+            PrototypeActions.StartMaraEntanglement()), "rumorcraft test entanglement can be started");
+        var rumorcraftEntanglement = state.Entanglements.All.Last();
+        ExpectTrue(state.ExposeEntanglement(
+            GameState.LocalPlayerId,
+            rumorcraftEntanglement.Id,
+            PrototypeActions.ExposeMaraEntanglement()), "Rumorcraft player can expose another entanglement");
+        var rumorcraftRumor = state.WorldEvents.Events.Last(worldEvent => worldEvent.Type == WorldEventType.Rumor);
+        ExpectTrue(rumorcraftRumor.IsGlobal, "Rumorcraft makes exposed rumors global");
+        ExpectTrue(rumorcraftRumor.Summary.Contains("Rumorcraft"), "Rumorcraft marks amplified rumor summaries");
         state.ApplyLocalShift(PrototypeActions.AttackPeer());
         ExpectTrue(state.LocalPerks.Any(perk => perk.Id == PerkCatalog.DreadReputationId), "negative karma unlocks Dread Reputation");
         var maraOpinionBeforeDreadMock = state.Relationships.GetOpinion(StarterNpcs.Mara.Id, GameState.LocalPlayerId);
@@ -933,7 +1043,7 @@ public partial class GameplaySmokeTest : Node
         }
         ExpectTrue(state.LocalKarma.Score < -100, "karma can fall below old negative cap");
         ExpectEqual("Abyssal 2", state.LocalKarma.TierName, "low negative karma gains infinite Abyssal rank");
-        ExpectEqual("Progress: 23/100 toward Abyssal 3", state.LocalKarma.RankProgress.Summary, "low negative karma shows progress toward next Abyssal rank");
+        ExpectEqual("Progress: 54/100 toward Abyssal 3", state.LocalKarma.RankProgress.Summary, "low negative karma shows progress toward next Abyssal rank");
         ExpectTrue(state.LocalPerks.Any(perk => perk.Name == "Abyssal 2"), "repeat Abyssal ranks unlock repeat descension perks");
         ExpectEqual("You", state.GetLeaderboardStanding().ScourgeName, "lowest negative player gets Scourge standing");
 
@@ -983,28 +1093,61 @@ public partial class GameplaySmokeTest : Node
             new System.Collections.Generic.Dictionary<string, string>
             {
                 ["targetId"] = "peer_stand_in",
-                ["amount"] = "5"
+                ["amount"] = "5",
+                ["mode"] = "gift"
             }));
-        ExpectTrue(scripTransfer.WasAccepted, "server transfers scrip between nearby players");
-        ExpectEqual(localScripBeforeTransfer - 5, state.LocalScrip, "scrip transfer debits actor wallet");
-        ExpectEqual(peerScripBeforeTransfer + 5, state.Players["peer_stand_in"].Scrip, "scrip transfer credits target wallet");
+        ExpectTrue(scripTransfer.WasAccepted, "server transfers scrip gifts between nearby players");
+        ExpectEqual(localScripBeforeTransfer - 5, state.LocalScrip, "scrip gift debits actor wallet");
+        ExpectEqual(peerScripBeforeTransfer + 5, state.Players["peer_stand_in"].Scrip, "scrip gift credits target wallet");
+        ExpectEqual("gift", scripTransfer.Event.Data["mode"], "scrip gift event reports mode");
         ExpectTrue(scripTransfer.Event.EventId.Contains("currency_transferred"), "scrip transfer emits server event");
         ExpectTrue(
             HudController.FormatLatestServerEvent(new[] { scripTransfer.Event }).Contains("gave 5 scrip"),
-            "HUD formats currency transfers");
-        ExpectFalse(transferServer.ProcessIntent(new ServerIntent(
+            "HUD formats currency gifts");
+        var localScripBeforeSteal = state.LocalScrip;
+        var peerScripBeforeSteal = state.Players["peer_stand_in"].Scrip;
+        var scripSteal = transferServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             4,
             IntentType.TransferCurrency,
             new System.Collections.Generic.Dictionary<string, string>
             {
                 ["targetId"] = "peer_stand_in",
-                ["amount"] = "9999"
+                ["amount"] = "3",
+                ["mode"] = "steal"
+            }));
+        ExpectTrue(scripSteal.WasAccepted, "server transfers stolen scrip between nearby players");
+        ExpectEqual(localScripBeforeSteal + 3, state.LocalScrip, "scrip steal credits actor wallet");
+        ExpectEqual(peerScripBeforeSteal - 3, state.Players["peer_stand_in"].Scrip, "scrip steal debits target wallet");
+        ExpectEqual("steal", scripSteal.Event.Data["mode"], "scrip steal event reports mode");
+        ExpectTrue(int.Parse(scripSteal.Event.Data["karmaAmount"]) < 0, "scrip steal descends actor karma");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { scripSteal.Event }).Contains("stole 3 scrip"),
+            "HUD formats currency theft");
+        ExpectFalse(transferServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            5,
+            IntentType.TransferCurrency,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["targetId"] = "peer_stand_in",
+                ["amount"] = "9999",
+                ["mode"] = "gift"
             })).WasAccepted, "server rejects scrip transfer without funds");
+        ExpectFalse(transferServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            6,
+            IntentType.TransferCurrency,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["targetId"] = "peer_stand_in",
+                ["amount"] = "1",
+                ["mode"] = "borrow-ish"
+            })).WasAccepted, "server rejects unknown scrip transfer mode");
         var localScripBeforePurchase = state.LocalScrip;
         var shopPurchase = transferServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            5,
+            7,
             IntentType.PurchaseItem,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1023,12 +1166,13 @@ public partial class GameplaySmokeTest : Node
             "interest snapshot includes nearby shop offers");
         ExpectFalse(transferServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            6,
+            8,
             IntentType.PurchaseItem,
             new System.Collections.Generic.Dictionary<string, string>
             {
                 ["offerId"] = StarterShopCatalog.DallenWorkVestOfferId
             })).WasAccepted, "server rejects shop purchase without enough scrip");
+        state.ApplyShift(GameState.LocalPlayerId, PrototypeActions.HelpPeer());
         state.ApplyShift(GameState.LocalPlayerId, PrototypeActions.HelpPeer());
         state.AddScrip(GameState.LocalPlayerId, 20);
         var discountedShopSnapshot = transferServer.CreateInterestSnapshot(GameState.LocalPlayerId);
@@ -1038,7 +1182,7 @@ public partial class GameplaySmokeTest : Node
         var localScripBeforeDiscountPurchase = state.LocalScrip;
         var discountedPurchase = transferServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            7,
+            9,
             IntentType.PurchaseItem,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1073,7 +1217,7 @@ public partial class GameplaySmokeTest : Node
         var karmaBeforeDropPickup = state.LocalKarma.Score;
         var dropPickup = transferServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            8,
+            10,
             IntentType.Interact,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1083,9 +1227,28 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(state.HasItem(GameState.LocalPlayerId, StarterItems.WhoopieCushionId), "death drop pickup enters inventory");
         ExpectTrue(state.LocalKarma.Score < karmaBeforeDropPickup, "claiming another player's death drop descends karma");
         ExpectEqual("peer_stand_in", dropPickup.Event.Data["dropOwnerId"], "death drop pickup event reports owner");
+        ExpectEqual("Stranded Player", dropPickup.Event.Data["dropOwnerName"], "death drop pickup event reports owner name");
         ExpectFalse(transferServer.GetInterestFor(GameState.LocalPlayerId).VisibleEntityIds.Contains(peerDropId), "picked up death drop leaves interest set");
         state.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(0, 0));
         state.SetPlayerPosition("peer_stand_in", new TilePosition(1, 0));
+        var karmaBeforeReturningDrop = state.LocalKarma.Score;
+        var returnedDrop = transferServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            11,
+            IntentType.TransferItem,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["targetId"] = "peer_stand_in",
+                ["itemId"] = StarterItems.WhoopieCushionId,
+                ["mode"] = "gift"
+            }));
+        ExpectTrue(returnedDrop.WasAccepted, "server accepts returning another player's Karma Break drop");
+        ExpectTrue(state.LocalKarma.Score > karmaBeforeReturningDrop, "returning another player's Karma Break drop ascends giver karma");
+        ExpectEqual("True", returnedDrop.Event.Data["returnedDrop"], "returned drop transfer event is marked");
+        ExpectEqual("Stranded Player", returnedDrop.Event.Data["dropOwnerName"], "returned drop transfer event reports owner name");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { returnedDrop.Event }).Contains("returned Whoopie Cushion from Stranded Player's Karma Break drop"),
+            "HUD formats returned Karma Break drops");
         var duelServer = new AuthoritativeWorldServer(state, "duel-test-world");
         var requestDuel = duelServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
@@ -1192,20 +1355,74 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(interestSnapshot.Structures.Count >= 3, "interest snapshot includes starter greenhouse structure set");
         ExpectTrue(interestSnapshot.Structures.All(structure => structure.WidthPx > 0 && structure.HeightPx > 0), "structure snapshots include render footprint");
         ExpectTrue(interestSnapshot.Structures.Any(structure => structure.IsInteractable && structure.InteractionPrompt.Contains("inspect")), "interest snapshot includes structure interaction prompt");
+        ExpectTrue(interestSnapshot.Structures.Any(structure => structure.EntityId == "structure_greenhouse_standard" && structure.Integrity == 75 && structure.Condition == "stable"), "structure snapshots expose integrity state");
         var greenhouseInteract = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             3,
             IntentType.Interact,
             new System.Collections.Generic.Dictionary<string, string>
             {
-                ["entityId"] = "structure_greenhouse_standard"
+                ["entityId"] = "structure_greenhouse_standard",
+                ["action"] = "inspect"
             }));
-        ExpectTrue(greenhouseInteract.WasAccepted, "server accepts nearby structure interaction");
+        ExpectTrue(greenhouseInteract.WasAccepted, "server accepts nearby structure inspection");
         ExpectEqual(StructureArtCatalog.Get(StructureSpriteKind.GreenhouseStandard).Id, greenhouseInteract.Event.Data["structureId"], "structure interaction event reports structure id");
+        ExpectEqual("inspect", greenhouseInteract.Event.Data["action"], "structure inspection event reports action");
         ExpectTrue(state.WorldEvents.Events.Any(worldEvent => worldEvent.Type == WorldEventType.Structure), "structure interaction records world event");
         ExpectTrue(
             HudController.FormatLatestServerEvent(new[] { greenhouseInteract.Event }).Contains("inspected Greenhouse"),
-            "HUD formats structure interaction events");
+            "HUD formats structure inspection events");
+        ExpectFalse(server.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            4,
+            IntentType.Interact,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["entityId"] = "structure_greenhouse_standard",
+                ["action"] = "repair"
+            })).WasAccepted, "server rejects structure repair without a tool");
+        state.AddItem(StarterItems.MultiTool);
+        var scripBeforeStructureRepair = state.LocalScrip;
+        var structureRepair = server.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            5,
+            IntentType.Interact,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["entityId"] = "structure_greenhouse_standard",
+                ["action"] = "repair"
+            }));
+        ExpectTrue(structureRepair.WasAccepted, "server accepts structure repair with a tool");
+        ExpectEqual("repair", structureRepair.Event.Data["action"], "structure repair event reports action");
+        ExpectEqual("95", structureRepair.Event.Data["integrity"], "structure repair increases integrity");
+        ExpectEqual("4", structureRepair.Event.Data["scripReward"], "structure repair pays bounty from repaired integrity");
+        ExpectEqual(scripBeforeStructureRepair + 4, state.LocalScrip, "structure repair bounty credits actor wallet");
+        ExpectEqual("4", structureRepair.Event.Data["factionDelta"], "structure repair reports civic faction gain");
+        ExpectEqual(4, state.Factions.GetReputation(StarterFactions.CivicRepairGuildId, GameState.LocalPlayerId), "structure repair improves civic repair reputation");
+        ExpectTrue(int.Parse(structureRepair.Event.Data["karmaAmount"]) > 0, "structure repair ascends actor karma");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { structureRepair.Event }).Contains("+4 scrip"),
+            "HUD formats structure repair bounty");
+        var structureSabotage = server.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            6,
+            IntentType.Interact,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["entityId"] = "structure_greenhouse_standard",
+                ["action"] = "sabotage"
+            }));
+        ExpectTrue(structureSabotage.WasAccepted, "server accepts structure sabotage");
+        ExpectEqual("sabotage", structureSabotage.Event.Data["action"], "structure sabotage event reports action");
+        ExpectEqual("70", structureSabotage.Event.Data["integrity"], "structure sabotage decreases integrity");
+        ExpectEqual("-6", structureSabotage.Event.Data["factionDelta"], "structure sabotage reports civic faction loss");
+        ExpectEqual(-2, state.Factions.GetReputation(StarterFactions.CivicRepairGuildId, GameState.LocalPlayerId), "structure sabotage damages civic repair reputation");
+        ExpectTrue(int.Parse(structureSabotage.Event.Data["karmaAmount"]) < 0, "structure sabotage descends actor karma");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { structureSabotage.Event }).Contains("sabotaged Greenhouse"),
+            "HUD formats structure sabotage events");
+        var repairedStructureSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId);
+        ExpectTrue(repairedStructureSnapshot.Structures.Any(structure => structure.EntityId == "structure_greenhouse_standard" && structure.Integrity == 70), "structure snapshot reflects latest integrity");
         server.SetTileMap(generatedA.TileMap);
         var mapChunkSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId);
         ExpectTrue(mapChunkSnapshot.MapChunks.Any(chunk => chunk.Tiles.Any(tile => tile.FloorId == WorldTileIds.ClinicFloor)), "interest snapshot includes nearby map chunk tiles");
@@ -1230,7 +1447,7 @@ public partial class GameplaySmokeTest : Node
         state.AddItem(StarterItems.DeflatedBalloon);
         var serverPlace = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            4,
+            7,
             IntentType.PlaceObject,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1265,7 +1482,7 @@ public partial class GameplaySmokeTest : Node
 
         var serverPickup = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            5,
+            8,
             IntentType.Interact,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1280,7 +1497,7 @@ public partial class GameplaySmokeTest : Node
             "HUD formats world item pickups");
         ExpectFalse(server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            6,
+            9,
             IntentType.Interact,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1293,7 +1510,7 @@ public partial class GameplaySmokeTest : Node
         var peerHealthBeforeRepair = state.Players["peer_stand_in"].Health;
         var serverRepair = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            7,
+            10,
             IntentType.UseItem,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1308,7 +1525,7 @@ public partial class GameplaySmokeTest : Node
 
         var serverEquip = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            8,
+            11,
             IntentType.UseItem,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1322,7 +1539,7 @@ public partial class GameplaySmokeTest : Node
             "HUD formats equipment events");
         ExpectFalse(server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            8,
+            12,
             IntentType.UseItem,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1332,7 +1549,7 @@ public partial class GameplaySmokeTest : Node
         var peerHealthBeforeAttack = state.Players["peer_stand_in"].Health;
         var serverAttack = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            9,
+            13,
             IntentType.Attack,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1365,7 +1582,7 @@ public partial class GameplaySmokeTest : Node
 
         var staleIntent = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            9,
+            13,
             IntentType.KarmaAction,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1374,7 +1591,7 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(staleIntent.WasAccepted, "server rejects duplicate sequence intent");
         ExpectTrue(state.LocalKarma.Score > 0, "rejected stale intent does not mutate karma");
         var deltaInterestSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId, afterTick: 2);
-        ExpectEqual(10, deltaInterestSnapshot.ServerEvents.Count, "interest snapshot can return visible events after a tick");
+        ExpectEqual(13, deltaInterestSnapshot.ServerEvents.Count, "interest snapshot can return visible events after a tick");
         ExpectTrue(deltaInterestSnapshot.SyncHint.IsDelta, "delta interest snapshot reports delta sync hint");
         ExpectEqual(2L, deltaInterestSnapshot.SyncHint.AfterTick, "delta interest snapshot records requested after-tick");
         ExpectEqual(deltaInterestSnapshot.ServerEvents.Count, deltaInterestSnapshot.SyncHint.ServerEventCount, "delta sync hint counts returned server events");
@@ -1391,7 +1608,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(maraDialogue.Choices.Any(choice => choice.ActionId == PrototypeActions.HelpMaraId), "server dialogue exposes approved NPC choices");
         var startDialogue = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            10,
+            14,
             IntentType.StartDialogue,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1405,7 +1622,7 @@ public partial class GameplaySmokeTest : Node
         var karmaBeforeDialogueChoice = state.LocalKarma.Score;
         var selectDialogueChoice = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            11,
+            15,
             IntentType.SelectDialogueChoice,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1420,7 +1637,7 @@ public partial class GameplaySmokeTest : Node
             "HUD formats dialogue choice events");
         ExpectFalse(server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            12,
+            16,
             IntentType.SelectDialogueChoice,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1631,6 +1848,46 @@ public partial class GameplaySmokeTest : Node
 
             return hash;
         }
+    }
+
+    private static int CountTransparentPixels(Image image)
+    {
+        var transparentPixels = 0;
+        for (var y = 0; y < image.GetHeight(); y++)
+        {
+            for (var x = 0; x < image.GetWidth(); x++)
+            {
+                if (image.GetPixel(x, y).A <= 0.01f)
+                {
+                    transparentPixels++;
+                }
+            }
+        }
+
+        return transparentPixels;
+    }
+
+    private static int CountPixelDifferences(Image image, Vector2I firstFrame, Vector2I secondFrame)
+    {
+        var differences = 0;
+        for (var y = 0; y < CharacterSheetLayout.StandardFrameSize; y++)
+        {
+            for (var x = 0; x < CharacterSheetLayout.StandardFrameSize; x++)
+            {
+                var first = image.GetPixel(
+                    (firstFrame.X * CharacterSheetLayout.StandardFrameSize) + x,
+                    (firstFrame.Y * CharacterSheetLayout.StandardFrameSize) + y);
+                var second = image.GetPixel(
+                    (secondFrame.X * CharacterSheetLayout.StandardFrameSize) + x,
+                    (secondFrame.Y * CharacterSheetLayout.StandardFrameSize) + y);
+                if (!first.IsEqualApprox(second))
+                {
+                    differences++;
+                }
+            }
+        }
+
+        return differences;
     }
 
     private void ExpectFalse(bool condition, string description)

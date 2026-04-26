@@ -87,6 +87,10 @@ public partial class PeerStandInController : Area2D
         {
             LetPeerAttackLocal();
         }
+        else if (key.Keycode == Key.Key9)
+        {
+            StealScrip();
+        }
     }
 
     private void OnBodyEntered(Node2D body)
@@ -207,7 +211,20 @@ public partial class PeerStandInController : Area2D
             new System.Collections.Generic.Dictionary<string, string>
             {
                 ["targetId"] = "peer_stand_in",
-                ["amount"] = "5"
+                ["amount"] = "5",
+                ["mode"] = "gift"
+            });
+    }
+
+    private void StealScrip()
+    {
+        Send(
+            IntentType.TransferCurrency,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["targetId"] = "peer_stand_in",
+                ["amount"] = "3",
+                ["mode"] = "steal"
             });
     }
 
@@ -308,7 +325,8 @@ public partial class PeerStandInController : Area2D
             $"{requestDuelLabel}\n" +
             $"{acceptDuelLabel}\n" +
             "7 - Gift 5 scrip\n" +
-            $"{peerAttackLabel}\n\n" +
+            $"{peerAttackLabel}\n" +
+            "9 - Swipe 3 scrip\n\n" +
             "Z - Equip Practice Stick\n" +
             "X - Equip Work Vest\n" +
             "C - Place first loose inventory item\n" +

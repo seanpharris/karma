@@ -301,8 +301,9 @@ public partial class HudController : CanvasLayer
             OffsetLeft = 16,
             OffsetTop = 512,
             OffsetRight = 1000,
-            OffsetBottom = 542,
-            Text = "Match: 30:00 remaining"
+            OffsetBottom = 556,
+            Text = "Match: 30:00 remaining",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart
         };
         root.AddChild(_matchLabel);
 
@@ -413,7 +414,7 @@ public partial class HudController : CanvasLayer
         if (serverSession?.LastLocalSnapshot is not null)
         {
             var snapshot = serverSession.LastLocalSnapshot;
-            _matchLabel.Text = snapshot.Match.Summary;
+            _matchLabel.Text = FormatMatchStatus(snapshot.Match);
             var localPlayer = snapshot.Players.FirstOrDefault(player => player.Id == snapshot.PlayerId);
             if (localPlayer is not null)
             {
@@ -465,6 +466,16 @@ public partial class HudController : CanvasLayer
         return $"{safeCombatText} | You ATK:{attackPower} DEF:{defense} | {FormatStatusEffects(statusEffects)}";
     }
 
+    public static string FormatMatchStatus(MatchSnapshot match)
+    {
+        if (match.Status == MatchStatus.Running)
+        {
+            return match.Summary;
+        }
+
+        return $"RESULTS LOCKED — Saint: {match.SaintWinnerName} ({match.SaintWinnerScore:+#;-#;0}) | Scourge: {match.ScourgeWinnerName} ({match.ScourgeWinnerScore:+#;-#;0})\nPost-match free roam: movement/dialogue only. Winners paid +{ServerConfig.DefaultMatchWinnerScripReward} scrip.";
+    }
+
     public static string FormatLatestServerEvent(IReadOnlyList<ServerEvent> serverEvents)
     {
         if (serverEvents is null || serverEvents.Count == 0)
@@ -483,11 +494,13 @@ public partial class HudController : CanvasLayer
 
         if (latest.EventId.Contains("match_finished"))
         {
-            var saint = ReadEventData(latest, "saintWinnerId", "none");
-            var scourge = ReadEventData(latest, "scourgeWinnerId", "none");
+            var saint = ReadEventData(latest, "saintWinnerName", ReadEventData(latest, "saintWinnerId", "none"));
+            var scourge = ReadEventData(latest, "scourgeWinnerName", ReadEventData(latest, "scourgeWinnerId", "none"));
+            var saintScore = ReadEventData(latest, "saintWinnerScore", "0");
+            var scourgeScore = ReadEventData(latest, "scourgeWinnerScore", "0");
             var saintReward = ReadEventData(latest, "saintScripReward", "0");
             var scourgeReward = ReadEventData(latest, "scourgeScripReward", "0");
-            return $"Match complete. Saint: {saint} (+{saintReward} scrip). Scourge: {scourge} (+{scourgeReward} scrip).";
+            return $"Match complete — results locked. Saint: {saint} ({FormatSignedScore(saintScore)}, +{saintReward} scrip). Scourge: {scourge} ({FormatSignedScore(scourgeScore)}, +{scourgeReward} scrip).";
         }
 
         if (latest.EventId.Contains("player_moved"))
@@ -540,8 +553,21 @@ public partial class HudController : CanvasLayer
         {
             var player = ReadEventData(latest, "playerId", "Someone");
             var structureName = FormatStructureName(ReadEventData(latest, "structureId", string.Empty));
+            var action = ReadEventData(latest, "action", "inspect");
             var result = ReadEventData(latest, "result", "Nothing unusual happens.");
-            return $"{player} inspected {structureName}: {result}";
+            var integrity = ReadEventData(latest, "integrity", "?");
+            var condition = ReadEventData(latest, "condition", "unknown");
+            var scripReward = ReadEventData(latest, "scripReward", "0");
+            var factionDelta = ReadEventData(latest, "factionDelta", "0");
+            var verb = action switch
+            {
+                "repair" => "repaired",
+                "sabotage" => "sabotaged",
+                _ => "inspected"
+            };
+            var rewardText = scripReward != "0" ? $" +{scripReward} scrip." : string.Empty;
+            var factionText = factionDelta != "0" ? $" Civic Repair Guild {factionDelta}." : string.Empty;
+            return $"{player} {verb} {structureName}: {result} Integrity {integrity}% ({condition}).{rewardText}{factionText}";
         }
 
         if (latest.EventId.Contains("dialogue_started"))
@@ -614,8 +640,9 @@ public partial class HudController : CanvasLayer
             var dropOwnerId = ReadEventData(latest, "dropOwnerId", string.Empty);
             if (!string.IsNullOrWhiteSpace(dropOwnerId))
             {
+                var dropOwnerName = ReadEventData(latest, "dropOwnerName", dropOwnerId);
                 var karmaAmount = ReadEventData(latest, "karmaAmount", "0");
-                return $"{player} claimed {itemName} from {dropOwnerId}'s drop. Karma {karmaAmount}.";
+                return $"{player} claimed {itemName} from {dropOwnerName}'s Karma Break drop. Karma {karmaAmount}.";
             }
 
             return $"{player} picked up {itemName}.";
@@ -678,7 +705,14 @@ public partial class HudController : CanvasLayer
             var target = ReadEventData(latest, "targetId", "someone");
             var itemName = FormatItemName(ReadEventData(latest, "itemId", string.Empty));
             var mode = ReadEventData(latest, "mode", "gift");
+            var returnedDrop = ReadEventData(latest, "returnedDrop", "False") == "True";
             var karmaAmount = ReadEventData(latest, "karmaAmount", "0");
+            if (returnedDrop)
+            {
+                var dropOwnerName = ReadEventData(latest, "dropOwnerName", target);
+                return $"{player} returned {itemName} from {dropOwnerName}'s Karma Break drop. Karma {karmaAmount}.";
+            }
+
             return mode == "steal"
                 ? $"{player} stole {itemName} from {target}. Karma {karmaAmount}."
                 : $"{player} gave {itemName} to {target}. Karma {karmaAmount}.";
@@ -690,8 +724,11 @@ public partial class HudController : CanvasLayer
             var target = ReadEventData(latest, "targetId", "someone");
             var amount = ReadEventData(latest, "amount", "?");
             var currency = ReadEventData(latest, "currency", "currency");
+            var mode = ReadEventData(latest, "mode", "gift");
             var karmaAmount = ReadEventData(latest, "karmaAmount", "0");
-            return $"{player} gave {amount} {currency} to {target}. Karma {karmaAmount}.";
+            return mode == "steal"
+                ? $"{player} stole {amount} {currency} from {target}. Karma {karmaAmount}."
+                : $"{player} gave {amount} {currency} to {target}. Karma {karmaAmount}.";
         }
 
         if (latest.EventId.Contains("intent_rejected"))
@@ -709,6 +746,13 @@ public partial class HudController : CanvasLayer
         return serverEvent.Data.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
             ? value
             : fallback;
+    }
+
+    private static string FormatSignedScore(string scoreText)
+    {
+        return int.TryParse(scoreText, out var score)
+            ? score.ToString("+#;-#;0")
+            : scoreText;
     }
 
     private static string FormatItemName(string itemId)

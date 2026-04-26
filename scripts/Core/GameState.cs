@@ -256,6 +256,14 @@ public partial class GameState : Node
         return worldEvent;
     }
 
+    public int ApplyFactionReputation(string factionId, string playerId, int delta)
+    {
+        EnsurePrototypePlayers();
+        var reputation = Factions.Apply(factionId, playerId, delta);
+        EmitFactionsChanged();
+        return reputation;
+    }
+
     public bool DamagePlayer(string attackerId, string targetId, int amount, string reason)
     {
         EnsurePrototypePlayers();
@@ -335,12 +343,17 @@ public partial class GameState : Node
         Relationships.Apply(entanglement.NpcId, playerId, -15);
         Relationships.Apply(entanglement.AffectedNpcId, playerId, -25);
         Factions.Apply(StarterFactions.FreeSettlersId, playerId, -12);
+        var hasRumorcraft = HasPerk(playerId, PerkCatalog.RumorcraftId);
+        var rumorTargetId = hasRumorcraft ? WorldEvent.GlobalTargetId : entanglement.NpcId;
+        var rumorSummary = hasRumorcraft
+            ? $"{entanglement.Summary} (amplified by Rumorcraft)"
+            : entanglement.Summary;
         WorldEvents.Add(
             WorldEventType.Rumor,
-            entanglement.Summary,
+            rumorSummary,
             playerId,
-            entanglement.NpcId);
-        EmitSignal(SignalName.KarmaEvent, $"Rumor exposed: {entanglement.Summary}");
+            rumorTargetId);
+        EmitSignal(SignalName.KarmaEvent, $"Rumor exposed: {rumorSummary}");
         EmitEntanglementsChanged();
         EmitRelationshipsChanged();
         EmitFactionsChanged();
@@ -564,8 +577,11 @@ public partial class GameState : Node
 
     private void EmitFactionsChanged()
     {
-        var reputation = Factions.GetReputation(StarterFactions.FreeSettlersId, LocalPlayerId);
-        EmitSignal(SignalName.FactionsChanged, $"Free Settlers Rep: {reputation:+#;-#;0}");
+        var freeSettlers = Factions.GetReputation(StarterFactions.FreeSettlersId, LocalPlayerId);
+        var civicRepair = Factions.GetReputation(StarterFactions.CivicRepairGuildId, LocalPlayerId);
+        EmitSignal(
+            SignalName.FactionsChanged,
+            $"Free Settlers Rep: {freeSettlers:+#;-#;0} | Civic Repair Guild Rep: {civicRepair:+#;-#;0}");
     }
 
     private void EmitQuestsChanged()
@@ -628,6 +644,12 @@ public partial class GameState : Node
         }
 
         return delta;
+    }
+
+    private bool HasPerk(string playerId, string perkId)
+    {
+        return _players.TryGetValue(playerId, out var player) &&
+               PerkCatalog.GetForPlayer(player, GetLeaderboardStanding()).Any(perk => perk.Id == perkId);
     }
 
     private static bool IsDreadReactionAction(KarmaAction action)

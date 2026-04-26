@@ -84,6 +84,7 @@ public static class PrototypeSpriteCatalog
 {
     public const string CharacterAtlasPath = "res://assets/art/character.png";
     public const string EngineerPlayerAtlasPath = "res://assets/art/sprites/scifi_engineer_player_sheet.png";
+    public const string EngineerPlayerEightDirectionAtlasPath = "res://assets/art/sprites/scifi_engineer_player_8dir.png";
     public const string ItemAtlasPath = "res://assets/art/sprites/scifi_item_atlas.png";
     public const string UtilityItemAtlasPath = "res://assets/art/sprites/scifi_utility_item_atlas.png";
     public const string WeaponAtlasPath = "res://assets/art/sprites/scifi_weapon_atlas.png";
@@ -149,15 +150,7 @@ public static class PrototypeSpriteCatalog
     {
         return kind switch
         {
-            PrototypeSpriteKind.Player => Humanoid(
-                kind,
-                "Player",
-                new Color(0.22f, 0.76f, 0.94f),
-                new Color(0.08f, 0.19f, 0.24f),
-                new Color(0.96f, 0.94f, 0.72f),
-                new Rect2(298f, 27f, 100f, 180f),
-                EngineerPlayerAtlasPath,
-                new Vector2(30f, 40f)),
+            PrototypeSpriteKind.Player => Player(),
             PrototypeSpriteKind.Mara => Humanoid(
                 kind,
                 "Mara Venn",
@@ -226,6 +219,34 @@ public static class PrototypeSpriteCatalog
         };
     }
 
+    private static PrototypeSpriteDefinition Player()
+    {
+        if (FileAccess.FileExists(EngineerPlayerEightDirectionAtlasPath))
+        {
+            return Humanoid(
+                PrototypeSpriteKind.Player,
+                "Player",
+                new Color(0.22f, 0.76f, 0.94f),
+                new Color(0.08f, 0.19f, 0.24f),
+                new Color(0.96f, 0.94f, 0.72f),
+                new Rect2(0f, 0f, CharacterSheetLayout.StandardFrameSize, CharacterSheetLayout.StandardFrameSize),
+                EngineerPlayerEightDirectionAtlasPath,
+                new Vector2(32f, 32f),
+                CharacterSheetLayout.EightDirectionTemplate(Vector2.Zero));
+        }
+
+        return Humanoid(
+            PrototypeSpriteKind.Player,
+            "Player",
+            new Color(0.22f, 0.76f, 0.94f),
+            new Color(0.08f, 0.19f, 0.24f),
+            new Color(0.96f, 0.94f, 0.72f),
+            new Rect2(288f, 20f, 120f, 190f),
+            EngineerPlayerAtlasPath,
+            new Vector2(30f, 40f),
+            EngineerPlayerAnimations());
+    }
+
     private static PrototypeSpriteDefinition Humanoid(
         PrototypeSpriteKind kind,
         string displayName,
@@ -234,7 +255,8 @@ public static class PrototypeSpriteCatalog
         Color accent,
         Rect2 atlasRegion,
         string atlasPath = CharacterAtlasPath,
-        Vector2? displaySize = null)
+        Vector2? displaySize = null,
+        IReadOnlyList<PrototypeSpriteAnimation> animations = null)
     {
         return new PrototypeSpriteDefinition(
             kind,
@@ -255,7 +277,45 @@ public static class PrototypeSpriteCatalog
             atlasPath,
             atlasRegion,
             HasAtlasRegion: true,
-            Animations: StillCharacterAnimations(atlasRegion));
+            Animations: animations ?? StillCharacterAnimations(atlasRegion));
+    }
+
+    public static IReadOnlyList<PrototypeSpriteAnimation> EngineerPlayerAnimations()
+    {
+        const float speed = 8f;
+        return new[]
+        {
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleDownAnimation, 1f, new[] { EngineerFrame(0, 0) }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleUpAnimation, 1f, new[] { EngineerFrame(1, 0) }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleLeftAnimation, 1f, new[] { EngineerFrame(2, 0) }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleRightAnimation, 1f, new[] { EngineerFrame(3, 0) }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkDownAnimation, speed, EngineerRow(1)),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkUpAnimation, speed, EngineerRow(2)),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkLeftAnimation, speed, EngineerRow(3)),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkRightAnimation, speed, EngineerRow(4))
+        };
+    }
+
+    private static IReadOnlyList<Rect2> EngineerRow(int row)
+    {
+        return new[]
+        {
+            EngineerFrame(0, row),
+            EngineerFrame(1, row),
+            EngineerFrame(2, row),
+            EngineerFrame(3, row)
+        };
+    }
+
+    private static Rect2 EngineerFrame(int column, int row)
+    {
+        const float originX = 288f;
+        const float originY = 20f;
+        const float stepX = 225f;
+        const float stepY = 210f;
+        const float width = 120f;
+        const float height = 190f;
+        return new Rect2(originX + (column * stepX), originY + (row * stepY), width, height);
     }
 
     public static IReadOnlyList<PrototypeSpriteAnimation> StillCharacterAnimations(Rect2 frame)

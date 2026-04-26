@@ -143,10 +143,13 @@ resource tools.
 Large structure models are catalog-first. The greenhouse sheet lives at
 `assets/art/structures/scifi_greenhouse_atlas.png` and maps greenhouse variants
 and modular parts without placing them into the active prototype scene yet.
-The prototype server seeds one non-interactive greenhouse structure into local
-interest snapshots; `WorldRoot` renders it from server-owned structure state
-with atlas art when available and a procedural fallback while the sheet is
-absent.
+The prototype server seeds greenhouse structures into local interest snapshots;
+`WorldRoot` renders them from server-owned structure state with atlas art when
+available and a procedural fallback while the sheet is absent. Structures carry
+server-owned integrity. Inspecting records a world event, repairing with a
+multi-tool or welding torch Ascends, restores integrity, pays a small repair
+bounty, and improves Civic Repair Guild reputation. Sabotaging Descends,
+damages integrity, and hurts Civic Repair Guild reputation.
 
 The prototype item set covers the current loops: oddities (`whoopie_cushion`,
 `deflated_balloon`, `apology_flower`), support tools (`repair_kit`,
@@ -162,6 +165,15 @@ The sci-fi tool expansion adds `multi_tool`, `welding_torch`, `medi_patch`,
 The runtime catalog exposes all starter items through `StarterItems.All`; the
 prototype scene auto-spawns any cataloged item that is not already hand-placed
 into a small pickup/art showcase near the starter area.
+
+## Karma Perks
+
+Karma perks should be mechanical identity, not just titles. Ascension perks make
+helpful/social play easier to sustain; Descension perks make darker play more
+powerful but more dangerous. Current wired examples include discounts,
+relationship-damage softening, stamina modifiers, Dread Reputation reaction
+softening, and Rumorcraft: once unlocked on the Descension path, exposed rumors
+become global server-owned world events instead of only local gossip.
 
 ## NPC Relationships
 
@@ -219,13 +231,17 @@ the seed of trades, theft, bait, clutter, and emergent jokes.
 
 Player inventories are part of the social sandbox. Giving an item, stealing a
 satchel item, and returning it should move real server-owned objects, not only
-change karma text.
+change karma text. Scrip transfers follow the same server-owned social rule:
+gifting money Ascends, while stealing money Descends and moves the actual
+currency balance.
 
 A Karma Break drops loose inventory into the world as recoverable objects.
 Players keep their body and respawn, but death can scatter props, gifts, stolen
 goods, and jokes into the shared space.
 Picking up another player's Karma Break drop is allowed, but it is remembered as
-claiming someone else's scattered goods and should Descend the picker.
+claiming someone else's scattered goods and Descends the picker. Returning that
+specific drop to its owner is recognized as a restorative gift and Ascends the
+returning player.
 
 ## PvP
 
@@ -248,10 +264,10 @@ let the stand-in accept it. This keeps consent explicit while still making the
 loop quick to test in one running client.
 Near the stand-in, the prototype also exposes quick keys for combat/tool loops:
 `Z` equips the practice stick, `X` equips the work vest, `C` places the first
-loose inventory item, `R` uses a repair kit on the stand-in, and `7` gifts 5
-scrip. `T` uses a repair kit on the local player. `8` lets the stand-in attack
-the local player so the local health bar, cooldowns, and duel-strike feedback
-can be tested in one client.
+loose inventory item, `R` uses a repair kit on the stand-in, `7` gifts 5 scrip,
+and `9` steals 3 scrip. `T` uses a repair kit on the local player. `8` lets the
+stand-in attack the local player so the local health bar, cooldowns, and
+duel-strike feedback can be tested in one client.
 Movement uses WASD, and holding left Shift sprints at a modest speed boost for
 faster prototype traversal. Sprinting drains stamina while held and stamina
 recovers when the player stops sprinting. Empty stamina makes the player winded;

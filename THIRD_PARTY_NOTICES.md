@@ -13,8 +13,10 @@ original notices beside the copied material.
 Karma currently ports the direction-mapping idea from the template's
 `Direction.gd` into C# as `scripts/Util/DirectionHelper.cs`, adapts the
 template's lightweight inventory-overlay pattern into `scripts/UI/HudController.cs`,
-and follows its Godot-native pixel-art setup for nearest-neighbor texture
-filtering, pixel snapping, and `AnimatedSprite2D` character presentation.
+adapts its acceleration/friction movement feel into
+`scripts/Player/PlayerController.cs`, and follows its Godot-native pixel-art
+setup for nearest-neighbor texture filtering, pixel snapping, and
+`AnimatedSprite2D` character presentation.
 The implementation is adapted for this project's Godot 4 .NET/C# architecture
 and does not import the template's GDScript plugins, scenes, or assets.
 

@@ -26,7 +26,13 @@ public partial class ServerStructureObject : Area2D
 
     public override void _UnhandledInput(InputEvent @event)
     {
-        if (!_playerNearby || !IsInteractable || !@event.IsActionPressed("interact") || _serverSession is null)
+        if (!_playerNearby || !IsInteractable || _serverSession is null)
+        {
+            return;
+        }
+
+        var action = ResolveAction(@event);
+        if (string.IsNullOrWhiteSpace(action))
         {
             return;
         }
@@ -35,9 +41,33 @@ public partial class ServerStructureObject : Area2D
             IntentType.Interact,
             new Dictionary<string, string>
             {
-                ["entityId"] = EntityId
+                ["entityId"] = EntityId,
+                ["action"] = action
             });
         _hud?.ShowPrompt(result.WasAccepted ? result.Event.Data["result"] : result.RejectionReason);
+    }
+
+    private static string ResolveAction(InputEvent @event)
+    {
+        if (@event.IsActionPressed("interact"))
+        {
+            return "inspect";
+        }
+
+        if (@event is InputEventKey { Pressed: true, Echo: false } key)
+        {
+            if (key.Keycode == Key.J)
+            {
+                return "repair";
+            }
+
+            if (key.Keycode == Key.K)
+            {
+                return "sabotage";
+            }
+        }
+
+        return string.Empty;
     }
 
     private void OnBodyEntered(Node2D body)
