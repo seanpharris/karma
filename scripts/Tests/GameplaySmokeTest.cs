@@ -772,18 +772,36 @@ public partial class GameplaySmokeTest : Node
         var seededGeneratedNpcCount = generatedA.Npcs.Count(npc => npc.Id != StarterNpcs.Mara.Id && npc.Id != StarterNpcs.Dallen.Id);
         ExpectEqual(2 + seededGeneratedNpcCount, generatedContentServer.Npcs.Count, "server seeds generated NPC placements without duplicating starter NPCs");
         var firstGeneratedNpcPlacement = generatedA.NpcPlacements.First(placement => placement.NpcId != StarterNpcs.Mara.Id && placement.NpcId != StarterNpcs.Dallen.Id);
+        var npcLinkedStructure = generatedA.StructurePlacements.First(placement => placement.LocationId == firstGeneratedNpcPlacement.LocationId);
+        generatedContentState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(npcLinkedStructure.X, npcLinkedStructure.Y));
+        var compromiseNpcStation = generatedContentServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            74,
+            IntentType.Interact,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["entityId"] = npcLinkedStructure.StructureId,
+                ["action"] = "sabotage"
+            }));
+        ExpectTrue(compromiseNpcStation.WasAccepted, "server accepts sabotage on generated NPC linked station structure");
         generatedContentState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(firstGeneratedNpcPlacement.X, firstGeneratedNpcPlacement.Y));
         var generatedNpcSnapshot = generatedContentServer.CreateInterestSnapshot(GameState.LocalPlayerId);
         ExpectTrue(
             generatedNpcSnapshot.Npcs.Any(npc => npc.Id == firstGeneratedNpcPlacement.NpcId && npc.TileX == firstGeneratedNpcPlacement.X && npc.TileY == firstGeneratedNpcPlacement.Y),
             "interest snapshot exposes seeded generated NPCs near the player");
         ExpectTrue(
-            generatedNpcSnapshot.Dialogues.Any(dialogue => dialogue.NpcId == firstGeneratedNpcPlacement.NpcId && dialogue.Choices.Any(choice => choice.Id == "assist_need")),
-            "generated NPC dialogue exposes station-specific assist choices");
+            generatedNpcSnapshot.Dialogues.Any(dialogue => dialogue.NpcId == firstGeneratedNpcPlacement.NpcId && dialogue.Prompt.Contains("currently compromised")),
+            "generated NPC dialogue reflects compromised station state");
+        ExpectTrue(
+            generatedNpcSnapshot.Dialogues.Any(dialogue => dialogue.NpcId == firstGeneratedNpcPlacement.NpcId && dialogue.Choices.Any(choice => choice.Id == "assist_need" && choice.Label.Contains("Emergency help"))),
+            "generated NPC dialogue adjusts assist choices for compromised stations");
         ExpectTrue(
             generatedNpcSnapshot.Quests.Any(quest => generatedA.Quests.Any(definition => definition.Id == quest.Id && definition.GiverNpcId == firstGeneratedNpcPlacement.NpcId)),
             "interest snapshot exposes generated station quests for nearby generated NPCs");
         var firstGeneratedQuest = generatedA.Quests.First(quest => quest.GiverNpcId == firstGeneratedNpcPlacement.NpcId);
+        ExpectTrue(
+            generatedNpcSnapshot.Quests.Any(quest => quest.Id == firstGeneratedQuest.Id && quest.ScripReward == Math.Max(0, firstGeneratedQuest.ScripReward - 2)),
+            "compromised station state reduces visible generated quest scrip reward");
         var startGeneratedQuest = generatedContentServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             80,
@@ -802,6 +820,8 @@ public partial class GameplaySmokeTest : Node
                 ["questId"] = firstGeneratedQuest.Id
             }));
         ExpectTrue(completeGeneratedQuest.WasAccepted, "server accepts generated station quest completion through dynamic action resolution");
+        ExpectEqual(Math.Max(0, firstGeneratedQuest.ScripReward - 2).ToString(), completeGeneratedQuest.Event.Data["scripReward"], "generated quest completion reports station-state adjusted reward");
+        ExpectEqual("-2", completeGeneratedQuest.Event.Data["stationStateBonus"], "generated quest completion reports compromised station penalty");
         ExpectEqual(generatedA.OddityPlacements.Count, generatedContentServer.WorldItems.Count, "server seeds generated oddity placements as world items");
         var firstOddityPlacement = generatedA.OddityPlacements[0];
         generatedContentState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(firstOddityPlacement.X, firstOddityPlacement.Y));

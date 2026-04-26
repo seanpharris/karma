@@ -120,7 +120,8 @@ public sealed record MapChunkSnapshot(
 
 public sealed record NpcEntity(
     NpcProfile Profile,
-    TilePosition Position);
+    TilePosition Position,
+    string LocationId = "");
 
 public sealed record NpcSnapshot(
     string Id,

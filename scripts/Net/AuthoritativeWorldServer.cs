@@ -175,7 +175,7 @@ public sealed class AuthoritativeWorldServer
                 continue;
             }
 
-            _npcs[profile.Id] = new NpcEntity(profile, new TilePosition(placement.X, placement.Y));
+            _npcs[profile.Id] = new NpcEntity(profile, new TilePosition(placement.X, placement.Y), placement.LocationId);
         }
 
         var odditiesById = generatedWorld.Oddities.ToDictionary(item => item.Id);
@@ -392,7 +392,7 @@ public sealed class AuthoritativeWorldServer
         var visibleQuests = _state.Quests.Quests.Values
             .Where(quest => interest.VisibleNpcIds.Contains(quest.Definition.GiverNpcId))
             .OrderBy(quest => quest.Definition.Id)
-            .Select(quest => new QuestSnapshot(quest.Definition.Id, quest.Status, quest.Definition.ScripReward))
+            .Select(quest => new QuestSnapshot(quest.Definition.Id, quest.Status, GetQuestScripRewardForCurrentStationState(quest.Definition)))
             .ToArray();
         var visibleMapChunks = CreateVisibleMapChunks(playerId);
         var visibleWorldItems = _worldItems.Values
@@ -791,6 +791,42 @@ public sealed class AuthoritativeWorldServer
         _worldStructures[stationEntityId] = station;
     }
 
+    private string GetStationStateForLocation(string locationId)
+    {
+        if (string.IsNullOrWhiteSpace(locationId) ||
+            !_worldStructures.TryGetValue($"generated_station_{SanitizeEntityId(locationId)}", out var station))
+        {
+            return string.Empty;
+        }
+
+        return station.InteractionPrompt.Contains("Station state: stabilized", StringComparison.Ordinal)
+            ? "stabilized"
+            : station.InteractionPrompt.Contains("Station state: compromised", StringComparison.Ordinal)
+                ? "compromised"
+                : string.Empty;
+    }
+
+    private int GetQuestScripRewardForCurrentStationState(QuestDefinition quest)
+    {
+        var reward = quest.ScripReward;
+        var locationId = GetGeneratedQuestLocationId(quest);
+        var stationState = GetStationStateForLocation(locationId);
+        return stationState switch
+        {
+            "stabilized" => reward + 2,
+            "compromised" => Math.Max(0, reward - 2),
+            _ => reward
+        };
+    }
+
+    private static string GetGeneratedQuestLocationId(QuestDefinition quest)
+    {
+        const string prefix = "generated_station_help:";
+        return quest.CompletionActionId.StartsWith(prefix, StringComparison.Ordinal)
+            ? quest.CompletionActionId[prefix.Length..]
+            : string.Empty;
+    }
+
     private bool HasStructureRepairTool(string playerId)
     {
         return _state.HasItem(playerId, StarterItems.MultiToolId) ||
@@ -992,11 +1028,12 @@ public sealed class AuthoritativeWorldServer
             return new NpcDialogueSnapshot(npcId, npc.Profile.Name, "Too far away.", Array.Empty<NpcDialogueChoice>());
         }
 
+        var stationState = GetStationStateForLocation(npc.LocationId);
         return new NpcDialogueSnapshot(
             npc.Profile.Id,
             npc.Profile.Name,
-            $"{npc.Profile.Name} needs {npc.Profile.Need}.",
-            GetChoicesFor(npc.Profile));
+            FormatNpcPrompt(npc.Profile, stationState),
+            GetChoicesFor(npc.Profile, stationState));
     }
 
     private ServerProcessResult ProcessStartDialogue(ServerIntent intent)
@@ -1117,6 +1154,17 @@ public sealed class AuthoritativeWorldServer
         }
 
         var quest = _state.Quests.Get(questId);
+        var adjustedScripReward = GetQuestScripRewardForCurrentStationState(quest.Definition);
+        var stationStateBonus = adjustedScripReward - quest.Definition.ScripReward;
+        if (stationStateBonus > 0)
+        {
+            _state.AddScrip(intent.PlayerId, stationStateBonus);
+        }
+        else if (stationStateBonus < 0)
+        {
+            _state.SpendScrip(intent.PlayerId, Math.Abs(stationStateBonus));
+        }
+
         var serverEvent = AppendEvent(
             "quest_completed",
             $"{intent.PlayerId} completed quest {questId}",
@@ -1125,7 +1173,8 @@ public sealed class AuthoritativeWorldServer
                 ["playerId"] = intent.PlayerId,
                 ["questId"] = questId,
                 ["targetId"] = quest.Definition.GiverNpcId,
-                ["scripReward"] = quest.Definition.ScripReward.ToString()
+                ["scripReward"] = adjustedScripReward.ToString(),
+                ["stationStateBonus"] = stationStateBonus.ToString()
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -2215,15 +2264,32 @@ public sealed class AuthoritativeWorldServer
         return action is not null;
     }
 
-    private static IReadOnlyList<NpcDialogueChoice> GetChoicesFor(NpcProfile npc)
+    private static string FormatNpcPrompt(NpcProfile npc, string stationState)
+    {
+        var prompt = $"{npc.Name} needs {npc.Need}.";
+        return string.IsNullOrWhiteSpace(stationState)
+            ? prompt
+            : $"{prompt} Their station is currently {stationState}.";
+    }
+
+    private static IReadOnlyList<NpcDialogueChoice> GetChoicesFor(NpcProfile npc, string stationState)
     {
         if (npc.Id != StarterNpcs.Mara.Id)
         {
+            var assistLabel = stationState switch
+            {
+                "stabilized" => $"Build on the stabilized station: {npc.Need}",
+                "compromised" => $"Emergency help for compromised station: {npc.Need}",
+                _ => $"Help with {npc.Need}"
+            };
+            var pressureLabel = stationState == "compromised"
+                ? "Exploit the compromised station for leverage"
+                : "Apply pressure for leverage";
             return new[]
             {
-                new NpcDialogueChoice("assist_need", $"Help with {npc.Need}", "generated_assist_need"),
+                new NpcDialogueChoice("assist_need", assistLabel, "generated_assist_need"),
                 new NpcDialogueChoice("spread_rumor", "Turn this need into a rumor", "generated_spread_rumor"),
-                new NpcDialogueChoice("apply_pressure", "Apply pressure for leverage", "generated_apply_pressure")
+                new NpcDialogueChoice("apply_pressure", pressureLabel, "generated_apply_pressure")
             };
         }
 
