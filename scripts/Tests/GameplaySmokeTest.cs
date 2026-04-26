@@ -235,6 +235,8 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(StructureArtCatalog.GreenhouseAtlasPath, greenhouse.AtlasPath, "structure catalog records greenhouse atlas path");
         ExpectTrue(greenhouse.HasAtlasRegion, "structure catalog maps greenhouse atlas art");
         ExpectTrue(StructureArtCatalog.All.ContainsKey(StructureSpriteKind.GreenhouseDamaged), "structure catalog maps greenhouse variants");
+        var greenhouseNode = new StructureSprite();
+        ExpectTrue(greenhouseNode.PreferAtlasArt, "structure sprite prefers mapped atlas art");
         ExpectEqual(
             PrototypeSpriteKind.WorkVest,
             PrototypeSpriteCatalog.GetKindForItem(StarterItems.WorkVestId),

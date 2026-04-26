@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://karma_main"]
+[gd_scene load_steps=13 format=3 uid="uid://karma_main"]
 
 [ext_resource type="Script" path="res://scripts/World/WorldRoot.cs" id="1_world"]
 [ext_resource type="Script" path="res://scripts/Player/PlayerController.cs" id="2_player"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scripts/World/PickupObject.cs" id="5_pickup"]
 [ext_resource type="Script" path="res://scripts/Player/PeerStandInController.cs" id="6_peer"]
 [ext_resource type="Script" path="res://scripts/Art/PrototypeSprite.cs" id="7_proto_sprite"]
+[ext_resource type="Script" path="res://scripts/Art/StructureSprite.cs" id="8_structure_sprite"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_player"]
 radius = 12.0
@@ -30,6 +31,11 @@ offset_top = -2000.0
 offset_right = 2000.0
 offset_bottom = 2000.0
 color = Color(0.247059, 0.4, 0.282353, 1)
+
+[node name="PrototypeGreenhouse" type="Node2D" parent="."]
+position = Vector2(260, 100)
+z_index = -10
+script = ExtResource("8_structure_sprite")
 
 [node name="Player" type="CharacterBody2D" parent="."]
 position = Vector2(120, 120)
