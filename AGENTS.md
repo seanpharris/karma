@@ -92,6 +92,8 @@ Important areas:
 - `scripts/Net/NetworkProtocol.cs`: JSON-friendly protocol envelope.
 - `scripts/World/`: generated world, tile rendering, server-rendered pickups/structures.
 - `scripts/Art/`: prototype sprite/structure catalogs and procedural fallbacks.
+- `scripts/UI/HudController.cs`: HUD plus lightweight prototype overlays such as
+  the `I` inventory panel.
 - `scripts/Util/DirectionHelper.cs`: cardinal direction helper adapted from a
   Godot 2D top-down template pattern for movement/facing/animation names.
 - `scripts/Tests/GameplaySmokeTest.cs`: primary smoke/regression test.
@@ -180,6 +182,7 @@ frame. Keep proportions consistent across frames.
 - Top-down local movement.
 - Mouse wheel camera zoom with clamps.
 - Left Shift sprint with stamina.
+- `I` toggles an inventory overlay with scrip, equipment, and grouped items.
 - Server-owned 30-minute match timer and Saint/Scourge winner lock.
 - Uncapped karma ranks in both Ascension and Descension.
 - Scrip currency, player transfers, shop offers, and server-side pricing perks.

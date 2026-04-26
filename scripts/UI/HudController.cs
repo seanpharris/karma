@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Karma.Art;
 using Karma.Core;
+using Karma.Data;
 using Karma.Net;
 
 namespace Karma.UI;
 
 public partial class HudController : CanvasLayer
 {
+    private GameState _gameState = null!;
     private Label _karmaLabel = new();
     private Label _eventLabel = new();
     private Label _staminaLabel = new();
@@ -29,6 +31,8 @@ public partial class HudController : CanvasLayer
     private Label _syncLabel = new();
     private PanelContainer _promptPanel = new();
     private Label _promptLabel = new();
+    private PanelContainer _inventoryPanel = new();
+    private Label _inventoryOverlayLabel = new();
     private string _lastCombatText = "Combat: none";
     private IReadOnlyList<string> _lastStatusEffects = System.Array.Empty<string>();
 
@@ -36,19 +40,19 @@ public partial class HudController : CanvasLayer
     {
         BuildUi();
 
-        var gameState = GetNode<GameState>("/root/GameState");
-        gameState.KarmaChanged += OnKarmaChanged;
-        gameState.KarmaEvent += OnKarmaEvent;
-        gameState.InventoryChanged += OnInventoryChanged;
-        gameState.LeaderboardChanged += OnLeaderboardChanged;
-        gameState.PerksChanged += OnPerksChanged;
-        gameState.RelationshipsChanged += OnRelationshipsChanged;
-        gameState.FactionsChanged += OnFactionsChanged;
-        gameState.QuestsChanged += OnQuestsChanged;
-        gameState.CombatChanged += OnCombatChanged;
-        gameState.EntanglementsChanged += OnEntanglementsChanged;
-        gameState.DuelsChanged += OnDuelsChanged;
-        gameState.WorldEventsChanged += OnWorldEventsChanged;
+        _gameState = GetNode<GameState>("/root/GameState");
+        _gameState.KarmaChanged += OnKarmaChanged;
+        _gameState.KarmaEvent += OnKarmaEvent;
+        _gameState.InventoryChanged += OnInventoryChanged;
+        _gameState.LeaderboardChanged += OnLeaderboardChanged;
+        _gameState.PerksChanged += OnPerksChanged;
+        _gameState.RelationshipsChanged += OnRelationshipsChanged;
+        _gameState.FactionsChanged += OnFactionsChanged;
+        _gameState.QuestsChanged += OnQuestsChanged;
+        _gameState.CombatChanged += OnCombatChanged;
+        _gameState.EntanglementsChanged += OnEntanglementsChanged;
+        _gameState.DuelsChanged += OnDuelsChanged;
+        _gameState.WorldEventsChanged += OnWorldEventsChanged;
         var serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         if (serverSession is not null)
         {
@@ -56,21 +60,31 @@ public partial class HudController : CanvasLayer
             OnLocalSnapshotChanged(serverSession.LastLocalSnapshot?.Summary ?? "Sync: waiting");
         }
 
-        var pathName = gameState.LocalKarma.Path == Data.KarmaDirection.Neutral
+        var pathName = _gameState.LocalKarma.Path == KarmaDirection.Neutral
             ? "Unmarked"
-            : gameState.LocalKarma.Path.ToString();
-        OnKarmaChanged(gameState.LocalKarma.Score, gameState.LocalKarma.TierName, pathName);
-        SetHealth(gameState.LocalPlayer.Health, gameState.LocalPlayer.MaxHealth);
-        OnInventoryChanged(gameState.Inventory.Count == 0 ? "Inventory: empty" : "Inventory: loaded");
-        OnLeaderboardChanged(gameState.GetLeaderboardStanding().Summary);
-        OnPerksChanged(Data.PerkCatalog.Format(gameState.LocalPerks));
+            : _gameState.LocalKarma.Path.ToString();
+        OnKarmaChanged(_gameState.LocalKarma.Score, _gameState.LocalKarma.TierName, pathName);
+        SetHealth(_gameState.LocalPlayer.Health, _gameState.LocalPlayer.MaxHealth);
+        OnInventoryChanged(_gameState.Inventory.Count == 0 ? "Inventory: empty" : "Inventory: loaded");
+        OnLeaderboardChanged(_gameState.GetLeaderboardStanding().Summary);
+        OnPerksChanged(PerkCatalog.Format(_gameState.LocalPerks));
         OnRelationshipsChanged("Mara: Neutral (0)");
         OnFactionsChanged("Free Settlers Rep: 0");
-        OnQuestsChanged(gameState.Quests.FormatActiveSummary());
+        OnQuestsChanged(_gameState.Quests.FormatActiveSummary());
         OnCombatChanged("Combat: none");
-        OnEntanglementsChanged(gameState.Entanglements.FormatSummary());
-        OnDuelsChanged(gameState.Duels.FormatSummary());
-        OnWorldEventsChanged(gameState.WorldEvents.FormatLatestSummary());
+        OnEntanglementsChanged(_gameState.Entanglements.FormatSummary());
+        OnDuelsChanged(_gameState.Duels.FormatSummary());
+        OnWorldEventsChanged(_gameState.WorldEvents.FormatLatestSummary());
+    }
+
+    public override void _UnhandledInput(InputEvent @event)
+    {
+        if (@event is InputEventKey { Pressed: true, Echo: false } key &&
+            key.Keycode == Key.I)
+        {
+            ToggleInventoryOverlay();
+            GetViewport().SetInputAsHandled();
+        }
     }
 
     public void ShowPrompt(string text)
@@ -82,6 +96,20 @@ public partial class HudController : CanvasLayer
     public void HidePrompt()
     {
         _promptPanel.Visible = false;
+    }
+
+    public void ToggleInventoryOverlay()
+    {
+        SetInventoryOverlayVisible(!_inventoryPanel.Visible);
+    }
+
+    public void SetInventoryOverlayVisible(bool visible)
+    {
+        _inventoryPanel.Visible = visible;
+        if (visible)
+        {
+            RefreshInventoryOverlay();
+        }
     }
 
     public void ShowStamina(string staminaText)
@@ -293,6 +321,23 @@ public partial class HudController : CanvasLayer
             AutowrapMode = TextServer.AutowrapMode.WordSmart
         };
         _promptPanel.AddChild(_promptLabel);
+
+        _inventoryPanel = new PanelContainer
+        {
+            OffsetLeft = 880,
+            OffsetTop = 16,
+            OffsetRight = 1264,
+            OffsetBottom = 420,
+            Visible = false
+        };
+        root.AddChild(_inventoryPanel);
+
+        _inventoryOverlayLabel = new Label
+        {
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            Text = "Inventory"
+        };
+        _inventoryPanel.AddChild(_inventoryOverlayLabel);
     }
 
     private void OnKarmaChanged(int score, string tierName, string pathName)
@@ -309,6 +354,10 @@ public partial class HudController : CanvasLayer
     private void OnInventoryChanged(string inventoryText)
     {
         _inventoryLabel.Text = inventoryText;
+        if (_inventoryPanel.Visible)
+        {
+            RefreshInventoryOverlay();
+        }
     }
 
     private void OnLeaderboardChanged(string leaderboardText)
@@ -737,5 +786,68 @@ public partial class HudController : CanvasLayer
             gameState.LocalPlayer.AttackPower,
             gameState.LocalPlayer.Defense,
             _lastStatusEffects);
+    }
+
+    private void RefreshInventoryOverlay()
+    {
+        if (_gameState is null)
+        {
+            return;
+        }
+
+        _inventoryOverlayLabel.Text = FormatInventoryOverlay(
+            _gameState.Inventory,
+            _gameState.LocalScrip,
+            _gameState.LocalPlayer.Equipment);
+    }
+
+    public static string FormatInventoryOverlay(
+        IReadOnlyList<GameItem> items,
+        int scrip,
+        IReadOnlyDictionary<EquipmentSlot, GameItem> equipment)
+    {
+        var lines = new List<string>
+        {
+            "Inventory",
+            $"Scrip: {scrip}",
+            string.Empty,
+            "Equipment:"
+        };
+
+        lines.Add($"Main Hand: {FormatEquipped(equipment, EquipmentSlot.MainHand)}");
+        lines.Add($"Body: {FormatEquipped(equipment, EquipmentSlot.Body)}");
+        lines.Add($"Trinket: {FormatEquipped(equipment, EquipmentSlot.Trinket)}");
+        lines.Add(string.Empty);
+        lines.Add("Items:");
+
+        if (items is null || items.Count == 0)
+        {
+            lines.Add("empty");
+            lines.Add(string.Empty);
+            lines.Add("I - Close");
+            return string.Join("\n", lines);
+        }
+
+        foreach (var group in items
+            .GroupBy(item => item.Id)
+            .OrderBy(group => group.First().Category)
+            .ThenBy(group => group.First().Name))
+        {
+            var item = group.First();
+            lines.Add($"{item.Name} x{group.Count()} [{item.Category}]");
+        }
+
+        lines.Add(string.Empty);
+        lines.Add("I - Close | Z/X equip basics | C place loose item");
+        return string.Join("\n", lines);
+    }
+
+    private static string FormatEquipped(
+        IReadOnlyDictionary<EquipmentSlot, GameItem> equipment,
+        EquipmentSlot slot)
+    {
+        return equipment is not null && equipment.TryGetValue(slot, out var item)
+            ? item.Name
+            : "empty";
     }
 }

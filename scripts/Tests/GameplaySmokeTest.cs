@@ -147,6 +147,17 @@ public partial class GameplaySmokeTest : Node
             "Combat: hit | You ATK:10 DEF:3 | Status: Attack Cooldown (2)",
             HudController.FormatCombatLine("Combat: hit", 10, 3, new[] { "Attack Cooldown (2)" }),
             "combat HUD line includes active status effects");
+        var inventoryOverlay = HudController.FormatInventoryOverlay(
+            new[] { StarterItems.RepairKit, StarterItems.RepairKit, StarterItems.WhoopieCushion },
+            42,
+            new System.Collections.Generic.Dictionary<EquipmentSlot, GameItem>
+            {
+                [EquipmentSlot.MainHand] = StarterItems.PracticeStick
+            });
+        ExpectTrue(inventoryOverlay.Contains("Scrip: 42"), "inventory overlay shows scrip");
+        ExpectTrue(inventoryOverlay.Contains("Main Hand: Practice Stick"), "inventory overlay shows equipped weapon");
+        ExpectTrue(inventoryOverlay.Contains("Repair Kit x2"), "inventory overlay groups matching items");
+        ExpectTrue(inventoryOverlay.Contains("I - Close"), "inventory overlay explains close control");
         ExpectEqual(25f, WorldHealthBar.CalculateHealthPercent(25, 100), "world health bar percent follows visible player health");
         var peerPrompt = PeerStandInController.FormatPrompt(
             hasBeenRobbed: true,
