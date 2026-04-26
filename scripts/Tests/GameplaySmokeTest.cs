@@ -112,6 +112,15 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(32 * 32, generatedA.TileMap.GetChunk(new GeneratedChunkCoordinate(0, 0)).Tiles.Count, "tile map can materialize one chunk");
         ExpectEqual(4, generatedA.TileMap.GetChunksAround(32, 32, radiusChunks: 1).Count, "tile map can query nearby chunks");
         var artSet = ThemeArtRegistry.GetForTheme(generatedA.Theme);
+        ExpectEqual(
+            ThemeArtRegistry.DefaultAtlasTileSizePixels,
+            artSet.GetTile(WorldTileIds.ClinicFloor).AtlasTileSizePixels,
+            "theme art registry records atlas tile size");
+        ExpectEqual(
+            new Rect2(0, 32, 32, 32),
+            artSet.GetTile(WorldTileIds.ClinicFloor).SourceRegion,
+            "theme art registry can calculate atlas source regions");
+        ExpectFalse(artSet.GetTile(WorldTileIds.ClinicFloor).HasAtlasRegion, "theme art registry keeps atlas rendering disabled until exact regions are mapped");
         var renderer = new GeneratedTileMapRenderer();
         renderer.SetChunks(
             new[] { ToMapChunkSnapshot(generatedA.TileMap.GetChunk(new GeneratedChunkCoordinate(0, 0))) },

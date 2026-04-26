@@ -37,6 +37,8 @@ The current prototype renderer draws those server-provided chunks with
 placeholder colors until the tileset atlas mapping is ready.
 Renderer state is chunk-cached, so visible chunks can be added, updated, and
 evicted as players move through larger worlds.
+Atlas rendering is opt-in per logical tile id. Until exact source regions are
+mapped from the sheet, placeholder colors remain the readable fallback.
 
 Match time is server-owned and deterministic. The server advances elapsed match
 seconds, emits a `match_finished` event when time expires, and locks the Saint

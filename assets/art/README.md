@@ -18,3 +18,7 @@ That path is registered in `scripts/World/ThemeArtRegistry.cs`. For now the
 game still renders placeholder colors, but the registry already stores atlas
 coordinates so we can switch logical tile ids to real art without changing
 world generation.
+
+Atlas rendering is intentionally opt-in per tile id. Set `HasAtlasRegion` only
+after the exact source rectangle for a tile/prop is mapped from the sheet; until
+then the game uses placeholder colors so the prototype stays readable.
