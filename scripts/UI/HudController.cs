@@ -39,6 +39,9 @@ public partial class HudController : CanvasLayer
     private Label _promptLabel = new();
     private PanelContainer _inventoryPanel = new();
     private Label _inventoryOverlayLabel = new();
+    private PanelContainer _developerPanel = new();
+    private Label _developerOverlayLabel = new();
+    private ClientInterestSnapshot _lastSnapshot;
     private PanelContainer _escapeMenuPanel = new();
     private Control _escapeOptionsPanel = new();
     private Label _escapeMenuStatusLabel = new();
@@ -134,6 +137,10 @@ public partial class HudController : CanvasLayer
         var snapshotsPerSecond = (snapshotCount - _lastSnapshotCount) / _perfAccumulator;
         _lastSnapshotCount = snapshotCount;
         _perfLabel.Text = $"Perf: {fps:0} FPS | snapshots {snapshotsPerSecond:0.0}/s | visible chunks {_serverSession?.LastLocalSnapshot?.MapChunks.Count ?? 0}";
+        if (_developerPanel.Visible)
+        {
+            RefreshDeveloperOverlay();
+        }
         _perfAccumulator = 0;
         _perfFrameCount = 0;
     }
@@ -148,6 +155,13 @@ public partial class HudController : CanvasLayer
         if (key.Keycode == Key.Escape)
         {
             ToggleEscapeMenu();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        if (key.Keycode == Key.Quoteleft || key.Keycode == Key.Asciitilde)
+        {
+            ToggleDeveloperOverlay();
             GetViewport().SetInputAsHandled();
             return;
         }
@@ -187,6 +201,20 @@ public partial class HudController : CanvasLayer
     public void ShowStamina(string staminaText)
     {
         _staminaLabel.Text = staminaText;
+    }
+
+    public void ToggleDeveloperOverlay()
+    {
+        SetDeveloperOverlayVisible(!_developerPanel.Visible);
+    }
+
+    public void SetDeveloperOverlayVisible(bool visible)
+    {
+        _developerPanel.Visible = visible;
+        if (visible)
+        {
+            RefreshDeveloperOverlay();
+        }
     }
 
     public void ToggleEscapeMenu()
@@ -330,7 +358,8 @@ public partial class HudController : CanvasLayer
             OffsetTop = 224,
             OffsetRight = 900,
             OffsetBottom = 254,
-            Text = "Mara: Neutral (0)"
+            Text = "Mara: Neutral (0)",
+            Visible = false
         };
         root.AddChild(_relationshipsLabel);
 
@@ -340,7 +369,8 @@ public partial class HudController : CanvasLayer
             OffsetTop = 256,
             OffsetRight = 900,
             OffsetBottom = 286,
-            Text = "Free Settlers Rep: 0"
+            Text = "Free Settlers Rep: 0",
+            Visible = false
         };
         root.AddChild(_factionsLabel);
 
@@ -350,7 +380,8 @@ public partial class HudController : CanvasLayer
             OffsetTop = 288,
             OffsetRight = 900,
             OffsetBottom = 318,
-            Text = "Quests: none"
+            Text = "Quests: none",
+            Visible = false
         };
         root.AddChild(_questsLabel);
 
@@ -360,7 +391,8 @@ public partial class HudController : CanvasLayer
             OffsetTop = 320,
             OffsetRight = 900,
             OffsetBottom = 350,
-            Text = "Combat: none"
+            Text = "Combat: none",
+            Visible = false
         };
         root.AddChild(_combatLabel);
 
@@ -370,7 +402,8 @@ public partial class HudController : CanvasLayer
             OffsetTop = 352,
             OffsetRight = 900,
             OffsetBottom = 382,
-            Text = "Entanglements: none"
+            Text = "Entanglements: none",
+            Visible = false
         };
         root.AddChild(_entanglementsLabel);
 
@@ -380,7 +413,8 @@ public partial class HudController : CanvasLayer
             OffsetTop = 384,
             OffsetRight = 1000,
             OffsetBottom = 414,
-            Text = "Rumors: quiet"
+            Text = "Rumors: quiet",
+            Visible = false
         };
         root.AddChild(_worldEventsLabel);
 
@@ -390,7 +424,8 @@ public partial class HudController : CanvasLayer
             OffsetTop = 416,
             OffsetRight = 1000,
             OffsetBottom = 446,
-            Text = "Duels: none"
+            Text = "Duels: none",
+            Visible = false
         };
         root.AddChild(_duelsLabel);
 
@@ -401,7 +436,8 @@ public partial class HudController : CanvasLayer
             OffsetRight = 1000,
             OffsetBottom = 510,
             Text = "Sync: waiting",
-            AutowrapMode = TextServer.AutowrapMode.WordSmart
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            Visible = false
         };
         root.AddChild(_syncLabel);
 
@@ -411,7 +447,8 @@ public partial class HudController : CanvasLayer
             OffsetTop = 512,
             OffsetRight = 1000,
             OffsetBottom = 540,
-            Text = "Perf: waiting"
+            Text = "Perf: waiting",
+            Visible = false
         };
         root.AddChild(_perfLabel);
 
@@ -459,7 +496,37 @@ public partial class HudController : CanvasLayer
         };
         _inventoryPanel.AddChild(_inventoryOverlayLabel);
 
+        BuildDeveloperOverlay(root);
         BuildEscapeMenu(root);
+    }
+
+    private void BuildDeveloperOverlay(Control root)
+    {
+        _developerPanel = new PanelContainer
+        {
+            Name = "DeveloperPanel",
+            OffsetLeft = 760,
+            OffsetTop = 16,
+            OffsetRight = 1264,
+            OffsetBottom = 704,
+            Visible = false
+        };
+        root.AddChild(_developerPanel);
+
+        var margin = new MarginContainer { Name = "DeveloperMargin" };
+        margin.AddThemeConstantOverride("margin_left", 16);
+        margin.AddThemeConstantOverride("margin_top", 12);
+        margin.AddThemeConstantOverride("margin_right", 16);
+        margin.AddThemeConstantOverride("margin_bottom", 12);
+        _developerPanel.AddChild(margin);
+
+        _developerOverlayLabel = new Label
+        {
+            Name = "DeveloperOverlayLabel",
+            Text = "Developer overlay: waiting for snapshot",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart
+        };
+        margin.AddChild(_developerOverlayLabel);
     }
 
     private void BuildEscapeMenu(Control root)
@@ -625,6 +692,7 @@ public partial class HudController : CanvasLayer
         if (serverSession?.LastLocalSnapshot is not null)
         {
             var snapshot = serverSession.LastLocalSnapshot;
+            _lastSnapshot = snapshot;
             _matchLabel.Text = FormatMatchStatus(snapshot.Match);
             var localPlayer = snapshot.Players.FirstOrDefault(player => player.Id == snapshot.PlayerId);
             if (localPlayer is not null)
@@ -638,6 +706,15 @@ public partial class HudController : CanvasLayer
         }
 
         _syncLabel.Text = $"Sync: {snapshotSummary}";
+        if (_developerPanel.Visible)
+        {
+            RefreshDeveloperOverlay();
+        }
+    }
+
+    private void RefreshDeveloperOverlay()
+    {
+        _developerOverlayLabel.Text = FormatDeveloperOverlay(_lastSnapshot, _perfLabel.Text);
     }
 
     private void SetHealth(int health, int maxHealth)
@@ -1094,6 +1171,69 @@ public partial class HudController : CanvasLayer
 
         lines.Add(string.Empty);
         lines.Add("I - Close | Z/X equip basics | C place loose item");
+        return string.Join("\n", lines);
+    }
+
+    public static string FormatDeveloperOverlay(ClientInterestSnapshot snapshot, string perfLine)
+    {
+        if (snapshot is null)
+        {
+            return "Developer Overlay (~)\nWaiting for local snapshot.";
+        }
+
+        var local = snapshot.Players.FirstOrDefault(player => player.Id == snapshot.PlayerId) ?? snapshot.Players.FirstOrDefault();
+        var lines = new List<string>
+        {
+            "Developer Overlay (~)",
+            perfLine,
+            $"World: {snapshot.WorldId} | Tick: {snapshot.Tick} | Radius: {snapshot.InterestRadiusTiles}",
+            $"Map chunks: {snapshot.MapChunks.Count} | Items: {snapshot.WorldItems.Count} | Structures: {snapshot.Structures.Count}",
+            $"Events: server {snapshot.SyncHint.ServerEventCount}, world {snapshot.SyncHint.WorldEventCount}",
+            string.Empty,
+            "Local player:"
+        };
+
+        if (local is null)
+        {
+            lines.Add("missing");
+        }
+        else
+        {
+            lines.Add($"{local.DisplayName} ({local.Id}) @ {local.TileX},{local.TileY}");
+            lines.Add($"Karma {local.Karma:+#;-#;0} | {local.Tier} rank {local.KarmaRank} | {local.KarmaProgress}");
+            lines.Add($"HP {local.Health}/{local.MaxHealth} | Scrip {local.Scrip} | Standing {local.Standing}");
+            lines.Add($"Inventory: {local.InventoryItemIds.Count} | Equipment: {string.Join(", ", local.EquipmentItemIds.Select(pair => $"{pair.Key}:{pair.Value}"))}");
+            lines.Add($"Status: {(local.StatusEffects.Count == 0 ? "none" : string.Join(", ", local.StatusEffects))}");
+        }
+
+        lines.Add(string.Empty);
+        lines.Add("Nearby players:");
+        foreach (var player in snapshot.Players.Where(player => player.Id != snapshot.PlayerId).Take(8))
+        {
+            lines.Add($"- {player.DisplayName} ({player.Id}) @ {player.TileX},{player.TileY} HP {player.Health}/{player.MaxHealth} Karma {player.Karma:+#;-#;0} {player.Tier}");
+        }
+
+        if (snapshot.Players.Count <= 1)
+        {
+            lines.Add("none");
+        }
+
+        lines.Add(string.Empty);
+        lines.Add("Nearby NPCs:");
+        foreach (var npc in snapshot.Npcs.Take(10))
+        {
+            var dialogue = snapshot.Dialogues.FirstOrDefault(candidate => candidate.NpcId == npc.Id);
+            var choices = dialogue is null ? "no dialogue" : $"{dialogue.Choices.Count} choices";
+            lines.Add($"- {npc.Name} ({npc.Id}) @ {npc.TileX},{npc.TileY} {npc.Role}/{npc.Faction} | {choices}");
+        }
+
+        if (snapshot.Npcs.Count == 0)
+        {
+            lines.Add("none");
+        }
+
+        lines.Add(string.Empty);
+        lines.Add("Tilde closes this overlay. Esc opens the non-pausing menu.");
         return string.Join("\n", lines);
     }
 

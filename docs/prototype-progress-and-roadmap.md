@@ -13,6 +13,8 @@ and the next practical build slices.
 - Options now includes prototype video settings (resolution list, display-resolution detection, fullscreen/windowed, VSync), audio sliders, controls/accessibility notes, and apply/save behavior.
 - The main menu has an original generated placeholder theme loop, with master/music sliders affecting menu music volume.
 - Gameplay now has a non-pausing Escape menu overlay with Resume, Options, Main Menu, and Quit actions; the options panel is a placeholder ready to reuse the main settings model.
+- The normal gameplay HUD is cleaner by default; verbose relationship/faction/quest/combat/sync/perf details move behind a tilde (`~`) developer overlay.
+- The tilde developer overlay shows local player details, nearby players, nearby NPCs, snapshot counts, performance, map chunks, items, structures, and event counts.
 - Gameplay HUD now includes a simple perf line showing FPS, local snapshot refresh rate, and visible map chunk count for prototype stutter diagnosis.
 
 ### Server-owned karma loop
@@ -65,7 +67,7 @@ and the next practical build slices.
 
 ### Gameplay integration
 
-- Main menu and Escape menu visuals/settings are still prototype UI and need final styling, broader audio bus wiring, shared options persistence, full control remapping/accessibility settings, and eventual multiplayer/session entry flows.
+- Main menu, HUD, developer overlay, and Escape menu visuals/settings are still prototype UI and need final styling, broader audio bus wiring, shared options persistence, full control remapping/accessibility settings, and eventual multiplayer/session entry flows.
 - Generated station locations have inspectable markers and interactable fixtures, but their art is still placeholder greenhouse components and needs proper sign/landmark visuals.
 - Generated NPCs have first-pass station dialogue/quests, but those choices are still broad templates rather than bespoke quest chains.
 - Generated oddities are server-seeded, but pickup placement needs more visual/station context and balancing.

@@ -48,6 +48,10 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/ResumeButton") is not null, "Escape menu includes resume action");
         ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/OptionsButton") is not null, "Escape menu includes options action");
         ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/MainMenuButton") is not null, "Escape menu includes main menu action");
+        ExpectTrue(hudProbe.GetNodeOrNull<PanelContainer>("HudRoot/DeveloperPanel") is not null, "gameplay HUD includes tilde developer overlay");
+        ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/DeveloperPanel/DeveloperMargin/DeveloperOverlayLabel") is not null, "developer overlay includes detailed character label");
+        hudProbe.ToggleDeveloperOverlay();
+        ExpectTrue(hudProbe.GetNode<PanelContainer>("HudRoot/DeveloperPanel").Visible, "tilde developer overlay can be toggled visible");
         ExpectFalse(GetTree().Paused, "Escape menu prototype does not pause the running tree");
         hudProbe.QueueFree();
 
