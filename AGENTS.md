@@ -197,6 +197,10 @@ Godot 2D top-down template:
   The expected animation names are `idle-down`, `idle-up`, `idle-left`,
   `idle-right`, `walk-down`, `walk-up`, `walk-left`, and `walk-right`.
   Walk rows default to four frames each.
+- The generated 8-direction template/reference sheet maps to
+  `CharacterSheetLayout.EightDirectionTemplate(origin)` once it is exported as a
+  clean runtime PNG with only frames: 8 columns x 9 rows, `32 x 32` frames,
+  `256 x 288` total. Do not catalog the annotated prompt/reference PNG directly.
 - Stable world tiles should eventually become Godot `TileSet` resources with
   atlas sources, terrain rules, collision, and animated tile data. Until then,
   the server-friendly generated tile renderer can keep drawing cataloged atlas

@@ -124,6 +124,23 @@ public partial class GameplaySmokeTest : Node
             4,
             gridAnimations.First(animation => animation.Name == PrototypeCharacterSprite.WalkRightAnimation).Frames.Count,
             "four-direction character grid maps four walk frames per direction");
+        var templateAnimations = CharacterSheetLayout.EightDirectionTemplate(Vector2.Zero);
+        ExpectEqual(
+            new Vector2(256f, 288f),
+            CharacterSheetLayout.CalculateSheetSize(),
+            "eight-direction character template uses a 256x288 runtime sheet");
+        ExpectEqual(
+            new Rect2(4 * 32, 0, 32, 32),
+            CharacterSheetLayout.DirectionFrame(Vector2.Zero, CharacterSheetDirection.Back, CharacterSheetLayout.StandardIdleRow, new Vector2(32f, 32f)),
+            "eight-direction character template maps back idle to the back column");
+        ExpectEqual(
+            new Rect2(2 * 32, 1 * 32, 32, 32),
+            templateAnimations.First(animation => animation.Name == PrototypeCharacterSprite.WalkRightAnimation).Frames[0],
+            "eight-direction character template maps walk-right to the right column");
+        ExpectEqual(
+            new Rect2(6 * 32, 4 * 32, 32, 32),
+            templateAnimations.First(animation => animation.Name == PrototypeCharacterSprite.WalkLeftAnimation).Frames[^1],
+            "eight-direction character template maps walk-left down its direction column");
         var testImage = Image.CreateEmpty(128, 160, false, Image.Format.Rgba8);
         var testTexture = ImageTexture.CreateFromImage(testImage);
         var testDefinition = new PrototypeSpriteDefinition(

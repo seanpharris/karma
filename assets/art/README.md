@@ -86,6 +86,11 @@ For clean runtime character sheets, use the `32 x 32` grid documented in
 `AGENTS.md`. Once a sheet lands, map its top-left runtime-frame origin with
 `PrototypeSpriteCatalog.FourDirectionGridAnimations(...)` so Godot receives
 named `SpriteFrames` animations instead of a single still frame.
+The 8-direction character template/reference sheet needs a clean runtime export
+before it is cataloged. Runtime shape: 8 columns x 9 rows, `32 x 32` frames,
+`256 x 288` total, no labels or guide boxes. Catalog it with
+`CharacterSheetLayout.EightDirectionTemplate(origin)` when the PNG contains only
+the frame grid.
 The current core item models also have source regions mapped for
 `sprites/scifi_item_atlas.png`: whoopie cushion, deflated balloon, repair kit,
 practice stick, work vest, and scrip.
