@@ -159,6 +159,9 @@ The sci-fi tool expansion adds `multi_tool`, `welding_torch`, `medi_patch`,
 `lockpick_set`, `flashlight`, `portable_shield`, `hacking_device`, `scanner`,
 `grappling_hook`, `chem_injector`, `power_cell`, `bolt_cutters`, and
 `magnetic_grabber`.
+The runtime catalog exposes all starter items through `StarterItems.All`; the
+prototype scene auto-spawns any cataloged item that is not already hand-placed
+into a small pickup/art showcase near the starter area.
 
 ## NPC Relationships
 

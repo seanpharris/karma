@@ -602,6 +602,22 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Rifle27).HasAtlasRegion, "prototype weapon sprite can use weapon atlas art");
         ExpectEqual(PrototypeSpriteCatalog.ToolAtlasPath, PrototypeSpriteCatalog.Get(PrototypeSpriteKind.MultiTool).AtlasPath, "prototype tool sprite records tool atlas path");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.PortableShield).HasAtlasRegion, "prototype tool sprite can use tool atlas art");
+        ExpectEqual(36, StarterItems.All.Count, "starter item catalog exposes all prototype items");
+        ExpectEqual(
+            StarterItems.All.Count,
+            StarterItems.All.Select(item => item.Id).Distinct().Count(),
+            "starter item catalog ids are unique");
+        foreach (var starterItem in StarterItems.All)
+        {
+            ExpectTrue(StarterItems.TryGetById(starterItem.Id, out _), $"starter item catalog can resolve {starterItem.Id}");
+            ExpectTrue(
+                PrototypeSpriteCatalog.Get(PrototypeSpriteCatalog.GetKindForItem(starterItem.Id)).HasAtlasRegion,
+                $"starter item {starterItem.Id} has mapped prototype art");
+        }
+
+        ExpectEqual(new Vector2(620f, 220f), WorldRoot.CalculateCatalogShowcasePosition(0), "catalog showcase starts near the prototype item area");
+        ExpectEqual(new Vector2(620f + (6 * 48f), 220f), WorldRoot.CalculateCatalogShowcasePosition(6), "catalog showcase fills a row before wrapping");
+        ExpectEqual(new Vector2(620f, 268f), WorldRoot.CalculateCatalogShowcasePosition(7), "catalog showcase wraps to the next row");
         var greenhouse = StructureArtCatalog.Get(StructureSpriteKind.GreenhouseStandard);
         ExpectEqual(StructureArtCatalog.GreenhouseAtlasPath, greenhouse.AtlasPath, "structure catalog records greenhouse atlas path");
         ExpectTrue(greenhouse.HasAtlasRegion, "structure catalog maps greenhouse atlas art");

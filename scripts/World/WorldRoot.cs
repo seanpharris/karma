@@ -12,6 +12,7 @@ public partial class WorldRoot : Node2D
     private readonly Dictionary<string, Node2D> _renderedServerNpcs = new();
     private readonly Dictionary<string, Node2D> _renderedServerItems = new();
     private readonly Dictionary<string, Node2D> _renderedServerStructures = new();
+    private readonly List<PickupObject> _prototypeCatalogPickups = new();
     private GeneratedTileMapRenderer _tileMapRenderer;
     private PrototypeServerSession _serverSession;
 
@@ -38,6 +39,8 @@ public partial class WorldRoot : Node2D
         {
             _tileMapRenderer.SetTileMap(GeneratedWorld.TileMap, ThemeArtRegistry.GetForTheme(GeneratedWorld.Theme));
         }
+
+        CreatePrototypeCatalogPickups();
     }
 
     private void OnLocalSnapshotChanged(string snapshotSummary)
@@ -224,6 +227,64 @@ public partial class WorldRoot : Node2D
             AddChild(node);
             _renderedServerItems[item.EntityId] = node;
         }
+    }
+
+    private void CreatePrototypeCatalogPickups()
+    {
+        if (_prototypeCatalogPickups.Count > 0)
+        {
+            return;
+        }
+
+        var sceneItemIds = GetChildren()
+            .OfType<PickupObject>()
+            .Select(pickup => pickup.ItemId)
+            .ToHashSet();
+        var itemsToShowcase = StarterItems.All
+            .Where(item => !sceneItemIds.Contains(item.Id))
+            .ToArray();
+
+        for (var index = 0; index < itemsToShowcase.Length; index++)
+        {
+            var item = itemsToShowcase[index];
+            var pickup = CreatePrototypeCatalogPickup(item, index);
+            AddChild(pickup);
+            _prototypeCatalogPickups.Add(pickup);
+        }
+    }
+
+    private static PickupObject CreatePrototypeCatalogPickup(GameItem item, int index)
+    {
+        var pickup = new PickupObject
+        {
+            Name = $"Catalog_{item.Id}",
+            EntityId = $"catalog_{item.Id}",
+            ItemId = item.Id,
+            Position = CalculateCatalogShowcasePosition(index)
+        };
+        pickup.AddChild(new PrototypeAtlasSprite
+        {
+            Name = $"{item.Id}_sprite",
+            Kind = PrototypeSpriteCatalog.GetKindForItem(item.Id),
+            DrawShadow = false
+        });
+        pickup.AddChild(new CollisionShape2D
+        {
+            Shape = new CircleShape2D
+            {
+                Radius = 18f
+            }
+        });
+        return pickup;
+    }
+
+    public static Vector2 CalculateCatalogShowcasePosition(int index)
+    {
+        const int columns = 7;
+        var safeIndex = Mathf.Max(0, index);
+        var column = safeIndex % columns;
+        var row = safeIndex / columns;
+        return new Vector2(620f + (column * 48f), 220f + (row * 48f));
     }
 
     private static bool IsDynamicWorldItem(WorldItemSnapshot item)

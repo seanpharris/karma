@@ -317,6 +317,46 @@ public static class StarterItems
         new[] { "utility", "retrieval", "metal" },
         "Retrieves metallic items from a distance.");
 
+    public static IReadOnlyList<GameItem> All { get; } = new[]
+    {
+        WhoopieCushion,
+        DeflatedBalloon,
+        RepairKit,
+        PracticeStick,
+        WorkVest,
+        RationPack,
+        DataChip,
+        FilterCore,
+        ContrabandPackage,
+        ApologyFlower,
+        PortableTerminal,
+        StunBaton,
+        ElectroPistol,
+        Smg11,
+        ShotgunMk1,
+        Rifle27,
+        SniperX9,
+        PlasmaCutter,
+        FlameThrower,
+        GrenadeLauncher,
+        Railgun,
+        ImpactMine,
+        EmpGrenade,
+        MultiTool,
+        WeldingTorch,
+        MediPatch,
+        LockpickSet,
+        Flashlight,
+        PortableShield,
+        HackingDevice,
+        Scanner,
+        GrapplingHook,
+        ChemInjector,
+        PowerCell,
+        BoltCutters,
+        MagneticGrabber
+    };
+
     public static GameItem GetById(string id)
     {
         return TryGetById(id, out var item) ? item : WhoopieCushion;
