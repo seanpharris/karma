@@ -949,6 +949,16 @@ public sealed class AuthoritativeWorldServer
             return ProcessRepairKitUse(intent, item);
         }
 
+        if (item.Id == StarterItems.RationPackId)
+        {
+            return ProcessHealingConsumableUse(intent, item, healing: 10);
+        }
+
+        if (item.Id == StarterItems.MediPatchId)
+        {
+            return ProcessHealingConsumableUse(intent, item, healing: 18);
+        }
+
         if (item.Slot == EquipmentSlot.None)
         {
             return Reject(intent, $"Item cannot be equipped: {item.Name}.");
@@ -1003,6 +1013,43 @@ public sealed class AuthoritativeWorldServer
                 ["targetId"] = targetId,
                 ["itemId"] = item.Id,
                 ["healing"] = repairKitHealing.ToString(),
+                ["targetHealth"] = _state.Players[targetId].Health.ToString(),
+                ["targetMaxHealth"] = _state.Players[targetId].MaxHealth.ToString()
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessHealingConsumableUse(ServerIntent intent, GameItem item, int healing)
+    {
+        var targetId = intent.Payload.TryGetValue("targetId", out var payloadTargetId)
+            ? payloadTargetId
+            : intent.PlayerId;
+        if (targetId != intent.PlayerId && !CanReachPlayer(intent.PlayerId, targetId, out var rejectionReason))
+        {
+            return Reject(intent, rejectionReason);
+        }
+
+        if (!_state.HasItem(intent.PlayerId, item.Id))
+        {
+            return Reject(intent, $"Player does not have item: {item.Name}.");
+        }
+
+        if (!_state.HealPlayer(intent.PlayerId, targetId, healing, $"{item.Name} field use"))
+        {
+            return Reject(intent, $"{item.Name} had no injured target.");
+        }
+
+        _state.ConsumeItem(intent.PlayerId, item.Id);
+        var serverEvent = AppendEvent(
+            "item_used",
+            $"{intent.PlayerId} used {item.Id} on {targetId}",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["targetId"] = targetId,
+                ["itemId"] = item.Id,
+                ["healing"] = healing.ToString(),
                 ["targetHealth"] = _state.Players[targetId].Health.ToString(),
                 ["targetMaxHealth"] = _state.Players[targetId].MaxHealth.ToString()
             });

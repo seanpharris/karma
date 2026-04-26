@@ -318,6 +318,23 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             HudController.FormatLatestServerEvent(new[] { selfRepair.Event }).Contains("HP:"),
             "HUD formats repair kit healing outcome");
+        counterAttackState.DamagePlayer("peer_stand_in", GameState.LocalPlayerId, 20, "ration smoke test");
+        counterAttackState.AddItem(GameState.LocalPlayerId, StarterItems.RationPack);
+        var localHealthBeforeRation = counterAttackState.LocalPlayer.Health;
+        var rationUse = counterAttackServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            2,
+            IntentType.UseItem,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["itemId"] = StarterItems.RationPackId
+            }));
+        ExpectTrue(rationUse.WasAccepted, "server accepts ration pack consumable use");
+        ExpectEqual(localHealthBeforeRation + 10, counterAttackState.LocalPlayer.Health, "ration pack restores a small amount of health");
+        ExpectFalse(counterAttackState.HasItem(GameState.LocalPlayerId, StarterItems.RationPackId), "ration pack use consumes the ration pack");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { rationUse.Event }).Contains("used Ration Pack"),
+            "HUD formats non-repair consumable healing outcome");
         var graceState = new GameState();
         graceState.RegisterPlayer(GameState.LocalPlayerId, "Grace Tester");
         graceState.RegisterPlayer("grace_target", "Grace Target");

@@ -515,15 +515,15 @@ public partial class HudController : CanvasLayer
             return $"{player} chose \"{choice}\" with {npc}. Karma {amount:+#;-#;0}.";
         }
 
-        if (latest.EventId.Contains("item_used") &&
-            ReadEventData(latest, "itemId", string.Empty) == Karma.Data.StarterItems.RepairKitId)
+        if (latest.EventId.Contains("item_used"))
         {
             var player = ReadEventData(latest, "playerId", "Someone");
             var target = ReadEventData(latest, "targetId", "someone");
+            var itemName = FormatItemName(ReadEventData(latest, "itemId", string.Empty));
             var healing = ReadEventData(latest, "healing", "?");
             var health = ReadEventData(latest, "targetHealth", "?");
             var maxHealth = ReadEventData(latest, "targetMaxHealth", "?");
-            return $"{player} repaired {target} for {healing}. {target} HP: {health}/{maxHealth}.";
+            return $"{player} used {itemName} on {target} for {healing}. {target} HP: {health}/{maxHealth}.";
         }
 
         if (latest.EventId.Contains("item_purchased"))

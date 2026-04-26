@@ -46,6 +46,9 @@ the authoritative wallet debit.
 Tools can have server-owned effects instead of only living in inventory. The
 first functional tool is the repair kit, which can heal a nearby player and is
 consumed when used.
+Consumables use the same server-owned item path: ration packs now restore a
+small amount of health and are consumed on use, while stronger field tools still
+matter for larger repairs or helping another player.
 
 Prototype matches stay small, but the production large-world target is
 `1000 x 1000` tiles at `16px` logical tile scale. Large worlds must be treated
