@@ -91,6 +91,9 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(2.75f, PlayerController.CalculateCameraZoom(3f, -0.25f, 1.25f, 5f), "camera zoom can move farther out");
         ExpectEqual(1.25f, PlayerController.CalculateCameraZoom(1.25f, -5f, 1.25f, 5f), "camera zoom clamps farthest view");
         ExpectEqual(5f, PlayerController.CalculateCameraZoom(5f, 5f, 1.25f, 5f), "camera zoom clamps closest view");
+        ExpectEqual(new Vector2(120f, 0f), PlayerController.CalculateVelocity(Vector2.Right, 120f, 1.6f, false), "player walk velocity uses base speed");
+        ExpectEqual(new Vector2(192f, 0f), PlayerController.CalculateVelocity(Vector2.Right, 120f, 1.6f, true), "player sprint velocity uses sprint multiplier");
+        ExpectEqual(new Vector2(120f, 0f), PlayerController.CalculateVelocity(Vector2.Right, 120f, 0.5f, true), "player sprint multiplier cannot slow movement");
         var matchServer = new AuthoritativeWorldServer(state, "match-test-world");
         ExpectEqual(MatchStatus.Running, matchServer.Match.Status, "new server match starts running");
         ExpectEqual(30 * 60, matchServer.Match.RemainingSeconds, "new server match starts with full duration remaining");

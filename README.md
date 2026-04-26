@@ -21,7 +21,7 @@ and perks reset.
 
 ## First Prototype Goals
 
-- Top-down 2D movement
+- Top-down 2D movement with left Shift sprinting
 - A tiny generated town map
 - NPC interaction choices that Ascend or Descend the player
 - Weird interactible objects such as whoopie cushions and deflated balloons

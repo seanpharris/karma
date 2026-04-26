@@ -202,6 +202,8 @@ Near the stand-in, the prototype also exposes quick keys for combat/tool loops:
 `Z` equips the practice stick, `X` equips the work vest, `C` places the first
 loose inventory item, `R` uses a repair kit on the stand-in, and `7` gifts 5
 scrip.
+Movement uses WASD, and holding left Shift sprints at a modest speed boost for
+faster prototype traversal.
 
 ## Prototype HUD
 

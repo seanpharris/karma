@@ -10,6 +10,7 @@ namespace Karma.Player;
 public partial class PlayerController : CharacterBody2D
 {
     [Export] public float Speed { get; set; } = 120f;
+    [Export] public float SprintMultiplier { get; set; } = 1.6f;
     [Export] public float MinCameraZoom { get; set; } = 1.25f;
     [Export] public float MaxCameraZoom { get; set; } = 5f;
     [Export] public float CameraZoomStep { get; set; } = 0.25f;
@@ -40,7 +41,7 @@ public partial class PlayerController : CharacterBody2D
                 : new Vector2I(0, direction.Y > 0 ? 1 : -1);
         }
 
-        Velocity = direction * Speed;
+        Velocity = CalculateVelocity(direction, Speed, SprintMultiplier, Input.IsActionPressed("sprint"));
         MoveAndSlide();
 
         SendMoveIfTileChanged();
@@ -101,6 +102,12 @@ public partial class PlayerController : CharacterBody2D
         var lower = Mathf.Min(minZoom, maxZoom);
         var upper = Mathf.Max(minZoom, maxZoom);
         return Mathf.Clamp(currentZoom + delta, lower, upper);
+    }
+
+    public static Vector2 CalculateVelocity(Vector2 direction, float speed, float sprintMultiplier, bool isSprinting)
+    {
+        var multiplier = isSprinting ? Mathf.Max(1f, sprintMultiplier) : 1f;
+        return direction * speed * multiplier;
     }
 
     private void EquipThroughServer(string itemId)
