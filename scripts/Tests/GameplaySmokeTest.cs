@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Godot;
+using Karma.Art;
 using Karma.Core;
 using Karma.Data;
 using Karma.Generation;
@@ -212,6 +213,12 @@ public partial class GameplaySmokeTest : Node
             ThemeArtRegistry.PlaceholderAtlasPath,
             artSet.GetTile(WorldTileIds.DoorAirlock).AtlasPath,
             "theme art registry keeps future atlas path for tile ids");
+        var playerSprite = PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Player);
+        var whoopieSprite = PrototypeSpriteCatalog.Get(PrototypeSpriteKind.WhoopieCushion);
+        ExpectEqual("Player", playerSprite.DisplayName, "prototype sprite catalog names player model");
+        ExpectTrue(playerSprite.Layers.Count >= 8, "prototype player sprite has layered pixel art");
+        ExpectTrue(whoopieSprite.Layers.Any(layer => layer.Shape == PrototypeSpriteShape.Circle), "prototype item sprite supports rounded prop art");
+        ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.RepairKit).Layers.Count >= 4, "prototype tool sprite has recognizable layers");
         ExpectEqual(5, generatedA.Locations.Count, "small world generates prototype location count");
         ExpectEqual(12, generatedA.Npcs.Count, "prototype target players generate starter NPC population");
         ExpectTrue(generatedA.Oddities.Any(item => item.Id == StarterItems.DeflatedBalloonId), "generated world includes absurd oddities");

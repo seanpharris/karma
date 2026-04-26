@@ -22,3 +22,8 @@ world generation.
 Atlas rendering is intentionally opt-in per tile id. Set `HasAtlasRegion` only
 after the exact source rectangle for a tile/prop is mapped from the sheet; until
 then the game uses placeholder colors so the prototype stays readable.
+
+The active prototype actors and pickups use procedural pixel-style models in
+`scripts/Art/PrototypeSpriteModels.cs`. These are deliberately simple Godot draw
+layers, not final art, but they give every playable object a recognizable visual
+until sprite sheets are ready.
