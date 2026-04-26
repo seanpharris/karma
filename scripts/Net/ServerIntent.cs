@@ -65,7 +65,10 @@ public sealed record WorldStructureEntity(
     string Name,
     string Category,
     TilePosition Position,
-    bool IsVisible);
+    bool IsVisible,
+    bool IsInteractable,
+    string InteractionPrompt,
+    string InteractionResult);
 
 public sealed record WorldStructureSnapshot(
     string EntityId,
@@ -73,7 +76,9 @@ public sealed record WorldStructureSnapshot(
     string Name,
     string Category,
     int TileX,
-    int TileY);
+    int TileY,
+    bool IsInteractable,
+    string InteractionPrompt);
 
 public sealed record ShopOfferSnapshot(
     string OfferId,

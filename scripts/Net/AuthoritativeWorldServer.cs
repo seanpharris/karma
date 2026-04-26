@@ -113,7 +113,10 @@ public sealed class AuthoritativeWorldServer
             definition.DisplayName,
             definition.Category,
             position,
-            IsVisible: true);
+            IsVisible: true,
+            IsInteractable: true,
+            InteractionPrompt: $"Press E to inspect {definition.DisplayName}.",
+            InteractionResult: $"{definition.DisplayName} climate controls hum with suspicious optimism.");
     }
 
     public ServerJoinResult JoinPlayer(string playerId, string displayName)
@@ -426,8 +429,17 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, "Interact intent requires entityId.");
         }
 
-        if (!_state.Players.TryGetValue(intent.PlayerId, out var player) ||
-            !_worldItems.TryGetValue(entityId, out var entity))
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var player))
+        {
+            return Reject(intent, $"Unknown player: {intent.PlayerId}.");
+        }
+
+        if (_worldStructures.TryGetValue(entityId, out var structure))
+        {
+            return ProcessStructureInteract(intent, player, structure);
+        }
+
+        if (!_worldItems.TryGetValue(entityId, out var entity))
         {
             return Reject(intent, $"Unknown interact entity: {entityId}.");
         }
@@ -469,6 +481,42 @@ public sealed class AuthoritativeWorldServer
                 ["itemId"] = entity.Item.Id,
                 ["dropOwnerId"] = dropOwnerId,
                 ["karmaAmount"] = karmaAmount.ToString()
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessStructureInteract(
+        ServerIntent intent,
+        PlayerState player,
+        WorldStructureEntity structure)
+    {
+        if (!structure.IsVisible || !structure.IsInteractable)
+        {
+            return Reject(intent, $"Structure cannot be interacted with: {structure.EntityId}.");
+        }
+
+        var radiusSquared = Config.InterestRadiusTiles * Config.InterestRadiusTiles;
+        if (player.Position.DistanceSquaredTo(structure.Position) > radiusSquared)
+        {
+            return Reject(intent, $"Structure is out of range: {structure.EntityId}.");
+        }
+
+        _state.AddWorldEvent(
+            WorldEventType.Structure,
+            $"{player.DisplayName} inspected {structure.Name}: {structure.InteractionResult}",
+            intent.PlayerId,
+            structure.EntityId);
+
+        var serverEvent = AppendEvent(
+            "structure_interacted",
+            $"{intent.PlayerId} interacted with {structure.StructureId}",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["entityId"] = structure.EntityId,
+                ["structureId"] = structure.StructureId,
+                ["result"] = structure.InteractionResult
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -1269,7 +1317,9 @@ public sealed class AuthoritativeWorldServer
             entity.Name,
             entity.Category,
             entity.Position.X,
-            entity.Position.Y);
+            entity.Position.Y,
+            entity.IsInteractable,
+            entity.InteractionPrompt);
     }
 
     private static ShopOfferSnapshot ToSnapshot(ShopOffer offer, PlayerState player, LeaderboardStanding standing)

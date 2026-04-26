@@ -244,6 +244,18 @@ public partial class GameState : Node
         return true;
     }
 
+    public WorldEvent AddWorldEvent(
+        WorldEventType type,
+        string summary,
+        string sourcePlayerId,
+        string targetId)
+    {
+        var worldEvent = WorldEvents.Add(type, summary, sourcePlayerId, targetId);
+        EmitSignal(SignalName.KarmaEvent, summary);
+        EmitWorldEventsChanged();
+        return worldEvent;
+    }
+
     public bool DamagePlayer(string attackerId, string targetId, int amount, string reason)
     {
         EnsurePrototypePlayers();

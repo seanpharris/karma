@@ -92,13 +92,29 @@ public partial class WorldRoot : Node2D
                 continue;
             }
 
-            var node = new StructureSprite
+            var node = new ServerStructureObject
             {
                 Name = structure.EntityId,
-                StructureId = structure.StructureId,
+                EntityId = structure.EntityId,
+                StructureName = structure.Name,
+                InteractionPrompt = structure.InteractionPrompt,
+                IsInteractable = structure.IsInteractable,
                 Position = new Vector2(structure.TileX * 32f, structure.TileY * 32f),
                 ZIndex = -10
             };
+            var sprite = new StructureSprite
+            {
+                StructureId = structure.StructureId
+            };
+            node.AddChild(sprite);
+            node.AddChild(new CollisionShape2D
+            {
+                Shape = new RectangleShape2D
+                {
+                    Size = new Vector2(192f, 128f)
+                },
+                Position = new Vector2(0f, 12f)
+            });
             AddChild(node);
             _renderedServerStructures[structure.EntityId] = node;
         }

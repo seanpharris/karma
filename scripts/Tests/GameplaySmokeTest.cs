@@ -733,6 +733,18 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(interestSnapshot.Players.Any(player => player.Id == "rival_paragon"), "interest snapshot excludes distant rival");
         ExpectTrue(interestSnapshot.Npcs.Any(npc => npc.Id == StarterNpcs.Mara.Id), "interest snapshot includes visible NPCs");
         ExpectTrue(interestSnapshot.Structures.Any(structure => structure.StructureId == StructureArtCatalog.Get(StructureSpriteKind.GreenhouseStandard).Id), "interest snapshot includes visible structures");
+        ExpectTrue(interestSnapshot.Structures.Any(structure => structure.IsInteractable && structure.InteractionPrompt.Contains("inspect")), "interest snapshot includes structure interaction prompt");
+        var greenhouseInteract = server.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            3,
+            IntentType.Interact,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["entityId"] = "structure_greenhouse_standard"
+            }));
+        ExpectTrue(greenhouseInteract.WasAccepted, "server accepts nearby structure interaction");
+        ExpectEqual(StructureArtCatalog.Get(StructureSpriteKind.GreenhouseStandard).Id, greenhouseInteract.Event.Data["structureId"], "structure interaction event reports structure id");
+        ExpectTrue(state.WorldEvents.Events.Any(worldEvent => worldEvent.Type == WorldEventType.Structure), "structure interaction records world event");
         server.SetTileMap(generatedA.TileMap);
         var mapChunkSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId);
         ExpectTrue(mapChunkSnapshot.MapChunks.Any(chunk => chunk.Tiles.Any(tile => tile.FloorId == WorldTileIds.ClinicFloor)), "interest snapshot includes nearby map chunk tiles");
@@ -757,7 +769,7 @@ public partial class GameplaySmokeTest : Node
         state.AddItem(StarterItems.DeflatedBalloon);
         var serverPlace = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            3,
+            4,
             IntentType.PlaceObject,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -786,7 +798,7 @@ public partial class GameplaySmokeTest : Node
 
         var serverPickup = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            4,
+            5,
             IntentType.Interact,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -798,7 +810,7 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(server.CreateInterestSnapshot(GameState.LocalPlayerId).WorldItems.Any(entity => entity.EntityId == "pickup_practice_stick"), "picked up entity leaves interest snapshot");
         ExpectFalse(server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            5,
+            6,
             IntentType.Interact,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -811,7 +823,7 @@ public partial class GameplaySmokeTest : Node
         var peerHealthBeforeRepair = state.Players["peer_stand_in"].Health;
         var serverRepair = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            6,
+            7,
             IntentType.UseItem,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -825,7 +837,7 @@ public partial class GameplaySmokeTest : Node
 
         var serverEquip = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            7,
+            8,
             IntentType.UseItem,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -857,6 +869,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(state.LocalKarma.Score < 12, "server attack descends attacker karma");
         ExpectTrue(serverAttack.Event.EventId.Contains("player_attacked"), "server attack emits combat event");
         var postAttackSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId, afterTick: 2);
+        ExpectTrue(postAttackSnapshot.ServerEvents.Any(serverEvent => serverEvent.EventId.Contains("structure_interacted")), "interest snapshot includes visible structure events");
         ExpectTrue(postAttackSnapshot.ServerEvents.Any(serverEvent => serverEvent.EventId.Contains("item_placed")), "interest snapshot includes visible placement events");
         ExpectTrue(postAttackSnapshot.ServerEvents.Any(serverEvent => serverEvent.EventId.Contains("item_picked_up")), "interest snapshot includes visible pickup events");
         ExpectTrue(postAttackSnapshot.ServerEvents.Any(serverEvent => serverEvent.EventId.Contains("item_equipped")), "interest snapshot includes visible equipment events");
@@ -887,7 +900,7 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(staleIntent.WasAccepted, "server rejects duplicate sequence intent");
         ExpectTrue(state.LocalKarma.Score > 0, "rejected stale intent does not mutate karma");
         var deltaInterestSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId, afterTick: 2);
-        ExpectEqual(9, deltaInterestSnapshot.ServerEvents.Count, "interest snapshot can return visible events after a tick");
+        ExpectEqual(10, deltaInterestSnapshot.ServerEvents.Count, "interest snapshot can return visible events after a tick");
         ExpectTrue(deltaInterestSnapshot.SyncHint.IsDelta, "delta interest snapshot reports delta sync hint");
         ExpectEqual(2L, deltaInterestSnapshot.SyncHint.AfterTick, "delta interest snapshot records requested after-tick");
         ExpectEqual(deltaInterestSnapshot.ServerEvents.Count, deltaInterestSnapshot.SyncHint.ServerEventCount, "delta sync hint counts returned server events");

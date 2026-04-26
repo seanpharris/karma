@@ -9,6 +9,7 @@ public enum WorldEventType
     Quest,
     Combat,
     Karma,
+    Structure,
     System
 }
 
