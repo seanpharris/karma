@@ -39,6 +39,12 @@ public static class StarterItems
     public const string RepairKitId = "repair_kit";
     public const string PracticeStickId = "practice_stick";
     public const string WorkVestId = "work_vest";
+    public const string RationPackId = "ration_pack";
+    public const string DataChipId = "data_chip";
+    public const string FilterCoreId = "filter_core";
+    public const string ContrabandPackageId = "contraband_package";
+    public const string ApologyFlowerId = "apology_flower";
+    public const string PortableTerminalId = "portable_terminal";
 
     public static readonly GameItem WhoopieCushion = new(
         WhoopieCushionId,
@@ -79,6 +85,48 @@ public static class StarterItems
         EquipmentSlot.Body,
         Defense: 10);
 
+    public static readonly GameItem RationPack = new(
+        RationPackId,
+        "Ration Pack",
+        ItemCategory.Tool,
+        new[] { "helpful", "consumable" },
+        "A compact meal brick that tastes like somebody described soup to a printer.");
+
+    public static readonly GameItem DataChip = new(
+        DataChipId,
+        "Data Chip",
+        ItemCategory.InteractibleObject,
+        new[] { "quest", "tech" },
+        "A tiny chunk of memory with oversized consequences.");
+
+    public static readonly GameItem FilterCore = new(
+        FilterCoreId,
+        "Filter Core",
+        ItemCategory.Tool,
+        new[] { "quest", "repair", "protective" },
+        "The part Mara actually wanted before everyone started improvising.");
+
+    public static readonly GameItem ContrabandPackage = new(
+        ContrabandPackageId,
+        "Contraband Package",
+        ItemCategory.InteractibleObject,
+        new[] { "deceptive", "forbidden", "shady" },
+        "Wrapped in enough tape to make innocence unlikely.");
+
+    public static readonly GameItem ApologyFlower = new(
+        ApologyFlowerId,
+        "Apology Flower",
+        ItemCategory.Oddity,
+        new[] { "gift", "helpful", "funny" },
+        "A resilient little flower in a cracked oxygen valve cap.");
+
+    public static readonly GameItem PortableTerminal = new(
+        PortableTerminalId,
+        "Portable Terminal",
+        ItemCategory.InteractibleObject,
+        new[] { "tech", "placeable" },
+        "A chunky console for messages, rumors, and poor decisions with timestamps.");
+
     public static GameItem GetById(string id)
     {
         return TryGetById(id, out var item) ? item : WhoopieCushion;
@@ -93,6 +141,12 @@ public static class StarterItems
             RepairKitId => RepairKit,
             PracticeStickId => PracticeStick,
             WorkVestId => WorkVest,
+            RationPackId => RationPack,
+            DataChipId => DataChip,
+            FilterCoreId => FilterCore,
+            ContrabandPackageId => ContrabandPackage,
+            ApologyFlowerId => ApologyFlower,
+            PortableTerminalId => PortableTerminal,
             _ => null
         };
 

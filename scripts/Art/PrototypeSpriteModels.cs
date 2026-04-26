@@ -13,7 +13,13 @@ public enum PrototypeSpriteKind
     DeflatedBalloon,
     RepairKit,
     PracticeStick,
-    WorkVest
+    WorkVest,
+    RationPack,
+    DataChip,
+    FilterCore,
+    ContrabandPackage,
+    ApologyFlower,
+    PortableTerminal
 }
 
 public enum PrototypeSpriteShape
@@ -54,6 +60,12 @@ public static class PrototypeSpriteCatalog
             StarterItems.RepairKitId => PrototypeSpriteKind.RepairKit,
             StarterItems.PracticeStickId => PrototypeSpriteKind.PracticeStick,
             StarterItems.WorkVestId => PrototypeSpriteKind.WorkVest,
+            StarterItems.RationPackId => PrototypeSpriteKind.RationPack,
+            StarterItems.DataChipId => PrototypeSpriteKind.DataChip,
+            StarterItems.FilterCoreId => PrototypeSpriteKind.FilterCore,
+            StarterItems.ContrabandPackageId => PrototypeSpriteKind.ContrabandPackage,
+            StarterItems.ApologyFlowerId => PrototypeSpriteKind.ApologyFlower,
+            StarterItems.PortableTerminalId => PrototypeSpriteKind.PortableTerminal,
             _ => PrototypeSpriteKind.WhoopieCushion
         };
     }
@@ -88,6 +100,12 @@ public static class PrototypeSpriteCatalog
             PrototypeSpriteKind.RepairKit => RepairKit(),
             PrototypeSpriteKind.PracticeStick => PracticeStick(),
             PrototypeSpriteKind.WorkVest => WorkVest(),
+            PrototypeSpriteKind.RationPack => RationPack(),
+            PrototypeSpriteKind.DataChip => DataChip(),
+            PrototypeSpriteKind.FilterCore => FilterCore(),
+            PrototypeSpriteKind.ContrabandPackage => ContrabandPackage(),
+            PrototypeSpriteKind.ApologyFlower => ApologyFlower(),
+            PrototypeSpriteKind.PortableTerminal => PortableTerminal(),
             _ => Humanoid(
                 PrototypeSpriteKind.Player,
                 "Unknown",
@@ -199,6 +217,95 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.18f, 0.12f, 0.08f), -1f, -10f, 2f, 20f),
                 Rect(new Color(0.98f, 0.9f, 0.34f), -6f, -4f, 4f, 2f),
                 Rect(new Color(0.98f, 0.9f, 0.34f), 2f, -4f, 4f, 2f)
+            });
+    }
+
+    private static PrototypeSpriteDefinition RationPack()
+    {
+        return new PrototypeSpriteDefinition(
+            PrototypeSpriteKind.RationPack,
+            "Ration Pack",
+            new Vector2(20f, 16f),
+            new[]
+            {
+                Rect(new Color(0.18f, 0.16f, 0.1f), -9f, -6f, 18f, 12f),
+                Rect(new Color(0.62f, 0.54f, 0.32f), -7f, -4f, 14f, 8f),
+                Rect(new Color(0.86f, 0.78f, 0.45f), -4f, -2f, 8f, 2f)
+            });
+    }
+
+    private static PrototypeSpriteDefinition DataChip()
+    {
+        return new PrototypeSpriteDefinition(
+            PrototypeSpriteKind.DataChip,
+            "Data Chip",
+            new Vector2(18f, 14f),
+            new[]
+            {
+                Rect(new Color(0.02f, 0.16f, 0.2f), -8f, -5f, 16f, 10f),
+                Rect(new Color(0.08f, 0.62f, 0.82f), -6f, -3f, 12f, 6f),
+                Rect(new Color(0.9f, 0.98f, 1f), -2f, -1f, 4f, 2f)
+            });
+    }
+
+    private static PrototypeSpriteDefinition FilterCore()
+    {
+        return new PrototypeSpriteDefinition(
+            PrototypeSpriteKind.FilterCore,
+            "Filter Core",
+            new Vector2(18f, 22f),
+            new[]
+            {
+                Rect(new Color(0.09f, 0.12f, 0.14f), -7f, -10f, 14f, 20f),
+                Rect(new Color(0.56f, 0.66f, 0.68f), -5f, -8f, 10f, 16f),
+                Rect(new Color(0.18f, 0.78f, 0.72f), -3f, -5f, 6f, 10f)
+            });
+    }
+
+    private static PrototypeSpriteDefinition ContrabandPackage()
+    {
+        return new PrototypeSpriteDefinition(
+            PrototypeSpriteKind.ContrabandPackage,
+            "Contraband Package",
+            new Vector2(22f, 18f),
+            new[]
+            {
+                Rect(new Color(0.08f, 0.06f, 0.05f), -10f, -7f, 20f, 14f),
+                Rect(new Color(0.28f, 0.19f, 0.12f), -8f, -5f, 16f, 10f),
+                Line(new Color(0.9f, 0.2f, 0.16f), new Vector2(-8f, -5f), new Vector2(8f, 5f), 2f),
+                Line(new Color(0.9f, 0.2f, 0.16f), new Vector2(8f, -5f), new Vector2(-8f, 5f), 2f)
+            });
+    }
+
+    private static PrototypeSpriteDefinition ApologyFlower()
+    {
+        return new PrototypeSpriteDefinition(
+            PrototypeSpriteKind.ApologyFlower,
+            "Apology Flower",
+            new Vector2(20f, 24f),
+            new[]
+            {
+                Line(new Color(0.16f, 0.58f, 0.24f), new Vector2(0f, 8f), new Vector2(0f, -5f), 2f),
+                Circle(new Color(0.98f, 0.72f, 0.2f), 0f, -8f, 4f),
+                Circle(new Color(0.96f, 0.3f, 0.54f), -4f, -8f, 3f),
+                Circle(new Color(0.96f, 0.3f, 0.54f), 4f, -8f, 3f),
+                Rect(new Color(0.36f, 0.38f, 0.36f), -6f, 7f, 12f, 5f)
+            });
+    }
+
+    private static PrototypeSpriteDefinition PortableTerminal()
+    {
+        return new PrototypeSpriteDefinition(
+            PrototypeSpriteKind.PortableTerminal,
+            "Portable Terminal",
+            new Vector2(24f, 22f),
+            new[]
+            {
+                Rect(new Color(0.04f, 0.05f, 0.06f), -11f, -9f, 22f, 18f),
+                Rect(new Color(0.22f, 0.25f, 0.3f), -9f, -7f, 18f, 14f),
+                Rect(new Color(0.08f, 0.72f, 0.94f), -6f, -5f, 12f, 6f),
+                Rect(new Color(0.95f, 0.68f, 0.18f), -6f, 3f, 4f, 2f),
+                Rect(new Color(0.95f, 0.68f, 0.18f), 2f, 3f, 4f, 2f)
             });
     }
 

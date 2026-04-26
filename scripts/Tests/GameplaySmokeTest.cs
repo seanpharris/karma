@@ -230,9 +230,16 @@ public partial class GameplaySmokeTest : Node
             PrototypeSpriteKind.PracticeStick,
             PrototypeSpriteCatalog.GetKindForItem(StarterItems.PracticeStickId),
             "prototype sprite catalog maps weapon item visuals");
+        ExpectEqual(
+            PrototypeSpriteKind.PortableTerminal,
+            PrototypeSpriteCatalog.GetKindForItem(StarterItems.PortableTerminalId),
+            "prototype sprite catalog maps interactible object visuals");
         ExpectEqual(5, generatedA.Locations.Count, "small world generates prototype location count");
         ExpectEqual(12, generatedA.Npcs.Count, "prototype target players generate starter NPC population");
         ExpectTrue(generatedA.Oddities.Any(item => item.Id == StarterItems.DeflatedBalloonId), "generated world includes absurd oddities");
+        ExpectTrue(generatedA.Oddities.Any(item => item.Id == StarterItems.PortableTerminalId), "generated world includes interactible prototype objects");
+        ExpectTrue(StarterItems.TryGetById(StarterItems.FilterCoreId, out var filterCore) && filterCore.Tags.Contains("quest"), "starter item catalog includes quest objects");
+        ExpectTrue(StarterShopCatalog.Offers.Any(offer => offer.ItemId == StarterItems.RationPackId), "starter shop sells support consumables");
         var proposal = new WorldContentProposal(
             "junkyard-fantasy",
             new[]

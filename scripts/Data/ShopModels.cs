@@ -15,12 +15,18 @@ public static class StarterShopCatalog
     public const string DallenWhoopieCushionOfferId = "dallen_whoopie_cushion";
     public const string DallenRepairKitOfferId = "dallen_repair_kit";
     public const string DallenWorkVestOfferId = "dallen_work_vest";
+    public const string DallenRationPackOfferId = "dallen_ration_pack";
+    public const string DallenDataChipOfferId = "dallen_data_chip";
+    public const string DallenApologyFlowerOfferId = "dallen_apology_flower";
 
     public static readonly IReadOnlyList<ShopOffer> Offers = new[]
     {
         new ShopOffer(DallenWhoopieCushionOfferId, StarterNpcs.Dallen.Id, StarterItems.WhoopieCushionId, 7),
         new ShopOffer(DallenRepairKitOfferId, StarterNpcs.Dallen.Id, StarterItems.RepairKitId, 18),
-        new ShopOffer(DallenWorkVestOfferId, StarterNpcs.Dallen.Id, StarterItems.WorkVestId, 35)
+        new ShopOffer(DallenWorkVestOfferId, StarterNpcs.Dallen.Id, StarterItems.WorkVestId, 35),
+        new ShopOffer(DallenRationPackOfferId, StarterNpcs.Dallen.Id, StarterItems.RationPackId, 9),
+        new ShopOffer(DallenDataChipOfferId, StarterNpcs.Dallen.Id, StarterItems.DataChipId, 14),
+        new ShopOffer(DallenApologyFlowerOfferId, StarterNpcs.Dallen.Id, StarterItems.ApologyFlowerId, 11)
     };
 
     public static bool TryGet(string offerId, out ShopOffer offer)

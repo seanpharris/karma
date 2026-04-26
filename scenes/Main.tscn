@@ -120,6 +120,84 @@ DrawShadow = false
 [node name="WorkVestCollision" type="CollisionShape2D" parent="WorkVest"]
 shape = SubResource("CircleShape2D_pickup")
 
+[node name="RationPack" type="Area2D" parent="."]
+position = Vector2(350, 250)
+script = ExtResource("5_pickup")
+ItemId = "ration_pack"
+
+[node name="RationPackSprite" type="Node2D" parent="RationPack"]
+script = ExtResource("7_proto_sprite")
+Kind = 8
+DrawShadow = false
+
+[node name="RationPackCollision" type="CollisionShape2D" parent="RationPack"]
+shape = SubResource("CircleShape2D_pickup")
+
+[node name="DataChip" type="Area2D" parent="."]
+position = Vector2(380, 220)
+script = ExtResource("5_pickup")
+ItemId = "data_chip"
+
+[node name="DataChipSprite" type="Node2D" parent="DataChip"]
+script = ExtResource("7_proto_sprite")
+Kind = 9
+DrawShadow = false
+
+[node name="DataChipCollision" type="CollisionShape2D" parent="DataChip"]
+shape = SubResource("CircleShape2D_pickup")
+
+[node name="FilterCore" type="Area2D" parent="."]
+position = Vector2(220, 290)
+script = ExtResource("5_pickup")
+ItemId = "filter_core"
+
+[node name="FilterCoreSprite" type="Node2D" parent="FilterCore"]
+script = ExtResource("7_proto_sprite")
+Kind = 10
+DrawShadow = false
+
+[node name="FilterCoreCollision" type="CollisionShape2D" parent="FilterCore"]
+shape = SubResource("CircleShape2D_pickup")
+
+[node name="ContrabandPackage" type="Area2D" parent="."]
+position = Vector2(390, 285)
+script = ExtResource("5_pickup")
+ItemId = "contraband_package"
+
+[node name="ContrabandPackageSprite" type="Node2D" parent="ContrabandPackage"]
+script = ExtResource("7_proto_sprite")
+Kind = 11
+DrawShadow = false
+
+[node name="ContrabandPackageCollision" type="CollisionShape2D" parent="ContrabandPackage"]
+shape = SubResource("CircleShape2D_pickup")
+
+[node name="ApologyFlower" type="Area2D" parent="."]
+position = Vector2(205, 225)
+script = ExtResource("5_pickup")
+ItemId = "apology_flower"
+
+[node name="ApologyFlowerSprite" type="Node2D" parent="ApologyFlower"]
+script = ExtResource("7_proto_sprite")
+Kind = 12
+DrawShadow = false
+
+[node name="ApologyFlowerCollision" type="CollisionShape2D" parent="ApologyFlower"]
+shape = SubResource("CircleShape2D_pickup")
+
+[node name="PortableTerminal" type="Area2D" parent="."]
+position = Vector2(430, 250)
+script = ExtResource("5_pickup")
+ItemId = "portable_terminal"
+
+[node name="PortableTerminalSprite" type="Node2D" parent="PortableTerminal"]
+script = ExtResource("7_proto_sprite")
+Kind = 13
+DrawShadow = false
+
+[node name="PortableTerminalCollision" type="CollisionShape2D" parent="PortableTerminal"]
+shape = SubResource("CircleShape2D_pickup")
+
 [node name="PeerStandIn" type="Area2D" parent="."]
 position = Vector2(320, 190)
 script = ExtResource("6_peer")

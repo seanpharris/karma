@@ -125,6 +125,11 @@ Actor sprites use the same approach: player, Mara, and peer stand-in have
 source regions reserved in `assets/art/sprites/scifi_character_atlas.png`, with
 procedural fallbacks until that sheet is present locally.
 
+The prototype item set covers the current loops: oddities (`whoopie_cushion`,
+`deflated_balloon`, `apology_flower`), support tools (`repair_kit`,
+`ration_pack`, `filter_core`), equipment (`practice_stick`, `work_vest`), and
+interactible objects (`data_chip`, `contraband_package`, `portable_terminal`).
+
 ## NPC Relationships
 
 Karma is global score and path identity. NPC relationships are local memory.

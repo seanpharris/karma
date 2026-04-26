@@ -192,12 +192,18 @@ public static class WorldGenerator
         var oddities = new List<GameItem>
         {
             StarterItems.WhoopieCushion,
-            StarterItems.DeflatedBalloon
+            StarterItems.DeflatedBalloon,
+            StarterItems.DataChip,
+            StarterItems.ContrabandPackage,
+            StarterItems.ApologyFlower,
+            StarterItems.PortableTerminal
         };
 
         if (config.Server.Scale != WorldScale.Small)
         {
             oddities.Add(StarterItems.RepairKit);
+            oddities.Add(StarterItems.RationPack);
+            oddities.Add(StarterItems.FilterCore);
         }
 
         return oddities;
