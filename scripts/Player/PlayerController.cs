@@ -1,4 +1,5 @@
 using Godot;
+using System.Collections.Generic;
 using System.Linq;
 using Karma.Core;
 using Karma.Data;
@@ -52,14 +53,15 @@ public partial class PlayerController : CharacterBody2D
         var wantsSprint = Input.IsActionPressed("sprint");
         _isExhausted = CalculateExhausted(_isExhausted, _stamina, SprintResumeStamina);
         var isSprinting = CanSprint(direction, wantsSprint, _stamina, _isExhausted);
+        var perks = _gameState.LocalPerks;
         Velocity = CalculateVelocity(direction, Speed, SprintMultiplier, isSprinting);
         _stamina = CalculateNextStamina(
             _stamina,
             delta,
             isSprinting,
             MaxStamina,
-            SprintStaminaCostPerSecond,
-            StaminaRecoveryPerSecond);
+            CalculateEffectiveSprintCost(SprintStaminaCostPerSecond, perks),
+            CalculateEffectiveStaminaRecovery(StaminaRecoveryPerSecond, perks));
         _isExhausted = CalculateExhausted(_isExhausted, _stamina, SprintResumeStamina);
         UpdateStaminaHud();
         MoveAndSlide();
@@ -174,6 +176,27 @@ public partial class PlayerController : CharacterBody2D
         return maxStamina > 0f && stamina / maxStamina <= 0.25f
             ? $"Stamina: {roundedStamina}/{roundedMax} (low)"
             : $"Stamina: {roundedStamina}/{roundedMax}";
+    }
+
+    public static float CalculateEffectiveSprintCost(float baseCost, IReadOnlyList<KarmaPerk> perks)
+    {
+        var cost = Mathf.Max(0f, baseCost);
+        return HasPerk(perks, PerkCatalog.RenegadeNerveId)
+            ? cost * 0.85f
+            : cost;
+    }
+
+    public static float CalculateEffectiveStaminaRecovery(float baseRecovery, IReadOnlyList<KarmaPerk> perks)
+    {
+        var recovery = Mathf.Max(0f, baseRecovery);
+        return HasPerk(perks, PerkCatalog.BeaconAuraId)
+            ? recovery * 1.25f
+            : recovery;
+    }
+
+    private static bool HasPerk(IReadOnlyList<KarmaPerk> perks, string perkId)
+    {
+        return perks.Any(perk => perk.Id == perkId);
     }
 
     private void UpdateStaminaHud()

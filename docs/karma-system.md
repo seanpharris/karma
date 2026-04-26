@@ -45,7 +45,7 @@ Ascension examples:
 
 - +10: Trusted Discount
 - +20: Calming Presence
-- +35: Beacon Aura
+- +35: Beacon Aura (faster stamina recovery)
 - +50: Paragon Favor
 - +100: Exalted Grace
 - Every +100 after that: repeat Exalted rank perk
@@ -54,7 +54,7 @@ Descension examples:
 
 - -10: Shifty Prices
 - -20: Rumorcraft
-- -35: Renegade Nerve
+- -35: Renegade Nerve (reduced sprint stamina cost)
 - -50: Dread Reputation
 - -100: Abyssal Mark
 - Every -100 after that: repeat Abyssal rank perk

@@ -206,6 +206,8 @@ Movement uses WASD, and holding left Shift sprints at a modest speed boost for
 faster prototype traversal. Sprinting drains stamina while held and stamina
 recovers when the player stops sprinting. Empty stamina makes the player winded;
 sprint resumes only after stamina recovers to a small buffer.
+Some karma perks affect traversal: Beacon Aura improves stamina recovery, while
+Renegade Nerve reduces sprint stamina cost.
 
 ## Prototype HUD
 

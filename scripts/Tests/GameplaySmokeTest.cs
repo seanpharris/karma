@@ -107,6 +107,10 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(PlayerController.CalculateExhausted(true, 25f, 25f), "winded player recovers at resume stamina");
         ExpectEqual("Stamina: 20/100 (low)", PlayerController.FormatStamina(20f, 100f, false), "low stamina label is visible");
         ExpectEqual("Stamina: 0/100 (winded)", PlayerController.FormatStamina(0f, 100f, true), "winded stamina label is visible");
+        var beaconPerks = new[] { new KarmaPerk(PerkCatalog.BeaconAuraId, "Beacon Aura", PerkPath.Ascension, 35, "test") };
+        var nervePerks = new[] { new KarmaPerk(PerkCatalog.RenegadeNerveId, "Renegade Nerve", PerkPath.Descension, 35, "test") };
+        ExpectEqual(22.5f, PlayerController.CalculateEffectiveStaminaRecovery(18f, beaconPerks), "Beacon Aura improves stamina recovery");
+        ExpectTrue(Mathf.Abs(PlayerController.CalculateEffectiveSprintCost(24f, nervePerks) - 20.4f) < 0.01f, "Renegade Nerve reduces sprint stamina cost");
         var matchServer = new AuthoritativeWorldServer(state, "match-test-world");
         ExpectEqual(MatchStatus.Running, matchServer.Match.Status, "new server match starts running");
         ExpectEqual(30 * 60, matchServer.Match.RemainingSeconds, "new server match starts with full duration remaining");
