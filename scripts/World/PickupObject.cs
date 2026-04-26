@@ -66,7 +66,7 @@ public partial class PickupObject : Area2D
 
         _playerNearby = true;
         var item = StarterItems.GetById(ItemId);
-        _hud?.ShowPrompt($"{item.Name}\n\n{item.Description}\n\nPress E to pick it up.");
+        _hud?.ShowPrompt(ItemText.FormatPickupPrompt(item));
     }
 
     private void OnBodyExited(Node2D body)

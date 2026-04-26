@@ -253,6 +253,10 @@ public partial class GameplaySmokeTest : Node
             "Combat: hit | You ATK:10 DEF:3 | Status: Attack Cooldown (2)",
             HudController.FormatCombatLine("Combat: hit", 10, 3, new[] { "Attack Cooldown (2)" }),
             "combat HUD line includes active status effects");
+        var itemPrompt = ItemText.FormatPickupPrompt(StarterItems.PracticeStick);
+        ExpectTrue(itemPrompt.Contains("Power 10"), "item pickup prompt exposes item power");
+        ExpectTrue(itemPrompt.Contains("Tags: training, violent"), "item pickup prompt exposes sorted tags");
+        ExpectTrue(itemPrompt.Contains("Press E to pick it up."), "item pickup prompt explains pickup control");
         var inventoryOverlay = HudController.FormatInventoryOverlay(
             new[] { StarterItems.RepairKit, StarterItems.RepairKit, StarterItems.WhoopieCushion },
             42,
@@ -263,6 +267,8 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(inventoryOverlay.Contains("Scrip: 42"), "inventory overlay shows scrip");
         ExpectTrue(inventoryOverlay.Contains("Main Hand: Practice Stick"), "inventory overlay shows equipped weapon");
         ExpectTrue(inventoryOverlay.Contains("Repair Kit x2"), "inventory overlay groups matching items");
+        ExpectTrue(inventoryOverlay.Contains("Power 10"), "inventory overlay shows equipped item stats");
+        ExpectTrue(inventoryOverlay.Contains("Tool"), "inventory overlay shows item categories");
         ExpectTrue(inventoryOverlay.Contains("I - Close"), "inventory overlay explains close control");
         ExpectEqual(25f, WorldHealthBar.CalculateHealthPercent(25, 100), "world health bar percent follows visible player health");
         var peerPrompt = PeerStandInController.FormatPrompt(

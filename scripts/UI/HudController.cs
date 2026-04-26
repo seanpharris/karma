@@ -834,7 +834,7 @@ public partial class HudController : CanvasLayer
             .ThenBy(group => group.First().Name))
         {
             var item = group.First();
-            lines.Add($"{item.Name} x{group.Count()} [{item.Category}]");
+            lines.Add($"{item.Name} x{group.Count()} [{ItemText.FormatSummary(item)}]");
         }
 
         lines.Add(string.Empty);
@@ -847,7 +847,7 @@ public partial class HudController : CanvasLayer
         EquipmentSlot slot)
     {
         return equipment is not null && equipment.TryGetValue(slot, out var item)
-            ? item.Name
+            ? $"{item.Name} [{ItemText.FormatSummary(item)}]"
             : "empty";
     }
 }

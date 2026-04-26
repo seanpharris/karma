@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Karma.Data;
 
@@ -437,5 +438,55 @@ public static class StarterItems
             ItemCategory.Tool,
             tags,
             description);
+    }
+}
+
+public static class ItemText
+{
+    public static string FormatSummary(GameItem item)
+    {
+        var parts = new List<string>
+        {
+            item.Category.ToString()
+        };
+
+        if (item.Slot != EquipmentSlot.None)
+        {
+            parts.Add(item.Slot.ToString());
+        }
+
+        if (item.Power > 0)
+        {
+            parts.Add($"Power {item.Power}");
+        }
+
+        if (item.Defense > 0)
+        {
+            parts.Add($"Defense {item.Defense}");
+        }
+
+        if (item.KarmaRequirement is not null)
+        {
+            parts.Add($"{item.RequiredPath} {item.KarmaRequirement:+#;-#;0}");
+        }
+
+        return string.Join(" | ", parts);
+    }
+
+    public static string FormatTags(GameItem item)
+    {
+        return item.Tags is null || item.Tags.Count == 0
+            ? "Tags: none"
+            : $"Tags: {string.Join(", ", item.Tags.OrderBy(tag => tag))}";
+    }
+
+    public static string FormatPickupPrompt(GameItem item)
+    {
+        return
+            $"{item.Name}\n" +
+            $"{FormatSummary(item)}\n" +
+            $"{FormatTags(item)}\n\n" +
+            $"{item.Description}\n\n" +
+            "Press E to pick it up.";
     }
 }
