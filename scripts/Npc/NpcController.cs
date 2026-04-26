@@ -11,6 +11,7 @@ namespace Karma.Npc;
 public partial class NpcController : Area2D
 {
     private bool _playerNearby;
+    private int _selectedOfferIndex;
     private readonly List<string> _choiceIds = new();
     private HudController _hud;
     private PrototypeServerSession _serverSession;
@@ -47,9 +48,17 @@ public partial class NpcController : Area2D
         {
             ExposeMaraEntanglement();
         }
+        else if (key.Keycode == Key.Minus)
+        {
+            CycleShopOffer(-1);
+        }
+        else if (key.Keycode == Key.Equal)
+        {
+            CycleShopOffer(1);
+        }
         else if (key.Keycode == Key.Key9)
         {
-            PurchaseFirstVisibleOffer();
+            PurchaseSelectedOffer();
         }
         else if (key.Keycode == Key.Key0)
         {
@@ -207,14 +216,33 @@ public partial class NpcController : Area2D
         ShowPromptFromSnapshot();
     }
 
-    private void PurchaseFirstVisibleOffer()
+    private void CycleShopOffer(int direction)
+    {
+        var offers = _serverSession?.LastLocalSnapshot?.ShopOffers;
+        if (offers is null || offers.Count == 0)
+        {
+            _hud?.ShowPrompt("No nearby shop offers.");
+            return;
+        }
+
+        _selectedOfferIndex = WrapIndex(_selectedOfferIndex + direction, offers.Count);
+        ShowPromptFromSnapshot();
+    }
+
+    private void PurchaseSelectedOffer()
     {
         if (_serverSession is null)
         {
             return;
         }
 
-        var offer = _serverSession.LastLocalSnapshot.ShopOffers.FirstOrDefault();
+        var offers = _serverSession.LastLocalSnapshot.ShopOffers;
+        if (offers.Count > 0)
+        {
+            _selectedOfferIndex = WrapIndex(_selectedOfferIndex, offers.Count);
+        }
+
+        var offer = offers.ElementAtOrDefault(_selectedOfferIndex);
         if (offer is null)
         {
             _hud?.ShowPrompt("No nearby shop offers.");
@@ -258,14 +286,27 @@ public partial class NpcController : Area2D
         lines.Add("6 - Start/complete Clinic Filters quest");
         lines.Add("7 - Start a secret entanglement");
         lines.Add("8 - Expose the secret entanglement");
-        var offer = _serverSession?.LastLocalSnapshot?.ShopOffers.FirstOrDefault();
-        if (offer is not null)
+        var offers = _serverSession?.LastLocalSnapshot?.ShopOffers ?? System.Array.Empty<ShopOfferSnapshot>();
+        if (offers.Count > 0)
         {
+            _selectedOfferIndex = WrapIndex(_selectedOfferIndex, offers.Count);
+            var offer = offers[_selectedOfferIndex];
             lines.Add($"9 - Buy {offer.ItemName} ({offer.Price} {offer.Currency})");
+            lines.Add($"-/= - Browse shop ({_selectedOfferIndex + 1}/{offers.Count})");
         }
 
         lines.Add("0 - Test Karma Break");
         _hud?.ShowPrompt(string.Join("\n", lines));
+    }
+
+    private static int WrapIndex(int index, int count)
+    {
+        if (count <= 0)
+        {
+            return 0;
+        }
+
+        return ((index % count) + count) % count;
     }
 
     private static int KeyToChoiceIndex(Key key)
