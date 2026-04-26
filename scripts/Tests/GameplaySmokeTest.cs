@@ -171,6 +171,19 @@ public partial class GameplaySmokeTest : Node
             0,
             ProjectSettings.GetSetting("rendering/textures/canvas_textures/default_texture_filter").AsInt32(),
             "project uses nearest-neighbor texture filtering for pixel art");
+        var artAssets = ArtAssetManifest.GetUniqueAssets();
+        ExpectTrue(artAssets.Count >= 8, "art manifest discovers cataloged atlas assets");
+        ExpectTrue(
+            artAssets.Any(asset => asset.Path == PrototypeSpriteCatalog.EngineerPlayerAtlasPath),
+            "art manifest includes generated engineer character sheet");
+        ExpectTrue(
+            artAssets.Any(asset => asset.Path == StructureArtCatalog.GreenhouseAtlasPath),
+            "art manifest includes greenhouse structure sheet");
+        ExpectTrue(
+            artAssets.Any(asset => asset.Path == ThemeArtRegistry.PlaceholderAtlasPath),
+            "art manifest includes mapped tile sheet");
+        ExpectEqual(0, ArtAssetManifest.GetMissingAssets().Count, "all cataloged atlas assets exist on disk");
+        ExpectTrue(ArtAssetManifest.FormatSummary().Contains("missing"), "art manifest summary reports missing count");
         ExpectTrue(
             ProjectSettings.GetSetting("rendering/2d/snap/snap_2d_transforms_to_pixel").AsBool(),
             "project snaps 2D transforms to pixels for native pixel-art scenes");

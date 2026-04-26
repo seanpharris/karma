@@ -186,6 +186,9 @@ Godot 2D top-down template:
   native `Sprite2D`/`AtlasTexture` from `StructureArtCatalog`.
 - Shared atlas math lives in `AtlasFrame`/`AtlasFrames`. Use it for source
   rectangles, display scale, and anchoring instead of duplicating renderer math.
+- `ArtAssetManifest` discovers every cataloged atlas path and verifies the
+  files exist. Add newly mapped runtime sheets to catalogs so the manifest and
+  smoke tests catch missing assets.
 - Keep `PrototypeSprite` for temporary procedural fallbacks when an atlas region
   is missing.
 - Runtime character sheets should eventually use clean `32 x 32` frame grids.

@@ -77,6 +77,11 @@ All native atlas renderers share `AtlasFrame`/`AtlasFrames` for source
 rectangles, display scaling, and footprint/prop anchoring. New art mappers
 should add catalog data first, then convert through that shared helper.
 
+`ArtAssetManifest` discovers atlas paths from the sprite, structure, and tile
+catalogs. When a catalog path is mapped, smoke tests expect that file to exist
+on disk, so keep reference sheets separate from runtime sheets until they are
+ready to be wired into a catalog.
+
 For clean runtime character sheets, use the `32 x 32` grid documented in
 `AGENTS.md`. Once a sheet lands, map its top-left runtime-frame origin with
 `PrototypeSpriteCatalog.FourDirectionGridAnimations(...)` so Godot receives
