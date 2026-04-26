@@ -180,8 +180,10 @@ Godot 2D top-down template:
   and `process/fix_alpha_border=true` for texture imports.
 - Humanoid actors should use `PrototypeCharacterSprite`, which builds a
   Godot `AnimatedSprite2D` with `SpriteFrames` from cataloged atlas regions.
-- Keep `PrototypeSprite` for temporary props/items and as a procedural fallback
-  when an atlas region is missing.
+- Mapped props/items should use `PrototypeAtlasSprite`, which builds a Godot
+  `Sprite2D` with an `AtlasTexture` from the same catalog data.
+- Keep `PrototypeSprite` for temporary procedural fallbacks when an atlas region
+  is missing.
 - Runtime character sheets should eventually use clean `32 x 32` frame grids.
   When a proper grid exists, map it with
   `PrototypeSpriteCatalog.FourDirectionGridAnimations(origin, frameSize: 32)`.

@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://karma_main"]
+[gd_scene load_steps=14 format=3 uid="uid://karma_main"]
 
 [ext_resource type="Script" path="res://scripts/World/WorldRoot.cs" id="1_world"]
 [ext_resource type="Script" path="res://scripts/Player/PlayerController.cs" id="2_player"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/Player/PeerStandInController.cs" id="6_peer"]
 [ext_resource type="Script" path="res://scripts/Art/PrototypeSprite.cs" id="7_proto_sprite"]
 [ext_resource type="Script" path="res://scripts/Art/PrototypeCharacterSprite.cs" id="8_character_sprite"]
+[ext_resource type="Script" path="res://scripts/Art/PrototypeAtlasSprite.cs" id="9_atlas_sprite"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_player"]
 radius = 12.0
@@ -62,7 +63,7 @@ position = Vector2(120, 220)
 script = ExtResource("5_pickup")
 
 [node name="WhoopieSprite" type="Node2D" parent="WhoopieCushion"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("9_atlas_sprite")
 Kind = 3
 DrawShadow = false
 
@@ -75,7 +76,7 @@ script = ExtResource("5_pickup")
 ItemId = "deflated_balloon"
 
 [node name="BalloonSprite" type="Node2D" parent="DeflatedBalloon"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("9_atlas_sprite")
 Kind = 4
 DrawShadow = false
 
@@ -88,7 +89,7 @@ script = ExtResource("5_pickup")
 ItemId = "repair_kit"
 
 [node name="RepairKitSprite" type="Node2D" parent="RepairKit"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("9_atlas_sprite")
 Kind = 5
 DrawShadow = false
 
@@ -101,7 +102,7 @@ script = ExtResource("5_pickup")
 ItemId = "practice_stick"
 
 [node name="PracticeStickSprite" type="Node2D" parent="PracticeStick"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("9_atlas_sprite")
 Kind = 6
 DrawShadow = false
 
@@ -114,7 +115,7 @@ script = ExtResource("5_pickup")
 ItemId = "work_vest"
 
 [node name="WorkVestSprite" type="Node2D" parent="WorkVest"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("9_atlas_sprite")
 Kind = 7
 DrawShadow = false
 
@@ -127,7 +128,7 @@ script = ExtResource("5_pickup")
 ItemId = "ration_pack"
 
 [node name="RationPackSprite" type="Node2D" parent="RationPack"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("9_atlas_sprite")
 Kind = 8
 DrawShadow = false
 
@@ -140,7 +141,7 @@ script = ExtResource("5_pickup")
 ItemId = "data_chip"
 
 [node name="DataChipSprite" type="Node2D" parent="DataChip"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("9_atlas_sprite")
 Kind = 9
 DrawShadow = false
 
@@ -153,7 +154,7 @@ script = ExtResource("5_pickup")
 ItemId = "filter_core"
 
 [node name="FilterCoreSprite" type="Node2D" parent="FilterCore"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("9_atlas_sprite")
 Kind = 10
 DrawShadow = false
 
@@ -166,7 +167,7 @@ script = ExtResource("5_pickup")
 ItemId = "contraband_package"
 
 [node name="ContrabandPackageSprite" type="Node2D" parent="ContrabandPackage"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("9_atlas_sprite")
 Kind = 11
 DrawShadow = false
 
@@ -179,7 +180,7 @@ script = ExtResource("5_pickup")
 ItemId = "apology_flower"
 
 [node name="ApologyFlowerSprite" type="Node2D" parent="ApologyFlower"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("9_atlas_sprite")
 Kind = 12
 DrawShadow = false
 
@@ -192,7 +193,7 @@ script = ExtResource("5_pickup")
 ItemId = "portable_terminal"
 
 [node name="PortableTerminalSprite" type="Node2D" parent="PortableTerminal"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("9_atlas_sprite")
 Kind = 13
 DrawShadow = false
 
@@ -205,7 +206,7 @@ script = ExtResource("5_pickup")
 ItemId = "stun_baton"
 
 [node name="StunBatonSprite" type="Node2D" parent="StunBaton"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("9_atlas_sprite")
 Kind = 15
 DrawShadow = false
 
@@ -218,7 +219,7 @@ script = ExtResource("5_pickup")
 ItemId = "electro_pistol"
 
 [node name="ElectroPistolSprite" type="Node2D" parent="ElectroPistol"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("9_atlas_sprite")
 Kind = 16
 DrawShadow = false
 
@@ -231,7 +232,7 @@ script = ExtResource("5_pickup")
 ItemId = "multi_tool"
 
 [node name="MultiToolSprite" type="Node2D" parent="MultiTool"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("9_atlas_sprite")
 Kind = 27
 DrawShadow = false
 
@@ -244,7 +245,7 @@ script = ExtResource("5_pickup")
 ItemId = "medi_patch"
 
 [node name="MediPatchSprite" type="Node2D" parent="MediPatch"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("9_atlas_sprite")
 Kind = 29
 DrawShadow = false
 

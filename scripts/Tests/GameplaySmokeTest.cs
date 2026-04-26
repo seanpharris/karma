@@ -140,6 +140,23 @@ public partial class GameplaySmokeTest : Node
             4,
             nativeFrames.GetFrameCount(PrototypeCharacterSprite.WalkRightAnimation),
             "native character sprite creates multi-frame walk animations");
+        var testPropDefinition = new PrototypeSpriteDefinition(
+            PrototypeSpriteKind.WhoopieCushion,
+            "Test Prop",
+            new Vector2(24f, 18f),
+            System.Array.Empty<PrototypeSpriteLayer>(),
+            "res://test-prop.png",
+            new Rect2(8f, 10f, 96f, 72f),
+            HasAtlasRegion: true);
+        var testPropAtlas = PrototypeAtlasSprite.CreateAtlasTexture(testTexture, testPropDefinition);
+        ExpectEqual(
+            testPropDefinition.AtlasRegion,
+            testPropAtlas.Region,
+            "native atlas sprite preserves catalog source region");
+        ExpectEqual(
+            new Vector2(0.25f, 0.25f),
+            PrototypeAtlasSprite.CalculateScale(testPropDefinition),
+            "native atlas sprite scales source art to catalog display size");
         ExpectEqual(
             0,
             ProjectSettings.GetSetting("rendering/textures/canvas_textures/default_texture_filter").AsInt32(),

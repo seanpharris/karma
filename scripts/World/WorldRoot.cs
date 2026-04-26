@@ -209,7 +209,7 @@ public partial class WorldRoot : Node2D
                 ItemId = item.ItemId,
                 Position = new Vector2(item.TileX * 32f, item.TileY * 32f)
             };
-            var marker = new PrototypeSprite
+            var marker = new PrototypeAtlasSprite
             {
                 Name = $"{item.ItemId}_sprite",
                 Kind = PrototypeSpriteCatalog.GetKindForItem(item.ItemId),

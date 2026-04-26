@@ -64,10 +64,10 @@ uses the generated engineer sheet at `sprites/scifi_engineer_player_sheet.png`,
 while NPCs still use `character.png`. If an expected atlas is missing, actors
 fall back to the procedural models.
 
-Props and pickups still use `PrototypeSprite`, which can draw mapped atlas
-regions or readable procedural placeholders. That keeps generated/server-owned
-objects easy to iterate while character art moves toward proper Godot
-`AnimatedSprite2D` resources.
+Mapped props and pickups use `PrototypeAtlasSprite`, which builds a native
+Godot `Sprite2D` with an `AtlasTexture` from catalog source rectangles. If a
+region is missing, the component falls back to `PrototypeSprite` procedural
+placeholder art.
 
 For clean runtime character sheets, use the `32 x 32` grid documented in
 `AGENTS.md`. Once a sheet lands, map its top-left runtime-frame origin with
