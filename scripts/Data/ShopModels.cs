@@ -21,6 +21,10 @@ public static class StarterShopCatalog
     public const string DallenStunBatonOfferId = "dallen_stun_baton";
     public const string DallenElectroPistolOfferId = "dallen_electro_pistol";
     public const string DallenRifle27OfferId = "dallen_rifle_27";
+    public const string DallenMultiToolOfferId = "dallen_multi_tool";
+    public const string DallenMediPatchOfferId = "dallen_medi_patch";
+    public const string DallenFlashlightOfferId = "dallen_flashlight";
+    public const string DallenPortableShieldOfferId = "dallen_portable_shield";
 
     public static readonly IReadOnlyList<ShopOffer> Offers = new[]
     {
@@ -32,7 +36,11 @@ public static class StarterShopCatalog
         new ShopOffer(DallenApologyFlowerOfferId, StarterNpcs.Dallen.Id, StarterItems.ApologyFlowerId, 11),
         new ShopOffer(DallenStunBatonOfferId, StarterNpcs.Dallen.Id, StarterItems.StunBatonId, 42),
         new ShopOffer(DallenElectroPistolOfferId, StarterNpcs.Dallen.Id, StarterItems.ElectroPistolId, 58),
-        new ShopOffer(DallenRifle27OfferId, StarterNpcs.Dallen.Id, StarterItems.Rifle27Id, 86)
+        new ShopOffer(DallenRifle27OfferId, StarterNpcs.Dallen.Id, StarterItems.Rifle27Id, 86),
+        new ShopOffer(DallenMultiToolOfferId, StarterNpcs.Dallen.Id, StarterItems.MultiToolId, 24),
+        new ShopOffer(DallenMediPatchOfferId, StarterNpcs.Dallen.Id, StarterItems.MediPatchId, 12),
+        new ShopOffer(DallenFlashlightOfferId, StarterNpcs.Dallen.Id, StarterItems.FlashlightId, 16),
+        new ShopOffer(DallenPortableShieldOfferId, StarterNpcs.Dallen.Id, StarterItems.PortableShieldId, 64)
     };
 
     public static bool TryGet(string offerId, out ShopOffer offer)

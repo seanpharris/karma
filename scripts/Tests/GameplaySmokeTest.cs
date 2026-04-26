@@ -229,6 +229,8 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.PortableTerminal).HasAtlasRegion, "prototype utility item sprite can use utility atlas art");
         ExpectEqual(PrototypeSpriteCatalog.WeaponAtlasPath, PrototypeSpriteCatalog.Get(PrototypeSpriteKind.StunBaton).AtlasPath, "prototype weapon sprite records weapon atlas path");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Rifle27).HasAtlasRegion, "prototype weapon sprite can use weapon atlas art");
+        ExpectEqual(PrototypeSpriteCatalog.ToolAtlasPath, PrototypeSpriteCatalog.Get(PrototypeSpriteKind.MultiTool).AtlasPath, "prototype tool sprite records tool atlas path");
+        ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.PortableShield).HasAtlasRegion, "prototype tool sprite can use tool atlas art");
         ExpectEqual(
             PrototypeSpriteKind.WorkVest,
             PrototypeSpriteCatalog.GetKindForItem(StarterItems.WorkVestId),
@@ -247,8 +249,10 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(generatedA.Oddities.Any(item => item.Id == StarterItems.PortableTerminalId), "generated world includes interactible prototype objects");
         ExpectTrue(StarterItems.TryGetById(StarterItems.FilterCoreId, out var filterCore) && filterCore.Tags.Contains("quest"), "starter item catalog includes quest objects");
         ExpectTrue(StarterItems.TryGetById(StarterItems.Rifle27Id, out var rifle) && rifle.Power == 24, "starter item catalog includes sci-fi weapons");
+        ExpectTrue(StarterItems.TryGetById(StarterItems.MultiToolId, out var multiTool) && multiTool.Tags.Contains("utility"), "starter item catalog includes sci-fi tools");
         ExpectTrue(StarterShopCatalog.Offers.Any(offer => offer.ItemId == StarterItems.RationPackId), "starter shop sells support consumables");
         ExpectTrue(StarterShopCatalog.Offers.Any(offer => offer.ItemId == StarterItems.ElectroPistolId), "starter shop sells prototype weapons");
+        ExpectTrue(StarterShopCatalog.Offers.Any(offer => offer.ItemId == StarterItems.PortableShieldId), "starter shop sells prototype tools");
         var proposal = new WorldContentProposal(
             "junkyard-fantasy",
             new[]

@@ -57,6 +57,19 @@ public static class StarterItems
     public const string RailgunId = "railgun";
     public const string ImpactMineId = "impact_mine";
     public const string EmpGrenadeId = "emp_grenade";
+    public const string MultiToolId = "multi_tool";
+    public const string WeldingTorchId = "welding_torch";
+    public const string MediPatchId = "medi_patch";
+    public const string LockpickSetId = "lockpick_set";
+    public const string FlashlightId = "flashlight";
+    public const string PortableShieldId = "portable_shield";
+    public const string HackingDeviceId = "hacking_device";
+    public const string ScannerId = "scanner";
+    public const string GrapplingHookId = "grappling_hook";
+    public const string ChemInjectorId = "chem_injector";
+    public const string PowerCellId = "power_cell";
+    public const string BoltCuttersId = "bolt_cutters";
+    public const string MagneticGrabberId = "magnetic_grabber";
 
     public static readonly GameItem WhoopieCushion = new(
         WhoopieCushionId,
@@ -223,6 +236,87 @@ public static class StarterItems
         "Disables electronics in an area.",
         Power: 18);
 
+    public static readonly GameItem MultiTool = Tool(
+        MultiToolId,
+        "Multi Tool",
+        new[] { "utility", "interaction", "tech" },
+        "A versatile device for various interactions.");
+
+    public static readonly GameItem WeldingTorch = Tool(
+        WeldingTorchId,
+        "Welding Torch",
+        new[] { "repair", "machinery", "fire" },
+        "Repairs machinery and structures.");
+
+    public static readonly GameItem MediPatch = Tool(
+        MediPatchId,
+        "Medi Patch",
+        new[] { "medical", "helpful", "consumable" },
+        "Heals and stabilizes wounds.");
+
+    public static readonly GameItem LockpickSet = Tool(
+        LockpickSetId,
+        "Lockpick Set",
+        new[] { "tech", "deceptive", "locks" },
+        "Bypasses electronic and mechanical locks.");
+
+    public static readonly GameItem Flashlight = Tool(
+        FlashlightId,
+        "Flashlight",
+        new[] { "utility", "light", "scouting" },
+        "Illuminates dark areas and reveals details.");
+
+    public static readonly GameItem PortableShield = new(
+        PortableShieldId,
+        "Portable Shield",
+        ItemCategory.Armor,
+        new[] { "defense", "energy", "protective" },
+        "Deploys a personal energy barrier for protection.",
+        EquipmentSlot.Body,
+        Defense: 16);
+
+    public static readonly GameItem HackingDevice = Tool(
+        HackingDeviceId,
+        "Hacking Device",
+        new[] { "tech", "hacking", "data" },
+        "Grants access to secure systems and data.");
+
+    public static readonly GameItem Scanner = Tool(
+        ScannerId,
+        "Scanner",
+        new[] { "utility", "scouting", "analysis" },
+        "Scans objects, enemies, and environments.");
+
+    public static readonly GameItem GrapplingHook = Tool(
+        GrapplingHookId,
+        "Grappling Hook",
+        new[] { "mobility", "utility" },
+        "Reaches distant areas and pulls objects.");
+
+    public static readonly GameItem ChemInjector = Tool(
+        ChemInjectorId,
+        "Chem Injector",
+        new[] { "utility", "medical", "consumable" },
+        "Injects chemicals or buffs into targets.");
+
+    public static readonly GameItem PowerCell = Tool(
+        PowerCellId,
+        "Power Cell",
+        new[] { "resource", "energy" },
+        "Stores and transfers electrical power.");
+
+    public static readonly GameItem BoltCutters = Tool(
+        BoltCuttersId,
+        "Bolt Cutters",
+        new[] { "utility", "locks", "force" },
+        "Cuts chains, fences, and reinforced locks.");
+
+    public static readonly GameItem MagneticGrabber = Tool(
+        MagneticGrabberId,
+        "Magnetic Grabber",
+        new[] { "utility", "retrieval", "metal" },
+        "Retrieves metallic items from a distance.");
+
     public static GameItem GetById(string id)
     {
         return TryGetById(id, out var item) ? item : WhoopieCushion;
@@ -255,6 +349,19 @@ public static class StarterItems
             RailgunId => Railgun,
             ImpactMineId => ImpactMine,
             EmpGrenadeId => EmpGrenade,
+            MultiToolId => MultiTool,
+            WeldingTorchId => WeldingTorch,
+            MediPatchId => MediPatch,
+            LockpickSetId => LockpickSet,
+            FlashlightId => Flashlight,
+            PortableShieldId => PortableShield,
+            HackingDeviceId => HackingDevice,
+            ScannerId => Scanner,
+            GrapplingHookId => GrapplingHook,
+            ChemInjectorId => ChemInjector,
+            PowerCellId => PowerCell,
+            BoltCuttersId => BoltCutters,
+            MagneticGrabberId => MagneticGrabber,
             _ => null
         };
 
@@ -276,5 +383,19 @@ public static class StarterItems
             description,
             EquipmentSlot.MainHand,
             Power);
+    }
+
+    private static GameItem Tool(
+        string id,
+        string name,
+        IReadOnlyCollection<string> tags,
+        string description)
+    {
+        return new GameItem(
+            id,
+            name,
+            ItemCategory.Tool,
+            tags,
+            description);
     }
 }

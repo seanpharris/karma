@@ -133,6 +133,9 @@ and portable terminal.
 Weapon world models use `assets/art/sprites/scifi_weapon_atlas.png` for the
 starter sci-fi weapon set, from non-lethal stun baton up through heavy weapons
 and thrown explosives.
+Tool world models use `assets/art/sprites/scifi_tool_atlas.png` for the wider
+utility set, including repair, medical, hacking, scanning, mobility, and
+resource tools.
 
 The prototype item set covers the current loops: oddities (`whoopie_cushion`,
 `deflated_balloon`, `apology_flower`), support tools (`repair_kit`,
@@ -141,6 +144,10 @@ interactible objects (`data_chip`, `contraband_package`, `portable_terminal`).
 The sci-fi weapon expansion adds `stun_baton`, `electro_pistol`, `smg_11`,
 `shotgun_mk1`, `rifle_27`, `sniper_x9`, `plasma_cutter`, `flame_thrower`,
 `grenade_launcher`, `railgun`, `impact_mine`, and `emp_grenade`.
+The sci-fi tool expansion adds `multi_tool`, `welding_torch`, `medi_patch`,
+`lockpick_set`, `flashlight`, `portable_shield`, `hacking_device`, `scanner`,
+`grappling_hook`, `chem_injector`, `power_cell`, `bolt_cutters`, and
+`magnetic_grabber`.
 
 ## NPC Relationships
 

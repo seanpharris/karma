@@ -224,6 +224,32 @@ DrawShadow = false
 [node name="ElectroPistolCollision" type="CollisionShape2D" parent="ElectroPistol"]
 shape = SubResource("CircleShape2D_pickup")
 
+[node name="MultiTool" type="Area2D" parent="."]
+position = Vector2(525, 295)
+script = ExtResource("5_pickup")
+ItemId = "multi_tool"
+
+[node name="MultiToolSprite" type="Node2D" parent="MultiTool"]
+script = ExtResource("7_proto_sprite")
+Kind = 27
+DrawShadow = false
+
+[node name="MultiToolCollision" type="CollisionShape2D" parent="MultiTool"]
+shape = SubResource("CircleShape2D_pickup")
+
+[node name="MediPatch" type="Area2D" parent="."]
+position = Vector2(555, 260)
+script = ExtResource("5_pickup")
+ItemId = "medi_patch"
+
+[node name="MediPatchSprite" type="Node2D" parent="MediPatch"]
+script = ExtResource("7_proto_sprite")
+Kind = 29
+DrawShadow = false
+
+[node name="MediPatchCollision" type="CollisionShape2D" parent="MediPatch"]
+shape = SubResource("CircleShape2D_pickup")
+
 [node name="PeerStandIn" type="Area2D" parent="."]
 position = Vector2(320, 190)
 script = ExtResource("6_peer")

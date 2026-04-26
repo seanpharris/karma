@@ -32,7 +32,20 @@ public enum PrototypeSpriteKind
     GrenadeLauncher,
     Railgun,
     ImpactMine,
-    EmpGrenade
+    EmpGrenade,
+    MultiTool,
+    WeldingTorch,
+    MediPatch,
+    LockpickSet,
+    Flashlight,
+    PortableShield,
+    HackingDevice,
+    Scanner,
+    GrapplingHook,
+    ChemInjector,
+    PowerCell,
+    BoltCutters,
+    MagneticGrabber
 }
 
 public enum PrototypeSpriteShape
@@ -66,6 +79,7 @@ public static class PrototypeSpriteCatalog
     public const string ItemAtlasPath = "res://assets/art/sprites/scifi_item_atlas.png";
     public const string UtilityItemAtlasPath = "res://assets/art/sprites/scifi_utility_item_atlas.png";
     public const string WeaponAtlasPath = "res://assets/art/sprites/scifi_weapon_atlas.png";
+    public const string ToolAtlasPath = "res://assets/art/sprites/scifi_tool_atlas.png";
 
     public static PrototypeSpriteKind GetKindForItem(string itemId)
     {
@@ -94,6 +108,19 @@ public static class PrototypeSpriteCatalog
             StarterItems.RailgunId => PrototypeSpriteKind.Railgun,
             StarterItems.ImpactMineId => PrototypeSpriteKind.ImpactMine,
             StarterItems.EmpGrenadeId => PrototypeSpriteKind.EmpGrenade,
+            StarterItems.MultiToolId => PrototypeSpriteKind.MultiTool,
+            StarterItems.WeldingTorchId => PrototypeSpriteKind.WeldingTorch,
+            StarterItems.MediPatchId => PrototypeSpriteKind.MediPatch,
+            StarterItems.LockpickSetId => PrototypeSpriteKind.LockpickSet,
+            StarterItems.FlashlightId => PrototypeSpriteKind.Flashlight,
+            StarterItems.PortableShieldId => PrototypeSpriteKind.PortableShield,
+            StarterItems.HackingDeviceId => PrototypeSpriteKind.HackingDevice,
+            StarterItems.ScannerId => PrototypeSpriteKind.Scanner,
+            StarterItems.GrapplingHookId => PrototypeSpriteKind.GrapplingHook,
+            StarterItems.ChemInjectorId => PrototypeSpriteKind.ChemInjector,
+            StarterItems.PowerCellId => PrototypeSpriteKind.PowerCell,
+            StarterItems.BoltCuttersId => PrototypeSpriteKind.BoltCutters,
+            StarterItems.MagneticGrabberId => PrototypeSpriteKind.MagneticGrabber,
             _ => PrototypeSpriteKind.WhoopieCushion
         };
     }
@@ -147,6 +174,19 @@ public static class PrototypeSpriteCatalog
             PrototypeSpriteKind.Railgun => Weapon(PrototypeSpriteKind.Railgun, "Railgun", new Vector2(36f, 18f), new Rect2(754f, 684f, 225f, 83f)),
             PrototypeSpriteKind.ImpactMine => Weapon(PrototypeSpriteKind.ImpactMine, "Impact Mine", new Vector2(24f, 18f), new Rect2(1038f, 680f, 128f, 86f)),
             PrototypeSpriteKind.EmpGrenade => Weapon(PrototypeSpriteKind.EmpGrenade, "EMP Grenade", new Vector2(20f, 24f), new Rect2(1308f, 670f, 105f, 130f)),
+            PrototypeSpriteKind.MultiTool => Tool(PrototypeSpriteKind.MultiTool, "Multi Tool", new Vector2(28f, 20f), new Rect2(32f, 151f, 165f, 139f)),
+            PrototypeSpriteKind.WeldingTorch => Tool(PrototypeSpriteKind.WeldingTorch, "Welding Torch", new Vector2(28f, 20f), new Rect2(288f, 171f, 165f, 110f)),
+            PrototypeSpriteKind.MediPatch => Tool(PrototypeSpriteKind.MediPatch, "Medi Patch", new Vector2(24f, 20f), new Rect2(506f, 170f, 160f, 120f)),
+            PrototypeSpriteKind.LockpickSet => Tool(PrototypeSpriteKind.LockpickSet, "Lockpick Set", new Vector2(26f, 22f), new Rect2(916f, 168f, 148f, 126f)),
+            PrototypeSpriteKind.Flashlight => Tool(PrototypeSpriteKind.Flashlight, "Flashlight", new Vector2(28f, 18f), new Rect2(1160f, 173f, 152f, 95f)),
+            PrototypeSpriteKind.PortableShield => Tool(PrototypeSpriteKind.PortableShield, "Portable Shield", new Vector2(24f, 24f), new Rect2(1358f, 166f, 160f, 136f)),
+            PrototypeSpriteKind.HackingDevice => Tool(PrototypeSpriteKind.HackingDevice, "Hacking Device", new Vector2(26f, 20f), new Rect2(33f, 717f, 155f, 110f)),
+            PrototypeSpriteKind.Scanner => Tool(PrototypeSpriteKind.Scanner, "Scanner", new Vector2(24f, 20f), new Rect2(270f, 712f, 145f, 102f)),
+            PrototypeSpriteKind.GrapplingHook => Tool(PrototypeSpriteKind.GrapplingHook, "Grappling Hook", new Vector2(30f, 18f), new Rect2(492f, 717f, 180f, 100f)),
+            PrototypeSpriteKind.ChemInjector => Tool(PrototypeSpriteKind.ChemInjector, "Chem Injector", new Vector2(28f, 18f), new Rect2(722f, 716f, 164f, 92f)),
+            PrototypeSpriteKind.PowerCell => Tool(PrototypeSpriteKind.PowerCell, "Power Cell", new Vector2(22f, 20f), new Rect2(978f, 718f, 105f, 95f)),
+            PrototypeSpriteKind.BoltCutters => Tool(PrototypeSpriteKind.BoltCutters, "Bolt Cutters", new Vector2(28f, 18f), new Rect2(1165f, 716f, 165f, 90f)),
+            PrototypeSpriteKind.MagneticGrabber => Tool(PrototypeSpriteKind.MagneticGrabber, "Magnetic Grabber", new Vector2(30f, 16f), new Rect2(1370f, 720f, 145f, 82f)),
             _ => Humanoid(
                 PrototypeSpriteKind.Player,
                 "Unknown",
@@ -417,6 +457,27 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.08f, 0.48f, 0.82f), -2f, -3f, 5f, 2f)
             },
             WeaponAtlasPath,
+            atlasRegion,
+            HasAtlasRegion: true);
+    }
+
+    private static PrototypeSpriteDefinition Tool(
+        PrototypeSpriteKind kind,
+        string displayName,
+        Vector2 size,
+        Rect2 atlasRegion)
+    {
+        return new PrototypeSpriteDefinition(
+            kind,
+            displayName,
+            size,
+            new[]
+            {
+                Rect(new Color(0.08f, 0.1f, 0.12f), -10f, -7f, 20f, 14f),
+                Rect(new Color(0.48f, 0.52f, 0.54f), -8f, -5f, 16f, 10f),
+                Rect(new Color(0.1f, 0.62f, 0.86f), -4f, -3f, 8f, 3f)
+            },
+            ToolAtlasPath,
             atlasRegion,
             HasAtlasRegion: true);
     }

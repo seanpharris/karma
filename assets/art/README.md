@@ -30,6 +30,10 @@ The first sci-fi weapon model sheet should be dropped at:
 
 `sprites/scifi_weapon_atlas.png`
 
+The first sci-fi tool model sheet should be dropped at:
+
+`sprites/scifi_tool_atlas.png`
+
 That path is registered in `scripts/World/ThemeArtRegistry.cs`. The prototype
 currently maps a small sci-fi subset from that sheet: floors, metal walls,
 airlock doors, duel ring floor, and oddity pile.
@@ -54,3 +58,7 @@ package, apology flower, and portable terminal.
 The weapon sheet maps stun baton, electro pistol, SMG-11, shotgun Mk1,
 Rifle-27, Sniper X9, plasma cutter, flame thrower, grenade launcher, railgun,
 impact mine, and EMP grenade.
+The tool sheet maps multi tool, welding torch, medi patch, repair kit-style
+support tools, lockpick set, flashlight, portable shield, hacking device,
+scanner, grappling hook, chem injector, power cell, bolt cutters, and magnetic
+grabber.
