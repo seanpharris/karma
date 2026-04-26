@@ -97,6 +97,7 @@ Current expected atlas paths:
 
 - `assets/art/tilesets/scifi_station_atlas.png`
 - `assets/art/character.png`
+- `assets/art/sprites/scifi_engineer_player_sheet.png`
 - `assets/art/sprites/scifi_item_atlas.png`
 - `assets/art/sprites/scifi_utility_item_atlas.png`
 - `assets/art/sprites/scifi_weapon_atlas.png`
@@ -104,6 +105,11 @@ Current expected atlas paths:
 - `assets/art/structures/scifi_greenhouse_atlas.png`
 
 Atlas rendering is opt-in per mapped source rectangle. If a region is unknown, keep the procedural/color fallback readable rather than guessing.
+
+The generated engineer player sheet also keeps its chroma-key source at
+`assets/art/sprites/scifi_engineer_player_sheet_chroma.png`. The runtime sheet
+is the transparent PNG. Do not wire the chroma source into Godot scenes unless
+debugging asset processing.
 
 ## Character Sprite Sheet Standard
 

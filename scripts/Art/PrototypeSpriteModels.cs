@@ -77,6 +77,7 @@ public sealed record PrototypeSpriteDefinition(
 public static class PrototypeSpriteCatalog
 {
     public const string CharacterAtlasPath = "res://assets/art/character.png";
+    public const string EngineerPlayerAtlasPath = "res://assets/art/sprites/scifi_engineer_player_sheet.png";
     public const string ItemAtlasPath = "res://assets/art/sprites/scifi_item_atlas.png";
     public const string UtilityItemAtlasPath = "res://assets/art/sprites/scifi_utility_item_atlas.png";
     public const string WeaponAtlasPath = "res://assets/art/sprites/scifi_weapon_atlas.png";
@@ -148,7 +149,8 @@ public static class PrototypeSpriteCatalog
                 new Color(0.22f, 0.76f, 0.94f),
                 new Color(0.08f, 0.19f, 0.24f),
                 new Color(0.96f, 0.94f, 0.72f),
-                new Rect2(16f, 82f, 44f, 82f)),
+                new Rect2(285f, 20f, 140f, 190f),
+                EngineerPlayerAtlasPath),
             PrototypeSpriteKind.Mara => Humanoid(
                 kind,
                 "Mara Venn",
@@ -223,7 +225,8 @@ public static class PrototypeSpriteCatalog
         Color body,
         Color outline,
         Color accent,
-        Rect2 atlasRegion)
+        Rect2 atlasRegion,
+        string atlasPath = CharacterAtlasPath)
     {
         return new PrototypeSpriteDefinition(
             kind,
@@ -241,7 +244,7 @@ public static class PrototypeSpriteCatalog
                 Rect(outline, -3f, -20f, 2f, 2f),
                 Rect(outline, 2f, -20f, 2f, 2f)
             },
-            CharacterAtlasPath,
+            atlasPath,
             atlasRegion,
             HasAtlasRegion: true);
     }

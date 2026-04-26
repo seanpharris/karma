@@ -19,6 +19,14 @@ The active sci-fi character sheet is:
 
 `character.png`
 
+The generated sci-fi engineer player runtime sheet is:
+
+`sprites/scifi_engineer_player_sheet.png`
+
+The matching chroma-key source sheet is kept beside it for reproducibility:
+
+`sprites/scifi_engineer_player_sheet_chroma.png`
+
 The first sci-fi item model sheet should be dropped at:
 
 `sprites/scifi_item_atlas.png`
@@ -53,8 +61,9 @@ The active prototype actors and pickups use procedural pixel-style models in
 layers, not final art, but they give every playable object a recognizable visual
 until sprite sheets are ready.
 Player, Mara, and the peer stand-in already have character atlas source regions
-mapped there; if `character.png` exists, those actors render from the sheet and
-otherwise fall back to the procedural models.
+mapped there; the local player currently uses the generated engineer sheet at
+`sprites/scifi_engineer_player_sheet.png`, while NPCs still use `character.png`.
+If an expected atlas is missing, actors fall back to the procedural models.
 The current core item models also have source regions mapped for
 `sprites/scifi_item_atlas.png`: whoopie cushion, deflated balloon, repair kit,
 practice stick, work vest, and scrip.

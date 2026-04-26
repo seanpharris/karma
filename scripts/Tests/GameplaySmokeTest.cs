@@ -111,6 +111,14 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual("Stamina: 20/100 (low)", PlayerController.FormatStamina(20f, 100f, false), "low stamina label is visible");
         ExpectEqual("Stamina: 0/100 (winded)", PlayerController.FormatStamina(0f, 100f, true), "winded stamina label is visible");
         ExpectEqual(new Vector2(96f, 128f), PlayerController.CalculateWorldPosition(3, 4), "player controller maps authoritative tiles to world pixels");
+        ExpectEqual(
+            PrototypeSpriteCatalog.EngineerPlayerAtlasPath,
+            PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Player).AtlasPath,
+            "local player uses generated engineer character sheet");
+        ExpectEqual(
+            PrototypeSpriteCatalog.CharacterAtlasPath,
+            PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Mara).AtlasPath,
+            "NPCs keep the shared character atlas");
         ExpectTrue(
             PlayerController.ShouldSnapToAuthoritativePosition(Vector2.Zero, new Vector2(96f, 128f)),
             "player controller snaps large authoritative corrections such as respawn");
@@ -444,7 +452,7 @@ public partial class GameplaySmokeTest : Node
         var whoopieSprite = PrototypeSpriteCatalog.Get(PrototypeSpriteKind.WhoopieCushion);
         ExpectEqual("Player", playerSprite.DisplayName, "prototype sprite catalog names player model");
         ExpectTrue(playerSprite.Layers.Count >= 8, "prototype player sprite has layered pixel art");
-        ExpectEqual(PrototypeSpriteCatalog.CharacterAtlasPath, playerSprite.AtlasPath, "prototype player sprite records character atlas path");
+        ExpectEqual(PrototypeSpriteCatalog.EngineerPlayerAtlasPath, playerSprite.AtlasPath, "prototype player sprite records engineer atlas path");
         ExpectTrue(playerSprite.HasAtlasRegion, "prototype player sprite can use character atlas art");
         ExpectEqual(PrototypeSpriteKind.Dallen, PrototypeSpriteCatalog.GetKindForNpc(StarterNpcs.Dallen.Id), "prototype sprite catalog maps Dallen NPC visuals");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Dallen).HasAtlasRegion, "prototype Dallen sprite can use character atlas art");
