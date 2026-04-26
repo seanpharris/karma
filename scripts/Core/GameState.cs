@@ -588,12 +588,26 @@ public partial class GameState : Node
     private void ApplyRelationshipDelta(string playerId, KarmaAction action)
     {
         var delta = RelationshipRules.CalculateDelta(action);
+        delta = ApplyRelationshipPerks(playerId, delta);
         if (delta == 0)
         {
             return;
         }
 
         Relationships.Apply(action.TargetId, playerId, delta);
+    }
+
+    private int ApplyRelationshipPerks(string playerId, int delta)
+    {
+        if (delta >= 0 || !_players.TryGetValue(playerId, out var player))
+        {
+            return delta;
+        }
+
+        var perks = PerkCatalog.GetForPlayer(player, GetLeaderboardStanding());
+        return perks.Any(perk => perk.Id == PerkCatalog.CalmingPresenceId)
+            ? Math.Min(0, (int)Math.Ceiling(delta * 0.5f))
+            : delta;
     }
 
     private void ApplyFactionDelta(string playerId, KarmaAction action)

@@ -208,6 +208,8 @@ recovers when the player stops sprinting. Empty stamina makes the player winded;
 sprint resumes only after stamina recovers to a small buffer.
 Some karma perks affect traversal: Beacon Aura improves stamina recovery, while
 Renegade Nerve reduces sprint stamina cost.
+Calming Presence softens negative NPC relationship reactions, giving high-karma
+players a little more room to recover from awkward social mistakes.
 
 ## Prototype HUD
 

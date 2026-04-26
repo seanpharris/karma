@@ -369,15 +369,15 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(helpMara.Amount > 0, "helping Mara ascends karma");
         ExpectTrue(state.Relationships.GetOpinion(StarterNpcs.Mara.Id, GameState.LocalPlayerId) > 0, "helping Mara improves Mara relationship");
         ExpectTrue(state.Factions.GetReputation(StarterFactions.FreeSettlersId, GameState.LocalPlayerId) > 0, "helping Mara improves Free Settlers faction reputation");
+        state.ApplyLocalShift(PrototypeActions.HelpPeer());
+        ExpectTrue(state.LocalPerks.Any(perk => perk.Id == PerkCatalog.CalmingPresenceId), "positive karma unlocks Calming Presence");
 
         var scoreAfterHelp = state.LocalKarma.Score;
         var opinionBeforePrank = state.Relationships.GetOpinion(StarterNpcs.Mara.Id, GameState.LocalPlayerId);
         var prankMara = state.ApplyLocalShift(PrototypeActions.WhoopieCushionMara());
         ExpectTrue(prankMara.Amount < 0, "whoopie cushion prank descends karma");
         ExpectTrue(state.LocalKarma.Score < scoreAfterHelp, "prank reduces current karma score");
-        ExpectTrue(
-            state.Relationships.GetOpinion(StarterNpcs.Mara.Id, GameState.LocalPlayerId) < opinionBeforePrank,
-            "humiliating Mara damages Mara relationship");
+        ExpectEqual(opinionBeforePrank - 4, state.Relationships.GetOpinion(StarterNpcs.Mara.Id, GameState.LocalPlayerId), "Calming Presence softens NPC relationship damage");
 
         state.TriggerKarmaBreak();
         ExpectEqual(0, state.LocalKarma.Score, "Karma Break resets karma score");

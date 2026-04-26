@@ -44,7 +44,7 @@ Perks unlock from karma magnitude and current leaderboard standing.
 Ascension examples:
 
 - +10: Trusted Discount
-- +20: Calming Presence
+- +20: Calming Presence (softens negative NPC relationship reactions)
 - +35: Beacon Aura (faster stamina recovery)
 - +50: Paragon Favor
 - +100: Exalted Grace
