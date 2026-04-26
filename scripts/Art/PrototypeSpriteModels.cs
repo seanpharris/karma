@@ -149,8 +149,9 @@ public static class PrototypeSpriteCatalog
                 new Color(0.22f, 0.76f, 0.94f),
                 new Color(0.08f, 0.19f, 0.24f),
                 new Color(0.96f, 0.94f, 0.72f),
-                new Rect2(285f, 20f, 140f, 190f),
-                EngineerPlayerAtlasPath),
+                new Rect2(298f, 27f, 100f, 180f),
+                EngineerPlayerAtlasPath,
+                new Vector2(30f, 40f)),
             PrototypeSpriteKind.Mara => Humanoid(
                 kind,
                 "Mara Venn",
@@ -226,12 +227,13 @@ public static class PrototypeSpriteCatalog
         Color outline,
         Color accent,
         Rect2 atlasRegion,
-        string atlasPath = CharacterAtlasPath)
+        string atlasPath = CharacterAtlasPath,
+        Vector2? displaySize = null)
     {
         return new PrototypeSpriteDefinition(
             kind,
             displayName,
-            new Vector2(24f, 44f),
+            displaySize ?? new Vector2(24f, 44f),
             new[]
             {
                 Rect(outline, -8f, -13f, 16f, 24f),

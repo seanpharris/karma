@@ -116,6 +116,10 @@ public partial class GameplaySmokeTest : Node
             PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Player).AtlasPath,
             "local player uses generated engineer character sheet");
         ExpectEqual(
+            new Vector2(30f, 40f),
+            PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Player).Size,
+            "generated engineer player renders with corrected proportions");
+        ExpectEqual(
             PrototypeSpriteCatalog.CharacterAtlasPath,
             PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Mara).AtlasPath,
             "NPCs keep the shared character atlas");
