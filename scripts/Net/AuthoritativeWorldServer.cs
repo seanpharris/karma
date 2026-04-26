@@ -151,6 +151,11 @@ public sealed class AuthoritativeWorldServer
             SeedStationMarker(entityId, location);
         }
 
+        foreach (var quest in generatedWorld.Quests.OrderBy(quest => quest.Id))
+        {
+            _state.Quests.AddDefinition(quest);
+        }
+
         var npcsById = generatedWorld.Npcs.ToDictionary(npc => npc.Id);
         foreach (var placement in generatedWorld.NpcPlacements.OrderBy(placement => placement.NpcId))
         {
@@ -910,7 +915,7 @@ public sealed class AuthoritativeWorldServer
             npc.Profile.Id,
             npc.Profile.Name,
             $"{npc.Profile.Name} needs {npc.Profile.Need}.",
-            GetChoicesFor(npc.Profile.Id));
+            GetChoicesFor(npc.Profile));
     }
 
     private ServerProcessResult ProcessStartDialogue(ServerIntent intent)
@@ -960,7 +965,7 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, $"Dialogue choice requires missing item: {choice.RequiredItemId}.");
         }
 
-        if (!PrototypeActions.TryGet(choice.ActionId, out var action))
+        if (!TryResolveDialogueAction(intent.PlayerId, npcId, choice.ActionId, out var action))
         {
             return Reject(intent, $"Dialogue choice action is unknown: {choice.ActionId}.");
         }
@@ -2099,11 +2104,46 @@ public sealed class AuthoritativeWorldServer
         return true;
     }
 
-    private static IReadOnlyList<NpcDialogueChoice> GetChoicesFor(string npcId)
+    private static bool TryResolveDialogueAction(string playerId, string npcId, string actionId, out KarmaAction action)
     {
-        if (npcId != StarterNpcs.Mara.Id)
+        if (PrototypeActions.TryGet(actionId, out action))
         {
-            return Array.Empty<NpcDialogueChoice>();
+            return true;
+        }
+
+        action = actionId switch
+        {
+            "generated_assist_need" => new KarmaAction(
+                playerId,
+                npcId,
+                new[] { "helpful", "generous", "lawful" },
+                "You offered practical help with a generated station need."),
+            "generated_spread_rumor" => new KarmaAction(
+                playerId,
+                npcId,
+                new[] { "deceptive", "chaotic", "harmful" },
+                "You turned a generated station need into public rumor fuel."),
+            "generated_apply_pressure" => new KarmaAction(
+                playerId,
+                npcId,
+                new[] { "selfish", "harmful", "intimidating" },
+                "You pressured a generated station contact for advantage."),
+            _ => null
+        };
+
+        return action is not null;
+    }
+
+    private static IReadOnlyList<NpcDialogueChoice> GetChoicesFor(NpcProfile npc)
+    {
+        if (npc.Id != StarterNpcs.Mara.Id)
+        {
+            return new[]
+            {
+                new NpcDialogueChoice("assist_need", $"Help with {npc.Need}", "generated_assist_need"),
+                new NpcDialogueChoice("spread_rumor", "Turn this need into a rumor", "generated_spread_rumor"),
+                new NpcDialogueChoice("apply_pressure", "Apply pressure for leverage", "generated_apply_pressure")
+            };
         }
 
         return new[]

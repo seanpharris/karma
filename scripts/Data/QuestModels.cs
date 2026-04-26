@@ -73,6 +73,14 @@ public sealed class QuestLedger
         return _quests[questId];
     }
 
+    public void AddDefinition(QuestDefinition definition)
+    {
+        if (!_quests.ContainsKey(definition.Id))
+        {
+            _quests[definition.Id] = new QuestState(definition);
+        }
+    }
+
     public string FormatActiveSummary()
     {
         var active = _quests.Values

@@ -249,7 +249,7 @@ public partial class GameState : Node
             }
         }
 
-        if (!PrototypeActions.TryGet(quest.Definition.CompletionActionId, out var action))
+        if (!TryResolveQuestCompletionAction(playerId, quest.Definition, out var action))
         {
             return false;
         }
@@ -266,6 +266,27 @@ public partial class GameState : Node
         EmitQuestsChanged();
         EmitWorldEventsChanged();
         return true;
+    }
+
+    private static bool TryResolveQuestCompletionAction(string playerId, QuestDefinition quest, out KarmaAction action)
+    {
+        if (PrototypeActions.TryGet(quest.CompletionActionId, out action))
+        {
+            return true;
+        }
+
+        if (quest.CompletionActionId.StartsWith("generated_station_help:"))
+        {
+            action = new KarmaAction(
+                playerId,
+                quest.GiverNpcId,
+                new[] { "helpful", "generous", "lawful" },
+                $"You followed through on {quest.Title}.");
+            return true;
+        }
+
+        action = null;
+        return false;
     }
 
     public WorldEvent AddWorldEvent(

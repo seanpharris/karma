@@ -11,6 +11,7 @@ public sealed record GeneratedWorld(
     IReadOnlyList<GeneratedLocation> Locations,
     IReadOnlyList<NpcProfile> Npcs,
     IReadOnlyList<GeneratedNpcPlacement> NpcPlacements,
+    IReadOnlyList<QuestDefinition> Quests,
     IReadOnlyList<GameItem> Oddities,
     IReadOnlyList<GeneratedOddityPlacement> OddityPlacements,
     IReadOnlyList<FactionProfile> Factions)
@@ -20,7 +21,7 @@ public sealed record GeneratedWorld(
 
     public GeneratedWorldAdapter ToAdapter()
     {
-        return new GeneratedWorldAdapter(Theme, Npcs, Array.Empty<QuestDefinition>(), Oddities, Factions);
+        return new GeneratedWorldAdapter(Theme, Npcs, Quests, Oddities, Factions);
     }
 }
 

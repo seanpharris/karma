@@ -167,6 +167,7 @@ public static class WorldGenerator
         var locations = GenerateLocations(random, config, theme, locationCount);
         var npcs = GenerateNpcs(random, config, locations);
         var placements = GenerateNpcPlacements(locations, npcs);
+        var quests = GenerateStationQuests(locations, npcs, placements);
         var oddities = GenerateOddities(config);
         var oddityPlacements = GenerateOddityPlacements(random, config, locations, oddities);
 
@@ -177,6 +178,7 @@ public static class WorldGenerator
             locations,
             npcs,
             placements,
+            quests,
             oddities,
             oddityPlacements,
             StarterFactions.All);
@@ -347,6 +349,50 @@ public static class WorldGenerator
         }
 
         return placements;
+    }
+
+    private static IReadOnlyList<QuestDefinition> GenerateStationQuests(
+        IReadOnlyList<GeneratedLocation> locations,
+        IReadOnlyList<NpcProfile> npcs,
+        IReadOnlyList<GeneratedNpcPlacement> placements)
+    {
+        var quests = new List<QuestDefinition>();
+        foreach (var placement in placements)
+        {
+            var npc = npcs.FirstOrDefault(candidate => candidate.Id == placement.NpcId);
+            var location = locations.FirstOrDefault(candidate => candidate.Id == placement.LocationId);
+            if (npc is null || location is null || npc.Id == StarterNpcs.Mara.Id || npc.Id == StarterNpcs.Dallen.Id)
+            {
+                continue;
+            }
+
+            quests.Add(new QuestDefinition(
+                $"generated_station_help_{SanitizeQuestId(location.Id)}_{SanitizeQuestId(npc.Id)}",
+                $"Stabilize {location.Name}",
+                npc.Id,
+                $"{npc.Name} needs help at {location.Name}: {npc.Need}. The local karma hook is to {location.KarmaHook}.",
+                Array.Empty<string>(),
+                $"generated_station_help:{location.Id}",
+                ScripReward: GetStationQuestReward(location)));
+        }
+
+        return quests;
+    }
+
+    private static int GetStationQuestReward(GeneratedLocation location)
+    {
+        return location.ThemeTag switch
+        {
+            "care" or "repair" or "redemption" => 14,
+            "crime" or "temptation" or "judgment" => 16,
+            "combat" or "loyalty" => 12,
+            _ => 10
+        };
+    }
+
+    private static string SanitizeQuestId(string value)
+    {
+        return string.Concat(value.Select(character => char.IsLetterOrDigit(character) ? char.ToLowerInvariant(character) : '_')).Trim('_');
     }
 
     private static string BuildNpcNeed(GeneratedLocation location)

@@ -693,6 +693,10 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             generatedA.NpcPlacements.Any(placement => placement.GameplayHook.Contains("rumor") || placement.GameplayHook.Contains("sabotage") || placement.GameplayHook.Contains("gift")),
             "NPC placements expose the local karma hook that spawned them");
+        ExpectTrue(generatedA.Quests.Any(quest => quest.CompletionActionId.StartsWith("generated_station_help:")), "world generation creates station-driven quests");
+        ExpectTrue(
+            generatedA.Quests.Any(quest => quest.Description.Contains("local karma hook")),
+            "generated station quests explain the local karma hook");
         var samplePoints = ProceduralPlacementSampler.GenerateSeparatedPoints(
             new Random(99),
             width: 64,
@@ -730,6 +734,31 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             generatedNpcSnapshot.Npcs.Any(npc => npc.Id == firstGeneratedNpcPlacement.NpcId && npc.TileX == firstGeneratedNpcPlacement.X && npc.TileY == firstGeneratedNpcPlacement.Y),
             "interest snapshot exposes seeded generated NPCs near the player");
+        ExpectTrue(
+            generatedNpcSnapshot.Dialogues.Any(dialogue => dialogue.NpcId == firstGeneratedNpcPlacement.NpcId && dialogue.Choices.Any(choice => choice.Id == "assist_need")),
+            "generated NPC dialogue exposes station-specific assist choices");
+        ExpectTrue(
+            generatedNpcSnapshot.Quests.Any(quest => generatedA.Quests.Any(definition => definition.Id == quest.Id && definition.GiverNpcId == firstGeneratedNpcPlacement.NpcId)),
+            "interest snapshot exposes generated station quests for nearby generated NPCs");
+        var firstGeneratedQuest = generatedA.Quests.First(quest => quest.GiverNpcId == firstGeneratedNpcPlacement.NpcId);
+        var startGeneratedQuest = generatedContentServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            70,
+            IntentType.StartQuest,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["questId"] = firstGeneratedQuest.Id
+            }));
+        ExpectTrue(startGeneratedQuest.WasAccepted, "server accepts generated station quest start near giver");
+        var completeGeneratedQuest = generatedContentServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            71,
+            IntentType.CompleteQuest,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["questId"] = firstGeneratedQuest.Id
+            }));
+        ExpectTrue(completeGeneratedQuest.WasAccepted, "server accepts generated station quest completion through dynamic action resolution");
         ExpectEqual(generatedA.OddityPlacements.Count, generatedContentServer.WorldItems.Count, "server seeds generated oddity placements as world items");
         var firstOddityPlacement = generatedA.OddityPlacements[0];
         generatedContentState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(firstOddityPlacement.X, firstOddityPlacement.Y));
