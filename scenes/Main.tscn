@@ -198,6 +198,32 @@ DrawShadow = false
 [node name="PortableTerminalCollision" type="CollisionShape2D" parent="PortableTerminal"]
 shape = SubResource("CircleShape2D_pickup")
 
+[node name="StunBaton" type="Area2D" parent="."]
+position = Vector2(460, 290)
+script = ExtResource("5_pickup")
+ItemId = "stun_baton"
+
+[node name="StunBatonSprite" type="Node2D" parent="StunBaton"]
+script = ExtResource("7_proto_sprite")
+Kind = 15
+DrawShadow = false
+
+[node name="StunBatonCollision" type="CollisionShape2D" parent="StunBaton"]
+shape = SubResource("CircleShape2D_pickup")
+
+[node name="ElectroPistol" type="Area2D" parent="."]
+position = Vector2(490, 255)
+script = ExtResource("5_pickup")
+ItemId = "electro_pistol"
+
+[node name="ElectroPistolSprite" type="Node2D" parent="ElectroPistol"]
+script = ExtResource("7_proto_sprite")
+Kind = 16
+DrawShadow = false
+
+[node name="ElectroPistolCollision" type="CollisionShape2D" parent="ElectroPistol"]
+shape = SubResource("CircleShape2D_pickup")
+
 [node name="PeerStandIn" type="Area2D" parent="."]
 position = Vector2(320, 190)
 script = ExtResource("6_peer")

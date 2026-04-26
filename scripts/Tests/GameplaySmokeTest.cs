@@ -227,6 +227,8 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.RepairKit).Layers.Count >= 4, "prototype tool sprite has recognizable layers");
         ExpectEqual(PrototypeSpriteCatalog.UtilityItemAtlasPath, PrototypeSpriteCatalog.Get(PrototypeSpriteKind.RationPack).AtlasPath, "prototype utility item sprite records utility atlas path");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.PortableTerminal).HasAtlasRegion, "prototype utility item sprite can use utility atlas art");
+        ExpectEqual(PrototypeSpriteCatalog.WeaponAtlasPath, PrototypeSpriteCatalog.Get(PrototypeSpriteKind.StunBaton).AtlasPath, "prototype weapon sprite records weapon atlas path");
+        ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Rifle27).HasAtlasRegion, "prototype weapon sprite can use weapon atlas art");
         ExpectEqual(
             PrototypeSpriteKind.WorkVest,
             PrototypeSpriteCatalog.GetKindForItem(StarterItems.WorkVestId),
@@ -244,7 +246,9 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(generatedA.Oddities.Any(item => item.Id == StarterItems.DeflatedBalloonId), "generated world includes absurd oddities");
         ExpectTrue(generatedA.Oddities.Any(item => item.Id == StarterItems.PortableTerminalId), "generated world includes interactible prototype objects");
         ExpectTrue(StarterItems.TryGetById(StarterItems.FilterCoreId, out var filterCore) && filterCore.Tags.Contains("quest"), "starter item catalog includes quest objects");
+        ExpectTrue(StarterItems.TryGetById(StarterItems.Rifle27Id, out var rifle) && rifle.Power == 24, "starter item catalog includes sci-fi weapons");
         ExpectTrue(StarterShopCatalog.Offers.Any(offer => offer.ItemId == StarterItems.RationPackId), "starter shop sells support consumables");
+        ExpectTrue(StarterShopCatalog.Offers.Any(offer => offer.ItemId == StarterItems.ElectroPistolId), "starter shop sells prototype weapons");
         var proposal = new WorldContentProposal(
             "junkyard-fantasy",
             new[]

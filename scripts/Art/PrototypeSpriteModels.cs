@@ -20,7 +20,19 @@ public enum PrototypeSpriteKind
     ContrabandPackage,
     ApologyFlower,
     PortableTerminal,
-    Scrip
+    Scrip,
+    StunBaton,
+    ElectroPistol,
+    Smg11,
+    ShotgunMk1,
+    Rifle27,
+    SniperX9,
+    PlasmaCutter,
+    FlameThrower,
+    GrenadeLauncher,
+    Railgun,
+    ImpactMine,
+    EmpGrenade
 }
 
 public enum PrototypeSpriteShape
@@ -53,6 +65,7 @@ public static class PrototypeSpriteCatalog
     public const string CharacterAtlasPath = "res://assets/art/sprites/scifi_character_atlas.png";
     public const string ItemAtlasPath = "res://assets/art/sprites/scifi_item_atlas.png";
     public const string UtilityItemAtlasPath = "res://assets/art/sprites/scifi_utility_item_atlas.png";
+    public const string WeaponAtlasPath = "res://assets/art/sprites/scifi_weapon_atlas.png";
 
     public static PrototypeSpriteKind GetKindForItem(string itemId)
     {
@@ -69,6 +82,18 @@ public static class PrototypeSpriteCatalog
             StarterItems.ContrabandPackageId => PrototypeSpriteKind.ContrabandPackage,
             StarterItems.ApologyFlowerId => PrototypeSpriteKind.ApologyFlower,
             StarterItems.PortableTerminalId => PrototypeSpriteKind.PortableTerminal,
+            StarterItems.StunBatonId => PrototypeSpriteKind.StunBaton,
+            StarterItems.ElectroPistolId => PrototypeSpriteKind.ElectroPistol,
+            StarterItems.Smg11Id => PrototypeSpriteKind.Smg11,
+            StarterItems.ShotgunMk1Id => PrototypeSpriteKind.ShotgunMk1,
+            StarterItems.Rifle27Id => PrototypeSpriteKind.Rifle27,
+            StarterItems.SniperX9Id => PrototypeSpriteKind.SniperX9,
+            StarterItems.PlasmaCutterId => PrototypeSpriteKind.PlasmaCutter,
+            StarterItems.FlameThrowerId => PrototypeSpriteKind.FlameThrower,
+            StarterItems.GrenadeLauncherId => PrototypeSpriteKind.GrenadeLauncher,
+            StarterItems.RailgunId => PrototypeSpriteKind.Railgun,
+            StarterItems.ImpactMineId => PrototypeSpriteKind.ImpactMine,
+            StarterItems.EmpGrenadeId => PrototypeSpriteKind.EmpGrenade,
             _ => PrototypeSpriteKind.WhoopieCushion
         };
     }
@@ -110,6 +135,18 @@ public static class PrototypeSpriteCatalog
             PrototypeSpriteKind.ApologyFlower => ApologyFlower(),
             PrototypeSpriteKind.PortableTerminal => PortableTerminal(),
             PrototypeSpriteKind.Scrip => Scrip(),
+            PrototypeSpriteKind.StunBaton => Weapon(PrototypeSpriteKind.StunBaton, "Stun Baton", new Vector2(30f, 18f), new Rect2(34f, 165f, 152f, 136f)),
+            PrototypeSpriteKind.ElectroPistol => Weapon(PrototypeSpriteKind.ElectroPistol, "Electro Pistol", new Vector2(30f, 18f), new Rect2(270f, 182f, 160f, 100f)),
+            PrototypeSpriteKind.Smg11 => Weapon(PrototypeSpriteKind.Smg11, "SMG-11", new Vector2(30f, 18f), new Rect2(500f, 182f, 158f, 92f)),
+            PrototypeSpriteKind.ShotgunMk1 => Weapon(PrototypeSpriteKind.ShotgunMk1, "Shotgun Mk1", new Vector2(32f, 18f), new Rect2(700f, 182f, 188f, 103f)),
+            PrototypeSpriteKind.Rifle27 => Weapon(PrototypeSpriteKind.Rifle27, "Rifle-27", new Vector2(34f, 16f), new Rect2(925f, 182f, 205f, 82f)),
+            PrototypeSpriteKind.SniperX9 => Weapon(PrototypeSpriteKind.SniperX9, "Sniper X9", new Vector2(36f, 16f), new Rect2(1198f, 178f, 244f, 89f)),
+            PrototypeSpriteKind.PlasmaCutter => Weapon(PrototypeSpriteKind.PlasmaCutter, "Plasma Cutter", new Vector2(32f, 22f), new Rect2(26f, 666f, 190f, 105f)),
+            PrototypeSpriteKind.FlameThrower => Weapon(PrototypeSpriteKind.FlameThrower, "Flame Thrower", new Vector2(34f, 18f), new Rect2(270f, 686f, 202f, 86f)),
+            PrototypeSpriteKind.GrenadeLauncher => Weapon(PrototypeSpriteKind.GrenadeLauncher, "Grenade Launcher", new Vector2(34f, 18f), new Rect2(506f, 670f, 202f, 104f)),
+            PrototypeSpriteKind.Railgun => Weapon(PrototypeSpriteKind.Railgun, "Railgun", new Vector2(36f, 18f), new Rect2(754f, 684f, 225f, 83f)),
+            PrototypeSpriteKind.ImpactMine => Weapon(PrototypeSpriteKind.ImpactMine, "Impact Mine", new Vector2(24f, 18f), new Rect2(1038f, 680f, 128f, 86f)),
+            PrototypeSpriteKind.EmpGrenade => Weapon(PrototypeSpriteKind.EmpGrenade, "EMP Grenade", new Vector2(20f, 24f), new Rect2(1308f, 670f, 105f, 130f)),
             _ => Humanoid(
                 PrototypeSpriteKind.Player,
                 "Unknown",
@@ -360,6 +397,27 @@ public static class PrototypeSpriteCatalog
             },
             UtilityItemAtlasPath,
             new Rect2(1360f, 250f, 130f, 180f),
+            HasAtlasRegion: true);
+    }
+
+    private static PrototypeSpriteDefinition Weapon(
+        PrototypeSpriteKind kind,
+        string displayName,
+        Vector2 size,
+        Rect2 atlasRegion)
+    {
+        return new PrototypeSpriteDefinition(
+            kind,
+            displayName,
+            size,
+            new[]
+            {
+                Line(new Color(0.08f, 0.09f, 0.1f), new Vector2(-12f, 2f), new Vector2(12f, -2f), 5f),
+                Line(new Color(0.48f, 0.52f, 0.55f), new Vector2(-10f, 1f), new Vector2(10f, -3f), 3f),
+                Rect(new Color(0.08f, 0.48f, 0.82f), -2f, -3f, 5f, 2f)
+            },
+            WeaponAtlasPath,
+            atlasRegion,
             HasAtlasRegion: true);
     }
 

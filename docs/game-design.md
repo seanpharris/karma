@@ -130,11 +130,17 @@ scrip when that item sheet is available.
 Utility item world models use `assets/art/sprites/scifi_utility_item_atlas.png`
 for ration pack, data chip, filter core, contraband package, apology flower,
 and portable terminal.
+Weapon world models use `assets/art/sprites/scifi_weapon_atlas.png` for the
+starter sci-fi weapon set, from non-lethal stun baton up through heavy weapons
+and thrown explosives.
 
 The prototype item set covers the current loops: oddities (`whoopie_cushion`,
 `deflated_balloon`, `apology_flower`), support tools (`repair_kit`,
 `ration_pack`, `filter_core`), equipment (`practice_stick`, `work_vest`), and
 interactible objects (`data_chip`, `contraband_package`, `portable_terminal`).
+The sci-fi weapon expansion adds `stun_baton`, `electro_pistol`, `smg_11`,
+`shotgun_mk1`, `rifle_27`, `sniper_x9`, `plasma_cutter`, `flame_thrower`,
+`grenade_launcher`, `railgun`, `impact_mine`, and `emp_grenade`.
 
 ## NPC Relationships
 

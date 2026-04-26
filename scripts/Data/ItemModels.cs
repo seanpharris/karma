@@ -45,6 +45,18 @@ public static class StarterItems
     public const string ContrabandPackageId = "contraband_package";
     public const string ApologyFlowerId = "apology_flower";
     public const string PortableTerminalId = "portable_terminal";
+    public const string StunBatonId = "stun_baton";
+    public const string ElectroPistolId = "electro_pistol";
+    public const string Smg11Id = "smg_11";
+    public const string ShotgunMk1Id = "shotgun_mk1";
+    public const string Rifle27Id = "rifle_27";
+    public const string SniperX9Id = "sniper_x9";
+    public const string PlasmaCutterId = "plasma_cutter";
+    public const string FlameThrowerId = "flame_thrower";
+    public const string GrenadeLauncherId = "grenade_launcher";
+    public const string RailgunId = "railgun";
+    public const string ImpactMineId = "impact_mine";
+    public const string EmpGrenadeId = "emp_grenade";
 
     public static readonly GameItem WhoopieCushion = new(
         WhoopieCushionId,
@@ -127,6 +139,90 @@ public static class StarterItems
         new[] { "tech", "placeable" },
         "A chunky console for messages, rumors, and poor decisions with timestamps.");
 
+    public static readonly GameItem StunBaton = Weapon(
+        StunBatonId,
+        "Stun Baton",
+        new[] { "melee", "non_lethal", "electric" },
+        "Delivers a shocking charge that stuns.",
+        Power: 12);
+
+    public static readonly GameItem ElectroPistol = Weapon(
+        ElectroPistolId,
+        "Electro Pistol",
+        new[] { "pistol", "energy" },
+        "A short range energy pistol with low recoil.",
+        Power: 16);
+
+    public static readonly GameItem Smg11 = Weapon(
+        Smg11Id,
+        "SMG-11",
+        new[] { "smg", "ballistic" },
+        "Fully automatic, loud, and rude about it.",
+        Power: 18);
+
+    public static readonly GameItem ShotgunMk1 = Weapon(
+        ShotgunMk1Id,
+        "Shotgun Mk1",
+        new[] { "shotgun", "ballistic" },
+        "Devastating at close range.",
+        Power: 22);
+
+    public static readonly GameItem Rifle27 = Weapon(
+        Rifle27Id,
+        "Rifle-27",
+        new[] { "rifle", "ballistic" },
+        "Balanced assault rifle. Reliable all-rounder.",
+        Power: 24);
+
+    public static readonly GameItem SniperX9 = Weapon(
+        SniperX9Id,
+        "Sniper X9",
+        new[] { "sniper", "ballistic" },
+        "High precision. High damage. Low chill.",
+        Power: 30);
+
+    public static readonly GameItem PlasmaCutter = Weapon(
+        PlasmaCutterId,
+        "Plasma Cutter",
+        new[] { "tool", "energy", "machinery" },
+        "Industrial cutter. Strong against machinery.",
+        Power: 20);
+
+    public static readonly GameItem FlameThrower = Weapon(
+        FlameThrowerId,
+        "Flame Thrower",
+        new[] { "special", "fire" },
+        "Projects a stream of ignited fuel.",
+        Power: 26);
+
+    public static readonly GameItem GrenadeLauncher = Weapon(
+        GrenadeLauncherId,
+        "Grenade Launcher",
+        new[] { "heavy", "explosive" },
+        "Fires explosive rounds in an arc.",
+        Power: 32);
+
+    public static readonly GameItem Railgun = Weapon(
+        RailgunId,
+        "Railgun",
+        new[] { "heavy", "energy" },
+        "High penetration. Charges before firing.",
+        Power: 34);
+
+    public static readonly GameItem ImpactMine = Weapon(
+        ImpactMineId,
+        "Impact Mine",
+        new[] { "thrown", "explosive", "trap" },
+        "A proximity triggered explosive mine.",
+        Power: 28);
+
+    public static readonly GameItem EmpGrenade = Weapon(
+        EmpGrenadeId,
+        "EMP Grenade",
+        new[] { "thrown", "energy", "electric" },
+        "Disables electronics in an area.",
+        Power: 18);
+
     public static GameItem GetById(string id)
     {
         return TryGetById(id, out var item) ? item : WhoopieCushion;
@@ -147,9 +243,38 @@ public static class StarterItems
             ContrabandPackageId => ContrabandPackage,
             ApologyFlowerId => ApologyFlower,
             PortableTerminalId => PortableTerminal,
+            StunBatonId => StunBaton,
+            ElectroPistolId => ElectroPistol,
+            Smg11Id => Smg11,
+            ShotgunMk1Id => ShotgunMk1,
+            Rifle27Id => Rifle27,
+            SniperX9Id => SniperX9,
+            PlasmaCutterId => PlasmaCutter,
+            FlameThrowerId => FlameThrower,
+            GrenadeLauncherId => GrenadeLauncher,
+            RailgunId => Railgun,
+            ImpactMineId => ImpactMine,
+            EmpGrenadeId => EmpGrenade,
             _ => null
         };
 
         return item is not null;
+    }
+
+    private static GameItem Weapon(
+        string id,
+        string name,
+        IReadOnlyCollection<string> tags,
+        string description,
+        int Power)
+    {
+        return new GameItem(
+            id,
+            name,
+            ItemCategory.Weapon,
+            tags,
+            description,
+            EquipmentSlot.MainHand,
+            Power);
     }
 }

@@ -26,6 +26,10 @@ The second sci-fi utility item model sheet should be dropped at:
 
 `sprites/scifi_utility_item_atlas.png`
 
+The first sci-fi weapon model sheet should be dropped at:
+
+`sprites/scifi_weapon_atlas.png`
+
 That path is registered in `scripts/World/ThemeArtRegistry.cs`. The prototype
 currently maps a small sci-fi subset from that sheet: floors, metal walls,
 airlock doors, duel ring floor, and oddity pile.
@@ -47,3 +51,6 @@ The current core item models also have source regions mapped for
 practice stick, work vest, and scrip.
 The utility item sheet maps ration pack, data chip, filter core, contraband
 package, apology flower, and portable terminal.
+The weapon sheet maps stun baton, electro pistol, SMG-11, shotgun Mk1,
+Rifle-27, Sniper X9, plasma cutter, flame thrower, grenade launcher, railgun,
+impact mine, and EMP grenade.

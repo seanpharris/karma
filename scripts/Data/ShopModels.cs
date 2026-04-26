@@ -18,6 +18,9 @@ public static class StarterShopCatalog
     public const string DallenRationPackOfferId = "dallen_ration_pack";
     public const string DallenDataChipOfferId = "dallen_data_chip";
     public const string DallenApologyFlowerOfferId = "dallen_apology_flower";
+    public const string DallenStunBatonOfferId = "dallen_stun_baton";
+    public const string DallenElectroPistolOfferId = "dallen_electro_pistol";
+    public const string DallenRifle27OfferId = "dallen_rifle_27";
 
     public static readonly IReadOnlyList<ShopOffer> Offers = new[]
     {
@@ -26,7 +29,10 @@ public static class StarterShopCatalog
         new ShopOffer(DallenWorkVestOfferId, StarterNpcs.Dallen.Id, StarterItems.WorkVestId, 35),
         new ShopOffer(DallenRationPackOfferId, StarterNpcs.Dallen.Id, StarterItems.RationPackId, 9),
         new ShopOffer(DallenDataChipOfferId, StarterNpcs.Dallen.Id, StarterItems.DataChipId, 14),
-        new ShopOffer(DallenApologyFlowerOfferId, StarterNpcs.Dallen.Id, StarterItems.ApologyFlowerId, 11)
+        new ShopOffer(DallenApologyFlowerOfferId, StarterNpcs.Dallen.Id, StarterItems.ApologyFlowerId, 11),
+        new ShopOffer(DallenStunBatonOfferId, StarterNpcs.Dallen.Id, StarterItems.StunBatonId, 42),
+        new ShopOffer(DallenElectroPistolOfferId, StarterNpcs.Dallen.Id, StarterItems.ElectroPistolId, 58),
+        new ShopOffer(DallenRifle27OfferId, StarterNpcs.Dallen.Id, StarterItems.Rifle27Id, 86)
     };
 
     public static bool TryGet(string offerId, out ShopOffer offer)
