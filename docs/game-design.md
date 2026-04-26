@@ -38,6 +38,9 @@ The first prototype shop is Dallen's stall, which sells starter objects through
 server-validated offers. Nearby vendor offers are exposed through interest
 snapshots, so distant shops remain hidden until the player is in range. The
 prototype interaction prompt can buy the first visible offer for quick testing.
+Shop prices are calculated by the server for each player, so economy perks such
+as Trusted Discount and Shifty Prices change both the displayed offer price and
+the authoritative wallet debit.
 
 Prototype matches stay small, but the production large-world target is
 `1000 x 1000` tiles at `16px` logical tile scale. Large worlds must be treated

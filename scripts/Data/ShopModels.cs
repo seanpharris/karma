@@ -29,3 +29,43 @@ public static class StarterShopCatalog
         return offer is not null;
     }
 }
+
+public static class ShopPricing
+{
+    public const int TrustedDiscountPercent = 10;
+    public const int ShiftyPricesDiscountPercent = 15;
+
+    public static int CalculatePrice(ShopOffer offer, PlayerState player, LeaderboardStanding standing)
+    {
+        var discountPercent = CalculateDiscountPercent(player, standing);
+        if (discountPercent <= 0)
+        {
+            return offer.Price;
+        }
+
+        var discount = System.Math.Max(1, (offer.Price * discountPercent) / 100);
+        return System.Math.Max(1, offer.Price - discount);
+    }
+
+    public static int CalculateDiscountPercent(PlayerState player, LeaderboardStanding standing)
+    {
+        if (player is null)
+        {
+            return 0;
+        }
+
+        var perks = PerkCatalog.GetForPlayer(player, standing);
+        var discountPercent = 0;
+        if (perks.Any(perk => perk.Id == PerkCatalog.TrustedDiscountId))
+        {
+            discountPercent = System.Math.Max(discountPercent, TrustedDiscountPercent);
+        }
+
+        if (perks.Any(perk => perk.Id == PerkCatalog.ShiftyPricesId))
+        {
+            discountPercent = System.Math.Max(discountPercent, ShiftyPricesDiscountPercent);
+        }
+
+        return discountPercent;
+    }
+}

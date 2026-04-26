@@ -517,6 +517,25 @@ public partial class GameplaySmokeTest : Node
             {
                 ["offerId"] = StarterShopCatalog.DallenWorkVestOfferId
             })).WasAccepted, "server rejects shop purchase without enough scrip");
+        state.ApplyShift(GameState.LocalPlayerId, PrototypeActions.HelpPeer());
+        state.AddScrip(GameState.LocalPlayerId, 20);
+        var discountedShopSnapshot = transferServer.CreateInterestSnapshot(GameState.LocalPlayerId);
+        ExpectTrue(
+            discountedShopSnapshot.ShopOffers.Any(offer => offer.OfferId == StarterShopCatalog.DallenRepairKitOfferId && offer.Price == 17),
+            "interest snapshot applies trusted shop discount");
+        var localScripBeforeDiscountPurchase = state.LocalScrip;
+        var discountedPurchase = transferServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            7,
+            IntentType.PurchaseItem,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["offerId"] = StarterShopCatalog.DallenRepairKitOfferId
+            }));
+        ExpectTrue(discountedPurchase.WasAccepted, "server accepts discounted shop purchase");
+        ExpectEqual(localScripBeforeDiscountPurchase - 17, state.LocalScrip, "discounted shop purchase debits final price");
+        ExpectEqual("18", discountedPurchase.Event.Data["basePrice"], "discounted purchase event reports base price");
+        ExpectEqual("17", discountedPurchase.Event.Data["price"], "discounted purchase event reports final price");
         state.AddItem("peer_stand_in", StarterItems.WhoopieCushion);
         var peerKarmaBreak = transferServer.ProcessIntent(new ServerIntent(
             "peer_stand_in",
@@ -535,7 +554,7 @@ public partial class GameplaySmokeTest : Node
         var karmaBeforeDropPickup = state.LocalKarma.Score;
         var dropPickup = transferServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            7,
+            8,
             IntentType.Interact,
             new System.Collections.Generic.Dictionary<string, string>
             {

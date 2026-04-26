@@ -242,7 +242,7 @@ public sealed class AuthoritativeWorldServer
             .OrderBy(entity => entity.EntityId)
             .Select(ToSnapshot)
             .ToArray();
-        var visibleShopOffers = CreateVisibleShopOffers(interest.VisibleNpcIds);
+        var visibleShopOffers = CreateVisibleShopOffers(playerId, interest.VisibleNpcIds, standing);
         var visibleDuels = _state.Duels.All
             .Where(duel => IsDuelVisibleTo(duel, visiblePlayerIds))
             .OrderBy(duel => duel.Id)
@@ -320,12 +320,20 @@ public sealed class AuthoritativeWorldServer
             .ToArray();
     }
 
-    private static IReadOnlyList<ShopOfferSnapshot> CreateVisibleShopOffers(IReadOnlyCollection<string> visibleNpcIds)
+    private IReadOnlyList<ShopOfferSnapshot> CreateVisibleShopOffers(
+        string playerId,
+        IReadOnlyCollection<string> visibleNpcIds,
+        LeaderboardStanding standing)
     {
+        if (!_state.Players.TryGetValue(playerId, out var player))
+        {
+            return Array.Empty<ShopOfferSnapshot>();
+        }
+
         return StarterShopCatalog.Offers
             .Where(offer => visibleNpcIds.Contains(offer.VendorNpcId))
             .OrderBy(offer => offer.Id)
-            .Select(ToSnapshot)
+            .Select(offer => ToSnapshot(offer, player, standing))
             .ToArray();
     }
 
@@ -865,21 +873,23 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, $"Shop offer points to unknown item id: {offer.ItemId}.");
         }
 
-        if (!_state.PurchaseItem(intent.PlayerId, item, offer.Price))
+        var price = ShopPricing.CalculatePrice(offer, _state.Players[intent.PlayerId], _state.GetLeaderboardStanding());
+        if (!_state.PurchaseItem(intent.PlayerId, item, price))
         {
             return Reject(intent, $"Not enough scrip for offer: {offer.Id}.");
         }
 
         var serverEvent = AppendEvent(
             "item_purchased",
-            $"{intent.PlayerId} purchased {item.Id} for {offer.Price} scrip",
+            $"{intent.PlayerId} purchased {item.Id} for {price} scrip",
             new Dictionary<string, string>
             {
                 ["playerId"] = intent.PlayerId,
                 ["vendorNpcId"] = offer.VendorNpcId,
                 ["offerId"] = offer.Id,
                 ["itemId"] = item.Id,
-                ["price"] = offer.Price.ToString(),
+                ["basePrice"] = offer.Price.ToString(),
+                ["price"] = price.ToString(),
                 ["currency"] = offer.Currency
             });
 
@@ -1182,16 +1192,17 @@ public sealed class AuthoritativeWorldServer
             entity.Position.Y);
     }
 
-    private static ShopOfferSnapshot ToSnapshot(ShopOffer offer)
+    private static ShopOfferSnapshot ToSnapshot(ShopOffer offer, PlayerState player, LeaderboardStanding standing)
     {
         var item = StarterItems.GetById(offer.ItemId);
+        var price = ShopPricing.CalculatePrice(offer, player, standing);
         return new ShopOfferSnapshot(
             offer.Id,
             offer.VendorNpcId,
             item.Id,
             item.Name,
             item.Category,
-            offer.Price,
+            price,
             offer.Currency);
     }
 
