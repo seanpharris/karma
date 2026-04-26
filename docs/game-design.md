@@ -33,6 +33,8 @@ The default chunk size is `32 x 32` tiles, giving the large target roughly
 `32 x 32` chunks for streaming and interest management.
 Client interest snapshots carry nearby map chunk data, so terrain streaming can
 follow the same server-owned visibility path as NPCs, items, and players.
+The current prototype renderer draws those server-provided chunks with
+placeholder colors until the tileset atlas mapping is ready.
 
 Match time is server-owned and deterministic. The server advances elapsed match
 seconds, emits a `match_finished` event when time expires, and locks the Saint

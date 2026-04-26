@@ -22,14 +22,18 @@ public partial class WorldRoot : Node2D
         GD.Print(
             $"Generated starter world: {GeneratedWorld.Summary}, " +
             $"{Config.WidthTiles}x{Config.HeightTiles}, max players {Config.Server.MaxPlayers}");
-        RenderGeneratedTileMap();
+        CreateTileMapRenderer();
 
         _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         if (_serverSession is not null)
         {
             _serverSession.SetTileMap(GeneratedWorld.TileMap);
             _serverSession.LocalSnapshotChanged += OnLocalSnapshotChanged;
-            RenderServerItems(_serverSession.LastLocalSnapshot);
+            RenderSnapshot(_serverSession.LastLocalSnapshot);
+        }
+        else
+        {
+            _tileMapRenderer.SetTileMap(GeneratedWorld.TileMap, ThemeArtRegistry.GetForTheme(GeneratedWorld.Theme));
         }
     }
 
@@ -37,11 +41,11 @@ public partial class WorldRoot : Node2D
     {
         if (_serverSession is not null)
         {
-            RenderServerItems(_serverSession.LastLocalSnapshot);
+            RenderSnapshot(_serverSession.LastLocalSnapshot);
         }
     }
 
-    private void RenderGeneratedTileMap()
+    private void CreateTileMapRenderer()
     {
         _tileMapRenderer = new GeneratedTileMapRenderer
         {
@@ -49,7 +53,17 @@ public partial class WorldRoot : Node2D
             ZIndex = -100
         };
         AddChild(_tileMapRenderer);
-        _tileMapRenderer.SetTileMap(GeneratedWorld.TileMap, ThemeArtRegistry.GetForTheme(GeneratedWorld.Theme));
+    }
+
+    private void RenderSnapshot(ClientInterestSnapshot snapshot)
+    {
+        if (snapshot is null)
+        {
+            return;
+        }
+
+        _tileMapRenderer.SetChunks(snapshot.MapChunks, ThemeArtRegistry.GetForTheme(GeneratedWorld.Theme));
+        RenderServerItems(snapshot);
     }
 
     private void RenderServerItems(ClientInterestSnapshot snapshot)
