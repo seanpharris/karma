@@ -38,3 +38,11 @@ and perks reset.
 - `scripts/Player/` player controller
 - `scripts/Npc/` NPC interaction scripts
 - `scripts/Net/` multiplayer/server boundary notes and stubs
+
+## Fast Launch
+
+- Main menu path: `powershell -ExecutionPolicy Bypass -File .\tools\run-main-menu.ps1`
+- Direct gameplay path: `powershell -ExecutionPolicy Bypass -File .\tools\run-gameplay.ps1`
+
+See [`docs/testing-launch-paths.md`](docs/testing-launch-paths.md) for direct Godot commands.
+See [`docs/sprite-modeling-status.md`](docs/sprite-modeling-status.md) for why the current sprite-modeling difference is mostly pipeline/animation support rather than a dramatic visual upgrade.

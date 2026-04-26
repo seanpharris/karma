@@ -7,7 +7,7 @@ and the next practical build slices.
 
 ### Main menu and entry flow
 
-- The project now boots into a separate `MainMenu.tscn` prototype instead of directly into the gameplay sandbox.
+- The project now boots into a separate `MainMenu.tscn` prototype instead of directly into the gameplay sandbox, while `tools/run-gameplay.ps1` launches gameplay directly for fast iteration.
 - The menu has Start Local Prototype, Options, Credits, and Quit controls.
 - Start Local Prototype loads the existing gameplay prototype scene (`Main.tscn`) without folding menu UI into the world prototype.
 - Options now includes prototype video settings (resolution list, display-resolution detection, fullscreen/windowed, VSync), audio sliders, controls/accessibility notes, and apply/save behavior.
@@ -102,7 +102,7 @@ and the next practical build slices.
 
 ### Art
 
-- Current player art is good enough for prototype use, but still generated/extracted and should be revisited later.
+- Current player art is good enough for prototype animation/loading tests, but the visible difference is subtle because the active `32x32` engineer sheet is still a temporary generated/extracted asset rather than polished v2 sprite modeling.
 - Long-term pipeline should move toward blank/base bodies plus outfit/skin layers.
 - Legacy art library still needs migration into the newer curation structure.
 
