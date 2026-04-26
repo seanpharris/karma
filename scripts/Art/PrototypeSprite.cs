@@ -34,7 +34,7 @@ public partial class PrototypeSprite : Node2D
         {
             DrawTextureRectRegion(
                 _atlasTexture,
-                new Rect2(-definition.Size.X * 0.5f, -definition.Size.Y * 0.8f, definition.Size.X, definition.Size.Y),
+                GetAtlasTarget(definition),
                 definition.AtlasRegion);
             return;
         }
@@ -65,8 +65,23 @@ public partial class PrototypeSprite : Node2D
         }
 
         _atlasPath = definition.AtlasPath;
-        _atlasTexture = ResourceLoader.Exists(_atlasPath)
-            ? ResourceLoader.Load<Texture2D>(_atlasPath)
-            : null;
+        _atlasTexture = AtlasTextureLoader.Load(_atlasPath, removeDarkBackground: true);
+    }
+
+    private Rect2 GetAtlasTarget(PrototypeSpriteDefinition definition)
+    {
+        var bottomY = IsHumanoid(definition.Kind)
+            ? definition.Size.Y * 0.38f
+            : definition.Size.Y * 0.2f;
+        return new Rect2(
+            -definition.Size.X * 0.5f,
+            bottomY - definition.Size.Y,
+            definition.Size.X,
+            definition.Size.Y);
+    }
+
+    private static bool IsHumanoid(PrototypeSpriteKind kind)
+    {
+        return kind is PrototypeSpriteKind.Player or PrototypeSpriteKind.Mara or PrototypeSpriteKind.Peer;
     }
 }

@@ -1,6 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 using System.Linq;
+using Karma.Art;
 using Karma.Net;
 
 namespace Karma.World;
@@ -118,9 +119,7 @@ public partial class GeneratedTileMapRenderer : Node2D
         }
 
         _atlasPath = atlasPath;
-        _atlasTexture = ResourceLoader.Exists(atlasPath)
-            ? ResourceLoader.Load<Texture2D>(atlasPath)
-            : null;
+        _atlasTexture = AtlasTextureLoader.Load(atlasPath);
     }
 
     private void DrawStructure(string structureId, Rect2 rect)

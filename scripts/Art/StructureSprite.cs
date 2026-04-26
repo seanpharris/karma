@@ -43,9 +43,7 @@ public partial class StructureSprite : Node2D
         }
 
         _atlasPath = definition.AtlasPath;
-        _atlasTexture = ResourceLoader.Exists(_atlasPath)
-            ? ResourceLoader.Load<Texture2D>(_atlasPath)
-            : null;
+        _atlasTexture = AtlasTextureLoader.Load(_atlasPath, removeDarkBackground: true);
     }
 
     private StructureSpriteDefinition GetDefinition()

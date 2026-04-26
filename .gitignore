@@ -12,3 +12,5 @@ obj/
 *.tmp
 *.log
 debug/*.json
+debug/*.png
+debug/*.txt

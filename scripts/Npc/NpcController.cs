@@ -139,6 +139,17 @@ public partial class NpcController : Area2D
             return;
         }
 
+        if (quest.Status == QuestStatus.Completed)
+        {
+            _hud?.ShowPrompt(FormatQuestPromptLine(
+                quest.Status,
+                quest.Definition.Title,
+                FormatRequiredItems(quest.Definition.RequiredItemIds),
+                HasRequiredItems(gameState, quest),
+                quest.Definition.ScripReward));
+            return;
+        }
+
         var intentType = quest.Status == QuestStatus.Available
             ? IntentType.StartQuest
             : IntentType.CompleteQuest;
@@ -269,6 +280,8 @@ public partial class NpcController : Area2D
             "Mara Venn needs clinic filters fixed.",
             string.Empty
         };
+        var gameState = GetNode<GameState>("/root/GameState");
+        var clinicQuest = gameState.Quests.Get(StarterQuests.MaraClinicFiltersId);
 
         if (dialogue is null)
         {
@@ -283,7 +296,12 @@ public partial class NpcController : Area2D
             }
         }
 
-        lines.Add("6 - Start/complete Clinic Filters quest");
+        lines.Add(FormatQuestPromptLine(
+            clinicQuest.Status,
+            clinicQuest.Definition.Title,
+            FormatRequiredItems(clinicQuest.Definition.RequiredItemIds),
+            HasRequiredItems(gameState, clinicQuest),
+            clinicQuest.Definition.ScripReward));
         lines.Add("7 - Start a secret entanglement");
         lines.Add("8 - Expose the secret entanglement");
         var offers = _serverSession?.LastLocalSnapshot?.ShopOffers ?? System.Array.Empty<ShopOfferSnapshot>();
@@ -307,6 +325,39 @@ public partial class NpcController : Area2D
         }
 
         return ((index % count) + count) % count;
+    }
+
+    public static string FormatQuestPromptLine(
+        QuestStatus status,
+        string questTitle,
+        string requiredItems,
+        bool hasRequiredItems,
+        int scripReward)
+    {
+        return status switch
+        {
+            QuestStatus.Available => $"6 - Start {questTitle} ({requiredItems}, reward {scripReward} scrip)",
+            QuestStatus.Active when hasRequiredItems => $"6 - Complete {questTitle} ({requiredItems}, reward {scripReward} scrip)",
+            QuestStatus.Active => $"6 - Need {requiredItems} for {questTitle} (reward {scripReward} scrip)",
+            QuestStatus.Completed => $"6 - {questTitle} complete",
+            QuestStatus.Failed => $"6 - {questTitle} failed",
+            _ => $"6 - {questTitle}"
+        };
+    }
+
+    private static string FormatRequiredItems(IReadOnlyCollection<string> itemIds)
+    {
+        if (itemIds.Count == 0)
+        {
+            return "no items required";
+        }
+
+        return string.Join("+", itemIds.Select(id => StarterItems.GetById(id).Name));
+    }
+
+    private static bool HasRequiredItems(GameState gameState, QuestState quest)
+    {
+        return quest.Definition.RequiredItemIds.All(itemId => gameState.HasItem(itemId));
     }
 
     private static int KeyToChoiceIndex(Key key)

@@ -48,6 +48,7 @@ public partial class PrototypeServerSession : Node
 
     public void AdvanceMatchTime(int seconds)
     {
+        _server.AdvanceIdleTicks(seconds);
         _server.AdvanceMatchTime(seconds);
         RefreshLocalSnapshot();
     }

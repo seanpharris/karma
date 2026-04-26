@@ -37,7 +37,21 @@ public partial class PlayerController : CharacterBody2D
         _camera = GetNodeOrNull<Camera2D>("Camera2D");
         _stamina = MaxStamina;
         UpdateStaminaHud();
+        if (_serverSession is not null)
+        {
+            _serverSession.LocalSnapshotChanged += OnLocalSnapshotChanged;
+            ApplyAuthoritativePosition(_serverSession.LastLocalSnapshot);
+        }
+
         SendMoveIfTileChanged();
+    }
+
+    public override void _ExitTree()
+    {
+        if (_serverSession is not null)
+        {
+            _serverSession.LocalSnapshotChanged -= OnLocalSnapshotChanged;
+        }
     }
 
     public override void _PhysicsProcess(double delta)
@@ -105,6 +119,10 @@ public partial class PlayerController : CharacterBody2D
         else if (key.Keycode == Key.R)
         {
             UseRepairKitOnPeerThroughServer();
+        }
+        else if (key.Keycode == Key.T)
+        {
+            UseRepairKitOnSelfThroughServer();
         }
     }
 
@@ -253,6 +271,17 @@ public partial class PlayerController : CharacterBody2D
             });
     }
 
+    private void UseRepairKitOnSelfThroughServer()
+    {
+        SendLocalWithPrompt(
+            IntentType.UseItem,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["itemId"] = StarterItems.RepairKitId,
+                ["targetId"] = GameState.LocalPlayerId
+            });
+    }
+
     private void SendLocalWithPrompt(
         IntentType intentType,
         System.Collections.Generic.IReadOnlyDictionary<string, string> payload)
@@ -292,6 +321,41 @@ public partial class PlayerController : CharacterBody2D
                 ["x"] = tile.X.ToString(),
                 ["y"] = tile.Y.ToString()
             });
+    }
+
+    public static Vector2 CalculateWorldPosition(int tileX, int tileY)
+    {
+        return new Vector2(tileX * 32f, tileY * 32f);
+    }
+
+    public static bool ShouldSnapToAuthoritativePosition(Vector2 currentPosition, Vector2 authoritativePosition)
+    {
+        const float snapThresholdPixels = 48f;
+        return currentPosition.DistanceSquaredTo(authoritativePosition) >= snapThresholdPixels * snapThresholdPixels;
+    }
+
+    private void OnLocalSnapshotChanged(string snapshotSummary)
+    {
+        ApplyAuthoritativePosition(_serverSession?.LastLocalSnapshot);
+    }
+
+    private void ApplyAuthoritativePosition(ClientInterestSnapshot snapshot)
+    {
+        var player = snapshot?.Players.FirstOrDefault(player => player.Id == GameState.LocalPlayerId);
+        if (player is null)
+        {
+            return;
+        }
+
+        var authoritativePosition = CalculateWorldPosition(player.TileX, player.TileY);
+        if (!ShouldSnapToAuthoritativePosition(GlobalPosition, authoritativePosition))
+        {
+            return;
+        }
+
+        GlobalPosition = authoritativePosition;
+        Velocity = Vector2.Zero;
+        _lastSentTile = new TilePosition(player.TileX, player.TileY);
     }
 
     private static TilePosition ToTilePosition(Vector2 position)

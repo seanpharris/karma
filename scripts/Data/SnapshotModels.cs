@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace Karma.Data;
 
@@ -33,7 +34,8 @@ public sealed record PlayerSnapshot(
     int MaxHealth,
     int Scrip,
     IReadOnlyList<string> InventoryItemIds,
-    IReadOnlyDictionary<EquipmentSlot, string> EquipmentItemIds);
+    IReadOnlyDictionary<EquipmentSlot, string> EquipmentItemIds,
+    IReadOnlyList<string> StatusEffects);
 
 public sealed record LeaderboardSnapshot(
     string SaintPlayerId,
@@ -66,6 +68,14 @@ public static class SnapshotBuilder
         IEnumerable<PlayerState> players,
         LeaderboardStanding standing)
     {
+        return PlayersFrom(players, standing, _ => System.Array.Empty<string>());
+    }
+
+    public static IReadOnlyList<PlayerSnapshot> PlayersFrom(
+        IEnumerable<PlayerState> players,
+        LeaderboardStanding standing,
+        Func<PlayerState, IReadOnlyList<string>> statusEffectsFor)
+    {
         return players
             .OrderBy(player => player.Id)
             .Select(player => new PlayerSnapshot(
@@ -82,7 +92,8 @@ public static class SnapshotBuilder
                 player.MaxHealth,
                 player.Scrip,
                 player.Inventory.Select(item => item.Id).ToArray(),
-                player.Equipment.ToDictionary(pair => pair.Key, pair => pair.Value.Id)))
+                player.Equipment.ToDictionary(pair => pair.Key, pair => pair.Value.Id),
+                statusEffectsFor(player)))
             .ToArray();
     }
 

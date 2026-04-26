@@ -242,7 +242,9 @@ loop quick to test in one running client.
 Near the stand-in, the prototype also exposes quick keys for combat/tool loops:
 `Z` equips the practice stick, `X` equips the work vest, `C` places the first
 loose inventory item, `R` uses a repair kit on the stand-in, and `7` gifts 5
-scrip.
+scrip. `T` uses a repair kit on the local player. `8` lets the stand-in attack
+the local player so the local health bar, cooldowns, and duel-strike feedback
+can be tested in one client.
 Movement uses WASD, and holding left Shift sprints at a modest speed boost for
 faster prototype traversal. Sprinting drains stamina while held and stamina
 recovers when the player stops sprinting. Empty stamina makes the player winded;

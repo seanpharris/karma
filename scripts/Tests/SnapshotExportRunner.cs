@@ -78,7 +78,8 @@ public static class SnapshotJson
             builder.Append($"\"tileX\": {player.TileX}, \"tileY\": {player.TileY}, ");
             builder.Append($"\"scrip\": {player.Scrip}, ");
             builder.Append($"\"inventory\": [{string.Join(", ", player.InventoryItemIds.Select(itemId => $"\"{Escape(itemId)}\""))}], ");
-            builder.Append($"\"health\": {player.Health}, \"maxHealth\": {player.MaxHealth} }}");
+            builder.Append($"\"health\": {player.Health}, \"maxHealth\": {player.MaxHealth}, ");
+            builder.Append($"\"statusEffects\": [{string.Join(", ", player.StatusEffects.Select(status => $"\"{Escape(status)}\""))}] }}");
             builder.AppendLine(i == snapshot.Players.Count - 1 ? string.Empty : ",");
         }
         builder.AppendLine("  ],");

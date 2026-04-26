@@ -63,7 +63,7 @@ Important areas:
 Current expected atlas paths:
 
 - `assets/art/tilesets/scifi_station_atlas.png`
-- `assets/art/sprites/scifi_character_atlas.png`
+- `assets/art/character.png`
 - `assets/art/sprites/scifi_item_atlas.png`
 - `assets/art/sprites/scifi_utility_item_atlas.png`
 - `assets/art/sprites/scifi_weapon_atlas.png`

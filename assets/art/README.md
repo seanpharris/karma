@@ -15,9 +15,9 @@ The current code expects the first sci-fi tileset candidate at:
 
 `tilesets/scifi_station_atlas.png`
 
-The first sci-fi character sheet should be dropped at:
+The active sci-fi character sheet is:
 
-`sprites/scifi_character_atlas.png`
+`character.png`
 
 The first sci-fi item model sheet should be dropped at:
 
@@ -53,8 +53,8 @@ The active prototype actors and pickups use procedural pixel-style models in
 layers, not final art, but they give every playable object a recognizable visual
 until sprite sheets are ready.
 Player, Mara, and the peer stand-in already have character atlas source regions
-mapped there; if `sprites/scifi_character_atlas.png` exists, those actors render
-from the sheet and otherwise fall back to the procedural models.
+mapped there; if `character.png` exists, those actors render from the sheet and
+otherwise fall back to the procedural models.
 The current core item models also have source regions mapped for
 `sprites/scifi_item_atlas.png`: whoopie cushion, deflated balloon, repair kit,
 practice stick, work vest, and scrip.

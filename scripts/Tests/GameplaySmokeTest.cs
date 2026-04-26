@@ -6,7 +6,9 @@ using Karma.Core;
 using Karma.Data;
 using Karma.Generation;
 using Karma.Net;
+using Karma.Npc;
 using Karma.Player;
+using Karma.UI;
 using Karma.World;
 
 namespace Karma.Tests;
@@ -108,6 +110,67 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(PlayerController.CalculateExhausted(true, 25f, 25f), "winded player recovers at resume stamina");
         ExpectEqual("Stamina: 20/100 (low)", PlayerController.FormatStamina(20f, 100f, false), "low stamina label is visible");
         ExpectEqual("Stamina: 0/100 (winded)", PlayerController.FormatStamina(0f, 100f, true), "winded stamina label is visible");
+        ExpectEqual(new Vector2(96f, 128f), PlayerController.CalculateWorldPosition(3, 4), "player controller maps authoritative tiles to world pixels");
+        ExpectTrue(
+            PlayerController.ShouldSnapToAuthoritativePosition(Vector2.Zero, new Vector2(96f, 128f)),
+            "player controller snaps large authoritative corrections such as respawn");
+        ExpectFalse(
+            PlayerController.ShouldSnapToAuthoritativePosition(new Vector2(90f, 124f), new Vector2(96f, 128f)),
+            "player controller preserves small local movement between authoritative tiles");
+        ExpectEqual("Health: 75/100", HudController.FormatHealth(75, 100), "health label formats current and maximum health");
+        ExpectEqual(75f, HudController.CalculateHealthPercent(75, 100), "health bar percent follows authoritative health");
+        ExpectEqual(0f, HudController.CalculateHealthPercent(-5, 100), "health bar percent clamps below zero");
+        ExpectEqual(100f, HudController.CalculateHealthPercent(125, 100), "health bar percent clamps above maximum");
+        ExpectEqual(
+            "Combat: none | You ATK:10 DEF:3 | Status: none",
+            HudController.FormatCombatLine("Combat: none", 10, 3, System.Array.Empty<string>()),
+            "combat HUD line clears status effects when none are active");
+        ExpectEqual(
+            "Combat: hit | You ATK:10 DEF:3 | Status: Attack Cooldown (2)",
+            HudController.FormatCombatLine("Combat: hit", 10, 3, new[] { "Attack Cooldown (2)" }),
+            "combat HUD line includes active status effects");
+        ExpectEqual(25f, WorldHealthBar.CalculateHealthPercent(25, 100), "world health bar percent follows visible player health");
+        var peerPrompt = PeerStandInController.FormatPrompt(
+            hasBeenRobbed: true,
+            health: 25,
+            maxHealth: 100,
+            new[] { "Karma Break Grace (4)" },
+            "Duel: Active");
+        ExpectTrue(peerPrompt.Contains("HP: 25/100"), "peer prompt includes authoritative health");
+        ExpectTrue(peerPrompt.Contains("Status: Karma Break Grace (4)"), "peer prompt includes active status effects");
+        ExpectTrue(peerPrompt.Contains("Duel: Active"), "peer prompt includes duel state");
+        ExpectTrue(peerPrompt.Contains("Attack blocked by Karma Break grace"), "peer prompt explains blocked attacks during grace");
+        ExpectTrue(peerPrompt.Contains("Duel already pending/active"), "peer prompt explains unavailable duel requests");
+        ExpectTrue(peerPrompt.Contains("Let them duel strike you"), "peer prompt labels peer-authored duel attacks");
+        ExpectTrue(peerPrompt.Contains("Satchel: stolen"), "peer prompt includes satchel state");
+        ExpectTrue(
+            NpcController.FormatQuestPromptLine(QuestStatus.Available, "Clinic Filters", "Repair Kit", false, 12).Contains("Start Clinic Filters"),
+            "NPC prompt labels available quests");
+        ExpectTrue(
+            NpcController.FormatQuestPromptLine(QuestStatus.Active, "Clinic Filters", "Repair Kit", false, 12).Contains("Need Repair Kit"),
+            "NPC prompt labels missing quest items");
+        ExpectTrue(
+            NpcController.FormatQuestPromptLine(QuestStatus.Active, "Clinic Filters", "Repair Kit", true, 12).Contains("Complete Clinic Filters"),
+            "NPC prompt labels completable quests");
+        ExpectTrue(
+            NpcController.FormatQuestPromptLine(QuestStatus.Completed, "Clinic Filters", "Repair Kit", true, 12).Contains("complete"),
+            "NPC prompt labels completed quests");
+        ExpectEqual(
+            "2 - Attack as duel strike",
+            PeerStandInController.FormatAttackLabel(System.Array.Empty<string>(), "Duel: Active"),
+            "peer prompt labels active duel attacks");
+        ExpectEqual(
+            "2 - Attack them outside a duel",
+            PeerStandInController.FormatAttackLabel(System.Array.Empty<string>(), "Duel: none"),
+            "peer prompt labels non-duel attacks");
+        ExpectEqual(
+            "8 - Their attack is cooling down",
+            PeerStandInController.FormatPeerAttackLabel(new[] { "Attack Cooldown (2)" }, "Duel: Active"),
+            "peer prompt labels peer attack cooldown");
+        ExpectEqual(
+            "8 - Let them attack you",
+            PeerStandInController.FormatPeerAttackLabel(System.Array.Empty<string>(), "Duel: none"),
+            "peer prompt labels peer-authored attacks");
         var beaconPerks = new[] { new KarmaPerk(PerkCatalog.BeaconAuraId, "Beacon Aura", PerkPath.Ascension, 35, "test") };
         var nervePerks = new[] { new KarmaPerk(PerkCatalog.RenegadeNerveId, "Renegade Nerve", PerkPath.Descension, 35, "test") };
         ExpectEqual(22.5f, PlayerController.CalculateEffectiveStaminaRecovery(18f, beaconPerks), "Beacon Aura improves stamina recovery");
@@ -132,6 +195,9 @@ public partial class GameplaySmokeTest : Node
         var matchFinishedEvent = matchServer.EventLog.First(serverEvent => serverEvent.EventId.Contains("match_finished"));
         ExpectEqual(ServerConfig.DefaultMatchWinnerScripReward.ToString(), matchFinishedEvent.Data["saintScripReward"], "finished match event reports Saint scrip reward");
         ExpectEqual(ServerConfig.DefaultMatchWinnerScripReward.ToString(), matchFinishedEvent.Data["scourgeScripReward"], "finished match event reports Scourge scrip reward");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { matchFinishedEvent }).Contains("Match complete"),
+            "HUD formats match finished events");
         matchServer.AdvanceMatchTime(60);
         ExpectEqual(saintScripBeforeMatchEnd + ServerConfig.DefaultMatchWinnerScripReward, state.Players["rival_paragon"].Scrip, "finished match does not pay Saint reward twice");
         ExpectEqual("rival_paragon", matchServer.CreateInterestSnapshot(GameState.LocalPlayerId).Match.SaintWinnerId, "interest snapshot includes Saint match winner");
@@ -162,6 +228,149 @@ public partial class GameplaySmokeTest : Node
             "scale-test",
             new WorldSeed(1, "Scale Test", "test"),
             ServerConfig.Large100Player).WidthTiles, "large world profile expands map size");
+        var cooldownState = new GameState();
+        cooldownState.RegisterPlayer(GameState.LocalPlayerId, "Cooldown Tester");
+        cooldownState.RegisterPlayer("cooldown_target", "Cooldown Target");
+        cooldownState.SetPlayerPosition(GameState.LocalPlayerId, TilePosition.Origin);
+        cooldownState.SetPlayerPosition("cooldown_target", TilePosition.Origin);
+        var cooldownServer = new AuthoritativeWorldServer(cooldownState, "cooldown-test-world");
+        ExpectTrue(cooldownServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            1,
+            IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["targetId"] = "cooldown_target"
+            })).WasAccepted, "server accepts first attack before cooldown starts");
+        var cooldownRejectedAttack = cooldownServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            2,
+            IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["targetId"] = "cooldown_target"
+            }));
+        ExpectFalse(cooldownRejectedAttack.WasAccepted, "server rejects attacks while cooldown is active");
+        ExpectTrue(cooldownRejectedAttack.Event.Data["reason"].Contains("cooldown"), "rejected attack event carries cooldown reason");
+        ExpectTrue(
+            cooldownServer.CreateInterestSnapshot(GameState.LocalPlayerId)
+                .Players.First(player => player.Id == GameState.LocalPlayerId)
+                .StatusEffects.Any(status => status.Contains("Attack Cooldown")),
+            "interest snapshot exposes local attack cooldown status");
+        cooldownServer.AdvanceIdleTicks(2);
+        ExpectFalse(
+            cooldownServer.CreateInterestSnapshot(GameState.LocalPlayerId)
+                .Players.First(player => player.Id == GameState.LocalPlayerId)
+                .StatusEffects.Any(status => status.Contains("Attack Cooldown")),
+            "idle server ticks clear local attack cooldown status");
+        ExpectTrue(cooldownServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            3,
+            IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["targetId"] = "cooldown_target"
+            })).WasAccepted, "server accepts attack after idle cooldown ticks pass");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { cooldownRejectedAttack.Event }).Contains("Attack rejected"),
+            "HUD formats rejected attack events");
+        ExpectEqual(
+            "Status: Attack Cooldown (2)",
+            HudController.FormatStatusEffects(new[] { "Attack Cooldown (2)" }),
+            "HUD formats active status effects");
+        var counterAttackState = new GameState();
+        counterAttackState.RegisterPlayer(GameState.LocalPlayerId, "Counter Target");
+        counterAttackState.RegisterPlayer("peer_stand_in", "Counter Attacker");
+        counterAttackState.SetPlayerPosition(GameState.LocalPlayerId, TilePosition.Origin);
+        counterAttackState.SetPlayerPosition("peer_stand_in", TilePosition.Origin);
+        var counterAttackServer = new AuthoritativeWorldServer(counterAttackState, "counter-attack-test-world");
+        var localHealthBeforeCounter = counterAttackState.LocalPlayer.Health;
+        var peerCounterAttack = counterAttackServer.ProcessIntent(new ServerIntent(
+            "peer_stand_in",
+            1,
+            IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["targetId"] = GameState.LocalPlayerId
+            }));
+        ExpectTrue(peerCounterAttack.WasAccepted, "server accepts stand-in attacks against the local player");
+        ExpectTrue(counterAttackState.LocalPlayer.Health < localHealthBeforeCounter, "stand-in attacks damage the local player");
+        ExpectTrue(
+            counterAttackServer.CreateInterestSnapshot(GameState.LocalPlayerId)
+                .Players.First(player => player.Id == "peer_stand_in")
+                .StatusEffects.Any(status => status.Contains("Attack Cooldown")),
+            "interest snapshot exposes stand-in attack cooldown after peer-authored attack");
+        counterAttackState.AddItem(GameState.LocalPlayerId, StarterItems.RepairKit);
+        var localHealthBeforeSelfRepair = counterAttackState.LocalPlayer.Health;
+        var selfRepair = counterAttackServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            1,
+            IntentType.UseItem,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["itemId"] = StarterItems.RepairKitId,
+                ["targetId"] = GameState.LocalPlayerId
+            }));
+        ExpectTrue(selfRepair.WasAccepted, "server accepts local self repair kit use");
+        ExpectTrue(counterAttackState.LocalPlayer.Health > localHealthBeforeSelfRepair, "self repair kit restores local health");
+        ExpectFalse(counterAttackState.HasItem(GameState.LocalPlayerId, StarterItems.RepairKitId), "self repair kit consumes the local repair kit");
+        ExpectEqual(counterAttackState.LocalPlayer.Health.ToString(), selfRepair.Event.Data["targetHealth"], "self repair event reports target health");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { selfRepair.Event }).Contains("HP:"),
+            "HUD formats repair kit healing outcome");
+        var graceState = new GameState();
+        graceState.RegisterPlayer(GameState.LocalPlayerId, "Grace Tester");
+        graceState.RegisterPlayer("grace_target", "Grace Target");
+        graceState.RegisterPlayer("grace_attacker_two", "Grace Attacker Two");
+        graceState.SetPlayerPosition(GameState.LocalPlayerId, TilePosition.Origin);
+        graceState.SetPlayerPosition("grace_target", TilePosition.Origin);
+        graceState.SetPlayerPosition("grace_attacker_two", TilePosition.Origin);
+        graceState.DamagePlayer(GameState.LocalPlayerId, "grace_target", 90, "setup damage");
+        graceState.AddItem("grace_target", StarterItems.WhoopieCushion);
+        var graceServer = new AuthoritativeWorldServer(graceState, "grace-test-world");
+        var lethalGraceAttack = graceServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            1,
+            IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["targetId"] = "grace_target"
+            }));
+        ExpectTrue(lethalGraceAttack.WasAccepted, "server accepts lethal attack before Karma Break grace starts");
+        ExpectEqual(new TilePosition(3, 4), graceState.Players["grace_target"].Position, "lethal Karma Break respawns target at a server spawn tile");
+        ExpectEqual("3", lethalGraceAttack.Event.Data["respawnX"], "lethal attack event reports respawn x");
+        ExpectEqual("4", lethalGraceAttack.Event.Data["respawnY"], "lethal attack event reports respawn y");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { lethalGraceAttack.Event }).Contains("respawned at 3,4"),
+            "HUD formats lethal attack outcome from server event data");
+        ExpectTrue(
+            graceServer.CreateInterestSnapshot(GameState.LocalPlayerId)
+                .Players.First(player => player.Id == "grace_target")
+                .StatusEffects.Any(status => status.Contains("Karma Break Grace")),
+            "interest snapshot exposes Karma Break grace status");
+        ExpectTrue(
+            graceServer.WorldItems.Values.Any(entity =>
+                entity.EntityId.StartsWith("drop_grace_target") &&
+                entity.Item.Id == StarterItems.WhoopieCushionId &&
+                entity.Position == TilePosition.Origin),
+            "lethal Karma Break drops loose inventory at the defeat tile before respawn");
+        graceState.SetPlayerPosition("grace_attacker_two", new TilePosition(3, 4));
+        var graceRejectedAttack = graceServer.ProcessIntent(new ServerIntent(
+            "grace_attacker_two",
+            1,
+            IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["targetId"] = "grace_target"
+            }));
+        ExpectFalse(graceRejectedAttack.WasAccepted, "server rejects attacks against Karma Break grace");
+        ExpectTrue(graceRejectedAttack.Event.Data["reason"].Contains("Karma Break grace"), "rejected attack event carries Karma Break grace reason");
+        graceServer.AdvanceIdleTicks(5);
+        ExpectFalse(
+            graceServer.CreateInterestSnapshot(GameState.LocalPlayerId)
+                .Players.First(player => player.Id == "grace_target")
+                .StatusEffects.Any(status => status.Contains("Karma Break Grace")),
+            "idle server ticks clear Karma Break grace status");
         var generatedA = WorldGenerator.Generate(WorldConfig.CreatePrototype());
         var generatedB = WorldGenerator.Generate(WorldConfig.CreatePrototype());
         ExpectEqual(generatedA.Summary, generatedB.Summary, "world generation is deterministic for the same seed");
@@ -221,11 +430,11 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(PrototypeSpriteCatalog.CharacterAtlasPath, playerSprite.AtlasPath, "prototype player sprite records character atlas path");
         ExpectTrue(playerSprite.HasAtlasRegion, "prototype player sprite can use character atlas art");
         ExpectTrue(whoopieSprite.Layers.Any(layer => layer.Shape == PrototypeSpriteShape.Circle), "prototype item sprite supports rounded prop art");
-        ExpectEqual(PrototypeSpriteCatalog.ItemAtlasPath, whoopieSprite.AtlasPath, "prototype item sprite records item atlas path");
+        ExpectEqual(PrototypeSpriteCatalog.UtilityItemAtlasPath, whoopieSprite.AtlasPath, "prototype item sprite records utility atlas path");
         ExpectTrue(whoopieSprite.HasAtlasRegion, "prototype item sprite can use item atlas art");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Scrip).HasAtlasRegion, "prototype currency sprite can use item atlas art");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.RepairKit).Layers.Count >= 4, "prototype tool sprite has recognizable layers");
-        ExpectEqual(PrototypeSpriteCatalog.UtilityItemAtlasPath, PrototypeSpriteCatalog.Get(PrototypeSpriteKind.RationPack).AtlasPath, "prototype utility item sprite records utility atlas path");
+        ExpectEqual(PrototypeSpriteCatalog.ItemAtlasPath, PrototypeSpriteCatalog.Get(PrototypeSpriteKind.RationPack).AtlasPath, "prototype support item sprite records item atlas path");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.PortableTerminal).HasAtlasRegion, "prototype utility item sprite can use utility atlas art");
         ExpectEqual(PrototypeSpriteCatalog.WeaponAtlasPath, PrototypeSpriteCatalog.Get(PrototypeSpriteKind.StunBaton).AtlasPath, "prototype weapon sprite records weapon atlas path");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Rifle27).HasAtlasRegion, "prototype weapon sprite can use weapon atlas art");
@@ -385,6 +594,9 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(serverStartQuest.WasAccepted, "server starts visible NPC quest");
         ExpectTrue(state.WorldEvents.Events.Any(worldEvent => worldEvent.Type == WorldEventType.Quest), "quest start records world event");
         ExpectEqual(QuestStatus.Active, state.Quests.Get(StarterQuests.MaraClinicFiltersId).Status, "started quest becomes active");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { serverStartQuest.Event }).Contains("started Clinic Filters"),
+            "HUD formats quest start events");
         ExpectFalse(questServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             2,
@@ -408,6 +620,9 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(serverCompleteQuest.Event.EventId.Contains("quest_completed"), "server quest completion emits quest event");
         ExpectEqual(scripBeforeQuestCompletion + 12, state.LocalScrip, "server quest completion pays scrip reward");
         ExpectEqual("12", serverCompleteQuest.Event.Data["scripReward"], "quest completion event reports scrip reward");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { serverCompleteQuest.Event }).Contains("earned 12 scrip"),
+            "HUD formats quest completion events");
 
         var helpMara = state.ApplyLocalShift(PrototypeActions.HelpMara());
         ExpectTrue(helpMara.Amount > 0, "helping Mara ascends karma");
@@ -532,6 +747,9 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(stealTransfer.WasAccepted, "server transfers stolen player item");
         ExpectTrue(state.HasItem(GameState.LocalPlayerId, StarterItems.RepairKitId), "stolen item enters actor inventory");
         ExpectFalse(state.HasItem("peer_stand_in", StarterItems.RepairKitId), "stolen item leaves target inventory");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { stealTransfer.Event }).Contains("stole Repair Kit"),
+            "HUD formats stolen item transfers");
         var returnTransfer = transferServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             2,
@@ -546,6 +764,9 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(state.HasItem(GameState.LocalPlayerId, StarterItems.RepairKitId), "gifted item leaves actor inventory");
         ExpectTrue(state.HasItem("peer_stand_in", StarterItems.RepairKitId), "gifted item returns to target inventory");
         ExpectTrue(returnTransfer.Event.EventId.Contains("item_transferred"), "item transfer emits server event");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { returnTransfer.Event }).Contains("gave Repair Kit"),
+            "HUD formats gifted item transfers");
         var localScripBeforeTransfer = state.LocalScrip;
         var peerScripBeforeTransfer = state.Players["peer_stand_in"].Scrip;
         var scripTransfer = transferServer.ProcessIntent(new ServerIntent(
@@ -561,6 +782,9 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(localScripBeforeTransfer - 5, state.LocalScrip, "scrip transfer debits actor wallet");
         ExpectEqual(peerScripBeforeTransfer + 5, state.Players["peer_stand_in"].Scrip, "scrip transfer credits target wallet");
         ExpectTrue(scripTransfer.Event.EventId.Contains("currency_transferred"), "scrip transfer emits server event");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { scripTransfer.Event }).Contains("gave 5 scrip"),
+            "HUD formats currency transfers");
         ExpectFalse(transferServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             4,
@@ -583,6 +807,9 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(localScripBeforePurchase - 7, state.LocalScrip, "shop purchase debits scrip");
         ExpectTrue(state.HasItem(GameState.LocalPlayerId, StarterItems.WhoopieCushionId), "shop purchase adds item to inventory");
         ExpectTrue(shopPurchase.Event.EventId.Contains("item_purchased"), "shop purchase emits server event");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { shopPurchase.Event }).Contains("bought Whoopie Cushion"),
+            "HUD formats shop purchases");
         var shopSnapshot = transferServer.CreateInterestSnapshot(GameState.LocalPlayerId);
         ExpectTrue(
             shopSnapshot.ShopOffers.Any(offer => offer.OfferId == StarterShopCatalog.DallenWhoopieCushionOfferId && offer.Price == 7),
@@ -614,6 +841,9 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(localScripBeforeDiscountPurchase - 17, state.LocalScrip, "discounted shop purchase debits final price");
         ExpectEqual("18", discountedPurchase.Event.Data["basePrice"], "discounted purchase event reports base price");
         ExpectEqual("17", discountedPurchase.Event.Data["price"], "discounted purchase event reports final price");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { discountedPurchase.Event }).Contains("base 18"),
+            "HUD formats discounted shop purchases");
         state.AddItem("peer_stand_in", StarterItems.WhoopieCushion);
         var peerKarmaBreak = transferServer.ProcessIntent(new ServerIntent(
             "peer_stand_in",
@@ -622,10 +852,14 @@ public partial class GameplaySmokeTest : Node
             new System.Collections.Generic.Dictionary<string, string>()));
         ExpectTrue(peerKarmaBreak.WasAccepted, "server accepts peer Karma Break intent");
         ExpectFalse(state.HasItem("peer_stand_in", StarterItems.WhoopieCushionId), "Karma Break drains loose inventory");
+        ExpectEqual(new TilePosition(4, 4), state.Players["peer_stand_in"].Position, "explicit Karma Break respawns peer at server spawn tile");
         ExpectTrue(
             transferServer.WorldItems.Values.Any(entity => entity.EntityId.StartsWith("drop_peer_stand_in") && entity.Item.Id == StarterItems.WhoopieCushionId),
             "Karma Break drops loose inventory as world items");
         ExpectTrue(peerKarmaBreak.Event.Data["droppedItemCount"] != "0", "Karma Break event reports dropped items");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { peerKarmaBreak.Event }).Contains("respawned at 4,4"),
+            "HUD formats explicit Karma Break outcome from server event data");
         var peerDropId = transferServer.WorldItems.Values
             .First(entity => entity.EntityId.StartsWith("drop_peer_stand_in") && entity.Item.Id == StarterItems.WhoopieCushionId)
             .EntityId;
@@ -655,6 +889,9 @@ public partial class GameplaySmokeTest : Node
                 ["targetId"] = "peer_stand_in"
             }));
         ExpectTrue(requestDuel.WasAccepted, "server accepts nearby duel request");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { requestDuel.Event }).Contains("requested duel_"),
+            "HUD formats duel request events");
         var acceptDuel = duelServer.ProcessIntent(new ServerIntent(
             "peer_stand_in",
             1,
@@ -664,6 +901,9 @@ public partial class GameplaySmokeTest : Node
                 ["challengerId"] = GameState.LocalPlayerId
             }));
         ExpectTrue(acceptDuel.WasAccepted, "server accepts matching duel acceptance");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { acceptDuel.Event }).Contains("Status: Active"),
+            "HUD formats duel acceptance events");
         ExpectTrue(state.Duels.IsActive(GameState.LocalPlayerId, "peer_stand_in"), "accepted duel becomes active");
         state.SetPlayerPosition("rival_renegade", new TilePosition(80, 80));
         ExpectTrue(
@@ -705,6 +945,9 @@ public partial class GameplaySmokeTest : Node
             }));
         ExpectTrue(serverMove.WasAccepted, "server accepts sequenced move intent");
         ExpectEqual(new TilePosition(3, 4), state.LocalPlayer.Position, "accepted move intent updates authoritative position");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { serverMove.Event }).Contains("moved to 3,4"),
+            "HUD formats movement events");
         var localInterest = server.GetInterestFor(GameState.LocalPlayerId);
         ExpectTrue(localInterest.VisiblePlayerIds.Contains("peer_stand_in"), "interest area includes nearby players");
         ExpectFalse(localInterest.VisiblePlayerIds.Contains("rival_paragon"), "interest area excludes distant players");
@@ -722,6 +965,9 @@ public partial class GameplaySmokeTest : Node
             }));
         ExpectTrue(serverHelp.WasAccepted, "server accepts sequenced karma action intent");
         ExpectTrue(state.LocalKarma.Score > 0, "accepted server intent mutates authoritative state");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { serverHelp.Event }).Contains("Help Peer"),
+            "HUD formats karma shift events");
         ExpectEqual(2, server.EventLog.Count, "server records accepted move and karma intent events");
         var interestSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId);
         ExpectEqual(2, interestSnapshot.Players.Count, "interest snapshot includes self and nearby players");
@@ -748,6 +994,9 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(greenhouseInteract.WasAccepted, "server accepts nearby structure interaction");
         ExpectEqual(StructureArtCatalog.Get(StructureSpriteKind.GreenhouseStandard).Id, greenhouseInteract.Event.Data["structureId"], "structure interaction event reports structure id");
         ExpectTrue(state.WorldEvents.Events.Any(worldEvent => worldEvent.Type == WorldEventType.Structure), "structure interaction records world event");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { greenhouseInteract.Event }).Contains("inspected Greenhouse"),
+            "HUD formats structure interaction events");
         server.SetTileMap(generatedA.TileMap);
         var mapChunkSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId);
         ExpectTrue(mapChunkSnapshot.MapChunks.Any(chunk => chunk.Tiles.Any(tile => tile.FloorId == WorldTileIds.ClinicFloor)), "interest snapshot includes nearby map chunk tiles");
@@ -783,6 +1032,9 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(serverPlace.WasAccepted, "server accepts nearby place object intent");
         ExpectFalse(state.HasItem(GameState.LocalPlayerId, StarterItems.DeflatedBalloonId), "placing object consumes player inventory item");
         var placedEntityId = serverPlace.Event.Data["entityId"];
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { serverPlace.Event }).Contains("placed Deflated Balloon at 4,4"),
+            "HUD formats placed object events");
         ExpectTrue(server.GetInterestFor(GameState.LocalPlayerId).VisibleEntityIds.Contains(placedEntityId), "placed object enters interest set");
         var placedSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId, afterTick: 2);
         ExpectTrue(placedSnapshot.WorldItems.Any(entity => entity.EntityId == placedEntityId && entity.ItemId == StarterItems.DeflatedBalloonId), "interest snapshot includes placed object render data");
@@ -798,6 +1050,9 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(peerPickupPlaced.WasAccepted, "server accepts pickup of placed object");
         ExpectTrue(state.HasItem("peer_stand_in", StarterItems.DeflatedBalloonId), "picked up placed object enters player inventory");
         ExpectFalse(server.GetInterestFor(GameState.LocalPlayerId).VisibleEntityIds.Contains(placedEntityId), "picked up placed object leaves interest set");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { peerPickupPlaced.Event }).Contains("picked up Deflated Balloon"),
+            "HUD formats placed object pickups");
 
         var serverPickup = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
@@ -811,6 +1066,9 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(state.HasItem(GameState.LocalPlayerId, StarterItems.PracticeStickId), "server pickup adds item to player inventory");
         ExpectFalse(server.GetInterestFor(GameState.LocalPlayerId).VisibleEntityIds.Contains("pickup_practice_stick"), "picked up entity leaves interest set");
         ExpectFalse(server.CreateInterestSnapshot(GameState.LocalPlayerId).WorldItems.Any(entity => entity.EntityId == "pickup_practice_stick"), "picked up entity leaves interest snapshot");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { serverPickup.Event }).Contains("picked up Practice Stick"),
+            "HUD formats world item pickups");
         ExpectFalse(server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             6,
@@ -837,6 +1095,7 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(peerHealthBeforeRepair + 25, state.Players["peer_stand_in"].Health, "repair kit heals nearby target");
         ExpectEqual(repairKitCountBeforeUse - 1, state.Inventory.Count(item => item.Id == StarterItems.RepairKitId), "repair kit use consumes one item");
         ExpectTrue(serverRepair.Event.EventId.Contains("item_used"), "repair kit use emits item event");
+        ExpectEqual(state.Players["peer_stand_in"].Health.ToString(), serverRepair.Event.Data["targetHealth"], "repair kit event reports target health");
 
         var serverEquip = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
@@ -849,6 +1108,9 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(serverEquip.WasAccepted, "server accepts equippable item intent");
         ExpectEqual(10, state.LocalPlayer.AttackPower, "server item intent equips weapon");
         ExpectTrue(serverEquip.Event.EventId.Contains("item_equipped"), "server item intent emits equipment event");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { serverEquip.Event }).Contains("equipped Practice Stick"),
+            "HUD formats equipment events");
         ExpectFalse(server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             8,
@@ -928,6 +1190,9 @@ public partial class GameplaySmokeTest : Node
             }));
         ExpectTrue(startDialogue.WasAccepted, "server accepts visible NPC dialogue intent");
         ExpectTrue(startDialogue.Event.Data["choiceIds"].Contains("help_filters"), "dialogue event includes approved choice ids");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { startDialogue.Event }).Contains("talking with Mara Venn"),
+            "HUD formats dialogue start events");
         var karmaBeforeDialogueChoice = state.LocalKarma.Score;
         var selectDialogueChoice = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
@@ -941,6 +1206,9 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(selectDialogueChoice.WasAccepted, "server accepts approved dialogue choice intent");
         ExpectTrue(state.LocalKarma.Score > karmaBeforeDialogueChoice, "dialogue choice applies authoritative karma action");
         ExpectTrue(selectDialogueChoice.Event.EventId.Contains("dialogue_choice_selected"), "dialogue choice emits server event");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { selectDialogueChoice.Event }).Contains("Repair the filters"),
+            "HUD formats dialogue choice events");
         ExpectFalse(server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             12,
@@ -965,6 +1233,9 @@ public partial class GameplaySmokeTest : Node
         var serverEntanglementId = serverStartEntanglement.Event.Data["entanglementId"];
         ExpectEqual(EntanglementStatus.Secret, state.Entanglements.Get(serverEntanglementId).Status, "server-created entanglement starts secret");
         ExpectTrue(serverStartEntanglement.Event.EventId.Contains("entanglement_started"), "server entanglement start emits event");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { serverStartEntanglement.Event }).Contains("Romantic entanglement with Mara Venn"),
+            "HUD formats entanglement start events");
         var serverExposeEntanglement = server.ProcessIntent(new ServerIntent(
             "peer_stand_in",
             3,
@@ -977,6 +1248,9 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(serverExposeEntanglement.WasAccepted, "server accepts entanglement exposure intent");
         ExpectEqual(EntanglementStatus.Exposed, state.Entanglements.Get(serverEntanglementId).Status, "server exposure updates entanglement status");
         ExpectTrue(serverExposeEntanglement.Event.EventId.Contains("entanglement_exposed"), "server entanglement exposure emits event");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { serverExposeEntanglement.Event }).Contains("between Mara Venn and Dallen Venn"),
+            "HUD formats entanglement exposure events");
         ExpectTrue(server.CreateInterestSnapshot(GameState.LocalPlayerId, afterTick: 2)
             .ServerEvents.Any(serverEvent => serverEvent.EventId.Contains("entanglement_exposed")), "interest snapshot includes visible entanglement events");
 
@@ -1000,13 +1274,18 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"tileX\""), "snapshot JSON includes tile position");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"inventory\""), "snapshot JSON includes per-player inventory");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"scrip\""), "snapshot JSON includes player scrip");
+        ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"statusEffects\""), "snapshot JSON includes player status effects");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"duels\""), "snapshot JSON includes duels");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"scripReward\""), "snapshot JSON includes quest scrip rewards");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"karmaProgress\""), "snapshot JSON includes karma progress");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"players\""), "snapshot can be exported as JSON debug text");
 
         var largeServer = new AuthoritativeWorldServer(state, "large-test-world", ServerConfig.Large100Player);
-        ExpectTrue(largeServer.JoinPlayer("large_extra_player", "Large Extra Player").WasAccepted, "large server profile accepts extra player slots");
+        var largeJoin = largeServer.JoinPlayer("large_extra_player", "Large Extra Player");
+        ExpectTrue(largeJoin.WasAccepted, "large server profile accepts extra player slots");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { largeServer.EventLog[^1] }).Contains("Large Extra Player joined"),
+            "HUD formats player join events");
         var pingResponse = AuthoritativeNetworkProtocol.Handle(
             largeServer,
             NetworkClientMessage.Ping("msg_ping", GameState.LocalPlayerId));

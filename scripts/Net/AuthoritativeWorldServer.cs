@@ -12,6 +12,8 @@ public sealed class AuthoritativeWorldServer
 {
     private readonly GameState _state;
     private readonly Dictionary<string, int> _lastSequenceByPlayer = new();
+    private readonly Dictionary<string, long> _lastAttackTickByPlayer = new();
+    private readonly Dictionary<string, long> _karmaBreakGraceUntilTickByPlayer = new();
     private readonly HashSet<string> _connectedPlayerIds = new();
     private readonly Dictionary<string, WorldItemEntity> _worldItems = new();
     private readonly Dictionary<string, WorldStructureEntity> _worldStructures = new();
@@ -21,6 +23,8 @@ public sealed class AuthoritativeWorldServer
     private GeneratedTileMap _tileMap;
     private long _tick;
     private bool _matchRewardsPaid;
+    private const long AttackCooldownTicks = 3;
+    private const long KarmaBreakGraceTicks = 5;
 
     public AuthoritativeWorldServer(GameState state, string worldId, ServerConfig config = null)
     {
@@ -47,6 +51,16 @@ public sealed class AuthoritativeWorldServer
     public void SetTileMap(GeneratedTileMap tileMap)
     {
         _tileMap = tileMap;
+    }
+
+    public void AdvanceIdleTicks(long ticks)
+    {
+        if (ticks <= 0)
+        {
+            return;
+        }
+
+        _tick += ticks;
     }
 
     public void AdvanceMatchTime(int seconds)
@@ -292,7 +306,7 @@ public sealed class AuthoritativeWorldServer
             playerId,
             Config.InterestRadiusTiles,
             interest,
-            SnapshotBuilder.PlayersFrom(visiblePlayers, standing),
+            SnapshotBuilder.PlayersFrom(visiblePlayers, standing, GetStatusEffectsFor),
             visibleNpcs,
             visibleDialogues,
             visibleQuests,
@@ -608,6 +622,20 @@ public sealed class AuthoritativeWorldServer
         }
 
         var isDuelAttack = _state.Duels.IsActive(intent.PlayerId, targetId);
+        if (_karmaBreakGraceUntilTickByPlayer.TryGetValue(targetId, out var graceUntilTick) &&
+            _tick <= graceUntilTick)
+        {
+            var remainingTicks = graceUntilTick - _tick + 1;
+            return Reject(intent, $"{target.DisplayName} is protected by Karma Break grace for {remainingTicks} more server tick(s).");
+        }
+
+        if (_lastAttackTickByPlayer.TryGetValue(intent.PlayerId, out var lastAttackTick) &&
+            _tick < lastAttackTick + AttackCooldownTicks)
+        {
+            var remainingTicks = lastAttackTick + AttackCooldownTicks - _tick;
+            return Reject(intent, $"Attack is on cooldown for {remainingTicks} more server tick(s).");
+        }
+
         var shift = isDuelAttack
             ? new KarmaShift(0, KarmaDirection.Neutral, $"{attacker.DisplayName} struck {target.DisplayName} during an accepted duel.")
             : _state.ApplyShift(
@@ -619,20 +647,32 @@ public sealed class AuthoritativeWorldServer
                     $"{attacker.DisplayName} attacked {target.DisplayName} outside a duel."));
         var damage = 30 + attacker.AttackPower;
         var died = _state.DamagePlayer(intent.PlayerId, targetId, damage, isDuelAttack ? "accepted duel strike" : "server-authorized attack");
+        _lastAttackTickByPlayer[intent.PlayerId] = _tick;
         var droppedItemCount = died ? DropInventory(targetId).Count : 0;
+        if (died)
+        {
+            RespawnPlayer(targetId);
+            StartKarmaBreakGrace(targetId);
+        }
+
         var serverEvent = AppendEvent(
             "player_attacked",
             $"{intent.PlayerId} attacked {targetId} for {damage} raw damage",
-            new Dictionary<string, string>
-            {
-                ["playerId"] = intent.PlayerId,
-                ["targetId"] = targetId,
-                ["rawDamage"] = damage.ToString(),
-                ["died"] = died.ToString(),
-                ["duel"] = isDuelAttack.ToString(),
-                ["droppedItemCount"] = droppedItemCount.ToString(),
-                ["karmaAmount"] = shift.Amount.ToString()
-            });
+            WithRespawnData(
+                new Dictionary<string, string>
+                {
+                    ["playerId"] = intent.PlayerId,
+                    ["targetId"] = targetId,
+                    ["rawDamage"] = damage.ToString(),
+                    ["died"] = died.ToString(),
+                    ["duel"] = isDuelAttack.ToString(),
+                    ["droppedItemCount"] = droppedItemCount.ToString(),
+                    ["karmaAmount"] = shift.Amount.ToString(),
+                    ["targetHealth"] = _state.Players[targetId].Health.ToString(),
+                    ["targetMaxHealth"] = _state.Players[targetId].MaxHealth.ToString()
+                },
+                died,
+                _state.Players[targetId].Position));
 
         return ServerProcessResult.Accepted(serverEvent);
     }
@@ -962,7 +1002,9 @@ public sealed class AuthoritativeWorldServer
                 ["playerId"] = intent.PlayerId,
                 ["targetId"] = targetId,
                 ["itemId"] = item.Id,
-                ["healing"] = repairKitHealing.ToString()
+                ["healing"] = repairKitHealing.ToString(),
+                ["targetHealth"] = _state.Players[targetId].Health.ToString(),
+                ["targetMaxHealth"] = _state.Players[targetId].MaxHealth.ToString()
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -1174,16 +1216,48 @@ public sealed class AuthoritativeWorldServer
     {
         var droppedItemCount = DropInventory(intent.PlayerId).Count;
         _state.TriggerKarmaBreak(intent.PlayerId);
+        RespawnPlayer(intent.PlayerId);
+        StartKarmaBreakGrace(intent.PlayerId);
         var serverEvent = AppendEvent(
             "karma_break",
             $"{intent.PlayerId} suffered a Karma Break",
             new Dictionary<string, string>
             {
                 ["playerId"] = intent.PlayerId,
+                ["respawnX"] = _state.Players[intent.PlayerId].Position.X.ToString(),
+                ["respawnY"] = _state.Players[intent.PlayerId].Position.Y.ToString(),
                 ["droppedItemCount"] = droppedItemCount.ToString()
             });
 
         return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private void StartKarmaBreakGrace(string playerId)
+    {
+        _karmaBreakGraceUntilTickByPlayer[playerId] = _tick + KarmaBreakGraceTicks;
+    }
+
+    private void RespawnPlayer(string playerId)
+    {
+        _state.SetPlayerPosition(playerId, GetRespawnPosition(playerId));
+    }
+
+    private IReadOnlyList<string> GetStatusEffectsFor(PlayerState player)
+    {
+        var statuses = new List<string>();
+        if (_karmaBreakGraceUntilTickByPlayer.TryGetValue(player.Id, out var graceUntilTick) &&
+            _tick <= graceUntilTick)
+        {
+            statuses.Add($"Karma Break Grace ({graceUntilTick - _tick + 1})");
+        }
+
+        if (_lastAttackTickByPlayer.TryGetValue(player.Id, out var lastAttackTick) &&
+            _tick < lastAttackTick + AttackCooldownTicks)
+        {
+            statuses.Add($"Attack Cooldown ({lastAttackTick + AttackCooldownTicks - _tick})");
+        }
+
+        return statuses;
     }
 
     private IReadOnlyList<string> DropInventory(string playerId)
@@ -1218,7 +1292,8 @@ public sealed class AuthoritativeWorldServer
             {
                 ["playerId"] = intent.PlayerId,
                 ["sequence"] = intent.Sequence.ToString(),
-                ["intentType"] = intent.Type.ToString()
+                ["intentType"] = intent.Type.ToString(),
+                ["reason"] = reason
             });
 
         return ServerProcessResult.Rejected(serverEvent, reason);
@@ -1248,6 +1323,21 @@ public sealed class AuthoritativeWorldServer
         return payload.TryGetValue(key, out var text) && int.TryParse(text, out value);
     }
 
+    private static Dictionary<string, string> WithRespawnData(
+        Dictionary<string, string> data,
+        bool includeRespawn,
+        TilePosition respawnPosition)
+    {
+        if (!includeRespawn)
+        {
+            return data;
+        }
+
+        data["respawnX"] = respawnPosition.X.ToString();
+        data["respawnY"] = respawnPosition.Y.ToString();
+        return data;
+    }
+
     private static TilePosition GetDropOffset(int index)
     {
         return (index % 8) switch
@@ -1260,6 +1350,18 @@ public sealed class AuthoritativeWorldServer
             5 => new TilePosition(1, 1),
             6 => new TilePosition(-1, 1),
             _ => new TilePosition(1, -1)
+        };
+    }
+
+    private static TilePosition GetRespawnPosition(string playerId)
+    {
+        return playerId switch
+        {
+            GameState.LocalPlayerId => new TilePosition(3, 4),
+            "peer_stand_in" => new TilePosition(4, 4),
+            "rival_paragon" => new TilePosition(6, 4),
+            "rival_renegade" => new TilePosition(7, 4),
+            _ => new TilePosition(3, 4)
         };
     }
 

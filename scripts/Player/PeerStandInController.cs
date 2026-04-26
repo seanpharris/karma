@@ -1,4 +1,6 @@
 using Godot;
+using System.Collections.Generic;
+using System.Linq;
 using Karma.Core;
 using Karma.Data;
 using Karma.Net;
@@ -14,6 +16,11 @@ public partial class PeerStandInController : Area2D
     private HudController _hud;
     private GameState _gameState;
     private PrototypeServerSession _serverSession;
+    private WorldHealthBar _healthBar;
+    private int _peerHealth = 100;
+    private int _peerMaxHealth = 100;
+    private IReadOnlyList<string> _peerStatusEffects = System.Array.Empty<string>();
+    private string _peerDuelState = "Duel: none";
 
     public override void _Ready()
     {
@@ -23,6 +30,20 @@ public partial class PeerStandInController : Area2D
         _gameState = GetNode<GameState>("/root/GameState");
         _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         _gameState.SetPlayerPosition("peer_stand_in", ToTilePosition(GlobalPosition));
+        AddHealthBar();
+        if (_serverSession is not null)
+        {
+            _serverSession.LocalSnapshotChanged += OnLocalSnapshotChanged;
+            ApplySnapshot(_serverSession.LastLocalSnapshot);
+        }
+    }
+
+    public override void _ExitTree()
+    {
+        if (_serverSession is not null)
+        {
+            _serverSession.LocalSnapshotChanged -= OnLocalSnapshotChanged;
+        }
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -59,6 +80,10 @@ public partial class PeerStandInController : Area2D
         else if (key.Keycode == Key.Key7)
         {
             GiftScrip();
+        }
+        else if (key.Keycode == Key.Key8)
+        {
+            LetPeerAttackLocal();
         }
     }
 
@@ -184,6 +209,16 @@ public partial class PeerStandInController : Area2D
             });
     }
 
+    private void LetPeerAttackLocal()
+    {
+        SendAsPeer(
+            IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["targetId"] = GameState.LocalPlayerId
+            });
+    }
+
     private bool SendKarmaAction(string actionId)
     {
         return Send(
@@ -228,21 +263,85 @@ public partial class PeerStandInController : Area2D
 
     private void ShowPrompt()
     {
-        var robbedState = _hasBeenRobbed ? "Satchel: stolen" : "Satchel: nearby";
-        _hud?.ShowPrompt(
+        _hud?.ShowPrompt(FormatPrompt(
+            _hasBeenRobbed,
+            _peerHealth,
+            _peerMaxHealth,
+            _peerStatusEffects,
+            _peerDuelState));
+    }
+
+    public static string FormatPrompt(
+        bool hasBeenRobbed,
+        int health,
+        int maxHealth,
+        IReadOnlyList<string> statusEffects,
+        string duelState)
+    {
+        var safeMaxHealth = Mathf.Max(1, maxHealth);
+        var clampedHealth = Mathf.Clamp(health, 0, safeMaxHealth);
+        var robbedState = hasBeenRobbed ? "Satchel: stolen" : "Satchel: nearby";
+        var statusText = statusEffects is null || statusEffects.Count == 0
+            ? "Status: none"
+            : HudController.FormatStatusEffects(statusEffects);
+        var duelText = string.IsNullOrWhiteSpace(duelState) ? "Duel: none" : duelState;
+        var attackLabel = FormatAttackLabel(statusEffects, duelText);
+        var requestDuelLabel = duelText.Contains("Requested") || duelText.Contains("Active")
+            ? "5 - Duel already pending/active"
+            : "5 - Request a friendly duel";
+        var acceptDuelLabel = duelText.Contains("Requested")
+            ? "6 - Let them accept the duel"
+            : "6 - No duel request to accept";
+        var peerAttackLabel = FormatPeerAttackLabel(statusEffects, duelText);
+        return
             "Another player is stranded near the path.\n" +
+            $"HP: {clampedHealth}/{safeMaxHealth}\n" +
+            $"{statusText}\n" +
+            $"{duelText}\n" +
             $"{robbedState}\n\n" +
             "1 - Help patch their gear\n" +
-            "2 - Attack them outside a duel\n" +
+            $"{attackLabel}\n" +
             "3 - Rob their dropped satchel\n" +
             "4 - Return a lost item\n" +
-            "5 - Request a friendly duel\n" +
-            "6 - Let them accept the duel\n" +
-            "7 - Gift 5 scrip\n\n" +
+            $"{requestDuelLabel}\n" +
+            $"{acceptDuelLabel}\n" +
+            "7 - Gift 5 scrip\n" +
+            $"{peerAttackLabel}\n\n" +
             "Z - Equip Practice Stick\n" +
             "X - Equip Work Vest\n" +
             "C - Place first loose inventory item\n" +
-            "R - Use Repair Kit on them");
+            "R - Use Repair Kit on them\n" +
+            "T - Use Repair Kit on yourself";
+    }
+
+    public static string FormatAttackLabel(IReadOnlyList<string> statusEffects, string duelState)
+    {
+        if (statusEffects?.Any(status => status.Contains("Karma Break Grace")) == true)
+        {
+            return "2 - Attack blocked by Karma Break grace";
+        }
+
+        if (!string.IsNullOrWhiteSpace(duelState) && duelState.Contains("Active"))
+        {
+            return "2 - Attack as duel strike";
+        }
+
+        return "2 - Attack them outside a duel";
+    }
+
+    public static string FormatPeerAttackLabel(IReadOnlyList<string> statusEffects, string duelState)
+    {
+        if (statusEffects?.Any(status => status.Contains("Attack Cooldown")) == true)
+        {
+            return "8 - Their attack is cooling down";
+        }
+
+        if (!string.IsNullOrWhiteSpace(duelState) && duelState.Contains("Active"))
+        {
+            return "8 - Let them duel strike you";
+        }
+
+        return "8 - Let them attack you";
     }
 
     private static TilePosition ToTilePosition(Vector2 position)
@@ -250,5 +349,57 @@ public partial class PeerStandInController : Area2D
         return new TilePosition(
             Mathf.RoundToInt(position.X / 32f),
             Mathf.RoundToInt(position.Y / 32f));
+    }
+
+    private void AddHealthBar()
+    {
+        _healthBar = new WorldHealthBar
+        {
+            Name = "HealthBar",
+            DisplayName = "Stranded Player",
+            Position = new Vector2(0f, -48f),
+            ZIndex = 10
+        };
+        AddChild(_healthBar);
+        if (_gameState.Players.TryGetValue("peer_stand_in", out var peer))
+        {
+            _peerHealth = peer.Health;
+            _peerMaxHealth = peer.MaxHealth;
+            _healthBar.SetHealth(peer.Health, peer.MaxHealth);
+        }
+    }
+
+    private void OnLocalSnapshotChanged(string snapshotSummary)
+    {
+        ApplySnapshot(_serverSession?.LastLocalSnapshot);
+    }
+
+    private void ApplySnapshot(ClientInterestSnapshot snapshot)
+    {
+        var peer = snapshot?.Players.FirstOrDefault(player => player.Id == "peer_stand_in");
+        if (peer is not null)
+        {
+            GlobalPosition = PlayerController.CalculateWorldPosition(peer.TileX, peer.TileY);
+            _peerHealth = peer.Health;
+            _peerMaxHealth = peer.MaxHealth;
+            _peerStatusEffects = peer.StatusEffects;
+            _peerDuelState = FormatDuelState(snapshot);
+            _healthBar?.SetHealth(peer.Health, peer.MaxHealth);
+            _healthBar?.SetStatusEffects(peer.StatusEffects);
+            if (_playerNearby)
+            {
+                ShowPrompt();
+            }
+        }
+    }
+
+    private static string FormatDuelState(ClientInterestSnapshot snapshot)
+    {
+        var duel = snapshot.Duels.FirstOrDefault(candidate =>
+            (candidate.ChallengerId == GameState.LocalPlayerId && candidate.TargetId == "peer_stand_in") ||
+            (candidate.ChallengerId == "peer_stand_in" && candidate.TargetId == GameState.LocalPlayerId));
+        return duel is null
+            ? "Duel: none"
+            : $"Duel: {duel.Status}";
     }
 }

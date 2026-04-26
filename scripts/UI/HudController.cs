@@ -1,4 +1,8 @@
 using Godot;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Karma.Art;
 using Karma.Core;
 using Karma.Net;
 
@@ -9,6 +13,8 @@ public partial class HudController : CanvasLayer
     private Label _karmaLabel = new();
     private Label _eventLabel = new();
     private Label _staminaLabel = new();
+    private Label _healthLabel = new();
+    private ProgressBar _healthBar = new();
     private Label _inventoryLabel = new();
     private Label _leaderboardLabel = new();
     private Label _perksLabel = new();
@@ -23,6 +29,8 @@ public partial class HudController : CanvasLayer
     private Label _syncLabel = new();
     private PanelContainer _promptPanel = new();
     private Label _promptLabel = new();
+    private string _lastCombatText = "Combat: none";
+    private IReadOnlyList<string> _lastStatusEffects = System.Array.Empty<string>();
 
     public override void _Ready()
     {
@@ -52,6 +60,7 @@ public partial class HudController : CanvasLayer
             ? "Unmarked"
             : gameState.LocalKarma.Path.ToString();
         OnKarmaChanged(gameState.LocalKarma.Score, gameState.LocalKarma.TierName, pathName);
+        SetHealth(gameState.LocalPlayer.Health, gameState.LocalPlayer.MaxHealth);
         OnInventoryChanged(gameState.Inventory.Count == 0 ? "Inventory: empty" : "Inventory: loaded");
         OnLeaderboardChanged(gameState.GetLeaderboardStanding().Summary);
         OnPerksChanged(Data.PerkCatalog.Format(gameState.LocalPerks));
@@ -124,6 +133,29 @@ public partial class HudController : CanvasLayer
             Text = "Stamina: 100/100"
         };
         root.AddChild(_staminaLabel);
+
+        _healthLabel = new Label
+        {
+            OffsetLeft = 300,
+            OffsetTop = 48,
+            OffsetRight = 520,
+            OffsetBottom = 70,
+            Text = "Health: 100/100"
+        };
+        root.AddChild(_healthLabel);
+
+        _healthBar = new ProgressBar
+        {
+            OffsetLeft = 300,
+            OffsetTop = 72,
+            OffsetRight = 520,
+            OffsetBottom = 90,
+            MinValue = 0,
+            MaxValue = 100,
+            Value = 100,
+            ShowPercentage = false
+        };
+        root.AddChild(_healthBar);
 
         _inventoryLabel = new Label
         {
@@ -306,8 +338,9 @@ public partial class HudController : CanvasLayer
 
     private void OnCombatChanged(string combatText)
     {
+        _lastCombatText = combatText;
         var gameState = GetNode<GameState>("/root/GameState");
-        _combatLabel.Text = $"{combatText} | You ATK:{gameState.LocalPlayer.AttackPower} DEF:{gameState.LocalPlayer.Defense}";
+        RenderCombatLine(gameState);
     }
 
     private void OnEntanglementsChanged(string entanglementsText)
@@ -330,9 +363,379 @@ public partial class HudController : CanvasLayer
         var serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         if (serverSession?.LastLocalSnapshot is not null)
         {
-            _matchLabel.Text = serverSession.LastLocalSnapshot.Match.Summary;
+            var snapshot = serverSession.LastLocalSnapshot;
+            _matchLabel.Text = snapshot.Match.Summary;
+            var localPlayer = snapshot.Players.FirstOrDefault(player => player.Id == snapshot.PlayerId);
+            if (localPlayer is not null)
+            {
+                SetHealth(localPlayer.Health, localPlayer.MaxHealth);
+                _lastStatusEffects = localPlayer.StatusEffects;
+                RenderCombatLine(GetNode<GameState>("/root/GameState"));
+            }
+
+            _eventLabel.Text = FormatLatestServerEvent(snapshot.ServerEvents);
         }
 
         _syncLabel.Text = $"Sync: {snapshotSummary}";
+    }
+
+    private void SetHealth(int health, int maxHealth)
+    {
+        _healthLabel.Text = FormatHealth(health, maxHealth);
+        _healthBar.Value = CalculateHealthPercent(health, maxHealth);
+    }
+
+    public static string FormatHealth(int health, int maxHealth)
+    {
+        var safeMax = Mathf.Max(1, maxHealth);
+        var clampedHealth = Mathf.Clamp(health, 0, safeMax);
+        return $"Health: {clampedHealth}/{safeMax}";
+    }
+
+    public static float CalculateHealthPercent(int health, int maxHealth)
+    {
+        var safeMax = Mathf.Max(1, maxHealth);
+        var clampedHealth = Mathf.Clamp(health, 0, safeMax);
+        return clampedHealth * 100f / safeMax;
+    }
+
+    public static string FormatStatusEffects(IReadOnlyList<string> statusEffects)
+    {
+        return statusEffects is null || statusEffects.Count == 0
+            ? "Status: none"
+            : $"Status: {string.Join(", ", statusEffects.Take(3))}";
+    }
+
+    public static string FormatCombatLine(
+        string combatText,
+        int attackPower,
+        int defense,
+        IReadOnlyList<string> statusEffects)
+    {
+        var safeCombatText = string.IsNullOrWhiteSpace(combatText) ? "Combat: none" : combatText;
+        return $"{safeCombatText} | You ATK:{attackPower} DEF:{defense} | {FormatStatusEffects(statusEffects)}";
+    }
+
+    public static string FormatLatestServerEvent(IReadOnlyList<ServerEvent> serverEvents)
+    {
+        if (serverEvents is null || serverEvents.Count == 0)
+        {
+            return "Events: quiet";
+        }
+
+        var latest = serverEvents[^1];
+        if (latest.EventId.Contains("player_joined"))
+        {
+            var displayName = ReadEventData(latest, "displayName", ReadEventData(latest, "playerId", "Someone"));
+            var connected = ReadEventData(latest, "connectedPlayers", "?");
+            var maxPlayers = ReadEventData(latest, "maxPlayers", "?");
+            return $"{displayName} joined the world. Players: {connected}/{maxPlayers}.";
+        }
+
+        if (latest.EventId.Contains("match_finished"))
+        {
+            var saint = ReadEventData(latest, "saintWinnerId", "none");
+            var scourge = ReadEventData(latest, "scourgeWinnerId", "none");
+            var saintReward = ReadEventData(latest, "saintScripReward", "0");
+            var scourgeReward = ReadEventData(latest, "scourgeScripReward", "0");
+            return $"Match complete. Saint: {saint} (+{saintReward} scrip). Scourge: {scourge} (+{scourgeReward} scrip).";
+        }
+
+        if (latest.EventId.Contains("player_moved"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var x = ReadEventData(latest, "x", "?");
+            var y = ReadEventData(latest, "y", "?");
+            return $"{player} moved to {x},{y}.";
+        }
+
+        if (latest.EventId.Contains("karma_shift"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var action = FormatActionName(ReadEventData(latest, "action", string.Empty));
+            var amountText = ReadEventData(latest, "amount", "0");
+            var amount = int.TryParse(amountText, out var parsedAmount) ? Math.Abs(parsedAmount) : 0;
+            var direction = ReadEventData(latest, "direction", "karma");
+            var target = FormatNpcName(ReadEventData(latest, "targetId", string.Empty));
+            return $"{player} chose {action}: {direction} {amount} karma toward {target}.";
+        }
+
+        if (latest.EventId.Contains("player_attacked"))
+        {
+            var attacker = ReadEventData(latest, "playerId", "Someone");
+            var target = ReadEventData(latest, "targetId", "someone");
+            var damage = ReadEventData(latest, "rawDamage", "?");
+            var health = ReadEventData(latest, "targetHealth", "?");
+            var maxHealth = ReadEventData(latest, "targetMaxHealth", "?");
+            if (ReadEventData(latest, "died", "False") == "True")
+            {
+                var drops = ReadEventData(latest, "droppedItemCount", "0");
+                var x = ReadEventData(latest, "respawnX", "?");
+                var y = ReadEventData(latest, "respawnY", "?");
+                return $"{attacker} hit {target} for {damage}. {target} broke, dropped {drops}, and respawned at {x},{y}.";
+            }
+
+            return $"{attacker} hit {target} for {damage}. {target} HP: {health}/{maxHealth}.";
+        }
+
+        if (latest.EventId.Contains("karma_break"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var drops = ReadEventData(latest, "droppedItemCount", "0");
+            var x = ReadEventData(latest, "respawnX", "?");
+            var y = ReadEventData(latest, "respawnY", "?");
+            return $"{player} suffered a Karma Break, dropped {drops}, and respawned at {x},{y}.";
+        }
+
+        if (latest.EventId.Contains("structure_interacted"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var structureName = FormatStructureName(ReadEventData(latest, "structureId", string.Empty));
+            var result = ReadEventData(latest, "result", "Nothing unusual happens.");
+            return $"{player} inspected {structureName}: {result}";
+        }
+
+        if (latest.EventId.Contains("dialogue_started"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var npc = FormatNpcName(ReadEventData(latest, "npcId", string.Empty));
+            var choices = ReadEventData(latest, "choiceIds", string.Empty)
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Length;
+            return $"{player} started talking with {npc}. Choices: {choices}.";
+        }
+
+        if (latest.EventId.Contains("dialogue_choice_selected"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var npc = FormatNpcName(ReadEventData(latest, "npcId", string.Empty));
+            var choice = FormatDialogueChoice(ReadEventData(latest, "choiceId", string.Empty));
+            var amountText = ReadEventData(latest, "amount", "0");
+            var amount = int.TryParse(amountText, out var parsedAmount) ? parsedAmount : 0;
+            return $"{player} chose \"{choice}\" with {npc}. Karma {amount:+#;-#;0}.";
+        }
+
+        if (latest.EventId.Contains("item_used") &&
+            ReadEventData(latest, "itemId", string.Empty) == Karma.Data.StarterItems.RepairKitId)
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var target = ReadEventData(latest, "targetId", "someone");
+            var healing = ReadEventData(latest, "healing", "?");
+            var health = ReadEventData(latest, "targetHealth", "?");
+            var maxHealth = ReadEventData(latest, "targetMaxHealth", "?");
+            return $"{player} repaired {target} for {healing}. {target} HP: {health}/{maxHealth}.";
+        }
+
+        if (latest.EventId.Contains("item_purchased"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var itemName = FormatItemName(ReadEventData(latest, "itemId", string.Empty));
+            var price = ReadEventData(latest, "price", "?");
+            var basePrice = ReadEventData(latest, "basePrice", price);
+            var currency = ReadEventData(latest, "currency", "scrip");
+            if (basePrice != price)
+            {
+                return $"{player} bought {itemName} for {price} {currency} (base {basePrice}).";
+            }
+
+            return $"{player} bought {itemName} for {price} {currency}.";
+        }
+
+        if (latest.EventId.Contains("item_equipped"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var itemName = FormatItemName(ReadEventData(latest, "itemId", string.Empty));
+            var slot = ReadEventData(latest, "slot", "slot");
+            return $"{player} equipped {itemName} in {slot}.";
+        }
+
+        if (latest.EventId.Contains("item_placed"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var itemName = FormatItemName(ReadEventData(latest, "itemId", string.Empty));
+            var x = ReadEventData(latest, "x", "?");
+            var y = ReadEventData(latest, "y", "?");
+            return $"{player} placed {itemName} at {x},{y}.";
+        }
+
+        if (latest.EventId.Contains("item_picked_up"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var itemName = FormatItemName(ReadEventData(latest, "itemId", string.Empty));
+            var dropOwnerId = ReadEventData(latest, "dropOwnerId", string.Empty);
+            if (!string.IsNullOrWhiteSpace(dropOwnerId))
+            {
+                var karmaAmount = ReadEventData(latest, "karmaAmount", "0");
+                return $"{player} claimed {itemName} from {dropOwnerId}'s drop. Karma {karmaAmount}.";
+            }
+
+            return $"{player} picked up {itemName}.";
+        }
+
+        if (latest.EventId.Contains("duel_requested"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var target = ReadEventData(latest, "targetId", "someone");
+            var duelId = ReadEventData(latest, "duelId", "duel");
+            return $"{player} requested {duelId} with {target}.";
+        }
+
+        if (latest.EventId.Contains("duel_accepted"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var target = ReadEventData(latest, "targetId", "someone");
+            var duelId = ReadEventData(latest, "duelId", "duel");
+            var status = ReadEventData(latest, "status", "Active");
+            return $"{player} accepted {duelId} with {target}. Status: {status}.";
+        }
+
+        if (latest.EventId.Contains("quest_started"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var questName = FormatQuestName(ReadEventData(latest, "questId", string.Empty));
+            var giver = ReadEventData(latest, "targetId", "quest giver");
+            return $"{player} started {questName} with {giver}.";
+        }
+
+        if (latest.EventId.Contains("quest_completed"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var questName = FormatQuestName(ReadEventData(latest, "questId", string.Empty));
+            var reward = ReadEventData(latest, "scripReward", "0");
+            return $"{player} completed {questName} and earned {reward} scrip.";
+        }
+
+        if (latest.EventId.Contains("entanglement_started"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var npc = FormatNpcName(ReadEventData(latest, "npcId", string.Empty));
+            var affectedNpc = FormatNpcName(ReadEventData(latest, "affectedNpcId", string.Empty));
+            var type = ReadEventData(latest, "type", "Entanglement");
+            return $"{player} started a {type} entanglement with {npc}, affecting {affectedNpc}.";
+        }
+
+        if (latest.EventId.Contains("entanglement_exposed"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var npc = FormatNpcName(ReadEventData(latest, "npcId", string.Empty));
+            var affectedNpc = FormatNpcName(ReadEventData(latest, "affectedNpcId", string.Empty));
+            var type = ReadEventData(latest, "type", "Entanglement");
+            return $"{player} exposed a {type} entanglement between {npc} and {affectedNpc}.";
+        }
+
+        if (latest.EventId.Contains("item_transferred"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var target = ReadEventData(latest, "targetId", "someone");
+            var itemName = FormatItemName(ReadEventData(latest, "itemId", string.Empty));
+            var mode = ReadEventData(latest, "mode", "gift");
+            var karmaAmount = ReadEventData(latest, "karmaAmount", "0");
+            return mode == "steal"
+                ? $"{player} stole {itemName} from {target}. Karma {karmaAmount}."
+                : $"{player} gave {itemName} to {target}. Karma {karmaAmount}.";
+        }
+
+        if (latest.EventId.Contains("currency_transferred"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var target = ReadEventData(latest, "targetId", "someone");
+            var amount = ReadEventData(latest, "amount", "?");
+            var currency = ReadEventData(latest, "currency", "currency");
+            var karmaAmount = ReadEventData(latest, "karmaAmount", "0");
+            return $"{player} gave {amount} {currency} to {target}. Karma {karmaAmount}.";
+        }
+
+        if (latest.EventId.Contains("intent_rejected"))
+        {
+            var intentType = ReadEventData(latest, "intentType", "Intent");
+            var reason = ReadEventData(latest, "reason", latest.Description);
+            return $"{intentType} rejected: {reason}";
+        }
+
+        return $"Events: {latest.Description}";
+    }
+
+    private static string ReadEventData(ServerEvent serverEvent, string key, string fallback)
+    {
+        return serverEvent.Data.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+            ? value
+            : fallback;
+    }
+
+    private static string FormatItemName(string itemId)
+    {
+        return Karma.Data.StarterItems.TryGetById(itemId, out var item)
+            ? item.Name
+            : string.IsNullOrWhiteSpace(itemId) ? "item" : itemId;
+    }
+
+    private static string FormatQuestName(string questId)
+    {
+        return questId == Karma.Data.StarterQuests.MaraClinicFiltersId
+            ? Karma.Data.StarterQuests.MaraClinicFilters.Title
+            : string.IsNullOrWhiteSpace(questId) ? "quest" : questId;
+    }
+
+    private static string FormatActionName(string actionId)
+    {
+        return actionId switch
+        {
+            PrototypeActions.HelpMaraId => "Help Mara",
+            PrototypeActions.WhoopieCushionMaraId => "Clinic Prank",
+            PrototypeActions.StealFromMaraId => "Steal Spare Parts",
+            PrototypeActions.GiftBalloonToMaraId => "Gift Balloon",
+            PrototypeActions.MockMaraWithBalloonId => "Mock Mara",
+            PrototypeActions.HelpPeerId => "Help Peer",
+            PrototypeActions.AttackPeerId => "Attack Peer",
+            PrototypeActions.RobPeerId => "Rob Peer",
+            PrototypeActions.ReturnPeerItemId => "Return Peer Item",
+            PrototypeActions.StartMaraEntanglementId => "Start Entanglement",
+            PrototypeActions.ExposeMaraEntanglementId => "Expose Entanglement",
+            _ => string.IsNullOrWhiteSpace(actionId) ? "an action" : actionId
+        };
+    }
+
+    private static string FormatDialogueChoice(string choiceId)
+    {
+        return choiceId switch
+        {
+            "help_filters" => "Repair the filters",
+            "prank_stool" => "Plant a whoopie cushion",
+            "steal_parts" => "Steal spare parts",
+            "gift_balloon" => "Offer a deflated balloon",
+            "mock_balloon" => "Mock with a deflated balloon",
+            _ => string.IsNullOrWhiteSpace(choiceId) ? "a choice" : choiceId
+        };
+    }
+
+    private static string FormatNpcName(string npcId)
+    {
+        if (npcId == Karma.Data.StarterNpcs.Mara.Id)
+        {
+            return Karma.Data.StarterNpcs.Mara.Name;
+        }
+
+        if (npcId == Karma.Data.StarterNpcs.Dallen.Id)
+        {
+            return Karma.Data.StarterNpcs.Dallen.Name;
+        }
+
+        return string.IsNullOrWhiteSpace(npcId) ? "someone" : npcId;
+    }
+
+    private static string FormatStructureName(string structureId)
+    {
+        return StructureArtCatalog.TryGetById(structureId, out var structure)
+            ? structure.DisplayName
+            : string.IsNullOrWhiteSpace(structureId) ? "structure" : structureId;
+    }
+
+    private void RenderCombatLine(GameState gameState)
+    {
+        _combatLabel.Text = FormatCombatLine(
+            _lastCombatText,
+            gameState.LocalPlayer.AttackPower,
+            gameState.LocalPlayer.Defense,
+            _lastStatusEffects);
     }
 }

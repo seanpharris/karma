@@ -75,7 +75,7 @@ public sealed record PrototypeSpriteDefinition(
 
 public static class PrototypeSpriteCatalog
 {
-    public const string CharacterAtlasPath = "res://assets/art/sprites/scifi_character_atlas.png";
+    public const string CharacterAtlasPath = "res://assets/art/character.png";
     public const string ItemAtlasPath = "res://assets/art/sprites/scifi_item_atlas.png";
     public const string UtilityItemAtlasPath = "res://assets/art/sprites/scifi_utility_item_atlas.png";
     public const string WeaponAtlasPath = "res://assets/art/sprites/scifi_weapon_atlas.png";
@@ -135,21 +135,21 @@ public static class PrototypeSpriteCatalog
                 new Color(0.22f, 0.76f, 0.94f),
                 new Color(0.08f, 0.19f, 0.24f),
                 new Color(0.96f, 0.94f, 0.72f),
-                new Rect2(24f, 84f, 42f, 84f)),
+                new Rect2(16f, 82f, 44f, 82f)),
             PrototypeSpriteKind.Mara => Humanoid(
                 kind,
                 "Mara Venn",
                 new Color(0.94f, 0.69f, 0.28f),
                 new Color(0.21f, 0.14f, 0.11f),
                 new Color(0.58f, 0.93f, 0.76f),
-                new Rect2(599f, 86f, 42f, 84f)),
+                new Rect2(282f, 82f, 42f, 82f)),
             PrototypeSpriteKind.Peer => Humanoid(
                 kind,
                 "Stranded Player",
                 new Color(0.65f, 0.45f, 0.94f),
                 new Color(0.18f, 0.14f, 0.28f),
                 new Color(0.94f, 0.82f, 0.51f),
-                new Rect2(252f, 84f, 42f, 84f)),
+                new Rect2(454f, 82f, 42f, 82f)),
             PrototypeSpriteKind.WhoopieCushion => WhoopieCushion(),
             PrototypeSpriteKind.DeflatedBalloon => DeflatedBalloon(),
             PrototypeSpriteKind.RepairKit => RepairKit(),
@@ -208,7 +208,7 @@ public static class PrototypeSpriteCatalog
         return new PrototypeSpriteDefinition(
             kind,
             displayName,
-            new Vector2(22f, 34f),
+            new Vector2(24f, 44f),
             new[]
             {
                 Rect(outline, -8f, -13f, 16f, 24f),
@@ -239,8 +239,8 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.78f, 0.08f, 0.16f), 5f, -2f, 8f, 4f),
                 Rect(new Color(1f, 0.48f, 0.56f), -3f, -5f, 4f, 2f)
             },
-            ItemAtlasPath,
-            new Rect2(40f, 246f, 150f, 210f),
+            UtilityItemAtlasPath,
+            new Rect2(35f, 250f, 170f, 190f),
             HasAtlasRegion: true);
     }
 
@@ -257,8 +257,8 @@ public static class PrototypeSpriteCatalog
                 Line(new Color(0.36f, 0.2f, 0.32f), new Vector2(6f, 1f), new Vector2(12f, 4f), 2f),
                 Rect(new Color(1f, 0.85f, 0.98f), -8f, -3f, 5f, 2f)
             },
-            ItemAtlasPath,
-            new Rect2(310f, 262f, 160f, 126f),
+            UtilityItemAtlasPath,
+            new Rect2(344f, 258f, 115f, 165f),
             HasAtlasRegion: true);
     }
 
@@ -275,8 +275,8 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.86f, 0.96f, 0.9f), -2f, -6f, 4f, 12f),
                 Rect(new Color(0.86f, 0.96f, 0.9f), -6f, -2f, 12f, 4f)
             },
-            ItemAtlasPath,
-            new Rect2(560f, 245f, 150f, 130f),
+            UtilityItemAtlasPath,
+            new Rect2(608f, 250f, 106f, 178f),
             HasAtlasRegion: true);
     }
 
@@ -292,8 +292,8 @@ public static class PrototypeSpriteCatalog
                 Line(new Color(0.58f, 0.35f, 0.15f), new Vector2(-12f, 2f), new Vector2(12f, -4f), 3f),
                 Rect(new Color(0.82f, 0.66f, 0.34f), -3f, -1f, 5f, 3f)
             },
-            ItemAtlasPath,
-            new Rect2(812f, 244f, 144f, 180f),
+            UtilityItemAtlasPath,
+            new Rect2(832f, 255f, 160f, 135f),
             HasAtlasRegion: true);
     }
 
@@ -311,8 +311,8 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.98f, 0.9f, 0.34f), -6f, -4f, 4f, 2f),
                 Rect(new Color(0.98f, 0.9f, 0.34f), 2f, -4f, 4f, 2f)
             },
-            ItemAtlasPath,
-            new Rect2(1072f, 234f, 146f, 160f),
+            UtilityItemAtlasPath,
+            new Rect2(1122f, 252f, 126f, 175f),
             HasAtlasRegion: true);
     }
 
@@ -328,8 +328,8 @@ public static class PrototypeSpriteCatalog
                 Circle(new Color(0.74f, 0.65f, 0.46f), -2f, 0f, 8f),
                 Rect(new Color(0.96f, 0.76f, 0.2f), -4f, -5f, 4f, 10f)
             },
-            ItemAtlasPath,
-            new Rect2(1336f, 246f, 155f, 115f),
+            UtilityItemAtlasPath,
+            new Rect2(1360f, 250f, 130f, 180f),
             HasAtlasRegion: true);
     }
 
@@ -345,8 +345,8 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.62f, 0.54f, 0.32f), -7f, -4f, 14f, 8f),
                 Rect(new Color(0.86f, 0.78f, 0.45f), -4f, -2f, 8f, 2f)
             },
-            UtilityItemAtlasPath,
-            new Rect2(35f, 250f, 170f, 190f),
+            ItemAtlasPath,
+            new Rect2(40f, 246f, 150f, 210f),
             HasAtlasRegion: true);
     }
 
@@ -362,8 +362,8 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.08f, 0.62f, 0.82f), -6f, -3f, 12f, 6f),
                 Rect(new Color(0.9f, 0.98f, 1f), -2f, -1f, 4f, 2f)
             },
-            UtilityItemAtlasPath,
-            new Rect2(344f, 258f, 115f, 165f),
+            ItemAtlasPath,
+            new Rect2(310f, 262f, 160f, 126f),
             HasAtlasRegion: true);
     }
 
@@ -379,8 +379,8 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.56f, 0.66f, 0.68f), -5f, -8f, 10f, 16f),
                 Rect(new Color(0.18f, 0.78f, 0.72f), -3f, -5f, 6f, 10f)
             },
-            UtilityItemAtlasPath,
-            new Rect2(608f, 250f, 106f, 178f),
+            ItemAtlasPath,
+            new Rect2(560f, 245f, 150f, 130f),
             HasAtlasRegion: true);
     }
 
@@ -397,8 +397,8 @@ public static class PrototypeSpriteCatalog
                 Line(new Color(0.9f, 0.2f, 0.16f), new Vector2(-8f, -5f), new Vector2(8f, 5f), 2f),
                 Line(new Color(0.9f, 0.2f, 0.16f), new Vector2(8f, -5f), new Vector2(-8f, 5f), 2f)
             },
-            UtilityItemAtlasPath,
-            new Rect2(832f, 255f, 160f, 135f),
+            ItemAtlasPath,
+            new Rect2(812f, 244f, 144f, 180f),
             HasAtlasRegion: true);
     }
 
@@ -416,8 +416,8 @@ public static class PrototypeSpriteCatalog
                 Circle(new Color(0.96f, 0.3f, 0.54f), 4f, -8f, 3f),
                 Rect(new Color(0.36f, 0.38f, 0.36f), -6f, 7f, 12f, 5f)
             },
-            UtilityItemAtlasPath,
-            new Rect2(1122f, 252f, 126f, 175f),
+            ItemAtlasPath,
+            new Rect2(1072f, 234f, 146f, 160f),
             HasAtlasRegion: true);
     }
 
@@ -435,8 +435,8 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.95f, 0.68f, 0.18f), -6f, 3f, 4f, 2f),
                 Rect(new Color(0.95f, 0.68f, 0.18f), 2f, 3f, 4f, 2f)
             },
-            UtilityItemAtlasPath,
-            new Rect2(1360f, 250f, 130f, 180f),
+            ItemAtlasPath,
+            new Rect2(1336f, 246f, 155f, 115f),
             HasAtlasRegion: true);
     }
 
