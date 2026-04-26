@@ -210,7 +210,8 @@ public sealed class AuthoritativeWorldServer
             IsInteractable: true,
             InteractionPrompt: FormatStationPrompt(location),
             InteractionResult: $"{location.Name} is a {location.ThemeTag} station for {location.Role}: {location.KarmaHook}. Faction interest: {location.SuggestedFaction}.",
-            Integrity: 100);
+            Integrity: 100,
+            LocationId: location.Id);
     }
 
     private void SeedGeneratedStructure(GeneratedStructurePlacement placement)
@@ -227,7 +228,8 @@ public sealed class AuthoritativeWorldServer
             InteractionPrompt: FormatStructurePrompt(placement.Name, placement.Integrity),
             InteractionResult: $"{placement.Name} is tied to {placement.SuggestedFaction}. Local pressure: {placement.GameplayHook}.",
             Integrity: placement.Integrity,
-            FactionId: StarterFactions.ToId(placement.SuggestedFaction));
+            FactionId: StarterFactions.ToId(placement.SuggestedFaction),
+            LocationId: placement.LocationId);
     }
 
     public void SeedWorldStructure(string entityId, string structureId, TilePosition position)
@@ -715,12 +717,14 @@ public sealed class AuthoritativeWorldServer
                 : $"{structure.Name} integrity dropped to {nextIntegrity}%.";
         }
 
+        var previousIntegrity = structure.Integrity;
         structure = structure with
         {
             Integrity = nextIntegrity,
             InteractionPrompt = FormatStructurePrompt(structure.Name, nextIntegrity)
         };
         _worldStructures[structure.EntityId] = structure;
+        ApplyGeneratedStationStateEffect(structure, action, previousIntegrity, nextIntegrity);
 
         _state.AddWorldEvent(
             WorldEventType.Structure,
@@ -750,6 +754,43 @@ public sealed class AuthoritativeWorldServer
         return ServerProcessResult.Accepted(serverEvent);
     }
 
+    private void ApplyGeneratedStationStateEffect(
+        WorldStructureEntity structure,
+        string action,
+        int previousIntegrity,
+        int nextIntegrity)
+    {
+        if (structure.Category != "generated-structure" ||
+            string.IsNullOrWhiteSpace(structure.LocationId) ||
+            previousIntegrity == nextIntegrity)
+        {
+            return;
+        }
+
+        var stationEntityId = $"generated_station_{SanitizeEntityId(structure.LocationId)}";
+        if (!_worldStructures.TryGetValue(stationEntityId, out var station))
+        {
+            return;
+        }
+
+        var stationState = action == "repair"
+            ? "stabilized"
+            : action == "sabotage"
+                ? "compromised"
+                : string.Empty;
+        if (string.IsNullOrWhiteSpace(stationState))
+        {
+            return;
+        }
+
+        station = station with
+        {
+            InteractionPrompt = FormatStationStatePrompt(station.InteractionPrompt, stationState),
+            InteractionResult = $"{station.InteractionResult} Current station state: {stationState} by {structure.Name}."
+        };
+        _worldStructures[stationEntityId] = station;
+    }
+
     private bool HasStructureRepairTool(string playerId)
     {
         return _state.HasItem(playerId, StarterItems.MultiToolId) ||
@@ -764,6 +805,15 @@ public sealed class AuthoritativeWorldServer
     private static string FormatStationPrompt(GeneratedLocation location)
     {
         return $"Press E to inspect {location.Name} ({location.Role}). Karma hook: {location.KarmaHook}";
+    }
+
+    private static string FormatStationStatePrompt(string prompt, string stationState)
+    {
+        const string marker = " Station state:";
+        var basePrompt = prompt.Contains(marker, StringComparison.Ordinal)
+            ? prompt[..prompt.IndexOf(marker, StringComparison.Ordinal)]
+            : prompt;
+        return $"{basePrompt} Station state: {stationState}.";
     }
 
     private static string FormatStructureCondition(int integrity)

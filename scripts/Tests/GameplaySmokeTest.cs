@@ -749,6 +749,10 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(repairGeneratedStructure.WasAccepted, "server accepts repair on generated station structures");
         ExpectEqual(StarterFactions.ToId(firstGeneratedStructurePlacement.SuggestedFaction), repairGeneratedStructure.Event.Data["factionId"], "generated structure repair affects the station suggested faction");
         ExpectTrue(int.Parse(repairGeneratedStructure.Event.Data["integrity"]) > firstGeneratedStructurePlacement.Integrity, "generated structure repair improves integrity");
+        var repairedStationSnapshot = generatedContentServer.CreateInterestSnapshot(GameState.LocalPlayerId);
+        ExpectTrue(
+            repairedStationSnapshot.Structures.Any(structure => structure.EntityId == generatedStation?.EntityId && structure.InteractionPrompt.Contains("Station state: stabilized")),
+            "generated structure repair stabilizes the linked station marker state");
         var sabotageGeneratedStructure = generatedContentServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             73,
@@ -761,6 +765,10 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(sabotageGeneratedStructure.WasAccepted, "server accepts sabotage on generated station structures");
         ExpectEqual(StarterFactions.ToId(firstGeneratedStructurePlacement.SuggestedFaction), sabotageGeneratedStructure.Event.Data["factionId"], "generated structure sabotage affects the station suggested faction");
         ExpectTrue(int.Parse(sabotageGeneratedStructure.Event.Data["integrity"]) < int.Parse(repairGeneratedStructure.Event.Data["integrity"]), "generated structure sabotage damages integrity");
+        var sabotagedStationSnapshot = generatedContentServer.CreateInterestSnapshot(GameState.LocalPlayerId);
+        ExpectTrue(
+            sabotagedStationSnapshot.Structures.Any(structure => structure.EntityId == generatedStation?.EntityId && structure.InteractionPrompt.Contains("Station state: compromised")),
+            "generated structure sabotage compromises the linked station marker state");
         var seededGeneratedNpcCount = generatedA.Npcs.Count(npc => npc.Id != StarterNpcs.Mara.Id && npc.Id != StarterNpcs.Dallen.Id);
         ExpectEqual(2 + seededGeneratedNpcCount, generatedContentServer.Npcs.Count, "server seeds generated NPC placements without duplicating starter NPCs");
         var firstGeneratedNpcPlacement = generatedA.NpcPlacements.First(placement => placement.NpcId != StarterNpcs.Mara.Id && placement.NpcId != StarterNpcs.Dallen.Id);

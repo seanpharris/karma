@@ -74,7 +74,8 @@ public sealed record WorldStructureEntity(
     string InteractionPrompt,
     string InteractionResult,
     int Integrity = 100,
-    string FactionId = StarterFactions.CivicRepairGuildId);
+    string FactionId = StarterFactions.CivicRepairGuildId,
+    string LocationId = "");
 
 public sealed record WorldStructureSnapshot(
     string EntityId,
