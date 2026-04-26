@@ -139,6 +139,17 @@ public sealed class AuthoritativeWorldServer
 
     public void SeedGeneratedWorldContent(GeneratedWorld generatedWorld)
     {
+        foreach (var location in generatedWorld.Locations.OrderBy(location => location.Id))
+        {
+            var entityId = $"generated_station_{SanitizeEntityId(location.Id)}";
+            if (_worldStructures.ContainsKey(entityId))
+            {
+                continue;
+            }
+
+            SeedStationMarker(entityId, location);
+        }
+
         var npcsById = generatedWorld.Npcs.ToDictionary(npc => npc.Id);
         foreach (var placement in generatedWorld.NpcPlacements.OrderBy(placement => placement.NpcId))
         {
@@ -167,6 +178,22 @@ public sealed class AuthoritativeWorldServer
 
             SeedWorldItem(entityId, item, new TilePosition(placement.X, placement.Y));
         }
+    }
+
+    private void SeedStationMarker(string entityId, GeneratedLocation location)
+    {
+        var markerDefinition = StructureArtCatalog.Get(StructureSpriteKind.GreenhouseSupportColumn);
+        _worldStructures[entityId] = new WorldStructureEntity(
+            entityId,
+            markerDefinition.Id,
+            location.Name,
+            "station",
+            new TilePosition(location.X, location.Y),
+            IsVisible: true,
+            IsInteractable: true,
+            InteractionPrompt: FormatStationPrompt(location),
+            InteractionResult: $"{location.Name} is a {location.ThemeTag} station for {location.Role}: {location.KarmaHook}. Faction interest: {location.SuggestedFaction}.",
+            Integrity: 100);
     }
 
     public void SeedWorldStructure(string entityId, string structureId, TilePosition position)
@@ -589,6 +616,11 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, $"Unknown structure interaction action: {action}.");
         }
 
+        if (structure.Category == "station" && action != "inspect")
+        {
+            return Reject(intent, $"Station markers can only be inspected: {structure.EntityId}.");
+        }
+
         var result = structure.InteractionResult;
         var karmaAmount = 0;
         var scripReward = 0;
@@ -690,6 +722,11 @@ public sealed class AuthoritativeWorldServer
     private static string FormatStructurePrompt(string structureName, int integrity)
     {
         return $"Press E to inspect {structureName}. J repair / K sabotage. Integrity: {integrity}% ({FormatStructureCondition(integrity)}).";
+    }
+
+    private static string FormatStationPrompt(GeneratedLocation location)
+    {
+        return $"Press E to inspect {location.Name} ({location.Role}). Karma hook: {location.KarmaHook}";
     }
 
     private static string FormatStructureCondition(int integrity)

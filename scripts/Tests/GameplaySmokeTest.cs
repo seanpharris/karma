@@ -714,6 +714,13 @@ public partial class GameplaySmokeTest : Node
         generatedContentState.RegisterPlayer(GameState.LocalPlayerId, "Generated Content Tester");
         var generatedContentServer = new AuthoritativeWorldServer(generatedContentState, "generated-content-test");
         generatedContentServer.SeedGeneratedWorldContent(generatedA);
+        ExpectEqual(3 + generatedA.Locations.Count, generatedContentServer.WorldStructures.Count, "server seeds generated station markers as structures alongside starter structures");
+        var firstGeneratedLocation = generatedA.Locations[0];
+        generatedContentState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(firstGeneratedLocation.X, firstGeneratedLocation.Y));
+        var generatedStationSnapshot = generatedContentServer.CreateInterestSnapshot(GameState.LocalPlayerId);
+        var generatedStation = generatedStationSnapshot.Structures.FirstOrDefault(structure => structure.Name == firstGeneratedLocation.Name && structure.Category == "station");
+        ExpectTrue(generatedStation is not null, "interest snapshot exposes generated station markers near the player");
+        ExpectTrue(generatedStation?.InteractionPrompt.Contains(firstGeneratedLocation.KarmaHook) == true, "generated station marker prompt exposes its karma hook");
         var seededGeneratedNpcCount = generatedA.Npcs.Count(npc => npc.Id != StarterNpcs.Mara.Id && npc.Id != StarterNpcs.Dallen.Id);
         ExpectEqual(2 + seededGeneratedNpcCount, generatedContentServer.Npcs.Count, "server seeds generated NPC placements without duplicating starter NPCs");
         var firstGeneratedNpcPlacement = generatedA.NpcPlacements.First(placement => placement.NpcId != StarterNpcs.Mara.Id && placement.NpcId != StarterNpcs.Dallen.Id);
