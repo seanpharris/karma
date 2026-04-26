@@ -221,6 +221,9 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(PrototypeSpriteCatalog.CharacterAtlasPath, playerSprite.AtlasPath, "prototype player sprite records character atlas path");
         ExpectTrue(playerSprite.HasAtlasRegion, "prototype player sprite can use character atlas art");
         ExpectTrue(whoopieSprite.Layers.Any(layer => layer.Shape == PrototypeSpriteShape.Circle), "prototype item sprite supports rounded prop art");
+        ExpectEqual(PrototypeSpriteCatalog.ItemAtlasPath, whoopieSprite.AtlasPath, "prototype item sprite records item atlas path");
+        ExpectTrue(whoopieSprite.HasAtlasRegion, "prototype item sprite can use item atlas art");
+        ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Scrip).HasAtlasRegion, "prototype currency sprite can use item atlas art");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.RepairKit).Layers.Count >= 4, "prototype tool sprite has recognizable layers");
         ExpectEqual(
             PrototypeSpriteKind.WorkVest,

@@ -18,6 +18,10 @@ The first sci-fi character sheet should be dropped at:
 
 `sprites/scifi_character_atlas.png`
 
+The first sci-fi item model sheet should be dropped at:
+
+`sprites/scifi_item_atlas.png`
+
 That path is registered in `scripts/World/ThemeArtRegistry.cs`. The prototype
 currently maps a small sci-fi subset from that sheet: floors, metal walls,
 airlock doors, duel ring floor, and oddity pile.
@@ -34,3 +38,6 @@ until sprite sheets are ready.
 Player, Mara, and the peer stand-in already have character atlas source regions
 mapped there; if `sprites/scifi_character_atlas.png` exists, those actors render
 from the sheet and otherwise fall back to the procedural models.
+The current core item models also have source regions mapped for
+`sprites/scifi_item_atlas.png`: whoopie cushion, deflated balloon, repair kit,
+practice stick, work vest, and scrip.

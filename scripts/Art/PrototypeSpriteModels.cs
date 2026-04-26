@@ -19,7 +19,8 @@ public enum PrototypeSpriteKind
     FilterCore,
     ContrabandPackage,
     ApologyFlower,
-    PortableTerminal
+    PortableTerminal,
+    Scrip
 }
 
 public enum PrototypeSpriteShape
@@ -50,6 +51,7 @@ public sealed record PrototypeSpriteDefinition(
 public static class PrototypeSpriteCatalog
 {
     public const string CharacterAtlasPath = "res://assets/art/sprites/scifi_character_atlas.png";
+    public const string ItemAtlasPath = "res://assets/art/sprites/scifi_item_atlas.png";
 
     public static PrototypeSpriteKind GetKindForItem(string itemId)
     {
@@ -106,6 +108,7 @@ public static class PrototypeSpriteCatalog
             PrototypeSpriteKind.ContrabandPackage => ContrabandPackage(),
             PrototypeSpriteKind.ApologyFlower => ApologyFlower(),
             PrototypeSpriteKind.PortableTerminal => PortableTerminal(),
+            PrototypeSpriteKind.Scrip => Scrip(),
             _ => Humanoid(
                 PrototypeSpriteKind.Player,
                 "Unknown",
@@ -150,14 +153,17 @@ public static class PrototypeSpriteCatalog
         return new PrototypeSpriteDefinition(
             PrototypeSpriteKind.WhoopieCushion,
             "Whoopie Cushion",
-            new Vector2(20f, 16f),
+            new Vector2(24f, 24f),
             new[]
             {
                 Circle(new Color(0.33f, 0.04f, 0.08f), 0f, 1f, 9f),
                 Circle(new Color(0.94f, 0.13f, 0.22f), 0f, 0f, 7f),
                 Rect(new Color(0.78f, 0.08f, 0.16f), 5f, -2f, 8f, 4f),
                 Rect(new Color(1f, 0.48f, 0.56f), -3f, -5f, 4f, 2f)
-            });
+            },
+            ItemAtlasPath,
+            new Rect2(40f, 246f, 150f, 210f),
+            HasAtlasRegion: true);
     }
 
     private static PrototypeSpriteDefinition DeflatedBalloon()
@@ -165,14 +171,17 @@ public static class PrototypeSpriteCatalog
         return new PrototypeSpriteDefinition(
             PrototypeSpriteKind.DeflatedBalloon,
             "Deflated Balloon",
-            new Vector2(24f, 12f),
+            new Vector2(26f, 18f),
             new[]
             {
                 Rect(new Color(0.28f, 0.06f, 0.22f), -11f, -3f, 19f, 8f),
                 Rect(new Color(0.93f, 0.62f, 0.9f), -10f, -4f, 18f, 7f),
                 Line(new Color(0.36f, 0.2f, 0.32f), new Vector2(6f, 1f), new Vector2(12f, 4f), 2f),
                 Rect(new Color(1f, 0.85f, 0.98f), -8f, -3f, 5f, 2f)
-            });
+            },
+            ItemAtlasPath,
+            new Rect2(310f, 262f, 160f, 126f),
+            HasAtlasRegion: true);
     }
 
     private static PrototypeSpriteDefinition RepairKit()
@@ -180,14 +189,17 @@ public static class PrototypeSpriteCatalog
         return new PrototypeSpriteDefinition(
             PrototypeSpriteKind.RepairKit,
             "Repair Kit",
-            new Vector2(22f, 18f),
+            new Vector2(24f, 20f),
             new[]
             {
                 Rect(new Color(0.04f, 0.2f, 0.18f), -10f, -7f, 20f, 14f),
                 Rect(new Color(0.1f, 0.72f, 0.6f), -8f, -5f, 16f, 10f),
                 Rect(new Color(0.86f, 0.96f, 0.9f), -2f, -6f, 4f, 12f),
                 Rect(new Color(0.86f, 0.96f, 0.9f), -6f, -2f, 12f, 4f)
-            });
+            },
+            ItemAtlasPath,
+            new Rect2(560f, 245f, 150f, 130f),
+            HasAtlasRegion: true);
     }
 
     private static PrototypeSpriteDefinition PracticeStick()
@@ -195,13 +207,16 @@ public static class PrototypeSpriteCatalog
         return new PrototypeSpriteDefinition(
             PrototypeSpriteKind.PracticeStick,
             "Practice Stick",
-            new Vector2(28f, 10f),
+            new Vector2(30f, 16f),
             new[]
             {
                 Line(new Color(0.22f, 0.12f, 0.05f), new Vector2(-13f, 3f), new Vector2(13f, -3f), 5f),
                 Line(new Color(0.58f, 0.35f, 0.15f), new Vector2(-12f, 2f), new Vector2(12f, -4f), 3f),
                 Rect(new Color(0.82f, 0.66f, 0.34f), -3f, -1f, 5f, 3f)
-            });
+            },
+            ItemAtlasPath,
+            new Rect2(812f, 244f, 144f, 180f),
+            HasAtlasRegion: true);
     }
 
     private static PrototypeSpriteDefinition WorkVest()
@@ -209,7 +224,7 @@ public static class PrototypeSpriteCatalog
         return new PrototypeSpriteDefinition(
             PrototypeSpriteKind.WorkVest,
             "Work Vest",
-            new Vector2(22f, 26f),
+            new Vector2(26f, 24f),
             new[]
             {
                 Rect(new Color(0.27f, 0.12f, 0.03f), -9f, -11f, 18f, 22f),
@@ -217,7 +232,27 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.18f, 0.12f, 0.08f), -1f, -10f, 2f, 20f),
                 Rect(new Color(0.98f, 0.9f, 0.34f), -6f, -4f, 4f, 2f),
                 Rect(new Color(0.98f, 0.9f, 0.34f), 2f, -4f, 4f, 2f)
-            });
+            },
+            ItemAtlasPath,
+            new Rect2(1072f, 234f, 146f, 160f),
+            HasAtlasRegion: true);
+    }
+
+    private static PrototypeSpriteDefinition Scrip()
+    {
+        return new PrototypeSpriteDefinition(
+            PrototypeSpriteKind.Scrip,
+            "Scrip",
+            new Vector2(22f, 22f),
+            new[]
+            {
+                Circle(new Color(0.12f, 0.12f, 0.12f), -2f, 1f, 10f),
+                Circle(new Color(0.74f, 0.65f, 0.46f), -2f, 0f, 8f),
+                Rect(new Color(0.96f, 0.76f, 0.2f), -4f, -5f, 4f, 10f)
+            },
+            ItemAtlasPath,
+            new Rect2(1336f, 246f, 155f, 115f),
+            HasAtlasRegion: true);
     }
 
     private static PrototypeSpriteDefinition RationPack()
