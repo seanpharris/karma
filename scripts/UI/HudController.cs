@@ -29,6 +29,11 @@ public partial class HudController : CanvasLayer
     private Label _worldEventsLabel = new();
     private Label _matchLabel = new();
     private Label _syncLabel = new();
+    private Label _perfLabel = new();
+    private PrototypeServerSession _serverSession;
+    private double _perfAccumulator;
+    private int _perfFrameCount;
+    private int _lastSnapshotCount;
     private PanelContainer _promptPanel = new();
     private Label _promptLabel = new();
     private PanelContainer _inventoryPanel = new();
@@ -53,11 +58,11 @@ public partial class HudController : CanvasLayer
         _gameState.EntanglementsChanged += OnEntanglementsChanged;
         _gameState.DuelsChanged += OnDuelsChanged;
         _gameState.WorldEventsChanged += OnWorldEventsChanged;
-        var serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
-        if (serverSession is not null)
+        _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
+        if (_serverSession is not null)
         {
-            serverSession.LocalSnapshotChanged += OnLocalSnapshotChanged;
-            OnLocalSnapshotChanged(serverSession.LastLocalSnapshot?.Summary ?? "Sync: waiting");
+            _serverSession.LocalSnapshotChanged += OnLocalSnapshotChanged;
+            OnLocalSnapshotChanged(_serverSession.LastLocalSnapshot?.Summary ?? "Sync: waiting");
         }
 
         var pathName = _gameState.LocalKarma.Path == KarmaDirection.Neutral
@@ -75,6 +80,24 @@ public partial class HudController : CanvasLayer
         OnEntanglementsChanged(_gameState.Entanglements.FormatSummary());
         OnDuelsChanged(_gameState.Duels.FormatSummary());
         OnWorldEventsChanged(_gameState.WorldEvents.FormatLatestSummary());
+    }
+
+    public override void _Process(double delta)
+    {
+        _perfAccumulator += delta;
+        _perfFrameCount++;
+        if (_perfAccumulator < 0.5)
+        {
+            return;
+        }
+
+        var fps = _perfFrameCount / _perfAccumulator;
+        var snapshotCount = _serverSession?.SnapshotsRefreshed ?? 0;
+        var snapshotsPerSecond = (snapshotCount - _lastSnapshotCount) / _perfAccumulator;
+        _lastSnapshotCount = snapshotCount;
+        _perfLabel.Text = $"Perf: {fps:0} FPS | snapshots {snapshotsPerSecond:0.0}/s | visible chunks {_serverSession?.LastLocalSnapshot?.MapChunks.Count ?? 0}";
+        _perfAccumulator = 0;
+        _perfFrameCount = 0;
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -296,12 +319,22 @@ public partial class HudController : CanvasLayer
         };
         root.AddChild(_syncLabel);
 
-        _matchLabel = new Label
+        _perfLabel = new Label
         {
             OffsetLeft = 16,
             OffsetTop = 512,
             OffsetRight = 1000,
-            OffsetBottom = 556,
+            OffsetBottom = 540,
+            Text = "Perf: waiting"
+        };
+        root.AddChild(_perfLabel);
+
+        _matchLabel = new Label
+        {
+            OffsetLeft = 16,
+            OffsetTop = 544,
+            OffsetRight = 1000,
+            OffsetBottom = 588,
             Text = "Match: 30:00 remaining",
             AutowrapMode = TextServer.AutowrapMode.WordSmart
         };
@@ -310,7 +343,7 @@ public partial class HudController : CanvasLayer
         _promptPanel = new PanelContainer
         {
             OffsetLeft = 16,
-            OffsetTop = 560,
+            OffsetTop = 592,
             OffsetRight = 580,
             OffsetBottom = 704,
             Visible = false

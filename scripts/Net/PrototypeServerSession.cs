@@ -13,10 +13,12 @@ public partial class PrototypeServerSession : Node
     private GameState _state = null!;
     private AuthoritativeWorldServer _server = null!;
     private double _matchSecondAccumulator;
+    private int _snapshotsRefreshed;
 
     public AuthoritativeWorldServer Server => _server;
     public InterestSnapshotCache LocalSnapshotCache => _localSnapshotCache;
     public ClientInterestSnapshot LastLocalSnapshot { get; private set; }
+    public int SnapshotsRefreshed => _snapshotsRefreshed;
 
     [Signal]
     public delegate void LocalSnapshotChangedEventHandler(string snapshotSummary);
@@ -118,6 +120,7 @@ public partial class PrototypeServerSession : Node
 
     private void RefreshLocalSnapshot()
     {
+        _snapshotsRefreshed++;
         LastLocalSnapshot = CreateLocalSnapshot(_localSnapshotCache.LastAppliedTick);
         var applyResult = _localSnapshotCache.Apply(LastLocalSnapshot);
         EmitSignal(SignalName.LocalSnapshotChanged, FormatLocalSnapshot(LastLocalSnapshot, applyResult));

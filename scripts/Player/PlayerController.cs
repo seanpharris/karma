@@ -29,6 +29,7 @@ public partial class PlayerController : CharacterBody2D
     private HudController _hud;
     private Camera2D _camera;
     private TilePosition? _lastSentTile;
+    private Vector2 _predictedPosition;
     private Vector2I _lastFacing = Vector2I.Down;
     private float _stamina;
     private bool _isExhausted;
@@ -41,6 +42,7 @@ public partial class PlayerController : CharacterBody2D
         _camera = GetNodeOrNull<Camera2D>("Camera2D");
         _stamina = MaxStamina;
         UpdateStaminaHud();
+        _predictedPosition = GlobalPosition;
         if (_serverSession is not null)
         {
             _serverSession.LocalSnapshotChanged += OnLocalSnapshotChanged;
@@ -89,6 +91,7 @@ public partial class PlayerController : CharacterBody2D
         _isExhausted = CalculateExhausted(_isExhausted, _stamina, SprintResumeStamina);
         UpdateStaminaHud();
         MoveAndSlide();
+        _predictedPosition = GlobalPosition;
         TopDownDepth.Apply(this);
 
         SendMoveIfTileChanged();
@@ -362,6 +365,20 @@ public partial class PlayerController : CharacterBody2D
         return currentPosition.DistanceSquaredTo(authoritativePosition) >= snapThresholdPixels * snapThresholdPixels;
     }
 
+    public static bool ShouldSnapToAuthoritativePosition(
+        Vector2 currentPosition,
+        Vector2 authoritativePosition,
+        Vector2 predictedPosition)
+    {
+        if (!ShouldSnapToAuthoritativePosition(currentPosition, authoritativePosition))
+        {
+            return false;
+        }
+
+        const float predictionGracePixels = 24f;
+        return predictedPosition.DistanceSquaredTo(authoritativePosition) >= predictionGracePixels * predictionGracePixels;
+    }
+
     private void OnLocalSnapshotChanged(string snapshotSummary)
     {
         ApplyAuthoritativePosition(_serverSession?.LastLocalSnapshot);
@@ -376,12 +393,13 @@ public partial class PlayerController : CharacterBody2D
         }
 
         var authoritativePosition = CalculateWorldPosition(player.TileX, player.TileY);
-        if (!ShouldSnapToAuthoritativePosition(GlobalPosition, authoritativePosition))
+        if (!ShouldSnapToAuthoritativePosition(GlobalPosition, authoritativePosition, _predictedPosition))
         {
             return;
         }
 
         GlobalPosition = authoritativePosition;
+        _predictedPosition = authoritativePosition;
         Velocity = Vector2.Zero;
         _lastSentTile = new TilePosition(player.TileX, player.TileY);
         TopDownDepth.Apply(this);

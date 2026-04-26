@@ -320,6 +320,12 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(
             PlayerController.ShouldSnapToAuthoritativePosition(new Vector2(90f, 124f), new Vector2(96f, 128f)),
             "player controller preserves small local movement between authoritative tiles");
+        ExpectFalse(
+            PlayerController.ShouldSnapToAuthoritativePosition(new Vector2(0f, 0f), new Vector2(32f, 0f), new Vector2(30f, 0f)),
+            "player controller preserves predicted local movement during tile-authority updates");
+        ExpectTrue(
+            PlayerController.ShouldSnapToAuthoritativePosition(new Vector2(0f, 0f), new Vector2(128f, 0f), new Vector2(0f, 0f)),
+            "player controller still snaps when prediction does not explain the authority correction");
         ExpectEqual("Health: 75/100", HudController.FormatHealth(75, 100), "health label formats current and maximum health");
         ExpectEqual(75f, HudController.CalculateHealthPercent(75, 100), "health bar percent follows authoritative health");
         ExpectEqual(0f, HudController.CalculateHealthPercent(-5, 100), "health bar percent clamps below zero");

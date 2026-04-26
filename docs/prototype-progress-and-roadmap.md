@@ -12,6 +12,7 @@ and the next practical build slices.
 - Start Local Prototype loads the existing gameplay prototype scene (`Main.tscn`) without folding menu UI into the world prototype.
 - Options now includes prototype video settings (resolution list, display-resolution detection, fullscreen/windowed, VSync), audio sliders, controls/accessibility notes, and apply/save behavior.
 - The main menu has an original generated placeholder theme loop, with master/music sliders affecting menu music volume.
+- Gameplay HUD now includes a simple perf line showing FPS, local snapshot refresh rate, and visible map chunk count for prototype stutter diagnosis.
 
 ### Server-owned karma loop
 
@@ -72,6 +73,7 @@ and the next practical build slices.
 
 ### Respawns
 
+- Movement now avoids snapping back to server tile positions when local client prediction already explains the authoritative tile update, but we still need more playtesting for camera/render hitching.
 - Respawn now avoids death locations and nearby players, but should get richer candidate pools:
   - avoid active combat areas more explicitly;
   - prefer safe-ish stations or neutral landmarks;
