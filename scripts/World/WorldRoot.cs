@@ -10,6 +10,7 @@ namespace Karma.World;
 public partial class WorldRoot : Node2D
 {
     private readonly Dictionary<string, Node2D> _renderedServerItems = new();
+    private readonly Dictionary<string, Node2D> _renderedServerStructures = new();
     private GeneratedTileMapRenderer _tileMapRenderer;
     private PrototypeServerSession _serverSession;
 
@@ -64,7 +65,43 @@ public partial class WorldRoot : Node2D
         }
 
         _tileMapRenderer.SetChunks(snapshot.MapChunks, ThemeArtRegistry.GetForTheme(GeneratedWorld.Theme));
+        RenderServerStructures(snapshot);
         RenderServerItems(snapshot);
+    }
+
+    private void RenderServerStructures(ClientInterestSnapshot snapshot)
+    {
+        if (snapshot is null)
+        {
+            return;
+        }
+
+        var visibleStructureIds = snapshot.Structures
+            .Select(structure => structure.EntityId)
+            .ToHashSet();
+        foreach (var removedId in _renderedServerStructures.Keys.Where(id => !visibleStructureIds.Contains(id)).ToArray())
+        {
+            _renderedServerStructures[removedId].QueueFree();
+            _renderedServerStructures.Remove(removedId);
+        }
+
+        foreach (var structure in snapshot.Structures)
+        {
+            if (_renderedServerStructures.ContainsKey(structure.EntityId))
+            {
+                continue;
+            }
+
+            var node = new StructureSprite
+            {
+                Name = structure.EntityId,
+                StructureId = structure.StructureId,
+                Position = new Vector2(structure.TileX * 32f, structure.TileY * 32f),
+                ZIndex = -10
+            };
+            AddChild(node);
+            _renderedServerStructures[structure.EntityId] = node;
+        }
     }
 
     private void RenderServerItems(ClientInterestSnapshot snapshot)

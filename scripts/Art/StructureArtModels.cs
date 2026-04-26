@@ -117,6 +117,28 @@ public static class StructureArtCatalog
         return Definitions[kind];
     }
 
+    public static StructureSpriteDefinition GetById(string id)
+    {
+        return TryGetById(id, out var definition)
+            ? definition
+            : Definitions[StructureSpriteKind.GreenhouseStandard];
+    }
+
+    public static bool TryGetById(string id, out StructureSpriteDefinition definition)
+    {
+        foreach (var candidate in Definitions.Values)
+        {
+            if (candidate.Id == id)
+            {
+                definition = candidate;
+                return true;
+            }
+        }
+
+        definition = null;
+        return false;
+    }
+
     private static StructureSpriteDefinition Greenhouse(
         StructureSpriteKind kind,
         string id,

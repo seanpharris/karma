@@ -42,6 +42,7 @@ public sealed record PlayerInterest(
     string PlayerId,
     IReadOnlyCollection<string> VisiblePlayerIds,
     IReadOnlyCollection<string> VisibleEntityIds,
+    IReadOnlyCollection<string> VisibleStructureIds,
     IReadOnlyCollection<string> VisibleNpcIds);
 
 public sealed record WorldItemEntity(
@@ -55,6 +56,22 @@ public sealed record WorldItemSnapshot(
     string ItemId,
     string Name,
     ItemCategory Category,
+    int TileX,
+    int TileY);
+
+public sealed record WorldStructureEntity(
+    string EntityId,
+    string StructureId,
+    string Name,
+    string Category,
+    TilePosition Position,
+    bool IsVisible);
+
+public sealed record WorldStructureSnapshot(
+    string EntityId,
+    string StructureId,
+    string Name,
+    string Category,
     int TileX,
     int TileY);
 
@@ -129,6 +146,7 @@ public sealed record ClientInterestSnapshot(
     IReadOnlyList<QuestSnapshot> Quests,
     IReadOnlyList<MapChunkSnapshot> MapChunks,
     IReadOnlyList<WorldItemSnapshot> WorldItems,
+    IReadOnlyList<WorldStructureSnapshot> Structures,
     IReadOnlyList<ShopOfferSnapshot> ShopOffers,
     LeaderboardSnapshot Leaderboard,
     MatchSnapshot Match,
@@ -138,5 +156,5 @@ public sealed record ClientInterestSnapshot(
     IReadOnlyList<WorldEvent> WorldEvents)
 {
     public string Summary =>
-        $"{Players.Count} visible players, {Npcs.Count} visible NPCs, {Dialogues.Count} dialogues, {Quests.Count} quests, {MapChunks.Count} map chunks, {WorldItems.Count} visible items, {ShopOffers.Count} shop offers, {Duels.Count} duels, {Match.Summary}, {SyncHint.ServerEventCount} server events, {SyncHint.WorldEventCount} world events";
+        $"{Players.Count} visible players, {Npcs.Count} visible NPCs, {Dialogues.Count} dialogues, {Quests.Count} quests, {MapChunks.Count} map chunks, {WorldItems.Count} visible items, {Structures.Count} visible structures, {ShopOffers.Count} shop offers, {Duels.Count} duels, {Match.Summary}, {SyncHint.ServerEventCount} server events, {SyncHint.WorldEventCount} world events";
 }

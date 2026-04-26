@@ -709,6 +709,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(localInterest.VisiblePlayerIds.Contains("peer_stand_in"), "interest area includes nearby players");
         ExpectFalse(localInterest.VisiblePlayerIds.Contains("rival_paragon"), "interest area excludes distant players");
         ExpectTrue(localInterest.VisibleEntityIds.Contains("pickup_practice_stick"), "interest area includes nearby pickup entities");
+        ExpectTrue(localInterest.VisibleStructureIds.Contains("structure_greenhouse_standard"), "interest area includes nearby structures");
 
         var serverHelp = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
@@ -731,6 +732,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(interestSnapshot.Players.Any(player => player.Id == "peer_stand_in"), "interest snapshot includes nearby peer");
         ExpectFalse(interestSnapshot.Players.Any(player => player.Id == "rival_paragon"), "interest snapshot excludes distant rival");
         ExpectTrue(interestSnapshot.Npcs.Any(npc => npc.Id == StarterNpcs.Mara.Id), "interest snapshot includes visible NPCs");
+        ExpectTrue(interestSnapshot.Structures.Any(structure => structure.StructureId == StructureArtCatalog.Get(StructureSpriteKind.GreenhouseStandard).Id), "interest snapshot includes visible structures");
         server.SetTileMap(generatedA.TileMap);
         var mapChunkSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId);
         ExpectTrue(mapChunkSnapshot.MapChunks.Any(chunk => chunk.Tiles.Any(tile => tile.FloorId == WorldTileIds.ClinicFloor)), "interest snapshot includes nearby map chunk tiles");

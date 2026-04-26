@@ -139,9 +139,10 @@ resource tools.
 Large structure models are catalog-first. The greenhouse sheet lives at
 `assets/art/structures/scifi_greenhouse_atlas.png` and maps greenhouse variants
 and modular parts without placing them into the active prototype scene yet.
-The prototype scene includes one non-interactive greenhouse structure as a
-visual anchor; it uses the atlas when available and a procedural fallback while
-the sheet is absent.
+The prototype server seeds one non-interactive greenhouse structure into local
+interest snapshots; `WorldRoot` renders it from server-owned structure state
+with atlas art when available and a procedural fallback while the sheet is
+absent.
 
 The prototype item set covers the current loops: oddities (`whoopie_cushion`,
 `deflated_balloon`, `apology_flower`), support tools (`repair_kit`,

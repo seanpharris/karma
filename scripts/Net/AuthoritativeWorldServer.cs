@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Karma.Art;
 using Karma.Core;
 using Karma.Data;
 using Karma.World;
@@ -13,6 +14,7 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, int> _lastSequenceByPlayer = new();
     private readonly HashSet<string> _connectedPlayerIds = new();
     private readonly Dictionary<string, WorldItemEntity> _worldItems = new();
+    private readonly Dictionary<string, WorldStructureEntity> _worldStructures = new();
     private readonly Dictionary<string, NpcEntity> _npcs = new();
     private readonly List<ServerEvent> _eventLog = new();
     private readonly MatchState _match;
@@ -29,6 +31,7 @@ public sealed class AuthoritativeWorldServer
         _match = new MatchState(Config.MatchDurationSeconds);
         SeedConnectedPlayers();
         SeedStarterNpcs();
+        SeedStarterStructures();
     }
 
     public string WorldId { get; }
@@ -37,6 +40,7 @@ public sealed class AuthoritativeWorldServer
     public IReadOnlyList<ServerEvent> EventLog => _eventLog;
     public IReadOnlyCollection<string> ConnectedPlayerIds => _connectedPlayerIds;
     public IReadOnlyDictionary<string, WorldItemEntity> WorldItems => _worldItems;
+    public IReadOnlyDictionary<string, WorldStructureEntity> WorldStructures => _worldStructures;
     public IReadOnlyDictionary<string, NpcEntity> Npcs => _npcs;
     public MatchSnapshot Match => _match.Snapshot(_state.GetLeaderboardStanding());
 
@@ -98,6 +102,18 @@ public sealed class AuthoritativeWorldServer
     public void SeedWorldItem(string entityId, GameItem item, TilePosition position)
     {
         _worldItems[entityId] = new WorldItemEntity(entityId, item, position, IsAvailable: true);
+    }
+
+    public void SeedWorldStructure(string entityId, string structureId, TilePosition position)
+    {
+        var definition = StructureArtCatalog.GetById(structureId);
+        _worldStructures[entityId] = new WorldStructureEntity(
+            entityId,
+            definition.Id,
+            definition.DisplayName,
+            definition.Category,
+            position,
+            IsVisible: true);
     }
 
     public ServerJoinResult JoinPlayer(string playerId, string displayName)
@@ -185,7 +201,7 @@ public sealed class AuthoritativeWorldServer
     {
         if (!_state.Players.TryGetValue(playerId, out var player))
         {
-            return new PlayerInterest(playerId, Array.Empty<string>(), Array.Empty<string>(), Array.Empty<string>());
+            return new PlayerInterest(playerId, Array.Empty<string>(), Array.Empty<string>(), Array.Empty<string>(), Array.Empty<string>());
         }
 
         var radiusSquared = Config.InterestRadiusTiles * Config.InterestRadiusTiles;
@@ -201,13 +217,19 @@ public sealed class AuthoritativeWorldServer
             .OrderBy(entity => entity.EntityId)
             .Select(entity => entity.EntityId)
             .ToArray();
+        var visibleStructures = _worldStructures.Values
+            .Where(entity => entity.IsVisible)
+            .Where(entity => player.Position.DistanceSquaredTo(entity.Position) <= radiusSquared)
+            .OrderBy(entity => entity.EntityId)
+            .Select(entity => entity.EntityId)
+            .ToArray();
         var visibleNpcs = _npcs.Values
             .Where(entity => player.Position.DistanceSquaredTo(entity.Position) <= radiusSquared)
             .OrderBy(entity => entity.Profile.Id)
             .Select(entity => entity.Profile.Id)
             .ToArray();
 
-        return new PlayerInterest(playerId, visiblePlayers, visibleEntities, visibleNpcs);
+        return new PlayerInterest(playerId, visiblePlayers, visibleEntities, visibleStructures, visibleNpcs);
     }
 
     public ClientInterestSnapshot CreateInterestSnapshot(string playerId, long afterTick = 0)
@@ -242,6 +264,11 @@ public sealed class AuthoritativeWorldServer
             .OrderBy(entity => entity.EntityId)
             .Select(ToSnapshot)
             .ToArray();
+        var visibleStructures = _worldStructures.Values
+            .Where(entity => interest.VisibleStructureIds.Contains(entity.EntityId))
+            .OrderBy(entity => entity.EntityId)
+            .Select(ToSnapshot)
+            .ToArray();
         var visibleShopOffers = CreateVisibleShopOffers(playerId, interest.VisibleNpcIds, standing);
         var visibleDuels = _state.Duels.All
             .Where(duel => IsDuelVisibleTo(duel, visiblePlayerIds))
@@ -268,6 +295,7 @@ public sealed class AuthoritativeWorldServer
             visibleQuests,
             visibleMapChunks,
             visibleWorldItems,
+            visibleStructures,
             visibleShopOffers,
             SnapshotBuilder.LeaderboardFrom(standing),
             _match.Snapshot(standing),
@@ -1233,6 +1261,17 @@ public sealed class AuthoritativeWorldServer
             entity.Position.Y);
     }
 
+    private static WorldStructureSnapshot ToSnapshot(WorldStructureEntity entity)
+    {
+        return new WorldStructureSnapshot(
+            entity.EntityId,
+            entity.StructureId,
+            entity.Name,
+            entity.Category,
+            entity.Position.X,
+            entity.Position.Y);
+    }
+
     private static ShopOfferSnapshot ToSnapshot(ShopOffer offer, PlayerState player, LeaderboardStanding standing)
     {
         var item = StarterItems.GetById(offer.ItemId);
@@ -1456,6 +1495,14 @@ public sealed class AuthoritativeWorldServer
     {
         _npcs[StarterNpcs.Mara.Id] = new NpcEntity(StarterNpcs.Mara, new TilePosition(3, 4));
         _npcs[StarterNpcs.Dallen.Id] = new NpcEntity(StarterNpcs.Dallen, new TilePosition(6, 4));
+    }
+
+    private void SeedStarterStructures()
+    {
+        SeedWorldStructure(
+            "structure_greenhouse_standard",
+            StructureArtCatalog.Get(StructureSpriteKind.GreenhouseStandard).Id,
+            new TilePosition(8, 3));
     }
 }
 

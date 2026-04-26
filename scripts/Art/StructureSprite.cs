@@ -5,6 +5,7 @@ namespace Karma.Art;
 public partial class StructureSprite : Node2D
 {
     [Export] public StructureSpriteKind Kind { get; set; } = StructureSpriteKind.GreenhouseStandard;
+    [Export] public string StructureId { get; set; } = string.Empty;
     [Export] public bool PreferAtlasArt { get; set; } = true;
 
     private Texture2D _atlasTexture;
@@ -18,7 +19,7 @@ public partial class StructureSprite : Node2D
 
     public override void _Draw()
     {
-        var definition = StructureArtCatalog.Get(Kind);
+        var definition = GetDefinition();
         DrawShadow(definition.Size);
 
         if (PreferAtlasArt && definition.HasAtlasRegion && _atlasTexture is not null)
@@ -35,7 +36,7 @@ public partial class StructureSprite : Node2D
 
     private void LoadAtlas()
     {
-        var definition = StructureArtCatalog.Get(Kind);
+        var definition = GetDefinition();
         if (!definition.HasAtlasRegion || _atlasPath == definition.AtlasPath)
         {
             return;
@@ -45,6 +46,13 @@ public partial class StructureSprite : Node2D
         _atlasTexture = ResourceLoader.Exists(_atlasPath)
             ? ResourceLoader.Load<Texture2D>(_atlasPath)
             : null;
+    }
+
+    private StructureSpriteDefinition GetDefinition()
+    {
+        return string.IsNullOrWhiteSpace(StructureId)
+            ? StructureArtCatalog.Get(Kind)
+            : StructureArtCatalog.GetById(StructureId);
     }
 
     private void DrawShadow(Vector2 size)
