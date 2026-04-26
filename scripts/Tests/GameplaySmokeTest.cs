@@ -29,10 +29,12 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual("res://scenes/MainMenu.tscn", ProjectSettings.GetSetting("application/run/main_scene").AsString(), "project boots into the main menu scene");
         ExpectTrue(ResourceLoader.Exists("res://scenes/MainMenu.tscn"), "main menu prototype scene exists");
         ExpectTrue(ResourceLoader.Exists(MainMenuController.GameplayScenePath), "main menu start target gameplay scene exists");
+        ExpectTrue(FileAccess.FileExists("res://assets/audio/music/main_menu_theme_placeholder.wav"), "main menu placeholder theme asset exists");
         var menuScene = ResourceLoader.Load<PackedScene>("res://scenes/MainMenu.tscn");
         var menuInstance = menuScene.Instantiate<Control>();
         ExpectTrue(menuInstance.GetNodeOrNull<Button>("Root/MenuPanel/MenuMargin/MenuButtons/StartButton") is not null, "main menu exposes a start game button");
         ExpectTrue(menuInstance.GetNodeOrNull<Button>("Root/MenuPanel/MenuMargin/MenuButtons/OptionsButton") is not null, "main menu exposes an options button");
+        ExpectTrue(menuInstance.GetNodeOrNull<AudioStreamPlayer>("MenuThemePlayer") is not null, "main menu includes a placeholder theme music player");
         ExpectTrue(menuInstance.GetNodeOrNull<Control>("Root/OptionsPanel") is not null, "main menu includes an options panel prototype");
         ExpectTrue(menuInstance.GetNodeOrNull<OptionButton>("Root/OptionsPanel/PanelMargin/OptionsContent/VideoGrid/ResolutionOption") is not null, "options menu includes resolution selection");
         ExpectTrue(menuInstance.GetNodeOrNull<Button>("Root/OptionsPanel/PanelMargin/OptionsContent/VideoGrid/DetectResolutionButton") is not null, "options menu includes display resolution detection");

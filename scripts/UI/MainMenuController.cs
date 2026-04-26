@@ -37,6 +37,9 @@ public partial class MainMenuController : Control
     private Label _masterVolumeLabel;
     private Label _musicVolumeLabel;
     private Label _effectsVolumeLabel;
+    private AudioStreamPlayer _menuThemePlayer;
+    private AudioStreamGeneratorPlayback _themePlayback;
+    private double _themeTime;
     private Control _optionsPanel;
     private Control _creditsPanel;
     private Label _statusLabel;
@@ -63,6 +66,7 @@ public partial class MainMenuController : Control
         _masterVolumeLabel = GetNode<Label>("Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid/MasterVolumeValue");
         _musicVolumeLabel = GetNode<Label>("Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid/MusicVolumeValue");
         _effectsVolumeLabel = GetNode<Label>("Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid/EffectsVolumeValue");
+        _menuThemePlayer = GetNode<AudioStreamPlayer>("MenuThemePlayer");
         _statusLabel = GetNode<Label>("Root/MenuPanel/MenuMargin/MenuButtons/StatusLabel");
 
         _startButton.Pressed += StartGame;
@@ -76,11 +80,15 @@ public partial class MainMenuController : Control
         _masterVolumeSlider.ValueChanged += _ => RefreshVolumeLabels();
         _musicVolumeSlider.ValueChanged += _ => RefreshVolumeLabels();
         _effectsVolumeSlider.ValueChanged += _ => RefreshVolumeLabels();
+        _musicVolumeSlider.ValueChanged += _ => ApplyMenuThemeVolume();
+        _masterVolumeSlider.ValueChanged += _ => ApplyMenuThemeVolume();
+        SetupMenuTheme();
 
         PopulateResolutions();
         LoadOptions();
         RefreshDetectedResolutionLabel();
         RefreshVolumeLabels();
+        ApplyMenuThemeVolume();
         HidePanels();
         _statusLabel.Text = "Prototype entry point: local sandbox match.";
     }
@@ -112,10 +120,78 @@ public partial class MainMenuController : Control
         _creditsPanel.Visible = false;
     }
 
+    public override void _Process(double delta)
+    {
+        FillMenuThemeBuffer();
+    }
+
     public void QuitGame()
     {
         _statusLabel.Text = "Quitting Karma.";
         GetTree().Quit();
+    }
+
+    private void SetupMenuTheme()
+    {
+        _menuThemePlayer.Stream = new AudioStreamGenerator
+        {
+            MixRate = 44100,
+            BufferLength = 2.0f
+        };
+        _menuThemePlayer.Play();
+        _themePlayback = _menuThemePlayer.GetStreamPlayback() as AudioStreamGeneratorPlayback;
+        FillMenuThemeBuffer();
+    }
+
+    private void FillMenuThemeBuffer()
+    {
+        if (_themePlayback is null)
+        {
+            return;
+        }
+
+        const double sampleRate = 44100.0;
+        var frames = _themePlayback.GetFramesAvailable();
+        for (var i = 0; i < frames; i++)
+        {
+            var sample = GenerateMenuThemeSample(_themeTime);
+            _themePlayback.PushFrame(new Vector2(sample, sample));
+            _themeTime += 1.0 / sampleRate;
+        }
+    }
+
+    private static float GenerateMenuThemeSample(double time)
+    {
+        const double bpm = 112.0;
+        const int beats = 16;
+        var beatLength = 60.0 / bpm;
+        var beat = (int)(time / beatLength) % beats;
+        var within = time - Math.Floor(time / beatLength) * beatLength;
+        int[] melody = { 0, 3, 5, 7, 5, 3, 10, 7, 0, 5, 7, 12, 10, 7, 5, 3 };
+        int[] bass = { 0, 0, 7, 7, 10, 10, 5, 5, 0, 0, 7, 7, 10, 10, 5, 5 };
+        var lead = Triangle(NoteFrequency(220.0, melody[beat] + 12) * time) * Envelope(within, beatLength * 0.82) * 0.34;
+        var bassWave = Math.Sin(2.0 * Math.PI * NoteFrequency(220.0, bass[beat] - 12) * time) * Envelope(within, beatLength * 0.95) * 0.23;
+        var tick = within < 0.018
+            ? Math.Sin(2.0 * Math.PI * 1800.0 * time) * (1.0 - within / 0.018) * 0.07
+            : 0.0;
+        return (float)Math.Clamp(lead + bassWave + tick, -1.0, 1.0);
+    }
+
+    private static double NoteFrequency(double root, int semitone)
+    {
+        return root * Math.Pow(2.0, semitone / 12.0);
+    }
+
+    private static double Triangle(double phase)
+    {
+        return 2.0 * Math.Abs(2.0 * (phase - Math.Floor(phase + 0.5))) - 1.0;
+    }
+
+    private static double Envelope(double time, double duration)
+    {
+        var attack = Math.Min(1.0, time / 0.02);
+        var release = Math.Min(1.0, Math.Max(0.0, (duration - time) / 0.08));
+        return Math.Min(attack, release);
     }
 
     private void PopulateResolutions()
@@ -180,6 +256,14 @@ public partial class MainMenuController : Control
         config.SetValue("audio", "music_volume", _musicVolumeSlider.Value);
         config.SetValue("audio", "effects_volume", _effectsVolumeSlider.Value);
         config.Save(OptionsPath);
+    }
+
+    private void ApplyMenuThemeVolume()
+    {
+        var normalized = (_masterVolumeSlider.Value / 100.0) * (_musicVolumeSlider.Value / 100.0);
+        _menuThemePlayer.VolumeDb = normalized <= 0.001
+            ? -80.0f
+            : (float)(20.0 * Math.Log10(normalized));
     }
 
     private void DetectAndSelectCurrentResolution()

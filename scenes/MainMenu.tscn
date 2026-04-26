@@ -11,6 +11,9 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_menu")
 
+[node name="MenuThemePlayer" type="AudioStreamPlayer" parent="."]
+volume_db = -6.0
+
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15

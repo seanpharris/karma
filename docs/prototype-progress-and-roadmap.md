@@ -11,6 +11,7 @@ and the next practical build slices.
 - The menu has Start Local Prototype, Options, Credits, and Quit controls.
 - Start Local Prototype loads the existing gameplay prototype scene (`Main.tscn`) without folding menu UI into the world prototype.
 - Options now includes prototype video settings (resolution list, display-resolution detection, fullscreen/windowed, VSync), audio sliders, controls/accessibility notes, and apply/save behavior.
+- The main menu has an original generated placeholder theme loop, with master/music sliders affecting menu music volume.
 
 ### Server-owned karma loop
 
@@ -62,7 +63,7 @@ and the next practical build slices.
 
 ### Gameplay integration
 
-- Main menu visuals/settings are still prototype UI and need final styling, actual audio bus wiring, full control remapping/accessibility settings, and eventual multiplayer/session entry flows.
+- Main menu visuals/settings are still prototype UI and need final styling, broader audio bus wiring, full control remapping/accessibility settings, and eventual multiplayer/session entry flows.
 - Generated station locations have inspectable markers and interactable fixtures, but their art is still placeholder greenhouse components and needs proper sign/landmark visuals.
 - Generated NPCs have first-pass station dialogue/quests, but those choices are still broad templates rather than bespoke quest chains.
 - Generated oddities are server-seeded, but pickup placement needs more visual/station context and balancing.
