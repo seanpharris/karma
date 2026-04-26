@@ -22,6 +22,10 @@ The first sci-fi item model sheet should be dropped at:
 
 `sprites/scifi_item_atlas.png`
 
+The second sci-fi utility item model sheet should be dropped at:
+
+`sprites/scifi_utility_item_atlas.png`
+
 That path is registered in `scripts/World/ThemeArtRegistry.cs`. The prototype
 currently maps a small sci-fi subset from that sheet: floors, metal walls,
 airlock doors, duel ring floor, and oddity pile.
@@ -41,3 +45,5 @@ from the sheet and otherwise fall back to the procedural models.
 The current core item models also have source regions mapped for
 `sprites/scifi_item_atlas.png`: whoopie cushion, deflated balloon, repair kit,
 practice stick, work vest, and scrip.
+The utility item sheet maps ration pack, data chip, filter core, contraband
+package, apology flower, and portable terminal.

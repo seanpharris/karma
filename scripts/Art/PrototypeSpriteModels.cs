@@ -52,6 +52,7 @@ public static class PrototypeSpriteCatalog
 {
     public const string CharacterAtlasPath = "res://assets/art/sprites/scifi_character_atlas.png";
     public const string ItemAtlasPath = "res://assets/art/sprites/scifi_item_atlas.png";
+    public const string UtilityItemAtlasPath = "res://assets/art/sprites/scifi_utility_item_atlas.png";
 
     public static PrototypeSpriteKind GetKindForItem(string itemId)
     {
@@ -266,7 +267,10 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.18f, 0.16f, 0.1f), -9f, -6f, 18f, 12f),
                 Rect(new Color(0.62f, 0.54f, 0.32f), -7f, -4f, 14f, 8f),
                 Rect(new Color(0.86f, 0.78f, 0.45f), -4f, -2f, 8f, 2f)
-            });
+            },
+            UtilityItemAtlasPath,
+            new Rect2(35f, 250f, 170f, 190f),
+            HasAtlasRegion: true);
     }
 
     private static PrototypeSpriteDefinition DataChip()
@@ -280,7 +284,10 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.02f, 0.16f, 0.2f), -8f, -5f, 16f, 10f),
                 Rect(new Color(0.08f, 0.62f, 0.82f), -6f, -3f, 12f, 6f),
                 Rect(new Color(0.9f, 0.98f, 1f), -2f, -1f, 4f, 2f)
-            });
+            },
+            UtilityItemAtlasPath,
+            new Rect2(344f, 258f, 115f, 165f),
+            HasAtlasRegion: true);
     }
 
     private static PrototypeSpriteDefinition FilterCore()
@@ -294,7 +301,10 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.09f, 0.12f, 0.14f), -7f, -10f, 14f, 20f),
                 Rect(new Color(0.56f, 0.66f, 0.68f), -5f, -8f, 10f, 16f),
                 Rect(new Color(0.18f, 0.78f, 0.72f), -3f, -5f, 6f, 10f)
-            });
+            },
+            UtilityItemAtlasPath,
+            new Rect2(608f, 250f, 106f, 178f),
+            HasAtlasRegion: true);
     }
 
     private static PrototypeSpriteDefinition ContrabandPackage()
@@ -309,7 +319,10 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.28f, 0.19f, 0.12f), -8f, -5f, 16f, 10f),
                 Line(new Color(0.9f, 0.2f, 0.16f), new Vector2(-8f, -5f), new Vector2(8f, 5f), 2f),
                 Line(new Color(0.9f, 0.2f, 0.16f), new Vector2(8f, -5f), new Vector2(-8f, 5f), 2f)
-            });
+            },
+            UtilityItemAtlasPath,
+            new Rect2(832f, 255f, 160f, 135f),
+            HasAtlasRegion: true);
     }
 
     private static PrototypeSpriteDefinition ApologyFlower()
@@ -325,7 +338,10 @@ public static class PrototypeSpriteCatalog
                 Circle(new Color(0.96f, 0.3f, 0.54f), -4f, -8f, 3f),
                 Circle(new Color(0.96f, 0.3f, 0.54f), 4f, -8f, 3f),
                 Rect(new Color(0.36f, 0.38f, 0.36f), -6f, 7f, 12f, 5f)
-            });
+            },
+            UtilityItemAtlasPath,
+            new Rect2(1122f, 252f, 126f, 175f),
+            HasAtlasRegion: true);
     }
 
     private static PrototypeSpriteDefinition PortableTerminal()
@@ -341,7 +357,10 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.08f, 0.72f, 0.94f), -6f, -5f, 12f, 6f),
                 Rect(new Color(0.95f, 0.68f, 0.18f), -6f, 3f, 4f, 2f),
                 Rect(new Color(0.95f, 0.68f, 0.18f), 2f, 3f, 4f, 2f)
-            });
+            },
+            UtilityItemAtlasPath,
+            new Rect2(1360f, 250f, 130f, 180f),
+            HasAtlasRegion: true);
     }
 
     private static PrototypeSpriteLayer Rect(Color color, float x, float y, float width, float height)

@@ -127,6 +127,9 @@ procedural fallbacks until that sheet is present locally.
 Core item world models use `assets/art/sprites/scifi_item_atlas.png` for
 whoopie cushion, deflated balloon, repair kit, practice stick, work vest, and
 scrip when that item sheet is available.
+Utility item world models use `assets/art/sprites/scifi_utility_item_atlas.png`
+for ration pack, data chip, filter core, contraband package, apology flower,
+and portable terminal.
 
 The prototype item set covers the current loops: oddities (`whoopie_cushion`,
 `deflated_balloon`, `apology_flower`), support tools (`repair_kit`,
