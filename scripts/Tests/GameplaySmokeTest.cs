@@ -580,14 +580,15 @@ public partial class GameplaySmokeTest : Node
                 ["targetId"] = "grace_target"
             }));
         ExpectTrue(lethalGraceAttack.WasAccepted, "server accepts lethal attack before Karma Break grace starts");
-        ExpectEqual(new TilePosition(3, 4), graceState.Players["grace_target"].Position, "lethal Karma Break respawns target at a server spawn tile");
-        ExpectEqual("3", lethalGraceAttack.Event.Data["respawnX"], "lethal attack event reports respawn x");
-        ExpectEqual("4", lethalGraceAttack.Event.Data["respawnY"], "lethal attack event reports respawn y");
+        var graceRespawnPosition = graceState.Players["grace_target"].Position;
+        ExpectTrue(graceRespawnPosition.DistanceSquaredTo(TilePosition.Origin) >= 144, "lethal Karma Break respawns away from the death pile");
+        ExpectEqual(graceRespawnPosition.X.ToString(), lethalGraceAttack.Event.Data["respawnX"], "lethal attack event reports respawn x");
+        ExpectEqual(graceRespawnPosition.Y.ToString(), lethalGraceAttack.Event.Data["respawnY"], "lethal attack event reports respawn y");
         ExpectTrue(
-            HudController.FormatLatestServerEvent(new[] { lethalGraceAttack.Event }).Contains("respawned at 3,4"),
+            HudController.FormatLatestServerEvent(new[] { lethalGraceAttack.Event }).Contains($"respawned at {graceRespawnPosition.X},{graceRespawnPosition.Y}"),
             "HUD formats lethal attack outcome from server event data");
         ExpectTrue(
-            graceServer.CreateInterestSnapshot(GameState.LocalPlayerId)
+            graceServer.CreateInterestSnapshot("grace_target")
                 .Players.First(player => player.Id == "grace_target")
                 .StatusEffects.Any(status => status.Contains("Karma Break Grace")),
             "interest snapshot exposes Karma Break grace status");
@@ -618,7 +619,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             HudController.FormatLatestServerEvent(new[] { claimedDrop.Event }).Contains("Grace Target's Karma Break drop"),
             "HUD formats Karma Break drop ownership");
-        graceState.SetPlayerPosition("grace_attacker_two", new TilePosition(3, 4));
+        graceState.SetPlayerPosition("grace_attacker_two", graceRespawnPosition);
         var graceRejectedAttack = graceServer.ProcessIntent(new ServerIntent(
             "grace_attacker_two",
             1,
@@ -631,7 +632,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(graceRejectedAttack.Event.Data["reason"].Contains("Karma Break grace"), "rejected attack event carries Karma Break grace reason");
         graceServer.AdvanceIdleTicks(5);
         ExpectFalse(
-            graceServer.CreateInterestSnapshot(GameState.LocalPlayerId)
+            graceServer.CreateInterestSnapshot("grace_target")
                 .Players.First(player => player.Id == "grace_target")
                 .StatusEffects.Any(status => status.Contains("Karma Break Grace")),
             "idle server ticks clear Karma Break grace status");
@@ -1285,13 +1286,14 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(peerKarmaBreak.WasAccepted, "server accepts peer Karma Break intent");
         ExpectFalse(state.HasItem("peer_stand_in", StarterItems.WhoopieCushionId), "Karma Break drains loose inventory");
         ExpectFalse(state.Players["peer_stand_in"].HasTeam, "Karma Break clears temporary team status");
-        ExpectEqual(new TilePosition(4, 4), state.Players["peer_stand_in"].Position, "explicit Karma Break respawns peer at server spawn tile");
+        var peerRespawnPosition = state.Players["peer_stand_in"].Position;
+        ExpectTrue(peerRespawnPosition.DistanceSquaredTo(TilePosition.Origin) >= 144, "explicit Karma Break respawns peer away from its death location");
         ExpectTrue(
             transferServer.WorldItems.Values.Any(entity => entity.EntityId.StartsWith("drop_peer_stand_in") && entity.Item.Id == StarterItems.WhoopieCushionId),
             "Karma Break drops loose inventory as world items");
         ExpectTrue(peerKarmaBreak.Event.Data["droppedItemCount"] != "0", "Karma Break event reports dropped items");
         ExpectTrue(
-            HudController.FormatLatestServerEvent(new[] { peerKarmaBreak.Event }).Contains("respawned at 4,4"),
+            HudController.FormatLatestServerEvent(new[] { peerKarmaBreak.Event }).Contains($"respawned at {peerRespawnPosition.X},{peerRespawnPosition.Y}"),
             "HUD formats explicit Karma Break outcome from server event data");
         var peerDropId = transferServer.WorldItems.Values
             .First(entity => entity.EntityId.StartsWith("drop_peer_stand_in") && entity.Item.Id == StarterItems.WhoopieCushionId)

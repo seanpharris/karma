@@ -28,6 +28,7 @@ public sealed class AuthoritativeWorldServer
     private const long AttackCooldownTicks = 3;
     private const long KarmaBreakGraceTicks = 5;
     private const int MinimumInitialSpawnSeparationTiles = 10;
+    private const int MinimumRespawnSeparationTiles = 12;
     private const int SpawnEdgePaddingTiles = 4;
     private sealed record DropClaim(string OwnerId, string OwnerName);
 
@@ -865,7 +866,7 @@ public sealed class AuthoritativeWorldServer
         var droppedItemCount = died ? DropInventory(targetId).Count : 0;
         if (died)
         {
-            RespawnPlayer(targetId);
+            RespawnPlayer(targetId, target.Position, attacker.Position);
             StartKarmaBreakGrace(targetId);
         }
 
@@ -1512,7 +1513,7 @@ public sealed class AuthoritativeWorldServer
     {
         var droppedItemCount = DropInventory(intent.PlayerId).Count;
         _state.TriggerKarmaBreak(intent.PlayerId);
-        RespawnPlayer(intent.PlayerId);
+        RespawnPlayer(intent.PlayerId, _state.Players[intent.PlayerId].Position);
         StartKarmaBreakGrace(intent.PlayerId);
         var serverEvent = AppendEvent(
             "karma_break",
@@ -1533,9 +1534,11 @@ public sealed class AuthoritativeWorldServer
         _karmaBreakGraceUntilTickByPlayer[playerId] = _tick + KarmaBreakGraceTicks;
     }
 
-    private void RespawnPlayer(string playerId)
+    private TilePosition RespawnPlayer(string playerId, params TilePosition[] dangerPositions)
     {
-        _state.SetPlayerPosition(playerId, GetKarmaBreakRespawnPosition(playerId));
+        var respawnPosition = GetContextAwareRespawnPosition(playerId, dangerPositions);
+        _state.SetPlayerPosition(playerId, respawnPosition);
+        return respawnPosition;
     }
 
     private IReadOnlyList<string> GetStatusEffectsFor(PlayerState player)
@@ -1751,16 +1754,38 @@ public sealed class AuthoritativeWorldServer
         };
     }
 
-    private static TilePosition GetKarmaBreakRespawnPosition(string playerId)
+    private TilePosition GetContextAwareRespawnPosition(string playerId, IReadOnlyCollection<TilePosition> dangerPositions)
     {
-        return playerId switch
+        var width = _tileMap?.Width ?? 64;
+        var height = _tileMap?.Height ?? 64;
+        var reserved = _state.Players.Values
+            .Where(player => player.Id != playerId && _connectedPlayerIds.Contains(player.Id))
+            .Select(player => player.Position)
+            .Concat(dangerPositions)
+            .ToArray();
+        var random = new Random(HashCode.Combine(WorldId, playerId, _tick, "karma-break-respawn"));
+        var candidates = ProceduralPlacementSampler.GenerateSeparatedPoints(
+            random,
+            width,
+            height,
+            count: 12,
+            edgePadding: SpawnEdgePaddingTiles,
+            candidateAttemptsPerPoint: 32,
+            reserved);
+        var minimumDistanceSquared = MinimumRespawnSeparationTiles * MinimumRespawnSeparationTiles;
+        var safeCandidate = candidates
+            .Where(candidate => reserved.All(reservedPoint => candidate.DistanceSquaredTo(reservedPoint) >= minimumDistanceSquared))
+            .OrderByDescending(candidate => ProceduralPlacementSampler.GetNearestDistanceSquared(candidate, reserved))
+            .FirstOrDefault();
+
+        if (safeCandidate != default)
         {
-            GameState.LocalPlayerId => new TilePosition(3, 4),
-            "peer_stand_in" => new TilePosition(4, 4),
-            "rival_paragon" => new TilePosition(6, 4),
-            "rival_renegade" => new TilePosition(7, 4),
-            _ => new TilePosition(3, 4)
-        };
+            return safeCandidate;
+        }
+
+        return candidates
+            .OrderByDescending(candidate => ProceduralPlacementSampler.GetNearestDistanceSquared(candidate, reserved))
+            .FirstOrDefault();
     }
 
     private void RememberDropClaim(string holderId, string itemId, string ownerId, string ownerName)

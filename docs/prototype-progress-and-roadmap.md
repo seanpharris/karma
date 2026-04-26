@@ -20,7 +20,7 @@ and the next practical build slices.
 - Initial match spawns are now server-owned, random per player/world, edge-padded, and separated when possible.
 - There are no starting teams.
 - Temporary teams/posses can be added during play, but death/Karma Break clears them.
-- Respawns still use deterministic prototype tiles today; design direction is to make respawns context-aware rather than identical to initial spawns.
+- Respawns are now context-aware: Karma Break/death uses separated candidate placement to avoid the death location, nearby players, map edges, and immediate re-entry into the same pile-up.
 
 ### World and NPC generation
 
@@ -59,12 +59,10 @@ and the next practical build slices.
 
 ### Respawns
 
-- Respawn should use candidate pools and safety constraints:
-  - avoid killer/death location;
-  - avoid crowded/active combat areas;
-  - avoid spawning directly on players;
+- Respawn now avoids death locations and nearby players, but should get richer candidate pools:
+  - avoid active combat areas more explicitly;
   - prefer safe-ish stations or neutral landmarks;
-  - prevent abuse such as instant return to a fight.
+  - add cooldown/heat logic to prevent abuse such as instant return to a fight.
 
 ### Perks and social systems
 
@@ -87,10 +85,10 @@ and the next practical build slices.
 
 ## What we need to do next
 
-1. **Build context-aware respawns.** Reuse the placement sampler for safe respawn candidate pools.
-2. **Generate quests from social stations.** Convert station `KarmaHook` and NPC `Need` into small repair, rumor, theft, apology, bounty, and delivery tasks.
-3. **Generate station dialogue choices.** Give generated NPCs local choices tied to their station role instead of only generic profile text.
-4. **Expand generated structures.** Add station-specific repair/sabotage targets with integrity and faction consequences.
+1. **Generate quests from social stations.** Convert station `KarmaHook` and NPC `Need` into small repair, rumor, theft, apology, bounty, and delivery tasks.
+2. **Generate station dialogue choices.** Give generated NPCs local choices tied to their station role instead of only generic profile text.
+3. **Expand generated structures.** Add station-specific repair/sabotage targets with integrity and faction consequences.
+4. **Improve respawn candidate pools.** Prefer safe stations/landmarks and avoid active combat heat, not just death/player positions.
 5. **Improve station presentation.** Replace placeholder station marker art with signs, landmarks, or theme-specific props.
 6. **Wire one more perk.** Good candidates: `Paragon Favor`, `Abyssal Mark`, or deeper `Renegade Nerve` intimidation behavior.
 7. **Improve world layout.** Generate roads/paths between stations and shape districts around the station graph.
