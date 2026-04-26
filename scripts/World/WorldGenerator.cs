@@ -262,12 +262,27 @@ public static class WorldGenerator
         int count)
     {
         var locations = new List<GeneratedLocation>();
+        var reserved = new[]
+        {
+            new TilePosition(5, 5),
+            new TilePosition(config.WidthTiles / 2, config.HeightTiles / 2)
+        };
+        var stationPoints = ProceduralPlacementSampler.GenerateSeparatedPoints(
+            random,
+            config.WidthTiles,
+            config.HeightTiles,
+            count,
+            edgePadding: 4,
+            candidateAttemptsPerPoint: 24,
+            reserved);
+
         for (var i = 0; i < count; i++)
         {
             var station = SocialStations[i % SocialStations.Length];
             var name = i < SocialStations.Length
                 ? station.Name
                 : $"{GetThemePrefix(theme, random)} {station.Name}";
+            var point = stationPoints[i];
             locations.Add(new GeneratedLocation(
                 $"location_{i}_{station.Role.Replace('-', '_')}",
                 name,
@@ -275,8 +290,8 @@ public static class WorldGenerator
                 station.ThemeTag,
                 station.KarmaHook,
                 station.Faction,
-                random.Next(4, config.WidthTiles - 4),
-                random.Next(4, config.HeightTiles - 4)));
+                point.X,
+                point.Y));
         }
 
         return locations;
