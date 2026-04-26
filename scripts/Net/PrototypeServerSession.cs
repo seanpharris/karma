@@ -71,6 +71,16 @@ public partial class PrototypeServerSession : Node
         return Send(GameState.LocalPlayerId, type, payload);
     }
 
+    public ServerProcessResult PurchaseOffer(string offerId)
+    {
+        return SendLocal(
+            IntentType.PurchaseItem,
+            new Dictionary<string, string>
+            {
+                ["offerId"] = offerId
+            });
+    }
+
     public ServerProcessResult Send(
         string playerId,
         IntentType type,
@@ -116,12 +126,17 @@ public partial class PrototypeServerSession : Node
             ? "Quests: none"
             : "Quests: " + string.Join(", ", snapshot.Quests
                 .Select(quest => $"{quest.Id}:{quest.Status}"));
+        var shopText = snapshot.ShopOffers.Count == 0
+            ? "Shops: none"
+            : "Shops: " + string.Join(", ", snapshot.ShopOffers
+                .Take(3)
+                .Select(offer => $"{offer.ItemName} {offer.Price} {offer.Currency}"));
         var eventText = snapshot.ServerEvents.Count == 0
             ? "Events: quiet"
             : $"Events: {snapshot.ServerEvents[^1].Description}";
         var syncMode = snapshot.SyncHint.IsDelta ? "delta" : "full";
         var syncText = $"Sync: {syncMode}, after tick {snapshot.SyncHint.AfterTick}, map rev {snapshot.SyncHint.VisibleMapRevision}, chunks +{applyResult.AddedChunks}/~{applyResult.UnchangedChunks}/-{applyResult.RemovedChunks}";
 
-        return $"{snapshot.Summary}\n{dialogueText} | {questText}\n{eventText}\n{syncText}";
+        return $"{snapshot.Summary}\n{dialogueText} | {questText} | {shopText}\n{eventText}\n{syncText}";
     }
 }

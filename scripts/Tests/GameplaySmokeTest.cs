@@ -26,6 +26,8 @@ public partial class GameplaySmokeTest : Node
         var localSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         ExpectTrue(localSession is not null, "prototype server session autoload is available");
         ExpectTrue(localSession.LastLocalSnapshot.Summary.Contains("visible"), "prototype server session exposes local interest snapshot");
+        ExpectTrue(localSession.LastLocalSnapshot.ShopOffers.Any(), "prototype server session exposes nearby shop offers");
+        ExpectEqual(25, state.LocalScrip, "prototype local player starts with scrip");
         var localMatchRemaining = localSession.LastLocalSnapshot.Match.RemainingSeconds;
         localSession.AdvanceMatchTime(5);
         ExpectEqual(localMatchRemaining - 5, localSession.LastLocalSnapshot.Match.RemainingSeconds, "prototype server session advances match timer");
@@ -60,6 +62,11 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             localSession.LastLocalSnapshot.Tick > previousSessionTick,
             "prototype server session refreshes local snapshot after accepted stand-in intent");
+        var localScripBeforeOffer = state.LocalScrip;
+        var localPurchase = localSession.PurchaseOffer(StarterShopCatalog.DallenWhoopieCushionOfferId);
+        ExpectTrue(localPurchase.WasAccepted, "prototype server session purchases visible shop offers");
+        ExpectEqual(localScripBeforeOffer - 7, state.LocalScrip, "prototype shop helper debits local scrip");
+        ExpectTrue(state.HasItem(GameState.LocalPlayerId, StarterItems.WhoopieCushionId), "prototype shop helper adds purchased item");
         state.SetPlayerPosition("peer_stand_in", TilePosition.Origin);
         var server = new AuthoritativeWorldServer(state, "test-world");
         ServerConfig.Prototype4Player.Validate();
@@ -260,7 +267,7 @@ public partial class GameplaySmokeTest : Node
 
         ExpectEqual(0, state.LocalKarma.Score, "new players start at neutral karma");
         ExpectEqual("Unmarked", state.LocalKarma.TierName, "new players start unmarked");
-        ExpectEqual(25, state.LocalScrip, "prototype local player starts with scrip");
+        ExpectTrue(state.LocalScrip > 0, "prototype local player keeps spendable scrip");
         ExpectEqual(4, state.Players.Count, "prototype world registers four player slots");
         ExpectEqual("Helpful Rival", state.GetLeaderboardStanding().SaintName, "positive rival starts as Saint");
         ExpectEqual("Shady Rival", state.GetLeaderboardStanding().ScourgeName, "negative rival starts as Scourge");
@@ -281,9 +288,13 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(QuestStatus.Available, state.Quests.Get(StarterQuests.MaraClinicFiltersId).Status, "starter quest begins available");
 
         state.AddItem(StarterItems.WhoopieCushion);
+        var whoopieCountBeforeConsume = state.Inventory.Count(item => item.Id == StarterItems.WhoopieCushionId);
         ExpectTrue(state.HasItem(StarterItems.WhoopieCushionId), "whoopie cushion can be picked up");
         ExpectTrue(state.ConsumeItem(StarterItems.WhoopieCushionId), "whoopie cushion can be consumed");
-        ExpectFalse(state.HasItem(StarterItems.WhoopieCushionId), "consumed whoopie cushion leaves inventory");
+        ExpectEqual(
+            whoopieCountBeforeConsume - 1,
+            state.Inventory.Count(item => item.Id == StarterItems.WhoopieCushionId),
+            "consumed whoopie cushion removes one inventory item");
         var questServer = new AuthoritativeWorldServer(state, "quest-test-world");
         var serverStartQuest = questServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,

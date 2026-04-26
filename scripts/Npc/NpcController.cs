@@ -49,6 +49,10 @@ public partial class NpcController : Area2D
         }
         else if (key.Keycode == Key.Key9)
         {
+            PurchaseFirstVisibleOffer();
+        }
+        else if (key.Keycode == Key.Key0)
+        {
             _serverSession?.SendLocal(
                 IntentType.KarmaBreak,
                 new System.Collections.Generic.Dictionary<string, string>());
@@ -203,6 +207,30 @@ public partial class NpcController : Area2D
         ShowPromptFromSnapshot();
     }
 
+    private void PurchaseFirstVisibleOffer()
+    {
+        if (_serverSession is null)
+        {
+            return;
+        }
+
+        var offer = _serverSession.LastLocalSnapshot.ShopOffers.FirstOrDefault();
+        if (offer is null)
+        {
+            _hud?.ShowPrompt("No nearby shop offers.");
+            return;
+        }
+
+        var result = _serverSession.PurchaseOffer(offer.OfferId);
+        if (!result.WasAccepted)
+        {
+            _hud?.ShowPrompt(result.RejectionReason);
+            return;
+        }
+
+        ShowPromptFromSnapshot();
+    }
+
     private void ShowPromptFromSnapshot()
     {
         _choiceIds.Clear();
@@ -230,7 +258,13 @@ public partial class NpcController : Area2D
         lines.Add("6 - Start/complete Clinic Filters quest");
         lines.Add("7 - Start a secret entanglement");
         lines.Add("8 - Expose the secret entanglement");
-        lines.Add("9 - Test Karma Break");
+        var offer = _serverSession?.LastLocalSnapshot?.ShopOffers.FirstOrDefault();
+        if (offer is not null)
+        {
+            lines.Add($"9 - Buy {offer.ItemName} ({offer.Price} {offer.Currency})");
+        }
+
+        lines.Add("0 - Test Karma Break");
         _hud?.ShowPrompt(string.Join("\n", lines));
     }
 
