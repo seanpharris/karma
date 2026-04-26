@@ -11,6 +11,7 @@ namespace Karma.UI;
 
 public partial class HudController : CanvasLayer
 {
+    public const string MainMenuScenePath = "res://scenes/MainMenu.tscn";
     private GameState _gameState = null!;
     private Label _karmaLabel = new();
     private Label _eventLabel = new();
@@ -38,6 +39,14 @@ public partial class HudController : CanvasLayer
     private Label _promptLabel = new();
     private PanelContainer _inventoryPanel = new();
     private Label _inventoryOverlayLabel = new();
+    private PanelContainer _escapeMenuPanel = new();
+    private Control _escapeOptionsPanel = new();
+    private Label _escapeMenuStatusLabel = new();
+    private Button _resumeButton = new();
+    private Button _escapeOptionsButton = new();
+    private Button _backToMenuButton = new();
+    private Button _quitButton = new();
+    private Button _closeEscapeOptionsButton = new();
     private string _lastCombatText = "Combat: none";
     private IReadOnlyList<string> _lastStatusEffects = System.Array.Empty<string>();
 
@@ -58,6 +67,11 @@ public partial class HudController : CanvasLayer
         _gameState.EntanglementsChanged += OnEntanglementsChanged;
         _gameState.DuelsChanged += OnDuelsChanged;
         _gameState.WorldEventsChanged += OnWorldEventsChanged;
+        _resumeButton.Pressed += HideEscapeMenu;
+        _escapeOptionsButton.Pressed += ShowEscapeOptions;
+        _backToMenuButton.Pressed += ReturnToMainMenu;
+        _quitButton.Pressed += () => GetTree().Quit();
+        _closeEscapeOptionsButton.Pressed += HideEscapeOptions;
         _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         if (_serverSession is not null)
         {
@@ -82,6 +96,30 @@ public partial class HudController : CanvasLayer
         OnWorldEventsChanged(_gameState.WorldEvents.FormatLatestSummary());
     }
 
+    public override void _ExitTree()
+    {
+        if (_gameState is not null)
+        {
+            _gameState.KarmaChanged -= OnKarmaChanged;
+            _gameState.KarmaEvent -= OnKarmaEvent;
+            _gameState.InventoryChanged -= OnInventoryChanged;
+            _gameState.LeaderboardChanged -= OnLeaderboardChanged;
+            _gameState.PerksChanged -= OnPerksChanged;
+            _gameState.RelationshipsChanged -= OnRelationshipsChanged;
+            _gameState.FactionsChanged -= OnFactionsChanged;
+            _gameState.QuestsChanged -= OnQuestsChanged;
+            _gameState.CombatChanged -= OnCombatChanged;
+            _gameState.EntanglementsChanged -= OnEntanglementsChanged;
+            _gameState.DuelsChanged -= OnDuelsChanged;
+            _gameState.WorldEventsChanged -= OnWorldEventsChanged;
+        }
+
+        if (_serverSession is not null)
+        {
+            _serverSession.LocalSnapshotChanged -= OnLocalSnapshotChanged;
+        }
+    }
+
     public override void _Process(double delta)
     {
         _perfAccumulator += delta;
@@ -102,8 +140,19 @@ public partial class HudController : CanvasLayer
 
     public override void _UnhandledInput(InputEvent @event)
     {
-        if (@event is InputEventKey { Pressed: true, Echo: false } key &&
-            key.Keycode == Key.I)
+        if (@event is not InputEventKey { Pressed: true, Echo: false } key)
+        {
+            return;
+        }
+
+        if (key.Keycode == Key.Escape)
+        {
+            ToggleEscapeMenu();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        if (key.Keycode == Key.I)
         {
             ToggleInventoryOverlay();
             GetViewport().SetInputAsHandled();
@@ -140,10 +189,47 @@ public partial class HudController : CanvasLayer
         _staminaLabel.Text = staminaText;
     }
 
+    public void ToggleEscapeMenu()
+    {
+        SetEscapeMenuVisible(!_escapeMenuPanel.Visible);
+    }
+
+    public void HideEscapeMenu()
+    {
+        SetEscapeMenuVisible(false);
+    }
+
+    public void SetEscapeMenuVisible(bool visible)
+    {
+        _escapeMenuPanel.Visible = visible;
+        if (!visible)
+        {
+            HideEscapeOptions();
+        }
+    }
+
+    private void ShowEscapeOptions()
+    {
+        _escapeOptionsPanel.Visible = true;
+        _escapeMenuStatusLabel.Text = "Options are live-menu placeholders; gameplay keeps running.";
+    }
+
+    private void HideEscapeOptions()
+    {
+        _escapeOptionsPanel.Visible = false;
+        _escapeMenuStatusLabel.Text = "Menu open. Prototype world is still running.";
+    }
+
+    private void ReturnToMainMenu()
+    {
+        GetTree().ChangeSceneToFile(MainMenuScenePath);
+    }
+
     private void BuildUi()
     {
         var root = new Control
         {
+            Name = "HudRoot",
             AnchorRight = 1,
             AnchorBottom = 1
         };
@@ -372,6 +458,98 @@ public partial class HudController : CanvasLayer
             Text = "Inventory"
         };
         _inventoryPanel.AddChild(_inventoryOverlayLabel);
+
+        BuildEscapeMenu(root);
+    }
+
+    private void BuildEscapeMenu(Control root)
+    {
+        _escapeMenuPanel = new PanelContainer
+        {
+            Name = "EscapeMenuPanel",
+            OffsetLeft = 390,
+            OffsetTop = 120,
+            OffsetRight = 890,
+            OffsetBottom = 620,
+            Visible = false
+        };
+        root.AddChild(_escapeMenuPanel);
+
+        var margin = new MarginContainer
+        {
+            Name = "EscapeMenuMargin"
+        };
+        margin.AddThemeConstantOverride("margin_left", 28);
+        margin.AddThemeConstantOverride("margin_top", 24);
+        margin.AddThemeConstantOverride("margin_right", 28);
+        margin.AddThemeConstantOverride("margin_bottom", 24);
+        _escapeMenuPanel.AddChild(margin);
+
+        var content = new VBoxContainer
+        {
+            Name = "EscapeMenuContent"
+        };
+        content.AddThemeConstantOverride("separation", 12);
+        margin.AddChild(content);
+
+        content.AddChild(new Label
+        {
+            Name = "EscapeMenuTitle",
+            Text = "Karma Menu",
+            HorizontalAlignment = HorizontalAlignment.Center
+        });
+
+        _escapeMenuStatusLabel = new Label
+        {
+            Name = "EscapeMenuStatusLabel",
+            Text = "Menu open. Prototype world is still running.",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            HorizontalAlignment = HorizontalAlignment.Center
+        };
+        content.AddChild(_escapeMenuStatusLabel);
+
+        _resumeButton = new Button { Name = "ResumeButton", Text = "Resume" };
+        _escapeOptionsButton = new Button { Name = "OptionsButton", Text = "Options" };
+        _backToMenuButton = new Button { Name = "MainMenuButton", Text = "Main Menu" };
+        _quitButton = new Button { Name = "QuitButton", Text = "Quit" };
+        content.AddChild(_resumeButton);
+        content.AddChild(_escapeOptionsButton);
+        content.AddChild(_backToMenuButton);
+        content.AddChild(_quitButton);
+
+        _escapeOptionsPanel = new PanelContainer
+        {
+            Name = "EscapeOptionsPanel",
+            Visible = false
+        };
+        content.AddChild(_escapeOptionsPanel);
+
+        var optionsMargin = new MarginContainer { Name = "EscapeOptionsMargin" };
+        optionsMargin.AddThemeConstantOverride("margin_left", 16);
+        optionsMargin.AddThemeConstantOverride("margin_top", 12);
+        optionsMargin.AddThemeConstantOverride("margin_right", 16);
+        optionsMargin.AddThemeConstantOverride("margin_bottom", 12);
+        _escapeOptionsPanel.AddChild(optionsMargin);
+
+        var optionsContent = new VBoxContainer { Name = "EscapeOptionsContent" };
+        optionsContent.AddThemeConstantOverride("separation", 8);
+        optionsMargin.AddChild(optionsContent);
+        optionsContent.AddChild(new Label
+        {
+            Text = "Options quick panel",
+            HorizontalAlignment = HorizontalAlignment.Center
+        });
+        optionsContent.AddChild(new Label
+        {
+            Text = "Audio/video/control settings will reuse the main menu options model here. This overlay does not pause the match timer.",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart
+        });
+        _closeEscapeOptionsButton = new Button
+        {
+            Name = "CloseOptionsButton",
+            Text = "Back"
+        };
+        optionsContent.AddChild(_closeEscapeOptionsButton);
     }
 
     private void OnKarmaChanged(int score, string tierName, string pathName)

@@ -42,6 +42,15 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(menuInstance.GetNodeOrNull<Button>("Root/OptionsPanel/PanelMargin/OptionsContent/OptionsActions/ApplyOptionsButton") is not null, "options menu includes apply/save action");
         menuInstance.QueueFree();
 
+        var hudProbe = new HudController();
+        AddChild(hudProbe);
+        ExpectTrue(hudProbe.GetNodeOrNull<PanelContainer>("HudRoot/EscapeMenuPanel") is not null, "gameplay HUD includes a non-pausing Escape menu overlay");
+        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/ResumeButton") is not null, "Escape menu includes resume action");
+        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/OptionsButton") is not null, "Escape menu includes options action");
+        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/MainMenuButton") is not null, "Escape menu includes main menu action");
+        ExpectFalse(GetTree().Paused, "Escape menu prototype does not pause the running tree");
+        hudProbe.QueueFree();
+
         var state = GetNode<GameState>("/root/GameState");
         state.TriggerKarmaBreak();
         var localSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
