@@ -90,6 +90,9 @@ Targets:
   event counts, visible map chunk count, and a map revision checksum. This keeps
   network clients from guessing whether a snapshot is a full refresh or a
   smaller incremental update.
+- The prototype client owns a small interest snapshot cache that tracks the last
+  applied tick and visible chunk revisions. Future network transports should
+  feed snapshots through this cache before rendering.
 - The prototype world renderer consumes map chunks from the local server
   snapshot, keeping terrain rendering on the same path as future network clients.
 - The client renderer keeps a loaded chunk cache and evicts chunks that leave the

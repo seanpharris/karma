@@ -33,8 +33,20 @@ public partial class GameplaySmokeTest : Node
             localSession.LastLocalSnapshot.WorldItems.Any(entity => entity.EntityId == "session_test_item"),
             "prototype server session refreshes local snapshot after world item registration");
         var previousSessionTick = localSession.LastLocalSnapshot.Tick;
-        localSession.SetTileMap(WorldGenerator.Generate(WorldConfig.CreatePrototype()).TileMap);
+        var localTileMap = WorldGenerator.Generate(WorldConfig.CreatePrototype()).TileMap;
+        localSession.SetTileMap(localTileMap);
         ExpectTrue(localSession.LastLocalSnapshot.MapChunks.Any(), "prototype server session exposes local map chunks");
+        ExpectEqual(
+            localSession.LastLocalSnapshot.MapChunks.Count,
+            localSession.LocalSnapshotCache.KnownChunkCount,
+            "prototype client snapshot cache tracks visible chunk revisions");
+        ExpectEqual(
+            localSession.LastLocalSnapshot.SyncHint.VisibleMapRevision,
+            localSession.LocalSnapshotCache.LastVisibleMapRevision,
+            "prototype client snapshot cache records visible map revision");
+        var cachedChunkCount = localSession.LocalSnapshotCache.KnownChunkCount;
+        localSession.SetTileMap(localTileMap);
+        ExpectEqual(cachedChunkCount, localSession.LocalSnapshotCache.LastApplyResult.UnchangedChunks, "prototype client snapshot cache detects unchanged chunk revisions");
         var peerMove = localSession.Send(
             "peer_stand_in",
             IntentType.Move,

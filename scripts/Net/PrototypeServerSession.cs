@@ -9,12 +9,13 @@ namespace Karma.Net;
 public partial class PrototypeServerSession : Node
 {
     private readonly Dictionary<string, int> _nextSequenceByPlayer = new();
+    private readonly InterestSnapshotCache _localSnapshotCache = new();
     private GameState _state = null!;
     private AuthoritativeWorldServer _server = null!;
-    private long _lastLocalSnapshotTick;
     private double _matchSecondAccumulator;
 
     public AuthoritativeWorldServer Server => _server;
+    public InterestSnapshotCache LocalSnapshotCache => _localSnapshotCache;
     public ClientInterestSnapshot LastLocalSnapshot { get; private set; }
 
     [Signal]
@@ -100,12 +101,12 @@ public partial class PrototypeServerSession : Node
 
     private void RefreshLocalSnapshot()
     {
-        LastLocalSnapshot = CreateLocalSnapshot(_lastLocalSnapshotTick);
-        _lastLocalSnapshotTick = _server.Tick;
-        EmitSignal(SignalName.LocalSnapshotChanged, FormatLocalSnapshot(LastLocalSnapshot));
+        LastLocalSnapshot = CreateLocalSnapshot(_localSnapshotCache.LastAppliedTick);
+        var applyResult = _localSnapshotCache.Apply(LastLocalSnapshot);
+        EmitSignal(SignalName.LocalSnapshotChanged, FormatLocalSnapshot(LastLocalSnapshot, applyResult));
     }
 
-    private static string FormatLocalSnapshot(ClientInterestSnapshot snapshot)
+    private static string FormatLocalSnapshot(ClientInterestSnapshot snapshot, InterestSnapshotApplyResult applyResult)
     {
         var dialogueText = snapshot.Dialogues.Count == 0
             ? "Dialogues: none"
@@ -119,7 +120,7 @@ public partial class PrototypeServerSession : Node
             ? "Events: quiet"
             : $"Events: {snapshot.ServerEvents[^1].Description}";
         var syncMode = snapshot.SyncHint.IsDelta ? "delta" : "full";
-        var syncText = $"Sync: {syncMode}, after tick {snapshot.SyncHint.AfterTick}, map rev {snapshot.SyncHint.VisibleMapRevision}";
+        var syncText = $"Sync: {syncMode}, after tick {snapshot.SyncHint.AfterTick}, map rev {snapshot.SyncHint.VisibleMapRevision}, chunks +{applyResult.AddedChunks}/~{applyResult.UnchangedChunks}/-{applyResult.RemovedChunks}";
 
         return $"{snapshot.Summary}\n{dialogueText} | {questText}\n{eventText}\n{syncText}";
     }
