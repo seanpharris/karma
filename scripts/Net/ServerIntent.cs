@@ -56,6 +56,22 @@ public sealed record WorldItemSnapshot(
     int TileX,
     int TileY);
 
+public sealed record MapTileSnapshot(
+    int TileX,
+    int TileY,
+    string FloorId,
+    string StructureId,
+    string ZoneId);
+
+public sealed record MapChunkSnapshot(
+    int ChunkX,
+    int ChunkY,
+    int Left,
+    int Top,
+    int Width,
+    int Height,
+    IReadOnlyList<MapTileSnapshot> Tiles);
+
 public sealed record NpcEntity(
     NpcProfile Profile,
     TilePosition Position);
@@ -90,6 +106,7 @@ public sealed record ClientInterestSnapshot(
     IReadOnlyList<NpcSnapshot> Npcs,
     IReadOnlyList<NpcDialogueSnapshot> Dialogues,
     IReadOnlyList<QuestSnapshot> Quests,
+    IReadOnlyList<MapChunkSnapshot> MapChunks,
     IReadOnlyList<WorldItemSnapshot> WorldItems,
     LeaderboardSnapshot Leaderboard,
     MatchSnapshot Match,
@@ -98,5 +115,5 @@ public sealed record ClientInterestSnapshot(
     IReadOnlyList<WorldEvent> WorldEvents)
 {
     public string Summary =>
-        $"{Players.Count} visible players, {Npcs.Count} visible NPCs, {Dialogues.Count} dialogues, {Quests.Count} quests, {WorldItems.Count} visible items, {Duels.Count} duels, {Match.Summary}, {ServerEvents.Count} server events, {WorldEvents.Count} world events";
+        $"{Players.Count} visible players, {Npcs.Count} visible NPCs, {Dialogues.Count} dialogues, {Quests.Count} quests, {MapChunks.Count} map chunks, {WorldItems.Count} visible items, {Duels.Count} duels, {Match.Summary}, {ServerEvents.Count} server events, {WorldEvents.Count} world events";
 }

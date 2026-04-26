@@ -31,6 +31,8 @@ Prototype matches stay small, but the production large-world target is
 as streamed/chunked spaces, not fully simulated or rendered to every client.
 The default chunk size is `32 x 32` tiles, giving the large target roughly
 `32 x 32` chunks for streaming and interest management.
+Client interest snapshots carry nearby map chunk data, so terrain streaming can
+follow the same server-owned visibility path as NPCs, items, and players.
 
 Match time is server-owned and deterministic. The server advances elapsed match
 seconds, emits a `match_finished` event when time expires, and locks the Saint

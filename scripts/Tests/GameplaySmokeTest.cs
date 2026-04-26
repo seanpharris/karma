@@ -33,6 +33,8 @@ public partial class GameplaySmokeTest : Node
             localSession.LastLocalSnapshot.WorldItems.Any(entity => entity.EntityId == "session_test_item"),
             "prototype server session refreshes local snapshot after world item registration");
         var previousSessionTick = localSession.LastLocalSnapshot.Tick;
+        localSession.SetTileMap(WorldGenerator.Generate(WorldConfig.CreatePrototype()).TileMap);
+        ExpectTrue(localSession.LastLocalSnapshot.MapChunks.Any(), "prototype server session exposes local map chunks");
         var peerMove = localSession.Send(
             "peer_stand_in",
             IntentType.Move,
@@ -472,6 +474,9 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(interestSnapshot.Players.Any(player => player.Id == "peer_stand_in"), "interest snapshot includes nearby peer");
         ExpectFalse(interestSnapshot.Players.Any(player => player.Id == "rival_paragon"), "interest snapshot excludes distant rival");
         ExpectTrue(interestSnapshot.Npcs.Any(npc => npc.Id == StarterNpcs.Mara.Id), "interest snapshot includes visible NPCs");
+        server.SetTileMap(generatedA.TileMap);
+        var mapChunkSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId);
+        ExpectTrue(mapChunkSnapshot.MapChunks.Any(chunk => chunk.Tiles.Any(tile => tile.FloorId == WorldTileIds.ClinicFloor)), "interest snapshot includes nearby map chunk tiles");
         ExpectTrue(interestSnapshot.Dialogues.Any(dialogue => dialogue.NpcId == StarterNpcs.Mara.Id), "interest snapshot includes visible NPC dialogue");
         ExpectTrue(
             interestSnapshot.Dialogues.Any(dialogue => dialogue.Choices.Any(choice => choice.Id == "help_filters")),

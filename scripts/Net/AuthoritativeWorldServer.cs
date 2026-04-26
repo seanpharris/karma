@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Karma.Core;
 using Karma.Data;
+using Karma.World;
 
 namespace Karma.Net;
 
@@ -15,6 +16,7 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, NpcEntity> _npcs = new();
     private readonly List<ServerEvent> _eventLog = new();
     private readonly MatchState _match;
+    private GeneratedTileMap _tileMap;
     private long _tick;
 
     public AuthoritativeWorldServer(GameState state, string worldId, ServerConfig config = null)
@@ -36,6 +38,11 @@ public sealed class AuthoritativeWorldServer
     public IReadOnlyDictionary<string, WorldItemEntity> WorldItems => _worldItems;
     public IReadOnlyDictionary<string, NpcEntity> Npcs => _npcs;
     public MatchSnapshot Match => _match.Snapshot(_state.GetLeaderboardStanding());
+
+    public void SetTileMap(GeneratedTileMap tileMap)
+    {
+        _tileMap = tileMap;
+    }
 
     public void AdvanceMatchTime(int seconds)
     {
@@ -196,6 +203,7 @@ public sealed class AuthoritativeWorldServer
             .OrderBy(quest => quest.Definition.Id)
             .Select(quest => new QuestSnapshot(quest.Definition.Id, quest.Status))
             .ToArray();
+        var visibleMapChunks = CreateVisibleMapChunks(playerId);
         var visibleWorldItems = _worldItems.Values
             .Where(entity => interest.VisibleEntityIds.Contains(entity.EntityId))
             .OrderBy(entity => entity.EntityId)
@@ -224,12 +232,26 @@ public sealed class AuthoritativeWorldServer
             visibleNpcs,
             visibleDialogues,
             visibleQuests,
+            visibleMapChunks,
             visibleWorldItems,
             SnapshotBuilder.LeaderboardFrom(standing),
             _match.Snapshot(standing),
             visibleDuels,
             events,
             worldEvents);
+    }
+
+    private IReadOnlyList<MapChunkSnapshot> CreateVisibleMapChunks(string playerId)
+    {
+        if (_tileMap is null || !_state.Players.TryGetValue(playerId, out var player))
+        {
+            return Array.Empty<MapChunkSnapshot>();
+        }
+
+        return _tileMap
+            .GetChunksAround(player.Position.X, player.Position.Y, radiusChunks: 1)
+            .Select(ToSnapshot)
+            .ToArray();
     }
 
     private ServerProcessResult ProcessMove(ServerIntent intent)
@@ -995,6 +1017,25 @@ public sealed class AuthoritativeWorldServer
             entity.Item.Category,
             entity.Position.X,
             entity.Position.Y);
+    }
+
+    private static MapChunkSnapshot ToSnapshot(GeneratedTileChunk chunk)
+    {
+        return new MapChunkSnapshot(
+            chunk.Coordinate.X,
+            chunk.Coordinate.Y,
+            chunk.Left,
+            chunk.Top,
+            chunk.Width,
+            chunk.Height,
+            chunk.Tiles
+                .Select(tile => new MapTileSnapshot(
+                    tile.X,
+                    tile.Y,
+                    tile.FloorId,
+                    tile.StructureId,
+                    tile.ZoneId))
+                .ToArray());
     }
 
     private static NpcSnapshot ToSnapshot(NpcEntity entity)

@@ -78,6 +78,8 @@ Targets:
   nearby chunks/entities through interest snapshots.
 - Generated tile maps expose chunk coordinates and nearby chunk queries so the
   server/client can stream map data around each player.
+- Interest snapshots include nearby map chunk snapshots when the server has a
+  generated tile map registered for the world.
 - Let the local prototype client read the same interest snapshot summary that a
   real network client would consume, so UI/debug feedback is based on server
   visibility rather than scene assumptions.

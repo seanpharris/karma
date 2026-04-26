@@ -27,6 +27,7 @@ public partial class WorldRoot : Node2D
         _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         if (_serverSession is not null)
         {
+            _serverSession.SetTileMap(GeneratedWorld.TileMap);
             _serverSession.LocalSnapshotChanged += OnLocalSnapshotChanged;
             RenderServerItems(_serverSession.LastLocalSnapshot);
         }

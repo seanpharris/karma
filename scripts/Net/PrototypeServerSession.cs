@@ -57,6 +57,12 @@ public partial class PrototypeServerSession : Node
         RefreshLocalSnapshot();
     }
 
+    public void SetTileMap(Karma.World.GeneratedTileMap tileMap)
+    {
+        _server.SetTileMap(tileMap);
+        RefreshLocalSnapshot();
+    }
+
     public ServerProcessResult SendLocal(
         IntentType type,
         IReadOnlyDictionary<string, string> payload)
