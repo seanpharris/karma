@@ -197,18 +197,11 @@ public partial class PrototypeCharacterSprite : Node2D
 
     private static Vector2 CalculateFrameScale(PrototypeSpriteDefinition definition)
     {
-        if (definition.AtlasRegion.Size.X <= 0f || definition.AtlasRegion.Size.Y <= 0f)
-        {
-            return Vector2.One;
-        }
-
-        return new Vector2(
-            definition.Size.X / definition.AtlasRegion.Size.X,
-            definition.Size.Y / definition.AtlasRegion.Size.Y);
+        return AtlasFrames.FromPrototype(definition).CalculateScale();
     }
 
     private static Vector2 CalculateFrameOffset(PrototypeSpriteDefinition definition)
     {
-        return new Vector2(0f, -definition.Size.Y * 0.31f);
+        return AtlasFrames.FromPrototype(definition).CalculateOffset();
     }
 }

@@ -73,6 +73,10 @@ Mapped structures use `StructureSprite`, which builds a native `Sprite2D` with
 an `AtlasTexture` from `StructureArtCatalog` and keeps its procedural greenhouse
 fallback for missing regions.
 
+All native atlas renderers share `AtlasFrame`/`AtlasFrames` for source
+rectangles, display scaling, and footprint/prop anchoring. New art mappers
+should add catalog data first, then convert through that shared helper.
+
 For clean runtime character sheets, use the `32 x 32` grid documented in
 `AGENTS.md`. Once a sheet lands, map its top-left runtime-frame origin with
 `PrototypeSpriteCatalog.FourDirectionGridAnimations(...)` so Godot receives

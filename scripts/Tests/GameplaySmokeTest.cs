@@ -153,10 +153,20 @@ public partial class GameplaySmokeTest : Node
             testPropDefinition.AtlasRegion,
             testPropAtlas.Region,
             "native atlas sprite preserves catalog source region");
+        var testPropFrame = AtlasFrames.FromPrototype(testPropDefinition);
+        ExpectTrue(testPropFrame.IsValid, "atlas frame validates mapped prop art");
         ExpectEqual(
             new Vector2(0.25f, 0.25f),
+            testPropFrame.CalculateScale(),
+            "shared atlas frame scales source art to catalog display size");
+        ExpectEqual(
+            testPropFrame.CalculateScale(),
             PrototypeAtlasSprite.CalculateScale(testPropDefinition),
-            "native atlas sprite scales source art to catalog display size");
+            "native atlas sprite uses shared atlas frame scaling");
+        ExpectEqual(
+            new Vector2(0f, -5.4f),
+            testPropFrame.CalculateOffset(),
+            "shared atlas frame anchors prop art near its lower edge");
         ExpectEqual(
             0,
             ProjectSettings.GetSetting("rendering/textures/canvas_textures/default_texture_filter").AsInt32(),
@@ -568,10 +578,11 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(StructureArtCatalog.All.ContainsKey(StructureSpriteKind.GreenhouseDamaged), "structure catalog maps greenhouse variants");
         var testStructureAtlas = StructureSprite.CreateAtlasTexture(testTexture, greenhouse);
         ExpectEqual(greenhouse.AtlasRegion, testStructureAtlas.Region, "native structure sprite preserves catalog source region");
+        var greenhouseFrame = AtlasFrames.FromStructure(greenhouse);
         ExpectEqual(
             new Vector2(greenhouse.Size.X / greenhouse.AtlasRegion.Size.X, greenhouse.Size.Y / greenhouse.AtlasRegion.Size.Y),
-            StructureSprite.CalculateScale(greenhouse),
-            "native structure sprite scales source art to catalog display size");
+            greenhouseFrame.CalculateScale(),
+            "shared atlas frame scales structure source art to catalog display size");
         ExpectEqual(new Vector2(0f, -greenhouse.Size.Y * 0.5f), StructureSprite.CalculateOffset(greenhouse), "native structure sprite anchors art to its footprint");
         var greenhouseNode = new StructureSprite();
         ExpectTrue(greenhouseNode.PreferAtlasArt, "structure sprite prefers mapped atlas art");

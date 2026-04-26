@@ -30,31 +30,17 @@ public partial class PrototypeAtlasSprite : Node2D
 
     public static AtlasTexture CreateAtlasTexture(Texture2D texture, PrototypeSpriteDefinition definition)
     {
-        return new AtlasTexture
-        {
-            Atlas = texture,
-            Region = definition.AtlasRegion
-        };
+        return AtlasFrames.FromPrototype(definition).ToTexture(texture);
     }
 
     public static Vector2 CalculateScale(PrototypeSpriteDefinition definition)
     {
-        if (definition.AtlasRegion.Size.X <= 0f || definition.AtlasRegion.Size.Y <= 0f)
-        {
-            return Vector2.One;
-        }
-
-        return new Vector2(
-            definition.Size.X / definition.AtlasRegion.Size.X,
-            definition.Size.Y / definition.AtlasRegion.Size.Y);
+        return AtlasFrames.FromPrototype(definition).CalculateScale();
     }
 
     public static Vector2 CalculateOffset(PrototypeSpriteDefinition definition)
     {
-        var bottomY = IsHumanoid(definition.Kind)
-            ? definition.Size.Y * 0.38f
-            : definition.Size.Y * 0.2f;
-        return new Vector2(0f, bottomY - (definition.Size.Y * 0.5f));
+        return AtlasFrames.FromPrototype(definition).CalculateOffset();
     }
 
     public void Rebuild()
@@ -122,10 +108,5 @@ public partial class PrototypeAtlasSprite : Node2D
             PreferAtlasArt = false
         };
         AddChild(_fallback);
-    }
-
-    private static bool IsHumanoid(PrototypeSpriteKind kind)
-    {
-        return kind is PrototypeSpriteKind.Player or PrototypeSpriteKind.Mara or PrototypeSpriteKind.Peer or PrototypeSpriteKind.Dallen;
     }
 }
