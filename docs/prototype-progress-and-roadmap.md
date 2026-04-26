@@ -71,6 +71,7 @@ and the next practical build slices.
 - Main menu, HUD, developer overlay, and Escape menu visuals/settings are still prototype UI and need final styling, broader audio bus wiring, shared options persistence, full control remapping/accessibility settings, searchable/filterable debug views, and eventual multiplayer/session entry flows.
 - Character art still needs a professional v2 standard: likely `48x48` or `64x64`, true 8-direction, layered paper-doll sheets, animation-group manifests, and a compositor/export pipeline.
 - Downed/rescue/carry/execute mechanics are now documented as a future core karma loop that also informs v2 character animations.
+- Proximity communication research now covers server-routed local text chat, distance-faded player voice chat, and optional player-to-NPC spoken conversation via STT/dialogue/TTS/spatial playback.
 - Generated station locations have inspectable markers and interactable fixtures, but their art is still placeholder greenhouse components and needs proper sign/landmark visuals.
 - Generated NPCs have first-pass station dialogue/quests, but those choices are still broad templates rather than bespoke quest chains.
 - Generated oddities are server-seeded, but pickup placement needs more visual/station context and balancing.
