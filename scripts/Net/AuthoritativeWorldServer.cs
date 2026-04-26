@@ -107,6 +107,11 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, $"Rejected stale intent {intent.Sequence}; last accepted was {lastSequence}.");
         }
 
+        if (_match.Status == MatchStatus.Finished && !IsPostMatchIntentAllowed(intent.Type))
+        {
+            return Reject(intent, $"Match is finished; {intent.Type} is no longer accepted.");
+        }
+
         _lastSequenceByPlayer[intent.PlayerId] = intent.Sequence;
 
         return intent.Type switch
@@ -129,6 +134,11 @@ public sealed class AuthoritativeWorldServer
             IntentType.KarmaBreak => ProcessKarmaBreak(intent),
             _ => Reject(intent, $"Unsupported intent type: {intent.Type}")
         };
+    }
+
+    private static bool IsPostMatchIntentAllowed(IntentType type)
+    {
+        return type is IntentType.Move or IntentType.StartDialogue;
     }
 
     public PlayerInterest GetInterestFor(string playerId)

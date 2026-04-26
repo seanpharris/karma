@@ -63,6 +63,27 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual("rival_renegade", matchServer.Match.ScourgeWinnerId, "finished match locks current Scourge winner");
         ExpectTrue(matchServer.EventLog.Any(serverEvent => serverEvent.EventId.Contains("match_finished")), "finished match emits server event");
         ExpectEqual("rival_paragon", matchServer.CreateInterestSnapshot(GameState.LocalPlayerId).Match.SaintWinnerId, "interest snapshot includes Saint match winner");
+        var karmaBeforePostMatchIntent = state.LocalKarma.Score;
+        var postMatchScoreIntent = matchServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            1,
+            IntentType.KarmaAction,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["action"] = PrototypeActions.HelpPeerId
+            }));
+        ExpectFalse(postMatchScoreIntent.WasAccepted, "finished match rejects score-changing intents");
+        ExpectEqual(karmaBeforePostMatchIntent, state.LocalKarma.Score, "rejected post-match score intent does not mutate karma");
+        var postMatchMove = matchServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            1,
+            IntentType.Move,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["x"] = "2",
+                ["y"] = "2"
+            }));
+        ExpectTrue(postMatchMove.WasAccepted, "finished match still allows movement");
         ExpectEqual(4, server.ConnectedPlayerIds.Count, "prototype server starts with four connected player slots");
         ExpectFalse(server.JoinPlayer("overflow_player", "Overflow Player").WasAccepted, "prototype server rejects players beyond capacity");
         ExpectEqual(1000, WorldConfig.FromServerConfig(

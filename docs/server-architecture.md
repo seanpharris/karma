@@ -84,6 +84,8 @@ Targets:
 - Process player input as intent with sequence numbers.
 - Keep match time server-owned. Interest snapshots include match status so
   clients can render the timer/winners without computing authority locally.
+- Once a match is finished, reject score-changing intents so the locked
+  Saint/Scourge result cannot be mutated after the timer expires.
 - Validate PvP attack intents on the server: connected target, range check,
   karma consequence, damage, combat event, and Karma Break if lethal.
 - Validate duel request/accept intents on the server: both players must be

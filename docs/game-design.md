@@ -33,6 +33,8 @@ as streamed/chunked spaces, not fully simulated or rendered to every client.
 Match time is server-owned and deterministic. The server advances elapsed match
 seconds, emits a `match_finished` event when time expires, and locks the Saint
 and Scourge winners from the leaderboard at that moment.
+After winners are locked, score-changing intents are rejected while movement can
+continue for post-match wandering, debugging, and result review.
 
 The local prototype advances the server match timer during play and shows the
 server snapshot's match summary in the HUD.
