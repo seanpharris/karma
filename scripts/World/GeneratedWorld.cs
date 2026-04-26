@@ -10,6 +10,7 @@ public sealed record GeneratedWorld(
     GeneratedTileMap TileMap,
     IReadOnlyList<GeneratedLocation> Locations,
     IReadOnlyList<NpcProfile> Npcs,
+    IReadOnlyList<GeneratedNpcPlacement> NpcPlacements,
     IReadOnlyList<GameItem> Oddities,
     IReadOnlyList<FactionProfile> Factions)
 {
@@ -26,6 +27,18 @@ public sealed record GeneratedLocation(
     string Id,
     string Name,
     string Role,
+    string ThemeTag,
+    string KarmaHook,
+    string SuggestedFaction,
+    int X,
+    int Y);
+
+public sealed record GeneratedNpcPlacement(
+    string NpcId,
+    string LocationId,
+    string Role,
+    string Faction,
+    string GameplayHook,
     int X,
     int Y);
 

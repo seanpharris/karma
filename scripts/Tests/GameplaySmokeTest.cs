@@ -682,6 +682,16 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             generatedA.TileMap.Tiles.Any(tile => tile.ZoneId == "duel_ring" && tile.FloorId == WorldTileIds.DuelRingFloor),
             "world generation assigns logical duel ring tiles");
+        ExpectTrue(
+            generatedA.Locations.Any(location => location.KarmaHook.Contains("repair") || location.KarmaHook.Contains("sabotage")),
+            "world generation creates locations with karma gameplay hooks");
+        ExpectTrue(
+            generatedA.Npcs.Any(npc => npc.Need.Contains("leverage") || npc.Need.Contains("proof") || npc.Need.Contains("repair")),
+            "NPC generation derives actionable needs from social stations");
+        ExpectEqual(generatedA.Npcs.Count, generatedA.NpcPlacements.Count, "generated NPCs receive social-station placements");
+        ExpectTrue(
+            generatedA.NpcPlacements.Any(placement => placement.GameplayHook.Contains("rumor") || placement.GameplayHook.Contains("sabotage") || placement.GameplayHook.Contains("gift")),
+            "NPC placements expose the local karma hook that spawned them");
         ExpectTrue(artSet.Tiles.ContainsKey(WorldTileIds.ClinicFloor), "theme art registry maps clinic floor tile id");
         ExpectEqual(
             ThemeArtRegistry.PlaceholderAtlasPath,

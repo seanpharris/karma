@@ -17,6 +17,27 @@ combination of all of those.
 7. Extreme karma unlocks perks, status, and social power.
 8. Death causes a Karma Break and resets the player's path.
 
+## World and NPC Generation
+
+World generation should be imaginative but still mechanically useful. The server
+starts from **social stations**: places that create decisions instead of just
+scenery. Examples include clinics, markets, repair yards, rumor boards, saloons,
+restricted sheds, oddity yards, duel rings, farms, black markets, apology engines,
+broadcast towers, war memorials, and witness courts.
+
+Each generated location carries:
+
+- a role, such as care, trade, repair, rumor, combat, crime, or redemption;
+- a local karma hook, such as repair vs sabotage, gift vs theft, expose vs bury,
+  confession vs fake remorse, or clean duel vs cheap shot;
+- a suggested faction that should care about what happens there.
+
+NPCs are then derived from those stations. Instead of random decorative NPCs,
+each generated NPC gets a role, faction, need, secret, likes, dislikes, and a
+placement tied to the station that created them. This keeps environment generation
+and NPC generation connected: the map produces story machines, and the NPCs make
+those machines socially legible.
+
 ## First Game Mode: Match
 
 Players begin each match at random spawn tiles chosen by the server with a soft
