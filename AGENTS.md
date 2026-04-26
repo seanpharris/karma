@@ -38,6 +38,39 @@ powershell -ExecutionPolicy Bypass -File .\tools\test.ps1; if ($LASTEXITCODE -eq
 
 Known note: `tools\check.ps1` may print Godot cleanup/leaked RID warnings. Treat them as non-failing when the command exits with code `0`.
 
+## Multi-Agent Workflow
+
+This repo may be edited by more than one agent or by the user between turns.
+Assume uncommitted work may be valuable peer work, not disposable scratch.
+
+At the start of a work turn:
+
+- Run `git status --short --branch`.
+- Inspect uncommitted changes with `git diff --stat` and targeted `git diff`.
+- Read new untracked source files before editing nearby systems.
+- If the existing work is coherent, continue from it instead of redoing it.
+- If the existing work is large, run verification before making extra changes so
+  failures can be attributed cleanly.
+
+When continuing another agent's work:
+
+- Preserve their intent and code unless it is clearly broken.
+- Make small follow-up edits that integrate, verify, or document the work.
+- Do not revert, delete, rename, or overwrite another agent's files unless the
+  user explicitly asks or the change is required to make the project build.
+- Do not mix unrelated cleanup with another agent's feature slice.
+- If generated debug files appear under `debug/`, ignore or gitignore them unless
+  they are intentionally requested artifacts.
+
+Before committing:
+
+- Prefer one coherent commit per feature or integration slice.
+- Include all source, docs, and real assets needed for that slice.
+- Exclude local debug outputs, temporary logs, and exploratory images.
+- Run the verification command above and only push when it passes.
+- In the final note, mention whether the work was continued from existing
+  uncommitted changes.
+
 ## Architecture Rules
 
 - The server owns truth.
