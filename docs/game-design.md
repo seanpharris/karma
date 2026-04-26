@@ -199,7 +199,8 @@ let the stand-in accept it. This keeps consent explicit while still making the
 loop quick to test in one running client.
 Near the stand-in, the prototype also exposes quick keys for combat/tool loops:
 `Z` equips the practice stick, `X` equips the work vest, `C` places the first
-loose inventory item, and `R` uses a repair kit on the stand-in.
+loose inventory item, `R` uses a repair kit on the stand-in, and `7` gifts 5
+scrip.
 
 ## Prototype HUD
 

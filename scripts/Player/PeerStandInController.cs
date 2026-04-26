@@ -56,6 +56,10 @@ public partial class PeerStandInController : Area2D
         {
             AcceptDuelAsPeer();
         }
+        else if (key.Keycode == Key.Key7)
+        {
+            GiftScrip();
+        }
     }
 
     private void OnBodyEntered(Node2D body)
@@ -169,6 +173,17 @@ public partial class PeerStandInController : Area2D
             });
     }
 
+    private void GiftScrip()
+    {
+        Send(
+            IntentType.TransferCurrency,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["targetId"] = "peer_stand_in",
+                ["amount"] = "5"
+            });
+    }
+
     private bool SendKarmaAction(string actionId)
     {
         return Send(
@@ -222,7 +237,8 @@ public partial class PeerStandInController : Area2D
             "3 - Rob their dropped satchel\n" +
             "4 - Return a lost item\n" +
             "5 - Request a friendly duel\n" +
-            "6 - Let them accept the duel\n\n" +
+            "6 - Let them accept the duel\n" +
+            "7 - Gift 5 scrip\n\n" +
             "Z - Equip Practice Stick\n" +
             "X - Equip Work Vest\n" +
             "C - Place first loose inventory item\n" +
