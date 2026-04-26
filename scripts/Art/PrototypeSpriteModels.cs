@@ -45,7 +45,8 @@ public enum PrototypeSpriteKind
     ChemInjector,
     PowerCell,
     BoltCutters,
-    MagneticGrabber
+    MagneticGrabber,
+    Dallen
 }
 
 public enum PrototypeSpriteShape
@@ -125,6 +126,18 @@ public static class PrototypeSpriteCatalog
         };
     }
 
+    public static PrototypeSpriteKind GetKindForNpc(string npcId)
+    {
+        if (npcId == StarterNpcs.Mara.Id)
+        {
+            return PrototypeSpriteKind.Mara;
+        }
+
+        return npcId == StarterNpcs.Dallen.Id
+            ? PrototypeSpriteKind.Dallen
+            : PrototypeSpriteKind.Peer;
+    }
+
     public static PrototypeSpriteDefinition Get(PrototypeSpriteKind kind)
     {
         return kind switch
@@ -150,6 +163,13 @@ public static class PrototypeSpriteCatalog
                 new Color(0.18f, 0.14f, 0.28f),
                 new Color(0.94f, 0.82f, 0.51f),
                 new Rect2(454f, 82f, 42f, 82f)),
+            PrototypeSpriteKind.Dallen => Humanoid(
+                kind,
+                "Dallen Venn",
+                new Color(0.45f, 0.58f, 0.7f),
+                new Color(0.11f, 0.16f, 0.2f),
+                new Color(0.88f, 0.76f, 0.52f),
+                new Rect2(220f, 248f, 42f, 82f)),
             PrototypeSpriteKind.WhoopieCushion => WhoopieCushion(),
             PrototypeSpriteKind.DeflatedBalloon => DeflatedBalloon(),
             PrototypeSpriteKind.RepairKit => RepairKit(),

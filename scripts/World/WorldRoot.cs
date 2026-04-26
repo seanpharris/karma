@@ -9,6 +9,7 @@ namespace Karma.World;
 
 public partial class WorldRoot : Node2D
 {
+    private readonly Dictionary<string, Node2D> _renderedServerNpcs = new();
     private readonly Dictionary<string, Node2D> _renderedServerItems = new();
     private readonly Dictionary<string, Node2D> _renderedServerStructures = new();
     private GeneratedTileMapRenderer _tileMapRenderer;
@@ -65,8 +66,63 @@ public partial class WorldRoot : Node2D
         }
 
         _tileMapRenderer.SetChunks(snapshot.MapChunks, ThemeArtRegistry.GetForTheme(GeneratedWorld.Theme));
+        RenderServerNpcs(snapshot);
         RenderServerStructures(snapshot);
         RenderServerItems(snapshot);
+    }
+
+    private void RenderServerNpcs(ClientInterestSnapshot snapshot)
+    {
+        if (snapshot is null)
+        {
+            return;
+        }
+
+        var visibleNpcIds = snapshot.Npcs
+            .Where(ShouldRenderServerNpc)
+            .Select(npc => npc.Id)
+            .ToHashSet();
+        foreach (var removedId in _renderedServerNpcs.Keys.Where(id => !visibleNpcIds.Contains(id)).ToArray())
+        {
+            _renderedServerNpcs[removedId].QueueFree();
+            _renderedServerNpcs.Remove(removedId);
+        }
+
+        foreach (var npc in snapshot.Npcs.Where(ShouldRenderServerNpc))
+        {
+            var position = new Vector2(npc.TileX * 32f, npc.TileY * 32f);
+            if (_renderedServerNpcs.TryGetValue(npc.Id, out var existing))
+            {
+                existing.Position = position;
+                continue;
+            }
+
+            var spriteKind = PrototypeSpriteCatalog.GetKindForNpc(npc.Id);
+            var node = new ServerNpcObject
+            {
+                Name = npc.Id,
+                NpcId = npc.Id,
+                DisplayName = npc.Name,
+                Role = npc.Role,
+                Faction = npc.Faction,
+                SpriteKind = spriteKind,
+                Position = position,
+                ZIndex = 3
+            };
+            node.AddChild(new PrototypeSprite
+            {
+                Kind = spriteKind
+            });
+            node.AddChild(new CollisionShape2D
+            {
+                Shape = new CircleShape2D
+                {
+                    Radius = 24f
+                }
+            });
+            AddChild(node);
+            _renderedServerNpcs[npc.Id] = node;
+        }
     }
 
     private void RenderServerStructures(ClientInterestSnapshot snapshot)
@@ -173,6 +229,11 @@ public partial class WorldRoot : Node2D
     private static bool IsDynamicWorldItem(WorldItemSnapshot item)
     {
         return item.EntityId.StartsWith("placed_") || item.EntityId.StartsWith("drop_");
+    }
+
+    private static bool ShouldRenderServerNpc(NpcSnapshot npc)
+    {
+        return npc.Id != StarterNpcs.Mara.Id;
     }
 }
 

@@ -82,6 +82,6 @@ public partial class PrototypeSprite : Node2D
 
     private static bool IsHumanoid(PrototypeSpriteKind kind)
     {
-        return kind is PrototypeSpriteKind.Player or PrototypeSpriteKind.Mara or PrototypeSpriteKind.Peer;
+        return kind is PrototypeSpriteKind.Player or PrototypeSpriteKind.Mara or PrototypeSpriteKind.Peer or PrototypeSpriteKind.Dallen;
     }
 }
