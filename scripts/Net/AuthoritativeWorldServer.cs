@@ -203,7 +203,7 @@ public sealed class AuthoritativeWorldServer
         var visibleQuests = _state.Quests.Quests.Values
             .Where(quest => interest.VisibleNpcIds.Contains(quest.Definition.GiverNpcId))
             .OrderBy(quest => quest.Definition.Id)
-            .Select(quest => new QuestSnapshot(quest.Definition.Id, quest.Status))
+            .Select(quest => new QuestSnapshot(quest.Definition.Id, quest.Status, quest.Definition.ScripReward))
             .ToArray();
         var visibleMapChunks = CreateVisibleMapChunks(playerId);
         var visibleWorldItems = _worldItems.Values
@@ -668,7 +668,8 @@ public sealed class AuthoritativeWorldServer
             {
                 ["playerId"] = intent.PlayerId,
                 ["questId"] = questId,
-                ["targetId"] = quest.Definition.GiverNpcId
+                ["targetId"] = quest.Definition.GiverNpcId,
+                ["scripReward"] = quest.Definition.ScripReward.ToString()
             });
 
         return ServerProcessResult.Accepted(serverEvent);

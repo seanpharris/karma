@@ -232,6 +232,11 @@ public partial class GameState : Node
 
         quest.Complete();
         ApplyShift(playerId, action);
+        if (quest.Definition.ScripReward > 0)
+        {
+            AddScrip(playerId, quest.Definition.ScripReward);
+        }
+
         WorldEvents.Add(WorldEventType.Quest, $"Quest completed: {quest.Definition.Title}", playerId, quest.Definition.GiverNpcId);
         EmitSignal(SignalName.KarmaEvent, $"Quest completed: {quest.Definition.Title}");
         EmitQuestsChanged();

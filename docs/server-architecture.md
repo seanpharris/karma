@@ -161,7 +161,8 @@ Targets:
 - Include visible NPC dialogue options in client interest snapshots so clients
   render only server-approved choices.
 - Validate quest start/completion on the server: visible quest giver, required
-  item consumption, completion karma mutation, and syncable quest event.
+  item consumption, completion karma mutation, scrip reward payout, and syncable
+  quest event.
 - Include quests from visible NPC givers in client interest snapshots, while
   hiding distant quest state.
 - Validate entanglement start/exposure on the server: visible NPC, known affected

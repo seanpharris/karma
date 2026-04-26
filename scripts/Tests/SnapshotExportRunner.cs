@@ -86,7 +86,7 @@ public static class SnapshotJson
         for (var i = 0; i < snapshot.Quests.Count; i++)
         {
             var quest = snapshot.Quests[i];
-            builder.AppendLine($"    {{ \"id\": \"{Escape(quest.Id)}\", \"status\": \"{quest.Status}\" }}{(i == snapshot.Quests.Count - 1 ? string.Empty : ",")}");
+            builder.AppendLine($"    {{ \"id\": \"{Escape(quest.Id)}\", \"status\": \"{quest.Status}\", \"scripReward\": {quest.ScripReward} }}{(i == snapshot.Quests.Count - 1 ? string.Empty : ",")}");
         }
         builder.AppendLine("  ],");
         builder.AppendLine("  \"factions\": [");

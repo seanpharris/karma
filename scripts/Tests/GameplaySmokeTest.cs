@@ -316,6 +316,7 @@ public partial class GameplaySmokeTest : Node
                 ["questId"] = StarterQuests.MaraClinicFiltersId
             })).WasAccepted, "server rejects quest completion without required item");
         state.AddItem(StarterItems.RepairKit);
+        var scripBeforeQuestCompletion = state.LocalScrip;
         var serverCompleteQuest = questServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             3,
@@ -327,6 +328,8 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(serverCompleteQuest.WasAccepted, "server completes quest with required item");
         ExpectEqual(QuestStatus.Completed, state.Quests.Get(StarterQuests.MaraClinicFiltersId).Status, "completed quest is marked completed");
         ExpectTrue(serverCompleteQuest.Event.EventId.Contains("quest_completed"), "server quest completion emits quest event");
+        ExpectEqual(scripBeforeQuestCompletion + 12, state.LocalScrip, "server quest completion pays scrip reward");
+        ExpectEqual("12", serverCompleteQuest.Event.Data["scripReward"], "quest completion event reports scrip reward");
 
         var helpMara = state.ApplyLocalShift(PrototypeActions.HelpMara());
         ExpectTrue(helpMara.Amount > 0, "helping Mara ascends karma");
@@ -632,6 +635,7 @@ public partial class GameplaySmokeTest : Node
             interestSnapshot.Dialogues.Any(dialogue => dialogue.Choices.Any(choice => choice.Id == "help_filters")),
             "interest snapshot includes server-approved dialogue choices");
         ExpectTrue(interestSnapshot.Quests.Any(quest => quest.Id == StarterQuests.MaraClinicFiltersId), "interest snapshot includes visible NPC quests");
+        ExpectTrue(interestSnapshot.Quests.Any(quest => quest.Id == StarterQuests.MaraClinicFiltersId && quest.ScripReward == 12), "interest snapshot includes quest scrip reward");
         ExpectTrue(interestSnapshot.WorldItems.Any(entity => entity.EntityId == "pickup_practice_stick"), "interest snapshot includes visible item entity");
         ExpectTrue(interestSnapshot.WorldItems.Any(entity => entity.ItemId == StarterItems.PracticeStickId && entity.TileX == 3 && entity.TileY == 5), "interest snapshot includes item render data");
         ExpectTrue(interestSnapshot.ServerEvents.Any(serverEvent => serverEvent.EventId.Contains("player_moved")), "interest snapshot includes visible movement events");
@@ -855,6 +859,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"inventory\""), "snapshot JSON includes per-player inventory");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"scrip\""), "snapshot JSON includes player scrip");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"duels\""), "snapshot JSON includes duels");
+        ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"scripReward\""), "snapshot JSON includes quest scrip rewards");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"karmaProgress\""), "snapshot JSON includes karma progress");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"players\""), "snapshot can be exported as JSON debug text");
 

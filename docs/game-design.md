@@ -30,6 +30,8 @@ matter because death resets a player's path status during the match.
 Scrip is the prototype currency. It is separate from karma: karma is the
 Ascend/Descend match score and social identity, while scrip is spendable money
 for tools, cosmetics, services, bribes, and player trades.
+Quests can pay server-owned scrip rewards in addition to their karma and
+relationship consequences.
 The first prototype shop is Dallen's stall, which sells starter objects through
 server-validated offers. Nearby vendor offers are exposed through interest
 snapshots, so distant shops remain hidden until the player is in range. The
