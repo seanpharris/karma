@@ -3,6 +3,7 @@ using System.Linq;
 using Karma.Core;
 using Karma.Data;
 using Karma.Net;
+using Karma.UI;
 
 namespace Karma.Player;
 
@@ -15,6 +16,7 @@ public partial class PlayerController : CharacterBody2D
 
     private GameState _gameState = null!;
     private PrototypeServerSession _serverSession;
+    private HudController _hud;
     private Camera2D _camera;
     private TilePosition? _lastSentTile;
     private Vector2I _lastFacing = Vector2I.Down;
@@ -23,6 +25,7 @@ public partial class PlayerController : CharacterBody2D
     {
         _gameState = GetNode<GameState>("/root/GameState");
         _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
+        _hud = GetNodeOrNull<HudController>("/root/Main/Hud");
         _camera = GetNodeOrNull<Camera2D>("Camera2D");
         SendMoveIfTileChanged();
     }
@@ -76,6 +79,10 @@ public partial class PlayerController : CharacterBody2D
         {
             PlaceFirstLooseItemThroughServer();
         }
+        else if (key.Keycode == Key.R)
+        {
+            UseRepairKitOnPeerThroughServer();
+        }
     }
 
     public void AdjustCameraZoom(float delta)
@@ -98,12 +105,7 @@ public partial class PlayerController : CharacterBody2D
 
     private void EquipThroughServer(string itemId)
     {
-        if (_serverSession is null)
-        {
-            return;
-        }
-
-        _serverSession.SendLocal(
+        SendLocalWithPrompt(
             IntentType.UseItem,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -137,6 +139,33 @@ public partial class PlayerController : CharacterBody2D
                 ["x"] = placeTile.X.ToString(),
                 ["y"] = placeTile.Y.ToString()
             });
+    }
+
+    private void UseRepairKitOnPeerThroughServer()
+    {
+        SendLocalWithPrompt(
+            IntentType.UseItem,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["itemId"] = StarterItems.RepairKitId,
+                ["targetId"] = "peer_stand_in"
+            });
+    }
+
+    private void SendLocalWithPrompt(
+        IntentType intentType,
+        System.Collections.Generic.IReadOnlyDictionary<string, string> payload)
+    {
+        if (_serverSession is null)
+        {
+            return;
+        }
+
+        var result = _serverSession.SendLocal(intentType, payload);
+        if (!result.WasAccepted)
+        {
+            _hud?.ShowPrompt(result.RejectionReason);
+        }
     }
 
     private void SendMoveIfTileChanged()

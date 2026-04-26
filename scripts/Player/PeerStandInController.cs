@@ -225,7 +225,8 @@ public partial class PeerStandInController : Area2D
             "6 - Let them accept the duel\n\n" +
             "Z - Equip Practice Stick\n" +
             "X - Equip Work Vest\n" +
-            "C - Place first loose inventory item");
+            "C - Place first loose inventory item\n" +
+            "R - Use Repair Kit on them");
     }
 
     private static TilePosition ToTilePosition(Vector2 position)
