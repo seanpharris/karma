@@ -3,6 +3,10 @@
 This is the practical side-pipeline for generating Karma character art manually
 with ChatGPT/image tools, Python, Aseprite, Krita, or similar.
 
+For the better long-term paper-doll/layered character standard, see
+[`professional-character-art-systems.md`](professional-character-art-systems.md).
+The current `32x32` sheet is a prototype fallback, not the final quality target.
+
 ## Target Runtime Contract
 
 The game code expects a runtime-ready PNG with this exact shape:

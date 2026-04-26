@@ -56,6 +56,7 @@ and the next practical build slices.
 - Runtime supports 8-direction character animation names and fallback to 4-direction sheets.
 - Current generated/extracted 8-direction engineer sheet is active, with a transparent runtime PNG pipeline.
 - Art curation docs/tools exist for generated sheets, theme packs, audits, and future base-body + outfit/skin layering.
+- Research notes now point toward a professional paper-doll/layered character standard inspired by LPC/RapidLPC/Godot LPC patterns, while avoiding direct art imports unless licensing is deliberately accepted.
 
 ### Reusable code research
 
@@ -68,6 +69,7 @@ and the next practical build slices.
 ### Gameplay integration
 
 - Main menu, HUD, developer overlay, and Escape menu visuals/settings are still prototype UI and need final styling, broader audio bus wiring, shared options persistence, full control remapping/accessibility settings, searchable/filterable debug views, and eventual multiplayer/session entry flows.
+- Character art still needs a professional v2 standard: likely `48x48` or `64x64`, true 8-direction, layered paper-doll sheets, animation-group manifests, and a compositor/export pipeline.
 - Generated station locations have inspectable markers and interactable fixtures, but their art is still placeholder greenhouse components and needs proper sign/landmark visuals.
 - Generated NPCs have first-pass station dialogue/quests, but those choices are still broad templates rather than bespoke quest chains.
 - Generated oddities are server-seeded, but pickup placement needs more visual/station context and balancing.
