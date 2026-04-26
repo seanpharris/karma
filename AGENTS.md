@@ -80,6 +80,9 @@ Before committing:
 - Large-world target is `1000 x 1000` tiles, chunked. Prototype can stay `64 x 64`.
 - Prototype starts at 4 players, but code should not hard-code that where a config belongs. The current stress target is 100 players per world.
 - LLMs generate proposals, never live authoritative state. Parse, validate, then apply structured data through server-owned adapters.
+- Template code can be used as inspiration, but port only narrow pieces that fit
+  the Godot 4 .NET/C# server-authoritative architecture. Keep attribution in
+  `THIRD_PARTY_NOTICES.md` when adapting third-party code.
 
 Important areas:
 
@@ -89,6 +92,8 @@ Important areas:
 - `scripts/Net/NetworkProtocol.cs`: JSON-friendly protocol envelope.
 - `scripts/World/`: generated world, tile rendering, server-rendered pickups/structures.
 - `scripts/Art/`: prototype sprite/structure catalogs and procedural fallbacks.
+- `scripts/Util/DirectionHelper.cs`: cardinal direction helper adapted from a
+  Godot 2D top-down template pattern for movement/facing/animation names.
 - `scripts/Tests/GameplaySmokeTest.cs`: primary smoke/regression test.
 
 ## Art Paths

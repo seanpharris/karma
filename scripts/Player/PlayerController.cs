@@ -5,6 +5,7 @@ using Karma.Core;
 using Karma.Data;
 using Karma.Net;
 using Karma.UI;
+using Karma.Util;
 
 namespace Karma.Player;
 
@@ -59,9 +60,7 @@ public partial class PlayerController : CharacterBody2D
         var direction = Input.GetVector("move_left", "move_right", "move_up", "move_down");
         if (direction.LengthSquared() > 0)
         {
-            _lastFacing = Mathf.Abs(direction.X) > Mathf.Abs(direction.Y)
-                ? new Vector2I(direction.X > 0 ? 1 : -1, 0)
-                : new Vector2I(0, direction.Y > 0 ? 1 : -1);
+            _lastFacing = DirectionHelper.ToCardinalVector(direction);
         }
 
         var wantsSprint = Input.IsActionPressed("sprint");

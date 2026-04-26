@@ -9,6 +9,7 @@ using Karma.Net;
 using Karma.Npc;
 using Karma.Player;
 using Karma.UI;
+using Karma.Util;
 using Karma.World;
 
 namespace Karma.Tests;
@@ -97,6 +98,11 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(new Vector2(120f, 0f), PlayerController.CalculateVelocity(Vector2.Right, 120f, 1.6f, false), "player walk velocity uses base speed");
         ExpectEqual(new Vector2(192f, 0f), PlayerController.CalculateVelocity(Vector2.Right, 120f, 1.6f, true), "player sprint velocity uses sprint multiplier");
         ExpectEqual(new Vector2(120f, 0f), PlayerController.CalculateVelocity(Vector2.Right, 120f, 0.5f, true), "player sprint multiplier cannot slow movement");
+        ExpectEqual(Vector2I.Right, DirectionHelper.ToCardinalVector(new Vector2(0.8f, 0.2f)), "direction helper resolves dominant horizontal movement");
+        ExpectEqual(Vector2I.Down, DirectionHelper.ToCardinalVector(new Vector2(0.2f, 0.8f)), "direction helper resolves dominant vertical movement");
+        ExpectEqual(CardinalDirection.Left, DirectionHelper.ToCardinalDirection(Vector2I.Left), "direction helper maps vectors to cardinal directions");
+        ExpectEqual("up", DirectionHelper.ToName(CardinalDirection.Up), "direction helper maps directions to animation names");
+        ExpectEqual(4, DirectionHelper.ToBit(CardinalDirection.Right), "direction helper maps directions to state bits");
         ExpectTrue(PlayerController.CanSprint(Vector2.Right, true, 1f, false), "player can sprint while moving with stamina");
         ExpectFalse(PlayerController.CanSprint(Vector2.Zero, true, 100f, false), "player cannot sprint while idle");
         ExpectFalse(PlayerController.CanSprint(Vector2.Right, true, 0f, false), "player cannot sprint without stamina");
