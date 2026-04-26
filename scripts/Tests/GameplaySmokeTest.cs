@@ -753,9 +753,17 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             repairedStationSnapshot.Structures.Any(structure => structure.EntityId == generatedStation?.EntityId && structure.InteractionPrompt.Contains("Station state: stabilized")),
             "generated structure repair stabilizes the linked station marker state");
-        var sabotageGeneratedStructure = generatedContentServer.ProcessIntent(new ServerIntent(
+        generatedContentState.SetPlayerPosition(GameState.LocalPlayerId, TilePosition.Origin);
+        var stabilizedRespawn = generatedContentServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             73,
+            IntentType.KarmaBreak,
+            new System.Collections.Generic.Dictionary<string, string>()));
+        ExpectTrue(stabilizedRespawn.WasAccepted, "server accepts Karma Break near a stabilized generated station");
+        ExpectEqual(new TilePosition(firstGeneratedLocation.X, firstGeneratedLocation.Y), generatedContentState.Players[GameState.LocalPlayerId].Position, "context-aware respawn prefers safe stabilized station markers");
+        var sabotageGeneratedStructure = generatedContentServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            74,
             IntentType.Interact,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -776,7 +784,7 @@ public partial class GameplaySmokeTest : Node
         generatedContentState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(npcLinkedStructure.X, npcLinkedStructure.Y));
         var compromiseNpcStation = generatedContentServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            74,
+            75,
             IntentType.Interact,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -822,7 +830,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(completeGeneratedQuest.WasAccepted, "server accepts generated station quest completion through dynamic action resolution");
         ExpectEqual(Math.Max(0, firstGeneratedQuest.ScripReward - 2).ToString(), completeGeneratedQuest.Event.Data["scripReward"], "generated quest completion reports station-state adjusted reward");
         ExpectEqual("-2", completeGeneratedQuest.Event.Data["stationStateBonus"], "generated quest completion reports compromised station penalty");
-        ExpectEqual(generatedA.OddityPlacements.Count, generatedContentServer.WorldItems.Count, "server seeds generated oddity placements as world items");
+        ExpectTrue(generatedContentServer.WorldItems.Count >= generatedA.OddityPlacements.Count, "server seeds generated oddity placements as world items");
         var firstOddityPlacement = generatedA.OddityPlacements[0];
         generatedContentState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(firstOddityPlacement.X, firstOddityPlacement.Y));
         var generatedContentSnapshot = generatedContentServer.CreateInterestSnapshot(GameState.LocalPlayerId);

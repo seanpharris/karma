@@ -1898,6 +1898,12 @@ public sealed class AuthoritativeWorldServer
             .Select(player => player.Position)
             .Concat(dangerPositions)
             .ToArray();
+        var minimumDistanceSquared = MinimumRespawnSeparationTiles * MinimumRespawnSeparationTiles;
+        if (TryGetStabilizedStationRespawnCandidate(reserved, minimumDistanceSquared, out var stationRespawnPosition))
+        {
+            return stationRespawnPosition;
+        }
+
         var random = new Random(HashCode.Combine(WorldId, playerId, _tick, "karma-break-respawn"));
         var candidates = ProceduralPlacementSampler.GenerateSeparatedPoints(
             random,
@@ -1907,7 +1913,6 @@ public sealed class AuthoritativeWorldServer
             edgePadding: SpawnEdgePaddingTiles,
             candidateAttemptsPerPoint: 32,
             reserved);
-        var minimumDistanceSquared = MinimumRespawnSeparationTiles * MinimumRespawnSeparationTiles;
         var safeCandidate = candidates
             .Where(candidate => reserved.All(reservedPoint => candidate.DistanceSquaredTo(reservedPoint) >= minimumDistanceSquared))
             .OrderByDescending(candidate => ProceduralPlacementSampler.GetNearestDistanceSquared(candidate, reserved))
@@ -1921,6 +1926,28 @@ public sealed class AuthoritativeWorldServer
         return candidates
             .OrderByDescending(candidate => ProceduralPlacementSampler.GetNearestDistanceSquared(candidate, reserved))
             .FirstOrDefault();
+    }
+
+    private bool TryGetStabilizedStationRespawnCandidate(
+        IReadOnlyCollection<TilePosition> reserved,
+        int minimumDistanceSquared,
+        out TilePosition respawnPosition)
+    {
+        var stabilizedStations = _worldStructures.Values
+            .Where(structure => structure.Category == "station" &&
+                                structure.InteractionPrompt.Contains("Station state: stabilized", StringComparison.Ordinal))
+            .Where(structure => reserved.All(reservedPoint => structure.Position.DistanceSquaredTo(reservedPoint) >= minimumDistanceSquared))
+            .OrderByDescending(structure => ProceduralPlacementSampler.GetNearestDistanceSquared(structure.Position, reserved))
+            .ThenBy(structure => structure.EntityId)
+            .ToArray();
+        if (stabilizedStations.Length == 0)
+        {
+            respawnPosition = default;
+            return false;
+        }
+
+        respawnPosition = stabilizedStations[0].Position;
+        return true;
     }
 
     private void RememberDropClaim(string holderId, string itemId, string ownerId, string ownerName)
