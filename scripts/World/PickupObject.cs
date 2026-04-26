@@ -21,6 +21,7 @@ public partial class PickupObject : Area2D
         _hud = GetNodeOrNull<HudController>("/root/Main/Hud");
         _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         EntityId = string.IsNullOrWhiteSpace(EntityId) ? Name.ToString() : EntityId;
+        TopDownDepth.Apply(this, TopDownDepth.ItemOffsetZ);
 
         if (_serverSession is not null && StarterItems.TryGetById(ItemId, out var item))
         {

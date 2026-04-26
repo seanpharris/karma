@@ -6,6 +6,7 @@ using Karma.Data;
 using Karma.Net;
 using Karma.UI;
 using Karma.Util;
+using Karma.World;
 
 namespace Karma.Player;
 
@@ -78,6 +79,7 @@ public partial class PlayerController : CharacterBody2D
         _isExhausted = CalculateExhausted(_isExhausted, _stamina, SprintResumeStamina);
         UpdateStaminaHud();
         MoveAndSlide();
+        TopDownDepth.Apply(this);
 
         SendMoveIfTileChanged();
     }
@@ -355,6 +357,7 @@ public partial class PlayerController : CharacterBody2D
         GlobalPosition = authoritativePosition;
         Velocity = Vector2.Zero;
         _lastSentTile = new TilePosition(player.TileX, player.TileY);
+        TopDownDepth.Apply(this);
     }
 
     private static TilePosition ToTilePosition(Vector2 position)

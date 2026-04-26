@@ -5,6 +5,7 @@ using Karma.Core;
 using Karma.Data;
 using Karma.Net;
 using Karma.UI;
+using Karma.World;
 
 namespace Karma.Player;
 
@@ -30,6 +31,7 @@ public partial class PeerStandInController : Area2D
         _gameState = GetNode<GameState>("/root/GameState");
         _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         _gameState.SetPlayerPosition("peer_stand_in", ToTilePosition(GlobalPosition));
+        TopDownDepth.Apply(this);
         AddHealthBar();
         if (_serverSession is not null)
         {
@@ -380,6 +382,7 @@ public partial class PeerStandInController : Area2D
         if (peer is not null)
         {
             GlobalPosition = PlayerController.CalculateWorldPosition(peer.TileX, peer.TileY);
+            TopDownDepth.Apply(this);
             _peerHealth = peer.Health;
             _peerMaxHealth = peer.MaxHealth;
             _peerStatusEffects = peer.StatusEffects;

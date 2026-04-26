@@ -5,6 +5,7 @@ using Karma.Core;
 using Karma.Data;
 using Karma.Net;
 using Karma.UI;
+using Karma.World;
 
 namespace Karma.Npc;
 
@@ -22,6 +23,7 @@ public partial class NpcController : Area2D
         BodyExited += OnBodyExited;
         _hud = GetNodeOrNull<HudController>("/root/Main/Hud");
         _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
+        TopDownDepth.Apply(this);
     }
 
     public override void _UnhandledInput(InputEvent @event)

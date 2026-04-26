@@ -103,6 +103,11 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(CardinalDirection.Left, DirectionHelper.ToCardinalDirection(Vector2I.Left), "direction helper maps vectors to cardinal directions");
         ExpectEqual("up", DirectionHelper.ToName(CardinalDirection.Up), "direction helper maps directions to animation names");
         ExpectEqual(4, DirectionHelper.ToBit(CardinalDirection.Right), "direction helper maps directions to state bits");
+        ExpectEqual(96, TopDownDepth.CalculateZIndex(96f), "top-down depth uses actor foot position");
+        ExpectEqual(98, TopDownDepth.CalculateZIndex(96f, TopDownDepth.ItemOffsetZ), "top-down depth can offset item pickups above actors at the same foot");
+        ExpectTrue(
+            TopDownDepth.CalculateZIndex(128f, TopDownDepth.StructureOffsetZ) > TopDownDepth.CalculateZIndex(96f),
+            "top-down depth draws lower-foot structures in front of higher actors");
         ExpectEqual(
             PrototypeCharacterSprite.WalkRightAnimation,
             PrototypeCharacterSprite.ResolveAnimationName(Vector2.Right),

@@ -56,7 +56,7 @@ public partial class WorldRoot : Node2D
         _tileMapRenderer = new GeneratedTileMapRenderer
         {
             Name = "GeneratedTileMap",
-            ZIndex = -100
+            ZIndex = TopDownDepth.TileLayerZ
         };
         AddChild(_tileMapRenderer);
     }
@@ -97,6 +97,7 @@ public partial class WorldRoot : Node2D
             if (_renderedServerNpcs.TryGetValue(npc.Id, out var existing))
             {
                 existing.Position = position;
+                TopDownDepth.Apply(existing);
                 continue;
             }
 
@@ -109,9 +110,9 @@ public partial class WorldRoot : Node2D
                 Role = npc.Role,
                 Faction = npc.Faction,
                 SpriteKind = spriteKind,
-                Position = position,
-                ZIndex = 3
+                Position = position
             };
+            node.ZIndex = TopDownDepth.CalculateZIndex(position.Y);
             node.AddChild(new PrototypeCharacterSprite
             {
                 Kind = spriteKind
@@ -158,9 +159,9 @@ public partial class WorldRoot : Node2D
                 StructureName = structure.Name,
                 InteractionPrompt = structure.InteractionPrompt,
                 IsInteractable = structure.IsInteractable,
-                Position = new Vector2(structure.TileX * 32f, structure.TileY * 32f),
-                ZIndex = -10
+                Position = new Vector2(structure.TileX * 32f, structure.TileY * 32f)
             };
+            node.ZIndex = TopDownDepth.CalculateZIndex(node.Position.Y, TopDownDepth.StructureOffsetZ);
             var sprite = new StructureSprite
             {
                 StructureId = structure.StructureId
@@ -212,6 +213,7 @@ public partial class WorldRoot : Node2D
                 ItemId = item.ItemId,
                 Position = new Vector2(item.TileX * 32f, item.TileY * 32f)
             };
+            node.ZIndex = TopDownDepth.CalculateZIndex(node.Position.Y, TopDownDepth.ItemOffsetZ);
             var marker = new PrototypeAtlasSprite
             {
                 Name = $"{item.ItemId}_sprite",
