@@ -1,0 +1,14 @@
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+*.translation
+
+bin/
+obj/
+.vs/
+.vscode/
+
+*.tmp
+*.log
+debug/*.json
