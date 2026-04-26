@@ -56,14 +56,18 @@ after the exact source rectangle for a tile/prop is mapped from the sheet; any
 unmapped future ids should keep placeholder colors so the prototype stays
 readable.
 
-The active prototype actors and pickups use procedural pixel-style models in
-`scripts/Art/PrototypeSpriteModels.cs`. These are deliberately simple Godot draw
-layers, not final art, but they give every playable object a recognizable visual
-until sprite sheets are ready.
-Player, Mara, and the peer stand-in already have character atlas source regions
-mapped there; the local player currently uses the generated engineer sheet at
-`sprites/scifi_engineer_player_sheet.png`, while NPCs still use `character.png`.
-If an expected atlas is missing, actors fall back to the procedural models.
+Humanoid actors now start from a Godot-native workflow: `PrototypeCharacterSprite`
+builds an `AnimatedSprite2D` plus `SpriteFrames` from the mapped atlas regions
+in `scripts/Art/PrototypeSpriteModels.cs`. Player, Mara, and the peer stand-in
+have character atlas source regions mapped there; the local player currently
+uses the generated engineer sheet at `sprites/scifi_engineer_player_sheet.png`,
+while NPCs still use `character.png`. If an expected atlas is missing, actors
+fall back to the procedural models.
+
+Props and pickups still use `PrototypeSprite`, which can draw mapped atlas
+regions or readable procedural placeholders. That keeps generated/server-owned
+objects easy to iterate while character art moves toward proper Godot
+`AnimatedSprite2D` resources.
 The current core item models also have source regions mapped for
 `sprites/scifi_item_atlas.png`: whoopie cushion, deflated balloon, repair kit,
 practice stick, work vest, and scrip.

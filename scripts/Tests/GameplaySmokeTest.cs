@@ -103,6 +103,21 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(CardinalDirection.Left, DirectionHelper.ToCardinalDirection(Vector2I.Left), "direction helper maps vectors to cardinal directions");
         ExpectEqual("up", DirectionHelper.ToName(CardinalDirection.Up), "direction helper maps directions to animation names");
         ExpectEqual(4, DirectionHelper.ToBit(CardinalDirection.Right), "direction helper maps directions to state bits");
+        ExpectEqual(
+            PrototypeCharacterSprite.WalkRightAnimation,
+            PrototypeCharacterSprite.ResolveAnimationName(Vector2.Right),
+            "native character sprite resolves right movement to a walk animation");
+        ExpectEqual(
+            PrototypeCharacterSprite.IdleDownAnimation,
+            PrototypeCharacterSprite.ResolveAnimationName(Vector2.Zero),
+            "native character sprite idles when parent is not moving");
+        ExpectEqual(
+            0,
+            ProjectSettings.GetSetting("rendering/textures/canvas_textures/default_texture_filter").AsInt32(),
+            "project uses nearest-neighbor texture filtering for pixel art");
+        ExpectTrue(
+            ProjectSettings.GetSetting("rendering/2d/snap/snap_2d_transforms_to_pixel").AsBool(),
+            "project snaps 2D transforms to pixels for native pixel-art scenes");
         ExpectTrue(PlayerController.CanSprint(Vector2.Right, true, 1f, false), "player can sprint while moving with stamina");
         ExpectFalse(PlayerController.CanSprint(Vector2.Zero, true, 100f, false), "player cannot sprint while idle");
         ExpectFalse(PlayerController.CanSprint(Vector2.Right, true, 0f, false), "player cannot sprint without stamina");

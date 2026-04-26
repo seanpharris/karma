@@ -109,7 +109,7 @@ public partial class WorldRoot : Node2D
                 Position = position,
                 ZIndex = 3
             };
-            node.AddChild(new PrototypeSprite
+            node.AddChild(new PrototypeCharacterSprite
             {
                 Kind = spriteKind
             });

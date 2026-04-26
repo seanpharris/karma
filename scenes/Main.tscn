@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://karma_main"]
+[gd_scene load_steps=13 format=3 uid="uid://karma_main"]
 
 [ext_resource type="Script" path="res://scripts/World/WorldRoot.cs" id="1_world"]
 [ext_resource type="Script" path="res://scripts/Player/PlayerController.cs" id="2_player"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scripts/World/PickupObject.cs" id="5_pickup"]
 [ext_resource type="Script" path="res://scripts/Player/PeerStandInController.cs" id="6_peer"]
 [ext_resource type="Script" path="res://scripts/Art/PrototypeSprite.cs" id="7_proto_sprite"]
+[ext_resource type="Script" path="res://scripts/Art/PrototypeCharacterSprite.cs" id="8_character_sprite"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_player"]
 radius = 12.0
@@ -36,7 +37,7 @@ position = Vector2(120, 120)
 script = ExtResource("2_player")
 
 [node name="PlayerSprite" type="Node2D" parent="Player"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("8_character_sprite")
 
 [node name="PlayerCollision" type="CollisionShape2D" parent="Player"]
 shape = SubResource("CircleShape2D_player")
@@ -50,7 +51,7 @@ position = Vector2(96, 128)
 script = ExtResource("3_npc")
 
 [node name="NpcSprite" type="Node2D" parent="Npc"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("8_character_sprite")
 Kind = 1
 
 [node name="NpcCollision" type="CollisionShape2D" parent="Npc"]
@@ -255,7 +256,7 @@ position = Vector2(320, 190)
 script = ExtResource("6_peer")
 
 [node name="PeerSprite" type="Node2D" parent="PeerStandIn"]
-script = ExtResource("7_proto_sprite")
+script = ExtResource("8_character_sprite")
 Kind = 2
 
 [node name="PeerCollision" type="CollisionShape2D" parent="PeerStandIn"]

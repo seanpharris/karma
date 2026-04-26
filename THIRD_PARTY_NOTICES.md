@@ -11,8 +11,10 @@ original notices beside the copied material.
 - Copyright: Copyright (c) 2025 Stefano Mercadante (Godot 2D Top-Down Template)
 
 Karma currently ports the direction-mapping idea from the template's
-`Direction.gd` into C# as `scripts/Util/DirectionHelper.cs`, and adapts the
-template's lightweight inventory-overlay pattern into `scripts/UI/HudController.cs`.
+`Direction.gd` into C# as `scripts/Util/DirectionHelper.cs`, adapts the
+template's lightweight inventory-overlay pattern into `scripts/UI/HudController.cs`,
+and follows its Godot-native pixel-art setup for nearest-neighbor texture
+filtering, pixel snapping, and `AnimatedSprite2D` character presentation.
 The implementation is adapted for this project's Godot 4 .NET/C# architecture
 and does not import the template's GDScript plugins, scenes, or assets.
 

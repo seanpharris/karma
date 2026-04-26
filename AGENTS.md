@@ -91,7 +91,8 @@ Important areas:
 - `scripts/Net/ServerIntent.cs`: network/intent/snapshot DTOs.
 - `scripts/Net/NetworkProtocol.cs`: JSON-friendly protocol envelope.
 - `scripts/World/`: generated world, tile rendering, server-rendered pickups/structures.
-- `scripts/Art/`: prototype sprite/structure catalogs and procedural fallbacks.
+- `scripts/Art/`: prototype sprite/structure catalogs, native character sprites,
+  atlas mappings, and procedural fallbacks.
 - `scripts/UI/HudController.cs`: HUD plus lightweight prototype overlays such as
   the `I` inventory panel.
 - `scripts/Util/DirectionHelper.cs`: cardinal direction helper adapted from a
@@ -167,6 +168,30 @@ Constraints: clean frame grid only, no labels, no metadata, no UI panels, no
 watermark, no presentation sheet, no text. Keep feet bottom-centered in every
 frame. Keep proportions consistent across frames.
 ```
+
+## Godot-Native Art Workflow
+
+Karma is moving toward the Godot-native art workflow used by the referenced
+Godot 2D top-down template:
+
+- Project settings should keep pixel art crisp:
+  `rendering/textures/canvas_textures/default_texture_filter=0`,
+  `rendering/2d/snap/snap_2d_transforms_to_pixel=true`, no generated mipmaps,
+  and `process/fix_alpha_border=true` for texture imports.
+- Humanoid actors should use `PrototypeCharacterSprite`, which builds a
+  Godot `AnimatedSprite2D` with `SpriteFrames` from cataloged atlas regions.
+- Keep `PrototypeSprite` for temporary props/items and as a procedural fallback
+  when an atlas region is missing.
+- Runtime character sheets should eventually use clean `32 x 32` frame grids.
+  When a proper grid exists, map all idle/walk frames into `SpriteFrames`
+  animations instead of using one reference frame for every direction.
+- Stable world tiles should eventually become Godot `TileSet` resources with
+  atlas sources, terrain rules, collision, and animated tile data. Until then,
+  the server-friendly generated tile renderer can keep drawing cataloged atlas
+  regions chunk by chunk.
+- Store source/reference sheets separately from runtime sheets. Runtime sheets
+  should be clean transparent PNGs with no labels, presentation framing, or
+  metadata panels.
 
 ## Coding Style
 
