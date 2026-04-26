@@ -31,7 +31,8 @@ Scrip is the prototype currency. It is separate from karma: karma is the
 Ascend/Descend match score and social identity, while scrip is spendable money
 for tools, cosmetics, services, bribes, and player trades.
 The first prototype shop is Dallen's stall, which sells starter objects through
-server-validated offers.
+server-validated offers. Nearby vendor offers are exposed through interest
+snapshots, so distant shops remain hidden until the player is in range.
 
 Prototype matches stay small, but the production large-world target is
 `1000 x 1000` tiles at `16px` logical tile scale. Large worlds must be treated

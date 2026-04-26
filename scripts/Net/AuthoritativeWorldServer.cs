@@ -211,6 +211,7 @@ public sealed class AuthoritativeWorldServer
             .OrderBy(entity => entity.EntityId)
             .Select(ToSnapshot)
             .ToArray();
+        var visibleShopOffers = CreateVisibleShopOffers(interest.VisibleNpcIds);
         var visibleDuels = _state.Duels.All
             .Where(duel => IsDuelVisibleTo(duel, visiblePlayerIds))
             .OrderBy(duel => duel.Id)
@@ -236,6 +237,7 @@ public sealed class AuthoritativeWorldServer
             visibleQuests,
             visibleMapChunks,
             visibleWorldItems,
+            visibleShopOffers,
             SnapshotBuilder.LeaderboardFrom(standing),
             _match.Snapshot(standing),
             visibleDuels,
@@ -283,6 +285,15 @@ public sealed class AuthoritativeWorldServer
 
         return _tileMap
             .GetChunksAround(player.Position.X, player.Position.Y, Config.InterestRadiusChunks)
+            .Select(ToSnapshot)
+            .ToArray();
+    }
+
+    private static IReadOnlyList<ShopOfferSnapshot> CreateVisibleShopOffers(IReadOnlyCollection<string> visibleNpcIds)
+    {
+        return StarterShopCatalog.Offers
+            .Where(offer => visibleNpcIds.Contains(offer.VendorNpcId))
+            .OrderBy(offer => offer.Id)
             .Select(ToSnapshot)
             .ToArray();
     }
@@ -1137,6 +1148,19 @@ public sealed class AuthoritativeWorldServer
             entity.Item.Category,
             entity.Position.X,
             entity.Position.Y);
+    }
+
+    private static ShopOfferSnapshot ToSnapshot(ShopOffer offer)
+    {
+        var item = StarterItems.GetById(offer.ItemId);
+        return new ShopOfferSnapshot(
+            offer.Id,
+            offer.VendorNpcId,
+            item.Id,
+            item.Name,
+            item.Category,
+            offer.Price,
+            offer.Currency);
     }
 
     private static MapChunkSnapshot ToSnapshot(GeneratedTileChunk chunk)

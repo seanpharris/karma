@@ -482,6 +482,10 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(localScripBeforePurchase - 7, state.LocalScrip, "shop purchase debits scrip");
         ExpectTrue(state.HasItem(GameState.LocalPlayerId, StarterItems.WhoopieCushionId), "shop purchase adds item to inventory");
         ExpectTrue(shopPurchase.Event.EventId.Contains("item_purchased"), "shop purchase emits server event");
+        var shopSnapshot = transferServer.CreateInterestSnapshot(GameState.LocalPlayerId);
+        ExpectTrue(
+            shopSnapshot.ShopOffers.Any(offer => offer.OfferId == StarterShopCatalog.DallenWhoopieCushionOfferId && offer.Price == 7),
+            "interest snapshot includes nearby shop offers");
         ExpectFalse(transferServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             6,
@@ -548,6 +552,9 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(
             duelServer.CreateInterestSnapshot("rival_renegade").Duels.Any(),
             "interest snapshot hides distant duel state");
+        ExpectFalse(
+            duelServer.CreateInterestSnapshot("rival_renegade").ShopOffers.Any(),
+            "interest snapshot hides distant shop offers");
         var karmaBeforeDuelAttack = state.LocalKarma.Score;
         var duelAttack = duelServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,

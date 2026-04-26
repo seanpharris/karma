@@ -58,6 +58,15 @@ public sealed record WorldItemSnapshot(
     int TileX,
     int TileY);
 
+public sealed record ShopOfferSnapshot(
+    string OfferId,
+    string VendorNpcId,
+    string ItemId,
+    string ItemName,
+    ItemCategory Category,
+    int Price,
+    string Currency);
+
 public sealed record MapTileSnapshot(
     int TileX,
     int TileY,
@@ -120,6 +129,7 @@ public sealed record ClientInterestSnapshot(
     IReadOnlyList<QuestSnapshot> Quests,
     IReadOnlyList<MapChunkSnapshot> MapChunks,
     IReadOnlyList<WorldItemSnapshot> WorldItems,
+    IReadOnlyList<ShopOfferSnapshot> ShopOffers,
     LeaderboardSnapshot Leaderboard,
     MatchSnapshot Match,
     IReadOnlyList<Duel> Duels,
@@ -128,5 +138,5 @@ public sealed record ClientInterestSnapshot(
     IReadOnlyList<WorldEvent> WorldEvents)
 {
     public string Summary =>
-        $"{Players.Count} visible players, {Npcs.Count} visible NPCs, {Dialogues.Count} dialogues, {Quests.Count} quests, {MapChunks.Count} map chunks, {WorldItems.Count} visible items, {Duels.Count} duels, {Match.Summary}, {SyncHint.ServerEventCount} server events, {SyncHint.WorldEventCount} world events";
+        $"{Players.Count} visible players, {Npcs.Count} visible NPCs, {Dialogues.Count} dialogues, {Quests.Count} quests, {MapChunks.Count} map chunks, {WorldItems.Count} visible items, {ShopOffers.Count} shop offers, {Duels.Count} duels, {Match.Summary}, {SyncHint.ServerEventCount} server events, {SyncHint.WorldEventCount} world events";
 }

@@ -89,6 +89,8 @@ Targets:
   changes terrain streaming without special-case code.
 - Interest snapshots include nearby map chunk snapshots when the server has a
   generated tile map registered for the world.
+- Interest snapshots include shop offers only for visible vendor NPCs so clients
+  cannot browse or buy from distant vendors without server validation.
 - Map chunk snapshots include stable chunk keys and deterministic revisions so
   clients can skip unchanged terrain payloads as players move through large
   worlds.
