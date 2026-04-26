@@ -82,6 +82,8 @@ Targets:
   generated tile map registered for the world.
 - The prototype world renderer consumes map chunks from the local server
   snapshot, keeping terrain rendering on the same path as future network clients.
+- The client renderer keeps a loaded chunk cache and evicts chunks that leave the
+  latest interest snapshot.
 - Let the local prototype client read the same interest snapshot summary that a
   real network client would consume, so UI/debug feedback is based on server
   visibility rather than scene assumptions.

@@ -111,13 +111,22 @@ public partial class GameplaySmokeTest : Node
             "tile map resolves tile coordinates to chunk coordinates");
         ExpectEqual(32 * 32, generatedA.TileMap.GetChunk(new GeneratedChunkCoordinate(0, 0)).Tiles.Count, "tile map can materialize one chunk");
         ExpectEqual(4, generatedA.TileMap.GetChunksAround(32, 32, radiusChunks: 1).Count, "tile map can query nearby chunks");
+        var artSet = ThemeArtRegistry.GetForTheme(generatedA.Theme);
+        var renderer = new GeneratedTileMapRenderer();
+        renderer.SetChunks(
+            new[] { ToMapChunkSnapshot(generatedA.TileMap.GetChunk(new GeneratedChunkCoordinate(0, 0))) },
+            artSet);
+        ExpectEqual(1, renderer.LoadedChunkCount, "tile renderer caches visible chunks");
+        renderer.SetChunks(
+            new[] { ToMapChunkSnapshot(generatedA.TileMap.GetChunk(new GeneratedChunkCoordinate(1, 0))) },
+            artSet);
+        ExpectEqual(1, renderer.LoadedChunkCount, "tile renderer evicts chunks that leave interest");
         ExpectEqual(WorldTileIds.ClinicFloor, generatedA.TileMap.Get(3, 3).FloorId, "world generation assigns starter clinic floor tiles");
         ExpectEqual(WorldTileIds.WallMetal, generatedA.TileMap.Get(2, 2).StructureId, "world generation assigns starter clinic wall structures");
         ExpectEqual(WorldTileIds.DoorAirlock, generatedA.TileMap.Get(5, 7).StructureId, "world generation assigns starter clinic door structure");
         ExpectTrue(
             generatedA.TileMap.Tiles.Any(tile => tile.ZoneId == "duel_ring" && tile.FloorId == WorldTileIds.DuelRingFloor),
             "world generation assigns logical duel ring tiles");
-        var artSet = ThemeArtRegistry.GetForTheme(generatedA.Theme);
         ExpectTrue(artSet.Tiles.ContainsKey(WorldTileIds.ClinicFloor), "theme art registry maps clinic floor tile id");
         ExpectEqual(
             ThemeArtRegistry.PlaceholderAtlasPath,
@@ -725,6 +734,25 @@ public partial class GameplaySmokeTest : Node
 
         _failures++;
         GD.PushError($"FAIL: {description}");
+    }
+
+    private static MapChunkSnapshot ToMapChunkSnapshot(GeneratedTileChunk chunk)
+    {
+        return new MapChunkSnapshot(
+            chunk.Coordinate.X,
+            chunk.Coordinate.Y,
+            chunk.Left,
+            chunk.Top,
+            chunk.Width,
+            chunk.Height,
+            chunk.Tiles
+                .Select(tile => new MapTileSnapshot(
+                    tile.X,
+                    tile.Y,
+                    tile.FloorId,
+                    tile.StructureId,
+                    tile.ZoneId))
+                .ToArray());
     }
 
     private void ExpectFalse(bool condition, string description)

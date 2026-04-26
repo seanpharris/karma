@@ -1,5 +1,6 @@
 using Godot;
 using System.Collections.Generic;
+using System.Linq;
 using Karma.Net;
 
 namespace Karma.World;
@@ -7,30 +8,46 @@ namespace Karma.World;
 public partial class GeneratedTileMapRenderer : Node2D
 {
     private const float TileSize = 32f;
+    private readonly Dictionary<GeneratedChunkCoordinate, MapChunkSnapshot> _loadedChunks = new();
     private GeneratedTileMap _tileMap;
-    private IReadOnlyList<MapChunkSnapshot> _chunks;
     private ThemeArtSet _artSet = ThemeArtRegistry.GetForTheme("western-sci-fi");
+
+    public int LoadedChunkCount => _loadedChunks.Count;
 
     public void SetTileMap(GeneratedTileMap tileMap, ThemeArtSet artSet)
     {
         _tileMap = tileMap;
+        _loadedChunks.Clear();
         _artSet = artSet;
         QueueRedraw();
     }
 
     public void SetChunks(IReadOnlyList<MapChunkSnapshot> chunks, ThemeArtSet artSet)
     {
-        _chunks = chunks;
         _tileMap = null;
         _artSet = artSet;
+        var visibleChunkKeys = chunks
+            .Select(chunk => new GeneratedChunkCoordinate(chunk.ChunkX, chunk.ChunkY))
+            .ToHashSet();
+
+        foreach (var removedKey in _loadedChunks.Keys.Where(key => !visibleChunkKeys.Contains(key)).ToArray())
+        {
+            _loadedChunks.Remove(removedKey);
+        }
+
+        foreach (var chunk in chunks)
+        {
+            _loadedChunks[new GeneratedChunkCoordinate(chunk.ChunkX, chunk.ChunkY)] = chunk;
+        }
+
         QueueRedraw();
     }
 
     public override void _Draw()
     {
-        if (_chunks is not null)
+        if (_loadedChunks.Count > 0)
         {
-            foreach (var chunk in _chunks)
+            foreach (var chunk in _loadedChunks.Values)
             {
                 foreach (var tile in chunk.Tiles)
                 {

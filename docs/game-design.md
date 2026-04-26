@@ -35,6 +35,8 @@ Client interest snapshots carry nearby map chunk data, so terrain streaming can
 follow the same server-owned visibility path as NPCs, items, and players.
 The current prototype renderer draws those server-provided chunks with
 placeholder colors until the tileset atlas mapping is ready.
+Renderer state is chunk-cached, so visible chunks can be added, updated, and
+evicted as players move through larger worlds.
 
 Match time is server-owned and deterministic. The server advances elapsed match
 seconds, emits a `match_finished` event when time expires, and locks the Saint
