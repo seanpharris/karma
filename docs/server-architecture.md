@@ -24,6 +24,7 @@ Good LLM uses:
 Server-owned systems:
 
 - Karma score
+- Scrip wallets and currency transfers
 - Match timer and match winners
 - Inventory
 - Combat
@@ -139,6 +140,9 @@ Targets:
 - Validate player-to-player item transfers on the server: connected target,
   proximity, known item id, source inventory ownership, inventory mutation,
   karma consequence, and syncable transfer event.
+- Validate player-to-player scrip transfers on the server: connected target,
+  proximity, positive amount, wallet balance, wallet mutation, karma
+  consequence, and syncable currency event.
 - Validate item use intents on the server: known item id, equippable slot,
   inventory/equipment mutation, and syncable equipment event.
 - Validate pickup interactions on the server: visible world item entity,

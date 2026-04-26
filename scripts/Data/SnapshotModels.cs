@@ -31,6 +31,7 @@ public sealed record PlayerSnapshot(
     int TileY,
     int Health,
     int MaxHealth,
+    int Scrip,
     IReadOnlyList<string> InventoryItemIds,
     IReadOnlyDictionary<EquipmentSlot, string> EquipmentItemIds);
 
@@ -78,6 +79,7 @@ public static class SnapshotBuilder
                 player.Position.Y,
                 player.Health,
                 player.MaxHealth,
+                player.Scrip,
                 player.Inventory.Select(item => item.Id).ToArray(),
                 player.Equipment.ToDictionary(pair => pair.Key, pair => pair.Value.Id)))
             .ToArray();

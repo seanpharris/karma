@@ -260,6 +260,7 @@ public partial class GameplaySmokeTest : Node
 
         ExpectEqual(0, state.LocalKarma.Score, "new players start at neutral karma");
         ExpectEqual("Unmarked", state.LocalKarma.TierName, "new players start unmarked");
+        ExpectEqual(25, state.LocalScrip, "prototype local player starts with scrip");
         ExpectEqual(4, state.Players.Count, "prototype world registers four player slots");
         ExpectEqual("Helpful Rival", state.GetLeaderboardStanding().SaintName, "positive rival starts as Saint");
         ExpectEqual("Shady Rival", state.GetLeaderboardStanding().ScourgeName, "negative rival starts as Scourge");
@@ -444,6 +445,30 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(state.HasItem(GameState.LocalPlayerId, StarterItems.RepairKitId), "gifted item leaves actor inventory");
         ExpectTrue(state.HasItem("peer_stand_in", StarterItems.RepairKitId), "gifted item returns to target inventory");
         ExpectTrue(returnTransfer.Event.EventId.Contains("item_transferred"), "item transfer emits server event");
+        var localScripBeforeTransfer = state.LocalScrip;
+        var peerScripBeforeTransfer = state.Players["peer_stand_in"].Scrip;
+        var scripTransfer = transferServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            3,
+            IntentType.TransferCurrency,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["targetId"] = "peer_stand_in",
+                ["amount"] = "5"
+            }));
+        ExpectTrue(scripTransfer.WasAccepted, "server transfers scrip between nearby players");
+        ExpectEqual(localScripBeforeTransfer - 5, state.LocalScrip, "scrip transfer debits actor wallet");
+        ExpectEqual(peerScripBeforeTransfer + 5, state.Players["peer_stand_in"].Scrip, "scrip transfer credits target wallet");
+        ExpectTrue(scripTransfer.Event.EventId.Contains("currency_transferred"), "scrip transfer emits server event");
+        ExpectFalse(transferServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            4,
+            IntentType.TransferCurrency,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["targetId"] = "peer_stand_in",
+                ["amount"] = "9999"
+            })).WasAccepted, "server rejects scrip transfer without funds");
         state.AddItem("peer_stand_in", StarterItems.WhoopieCushion);
         var peerKarmaBreak = transferServer.ProcessIntent(new ServerIntent(
             "peer_stand_in",
@@ -462,7 +487,7 @@ public partial class GameplaySmokeTest : Node
         var karmaBeforeDropPickup = state.LocalKarma.Score;
         var dropPickup = transferServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            3,
+            5,
             IntentType.Interact,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -783,11 +808,13 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(snapshot.Players.All(player => player.KarmaProgress.StartsWith("Progress:")), "snapshot captures karma progress");
         ExpectTrue(snapshot.Players.All(player => player.InventoryItemIds is not null), "snapshot captures per-player inventory");
         ExpectTrue(snapshot.Players.Any(player => player.Id == GameState.LocalPlayerId && player.TileX == 3 && player.TileY == 4), "snapshot captures player tile position");
+        ExpectTrue(snapshot.Players.Any(player => player.Id == GameState.LocalPlayerId && player.Scrip == state.LocalScrip), "snapshot captures player scrip");
         ExpectTrue(snapshot.Summary.Contains("players"), "snapshot has readable summary");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"leaderboard\""), "snapshot JSON includes leaderboard");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"standing\""), "snapshot JSON includes player standing");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"tileX\""), "snapshot JSON includes tile position");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"inventory\""), "snapshot JSON includes per-player inventory");
+        ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"scrip\""), "snapshot JSON includes player scrip");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"duels\""), "snapshot JSON includes duels");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"karmaProgress\""), "snapshot JSON includes karma progress");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"players\""), "snapshot can be exported as JSON debug text");

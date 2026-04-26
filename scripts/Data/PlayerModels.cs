@@ -24,6 +24,7 @@ public sealed class PlayerState
     public bool IsAlive { get; private set; } = true;
     public int MaxHealth { get; } = 100;
     public int Health { get; private set; } = 100;
+    public int Scrip { get; private set; }
     public TilePosition Position { get; private set; } = TilePosition.Origin;
     public IReadOnlyList<GameItem> Inventory => _inventory;
     public IReadOnlyDictionary<EquipmentSlot, GameItem> Equipment => _equipment;
@@ -51,6 +52,27 @@ public sealed class PlayerState
     public void AddItem(GameItem item)
     {
         _inventory.Add(item);
+    }
+
+    public void AddScrip(int amount)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        Scrip += amount;
+    }
+
+    public bool SpendScrip(int amount)
+    {
+        if (amount <= 0 || Scrip < amount)
+        {
+            return false;
+        }
+
+        Scrip -= amount;
+        return true;
     }
 
     public bool HasItem(string itemId)

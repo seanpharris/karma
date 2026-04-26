@@ -12,6 +12,7 @@ public partial class GameState : Node
 
     public PlayerKarma LocalKarma => LocalPlayer.Karma;
     public IReadOnlyList<GameItem> Inventory => LocalPlayer.Inventory;
+    public int LocalScrip => LocalPlayer.Scrip;
     public IReadOnlyDictionary<string, PlayerState> Players => _players;
     public PlayerState LocalPlayer => _players[LocalPlayerId];
     public IReadOnlyList<KarmaPerk> LocalPerks => PerkCatalog.GetForPlayer(LocalPlayer, GetLeaderboardStanding());
@@ -380,6 +381,56 @@ public partial class GameState : Node
         return true;
     }
 
+    public void AddScrip(string playerId, int amount)
+    {
+        EnsurePrototypePlayers();
+        if (!_players.TryGetValue(playerId, out var player))
+        {
+            return;
+        }
+
+        player.AddScrip(amount);
+        EmitSignal(SignalName.KarmaEvent, $"{player.DisplayName} gained {amount} scrip.");
+        if (playerId == LocalPlayerId)
+        {
+            EmitInventoryChanged();
+        }
+    }
+
+    public bool SpendScrip(string playerId, int amount)
+    {
+        EnsurePrototypePlayers();
+        if (!_players.TryGetValue(playerId, out var player) || !player.SpendScrip(amount))
+        {
+            return false;
+        }
+
+        if (playerId == LocalPlayerId)
+        {
+            EmitInventoryChanged();
+        }
+
+        return true;
+    }
+
+    public bool TransferScrip(string fromPlayerId, string toPlayerId, int amount)
+    {
+        EnsurePrototypePlayers();
+        if (!_players.ContainsKey(toPlayerId) || !SpendScrip(fromPlayerId, amount))
+        {
+            return false;
+        }
+
+        _players[toPlayerId].AddScrip(amount);
+        EmitSignal(SignalName.KarmaEvent, $"{_players[fromPlayerId].DisplayName} transferred {amount} scrip to {_players[toPlayerId].DisplayName}.");
+        if (fromPlayerId == LocalPlayerId || toPlayerId == LocalPlayerId)
+        {
+            EmitInventoryChanged();
+        }
+
+        return true;
+    }
+
     public IReadOnlyList<GameItem> DrainInventory(string playerId)
     {
         EnsurePrototypePlayers();
@@ -426,8 +477,8 @@ public partial class GameState : Node
     private void EmitInventoryChanged()
     {
         var inventoryText = Inventory.Count == 0
-            ? "Inventory: empty"
-            : $"Inventory: {string.Join(", ", Inventory.Select(item => item.Name))}";
+            ? $"Scrip: {LocalScrip} | Inventory: empty"
+            : $"Scrip: {LocalScrip} | Inventory: {string.Join(", ", Inventory.Select(item => item.Name))}";
         EmitSignal(SignalName.InventoryChanged, inventoryText);
     }
 
@@ -530,6 +581,8 @@ public partial class GameState : Node
         if (!_prototypeInventorySeeded)
         {
             _players["peer_stand_in"].AddItem(StarterItems.RepairKit);
+            _players[LocalPlayerId].AddScrip(25);
+            _players["peer_stand_in"].AddScrip(10);
             _prototypeInventorySeeded = true;
         }
     }

@@ -76,6 +76,7 @@ public static class SnapshotJson
             builder.Append($"\"karmaProgress\": \"{Escape(player.KarmaProgress)}\", ");
             builder.Append($"\"standing\": \"{player.Standing}\", ");
             builder.Append($"\"tileX\": {player.TileX}, \"tileY\": {player.TileY}, ");
+            builder.Append($"\"scrip\": {player.Scrip}, ");
             builder.Append($"\"inventory\": [{string.Join(", ", player.InventoryItemIds.Select(itemId => $"\"{Escape(itemId)}\""))}], ");
             builder.Append($"\"health\": {player.Health}, \"maxHealth\": {player.MaxHealth} }}");
             builder.AppendLine(i == snapshot.Players.Count - 1 ? string.Empty : ",");

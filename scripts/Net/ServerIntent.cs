@@ -12,6 +12,7 @@ public enum IntentType
     Attack,
     UseItem,
     TransferItem,
+    TransferCurrency,
     PlaceObject,
     StartDialogue,
     SelectDialogueChoice,

@@ -130,6 +130,7 @@ public sealed class AuthoritativeWorldServer
             IntentType.Attack => ProcessAttack(intent),
             IntentType.UseItem => ProcessUseItem(intent),
             IntentType.TransferItem => ProcessTransferItem(intent),
+            IntentType.TransferCurrency => ProcessTransferCurrency(intent),
             IntentType.PlaceObject => ProcessPlaceObject(intent),
             IntentType.StartDialogue => ProcessStartDialogue(intent),
             IntentType.SelectDialogueChoice => ProcessSelectDialogueChoice(intent),
@@ -854,6 +855,50 @@ public sealed class AuthoritativeWorldServer
                 ["toPlayerId"] = toPlayerId,
                 ["itemId"] = item.Id,
                 ["mode"] = mode,
+                ["karmaAmount"] = shift.Amount.ToString()
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessTransferCurrency(ServerIntent intent)
+    {
+        if (!intent.Payload.TryGetValue("targetId", out var targetId) ||
+            !TryReadInt(intent.Payload, "amount", out var amount))
+        {
+            return Reject(intent, "TransferCurrency intent requires targetId and integer amount.");
+        }
+
+        if (amount <= 0)
+        {
+            return Reject(intent, "TransferCurrency amount must be positive.");
+        }
+
+        if (!CanReachPlayer(intent.PlayerId, targetId, out var rejectionReason))
+        {
+            return Reject(intent, rejectionReason);
+        }
+
+        if (!_state.TransferScrip(intent.PlayerId, targetId, amount))
+        {
+            return Reject(intent, $"Transfer failed for {amount} scrip.");
+        }
+
+        var karmaAction = new KarmaAction(
+            intent.PlayerId,
+            targetId,
+            new[] { "helpful", "generous" },
+            $"{_state.Players[intent.PlayerId].DisplayName} gave {amount} scrip to {_state.Players[targetId].DisplayName}.");
+        var shift = _state.ApplyShift(intent.PlayerId, karmaAction);
+        var serverEvent = AppendEvent(
+            "currency_transferred",
+            $"{intent.PlayerId} transferred {amount} scrip to {targetId}",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["targetId"] = targetId,
+                ["amount"] = amount.ToString(),
+                ["currency"] = "scrip",
                 ["karmaAmount"] = shift.Amount.ToString()
             });
 

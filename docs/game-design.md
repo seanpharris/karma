@@ -13,8 +13,9 @@ combination of all of those.
 3. Up to 4 players enter the world.
 4. Players complete tasks, talk to NPCs, fight, trade, prank, steal, help, and betray.
 5. Actions cause the player to Ascend or Descend.
-6. Extreme karma unlocks perks, status, and social power.
-7. Death causes a Karma Break and resets the player's path.
+6. Players earn and spend scrip for tools, cosmetics, services, trades, and bribes.
+7. Extreme karma unlocks perks, status, and social power.
+8. Death causes a Karma Break and resets the player's path.
 
 ## First Game Mode: Match
 
@@ -25,6 +26,10 @@ highest karma and current Scourge lowest karma are both match winners.
 This creates two viable races in the same server: Ascend hard enough to become
 the Saint, or Descend hard enough to become the Scourge. Karma Breaks still
 matter because death resets a player's path status during the match.
+
+Scrip is the prototype currency. It is separate from karma: karma is the
+Ascend/Descend match score and social identity, while scrip is spendable money
+for tools, cosmetics, services, bribes, and player trades.
 
 Prototype matches stay small, but the production large-world target is
 `1000 x 1000` tiles at `16px` logical tile scale. Large worlds must be treated
