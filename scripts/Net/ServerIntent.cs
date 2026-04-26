@@ -73,7 +73,8 @@ public sealed record WorldStructureEntity(
     bool IsInteractable,
     string InteractionPrompt,
     string InteractionResult,
-    int Integrity = 100);
+    int Integrity = 100,
+    string FactionId = StarterFactions.CivicRepairGuildId);
 
 public sealed record WorldStructureSnapshot(
     string EntityId,

@@ -226,7 +226,8 @@ public sealed class AuthoritativeWorldServer
             IsInteractable: true,
             InteractionPrompt: FormatStructurePrompt(placement.Name, placement.Integrity),
             InteractionResult: $"{placement.Name} is tied to {placement.SuggestedFaction}. Local pressure: {placement.GameplayHook}.",
-            Integrity: placement.Integrity);
+            Integrity: placement.Integrity,
+            FactionId: StarterFactions.ToId(placement.SuggestedFaction));
     }
 
     public void SeedWorldStructure(string entityId, string structureId, TilePosition position)
@@ -658,7 +659,10 @@ public sealed class AuthoritativeWorldServer
         var karmaAmount = 0;
         var scripReward = 0;
         var factionDelta = 0;
-        var factionReputation = _state.Factions.GetReputation(StarterFactions.CivicRepairGuildId, intent.PlayerId);
+        var factionId = string.IsNullOrWhiteSpace(structure.FactionId)
+            ? StarterFactions.CivicRepairGuildId
+            : structure.FactionId;
+        var factionReputation = _state.Factions.GetReputation(factionId, intent.PlayerId);
         var nextIntegrity = structure.Integrity;
         if (action == "repair")
         {
@@ -681,7 +685,7 @@ public sealed class AuthoritativeWorldServer
             {
                 scripReward = Math.Max(1, repairAmount / 5);
                 factionDelta = 4;
-                factionReputation = _state.ApplyFactionReputation(StarterFactions.CivicRepairGuildId, intent.PlayerId, factionDelta);
+                factionReputation = _state.ApplyFactionReputation(factionId, intent.PlayerId, factionDelta);
                 _state.AddScrip(intent.PlayerId, scripReward);
             }
 
@@ -703,7 +707,7 @@ public sealed class AuthoritativeWorldServer
             if (nextIntegrity < structure.Integrity)
             {
                 factionDelta = -6;
-                factionReputation = _state.ApplyFactionReputation(StarterFactions.CivicRepairGuildId, intent.PlayerId, factionDelta);
+                factionReputation = _state.ApplyFactionReputation(factionId, intent.PlayerId, factionDelta);
             }
 
             result = nextIntegrity == structure.Integrity
@@ -738,7 +742,7 @@ public sealed class AuthoritativeWorldServer
                 ["condition"] = FormatStructureCondition(nextIntegrity),
                 ["karmaAmount"] = karmaAmount.ToString(),
                 ["scripReward"] = scripReward.ToString(),
-                ["factionId"] = StarterFactions.CivicRepairGuildId,
+                ["factionId"] = factionId,
                 ["factionDelta"] = factionDelta.ToString(),
                 ["factionReputation"] = factionReputation.ToString()
             });

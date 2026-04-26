@@ -29,7 +29,7 @@ and the next practical build slices.
 - Each station carries a role, theme tag, karma hook, and suggested faction.
 - NPCs derive from stations, giving them roles, needs, secrets, likes/dislikes, factions, and station placements.
 - Generated station locations are seeded as inspectable server structure markers, so their roles and karma hooks are visible in snapshots/rendering.
-- Each generated station now also gets a repairable/sabotageable fixture tied to its gameplay hook and suggested faction.
+- Each generated station now also gets a repairable/sabotageable fixture tied to its gameplay hook and suggested faction; repair/sabotage reputation now targets that station faction instead of always using the Civic Repair Guild.
 - Generated NPC placements are seeded into the authoritative server world and show up through interest snapshots/rendering.
 - Generated NPCs now provide station-specific dialogue choices and station-driven quests derived from local needs and karma hooks.
 - Oddities now have generated placements with local gameplay reasons tied to nearby stations.
@@ -88,7 +88,7 @@ and the next practical build slices.
 ## What we need to do next
 
 1. **Deepen station quests/dialogue.** Turn broad generated choices into multi-step repair, rumor, theft, apology, bounty, delivery, and mediation tasks.
-2. **Improve generated structure consequences.** Add station/faction-specific reputation effects instead of routing all repair/sabotage through the Civic Repair Guild.
+2. **Improve generated structure consequences.** Tune faction-specific rewards/penalties by station role and make fixture outcomes alter local station state.
 3. **Improve respawn candidate pools.** Prefer safe stations/landmarks and avoid active combat heat, not just death/player positions.
 5. **Improve station presentation.** Replace placeholder station marker art with signs, landmarks, or theme-specific props.
 6. **Wire one more perk.** Good candidates: `Paragon Favor`, `Abyssal Mark`, or deeper `Renegade Nerve` intimidation behavior.
