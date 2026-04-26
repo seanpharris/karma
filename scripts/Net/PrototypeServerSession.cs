@@ -12,6 +12,7 @@ public partial class PrototypeServerSession : Node
     private GameState _state = null!;
     private AuthoritativeWorldServer _server = null!;
     private long _lastLocalSnapshotTick;
+    private double _matchSecondAccumulator;
 
     public AuthoritativeWorldServer Server => _server;
     public ClientInterestSnapshot LastLocalSnapshot { get; private set; }
@@ -23,6 +24,30 @@ public partial class PrototypeServerSession : Node
     {
         _state = GetNode<GameState>("/root/GameState");
         _server = new AuthoritativeWorldServer(_state, "local-prototype", ServerConfig.Prototype4Player);
+        RefreshLocalSnapshot();
+    }
+
+    public override void _Process(double delta)
+    {
+        if (_server is null || _server.Match.Status == MatchStatus.Finished)
+        {
+            return;
+        }
+
+        _matchSecondAccumulator += delta;
+        var elapsedSeconds = (int)_matchSecondAccumulator;
+        if (elapsedSeconds <= 0)
+        {
+            return;
+        }
+
+        _matchSecondAccumulator -= elapsedSeconds;
+        AdvanceMatchTime(elapsedSeconds);
+    }
+
+    public void AdvanceMatchTime(int seconds)
+    {
+        _server.AdvanceMatchTime(seconds);
         RefreshLocalSnapshot();
     }
 

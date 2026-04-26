@@ -34,6 +34,9 @@ Match time is server-owned and deterministic. The server advances elapsed match
 seconds, emits a `match_finished` event when time expires, and locks the Saint
 and Scourge winners from the leaderboard at that moment.
 
+The local prototype advances the server match timer during play and shows the
+server snapshot's match summary in the HUD.
+
 ## Procedural World Data
 
 World generation should produce structured data first:

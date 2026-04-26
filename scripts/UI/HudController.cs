@@ -18,6 +18,7 @@ public partial class HudController : CanvasLayer
     private Label _entanglementsLabel = new();
     private Label _duelsLabel = new();
     private Label _worldEventsLabel = new();
+    private Label _matchLabel = new();
     private Label _syncLabel = new();
     private PanelContainer _promptPanel = new();
     private Label _promptLabel = new();
@@ -213,11 +214,21 @@ public partial class HudController : CanvasLayer
             OffsetLeft = 16,
             OffsetTop = 448,
             OffsetRight = 1000,
-            OffsetBottom = 540,
+            OffsetBottom = 510,
             Text = "Sync: waiting",
             AutowrapMode = TextServer.AutowrapMode.WordSmart
         };
         root.AddChild(_syncLabel);
+
+        _matchLabel = new Label
+        {
+            OffsetLeft = 16,
+            OffsetTop = 512,
+            OffsetRight = 1000,
+            OffsetBottom = 542,
+            Text = "Match: 30:00 remaining"
+        };
+        root.AddChild(_matchLabel);
 
         _promptPanel = new PanelContainer
         {
@@ -300,6 +311,12 @@ public partial class HudController : CanvasLayer
 
     private void OnLocalSnapshotChanged(string snapshotSummary)
     {
+        var serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
+        if (serverSession?.LastLocalSnapshot is not null)
+        {
+            _matchLabel.Text = serverSession.LastLocalSnapshot.Match.Summary;
+        }
+
         _syncLabel.Text = $"Sync: {snapshotSummary}";
     }
 }

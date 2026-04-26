@@ -25,6 +25,9 @@ public partial class GameplaySmokeTest : Node
         var localSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         ExpectTrue(localSession is not null, "prototype server session autoload is available");
         ExpectTrue(localSession.LastLocalSnapshot.Summary.Contains("visible"), "prototype server session exposes local interest snapshot");
+        var localMatchRemaining = localSession.LastLocalSnapshot.Match.RemainingSeconds;
+        localSession.AdvanceMatchTime(5);
+        ExpectEqual(localMatchRemaining - 5, localSession.LastLocalSnapshot.Match.RemainingSeconds, "prototype server session advances match timer");
         localSession.RegisterWorldItem("session_test_item", StarterItems.DeflatedBalloon, TilePosition.Origin);
         ExpectTrue(
             localSession.LastLocalSnapshot.WorldItems.Any(entity => entity.EntityId == "session_test_item"),
