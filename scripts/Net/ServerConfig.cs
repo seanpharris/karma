@@ -16,10 +16,12 @@ public sealed record ServerConfig(
     int TickRate,
     int InterestRadiusTiles,
     int CombatRangeTiles,
+    int ChunkSizeTiles,
     int MatchDurationSeconds)
 {
     public const int AbsoluteMaxPlayers = 100;
     public const int DefaultMatchDurationSeconds = 30 * 60;
+    public const int DefaultChunkSizeTiles = 32;
 
     public static ServerConfig Prototype4Player { get; } = new(
         MaxPlayers: 4,
@@ -28,6 +30,7 @@ public sealed record ServerConfig(
         TickRate: 20,
         InterestRadiusTiles: 24,
         CombatRangeTiles: 2,
+        ChunkSizeTiles: DefaultChunkSizeTiles,
         MatchDurationSeconds: DefaultMatchDurationSeconds);
 
     public static ServerConfig Large100Player { get; } = new(
@@ -37,6 +40,7 @@ public sealed record ServerConfig(
         TickRate: 20,
         InterestRadiusTiles: 16,
         CombatRangeTiles: 2,
+        ChunkSizeTiles: DefaultChunkSizeTiles,
         MatchDurationSeconds: DefaultMatchDurationSeconds);
 
     public void Validate()
@@ -64,6 +68,11 @@ public sealed record ServerConfig(
         if (CombatRangeTiles < 1)
         {
             throw new InvalidOperationException("CombatRangeTiles must be positive.");
+        }
+
+        if (ChunkSizeTiles < 1)
+        {
+            throw new InvalidOperationException("ChunkSizeTiles must be positive.");
         }
 
         if (MatchDurationSeconds < 1)

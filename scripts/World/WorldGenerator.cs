@@ -131,7 +131,7 @@ public static class WorldGenerator
             }
         }
 
-        return new GeneratedTileMap(config.WidthTiles, config.HeightTiles, tiles);
+        return new GeneratedTileMap(config.WidthTiles, config.HeightTiles, config.Server.ChunkSizeTiles, tiles);
     }
 
     private static bool IsInRect(int x, int y, int left, int top, int width, int height)

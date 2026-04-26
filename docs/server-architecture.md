@@ -53,6 +53,7 @@ Targets:
 - Prototype: 4 players per world
 - Prototype map: `64 x 64` tiles
 - Production large world target: `1000 x 1000` tiles
+- Default world chunk size: `32 x 32` tiles
 - Stress target: 100 players per world
 - First match type: 30-minute Saint/Scourge race
 - Authoritative host/server
@@ -75,6 +76,8 @@ Targets:
   ids to theme-specific tileset art.
 - Treat large worlds as chunked/streamed spaces. Clients should receive only
   nearby chunks/entities through interest snapshots.
+- Generated tile maps expose chunk coordinates and nearby chunk queries so the
+  server/client can stream map data around each player.
 - Let the local prototype client read the same interest snapshot summary that a
   real network client would consume, so UI/debug feedback is based on server
   visibility rather than scene assumptions.

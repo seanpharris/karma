@@ -51,6 +51,7 @@ public partial class GameplaySmokeTest : Node
         ServerConfig.Large100Player.Validate();
         ExpectEqual(4, ServerConfig.Prototype4Player.MaxPlayers, "prototype server profile supports 4 players");
         ExpectEqual(100, ServerConfig.Large100Player.MaxPlayers, "large server profile supports 100 players");
+        ExpectEqual(32, ServerConfig.Large100Player.ChunkSizeTiles, "large server profile uses chunked world tiles");
         ExpectEqual(30 * 60, ServerConfig.Prototype4Player.MatchDurationSeconds, "prototype server profile uses 30 minute matches");
         var matchServer = new AuthoritativeWorldServer(state, "match-test-world");
         ExpectEqual(MatchStatus.Running, matchServer.Match.Status, "new server match starts running");
@@ -100,6 +101,14 @@ public partial class GameplaySmokeTest : Node
             generatedA.Config.WidthTiles * generatedA.Config.HeightTiles,
             generatedA.TileMap.Tiles.Count,
             "world generation creates a logical tile for every coordinate");
+        ExpectEqual(2, generatedA.TileMap.ChunkColumns, "prototype tile map exposes chunk columns");
+        ExpectEqual(2, generatedA.TileMap.ChunkRows, "prototype tile map exposes chunk rows");
+        ExpectEqual(
+            new GeneratedChunkCoordinate(0, 0),
+            generatedA.TileMap.GetChunkCoordinateForTile(3, 3),
+            "tile map resolves tile coordinates to chunk coordinates");
+        ExpectEqual(32 * 32, generatedA.TileMap.GetChunk(new GeneratedChunkCoordinate(0, 0)).Tiles.Count, "tile map can materialize one chunk");
+        ExpectEqual(4, generatedA.TileMap.GetChunksAround(32, 32, radiusChunks: 1).Count, "tile map can query nearby chunks");
         ExpectEqual(WorldTileIds.ClinicFloor, generatedA.TileMap.Get(3, 3).FloorId, "world generation assigns starter clinic floor tiles");
         ExpectEqual(WorldTileIds.WallMetal, generatedA.TileMap.Get(2, 2).StructureId, "world generation assigns starter clinic wall structures");
         ExpectEqual(WorldTileIds.DoorAirlock, generatedA.TileMap.Get(5, 7).StructureId, "world generation assigns starter clinic door structure");
