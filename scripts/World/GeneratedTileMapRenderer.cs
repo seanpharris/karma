@@ -16,7 +16,7 @@ public partial class GeneratedTileMapRenderer : Node2D
 
     public int LoadedChunkCount => _loadedChunks.Count;
     public int LastUpdatedChunkCount { get; private set; }
-    public bool PreferAtlasArt { get; set; }
+    public bool PreferAtlasArt { get; set; } = true;
 
     public void SetTileMap(GeneratedTileMap tileMap, ThemeArtSet artSet)
     {
@@ -127,22 +127,19 @@ public partial class GeneratedTileMapRenderer : Node2D
     {
         if (structureId == WorldTileIds.WallMetal)
         {
-            DrawRect(rect.Grow(-4f), new Color(0.18f, 0.2f, 0.24f));
-            DrawRect(rect.Grow(-8f), _artSet.GetTile(structureId).PlaceholderColor);
+            DrawTileArt(rect, _artSet.GetTile(structureId));
             return;
         }
 
         if (structureId == WorldTileIds.DoorAirlock)
         {
-            DrawRect(rect.Grow(-4f), new Color(0.12f, 0.15f, 0.18f));
-            DrawRect(new Rect2(rect.Position + new Vector2(9f, 4f), new Vector2(14f, 24f)), _artSet.GetTile(structureId).PlaceholderColor);
+            DrawTileArt(rect, _artSet.GetTile(structureId));
             return;
         }
 
         if (structureId == WorldTileIds.OddityPile)
         {
-            DrawCircle(rect.GetCenter(), 9f, _artSet.GetTile(structureId).PlaceholderColor);
-            DrawCircle(rect.GetCenter() + new Vector2(7f, -5f), 5f, new Color(0.25f, 0.84f, 0.78f));
+            DrawTileArt(rect.Grow(-2f), _artSet.GetTile(structureId));
         }
     }
 }

@@ -14,14 +14,14 @@ The current code expects the first sci-fi tileset candidate at:
 
 `tilesets/scifi_station_atlas.png`
 
-That path is registered in `scripts/World/ThemeArtRegistry.cs`. For now the
-game still renders placeholder colors, but the registry already stores atlas
-coordinates so we can switch logical tile ids to real art without changing
-world generation.
+That path is registered in `scripts/World/ThemeArtRegistry.cs`. The prototype
+currently maps a small sci-fi subset from that sheet: floors, metal walls,
+airlock doors, duel ring floor, and oddity pile.
 
 Atlas rendering is intentionally opt-in per tile id. Set `HasAtlasRegion` only
-after the exact source rectangle for a tile/prop is mapped from the sheet; until
-then the game uses placeholder colors so the prototype stays readable.
+after the exact source rectangle for a tile/prop is mapped from the sheet; any
+unmapped future ids should keep placeholder colors so the prototype stays
+readable.
 
 The active prototype actors and pickups use procedural pixel-style models in
 `scripts/Art/PrototypeSpriteModels.cs`. These are deliberately simple Godot draw

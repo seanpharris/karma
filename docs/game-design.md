@@ -118,6 +118,9 @@ placeholder visuals for real tileset sheets later.
 Theme art is routed through an art registry. Each logical tile id has a
 placeholder color now and an atlas path/coordinate reserved for future sprites,
 starting with `assets/art/tilesets/scifi_station_atlas.png`.
+The current prototype uses mapped regions from that sci-fi atlas for core
+terrain and structure ids while keeping placeholder colors available for future
+unmapped tile ids.
 
 ## NPC Relationships
 
