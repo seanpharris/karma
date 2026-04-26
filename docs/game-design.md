@@ -136,6 +136,9 @@ and thrown explosives.
 Tool world models use `assets/art/sprites/scifi_tool_atlas.png` for the wider
 utility set, including repair, medical, hacking, scanning, mobility, and
 resource tools.
+Large structure models are catalog-first. The greenhouse sheet lives at
+`assets/art/structures/scifi_greenhouse_atlas.png` and maps greenhouse variants
+and modular parts without placing them into the active prototype scene yet.
 
 The prototype item set covers the current loops: oddities (`whoopie_cushion`,
 `deflated_balloon`, `apology_flower`), support tools (`repair_kit`,

@@ -4,6 +4,7 @@ Place source art here while we build the asset pipeline.
 
 - `tilesets/`: terrain, floors, walls, doors, structures, and theme atlases.
 - `props/`: objects, interactibles, terminals, furniture, oddities, and pickups.
+- `structures/`: large world models such as buildings, domes, bases, and modules.
 - `sprites/`: player, NPC, outfit, armor, weapon, and animation sheets.
 
 Prefer descriptive lowercase names such as `scifi_station_atlas.png` or
@@ -34,6 +35,10 @@ The first sci-fi tool model sheet should be dropped at:
 
 `sprites/scifi_tool_atlas.png`
 
+The first sci-fi greenhouse structure sheet should be dropped at:
+
+`structures/scifi_greenhouse_atlas.png`
+
 That path is registered in `scripts/World/ThemeArtRegistry.cs`. The prototype
 currently maps a small sci-fi subset from that sheet: floors, metal walls,
 airlock doors, duel ring floor, and oddity pile.
@@ -62,3 +67,6 @@ The tool sheet maps multi tool, welding torch, medi patch, repair kit-style
 support tools, lockpick set, flashlight, portable shield, hacking device,
 scanner, grappling hook, chem injector, power cell, bolt cutters, and magnetic
 grabber.
+The greenhouse structure sheet is cataloged only for now. It maps standard,
+overgrown, damaged, powered-off, and top-down greenhouse models plus base,
+door, cap, panel, planter, grow rack, and support parts.
