@@ -601,7 +601,17 @@ public partial class GameplaySmokeTest : Node
             },
             1);
         ExpectTrue(vendorPrompt.Contains("9 - Buy Repair Kit"), "server NPC vendor prompt shows selected offer");
+        ExpectTrue(vendorPrompt.Contains("[Tool]"), "server NPC vendor prompt shows selected offer category");
         ExpectTrue(vendorPrompt.Contains("Browse shop (2/2)"), "server NPC vendor prompt shows browse position");
+        var weaponOfferLine = ShopText.FormatOfferLine(new ShopOfferSnapshot(
+            "offer_weapon",
+            StarterNpcs.Dallen.Id,
+            StarterItems.Rifle27Id,
+            "Rifle-27",
+            ItemCategory.Weapon,
+            86,
+            "scrip"));
+        ExpectTrue(weaponOfferLine.Contains("Power 24"), "shop offer text shows weapon stats");
         ExpectTrue(whoopieSprite.Layers.Any(layer => layer.Shape == PrototypeSpriteShape.Circle), "prototype item sprite supports rounded prop art");
         ExpectEqual(PrototypeSpriteCatalog.UtilityItemAtlasPath, whoopieSprite.AtlasPath, "prototype item sprite records utility atlas path");
         ExpectTrue(whoopieSprite.HasAtlasRegion, "prototype item sprite can use item atlas art");

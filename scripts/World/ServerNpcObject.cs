@@ -79,7 +79,7 @@ public partial class ServerNpcObject : Area2D
 
         var index = WrapIndex(selectedOfferIndex, offers.Count);
         var offer = offers[index];
-        lines.Add($"9 - Buy {offer.ItemName} ({offer.Price} {offer.Currency})");
+        lines.Add(ShopText.FormatOfferLine(offer));
         lines.Add($"-/= - Browse shop ({index + 1}/{offers.Count})");
         return string.Join("\n", lines);
     }

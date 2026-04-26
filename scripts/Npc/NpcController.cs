@@ -311,7 +311,7 @@ public partial class NpcController : Area2D
         {
             _selectedOfferIndex = WrapIndex(_selectedOfferIndex, offers.Count);
             var offer = offers[_selectedOfferIndex];
-            lines.Add($"9 - Buy {offer.ItemName} ({offer.Price} {offer.Currency})");
+            lines.Add(ShopText.FormatOfferLine(offer));
             lines.Add($"-/= - Browse shop ({_selectedOfferIndex + 1}/{offers.Count})");
         }
 
