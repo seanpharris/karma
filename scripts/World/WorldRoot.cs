@@ -32,6 +32,7 @@ public partial class WorldRoot : Node2D
         if (_serverSession is not null)
         {
             _serverSession.SetTileMap(GeneratedWorld.TileMap);
+            _serverSession.SeedGeneratedWorldContent(GeneratedWorld);
             _serverSession.LocalSnapshotChanged += OnLocalSnapshotChanged;
             RenderSnapshot(_serverSession.LastLocalSnapshot);
         }

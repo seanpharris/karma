@@ -710,6 +710,17 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             generatedA.OddityPlacements.Any(placement => placement.PlacementReason.Contains("choices")),
             "generated oddity placements explain their local gameplay reason");
+        var generatedContentState = new GameState();
+        generatedContentState.RegisterPlayer(GameState.LocalPlayerId, "Generated Content Tester");
+        var generatedContentServer = new AuthoritativeWorldServer(generatedContentState, "generated-content-test");
+        generatedContentServer.SeedGeneratedWorldContent(generatedA);
+        ExpectEqual(generatedA.OddityPlacements.Count, generatedContentServer.WorldItems.Count, "server seeds generated oddity placements as world items");
+        var firstOddityPlacement = generatedA.OddityPlacements[0];
+        generatedContentState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(firstOddityPlacement.X, firstOddityPlacement.Y));
+        var generatedContentSnapshot = generatedContentServer.CreateInterestSnapshot(GameState.LocalPlayerId);
+        ExpectTrue(
+            generatedContentSnapshot.WorldItems.Any(item => item.ItemId == firstOddityPlacement.ItemId && item.TileX == firstOddityPlacement.X && item.TileY == firstOddityPlacement.Y),
+            "interest snapshot exposes seeded generated oddities near the player");
         ExpectTrue(artSet.Tiles.ContainsKey(WorldTileIds.ClinicFloor), "theme art registry maps clinic floor tile id");
         ExpectEqual(
             ThemeArtRegistry.PlaceholderAtlasPath,

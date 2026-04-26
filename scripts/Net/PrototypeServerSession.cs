@@ -65,6 +65,12 @@ public partial class PrototypeServerSession : Node
         RefreshLocalSnapshot();
     }
 
+    public void SeedGeneratedWorldContent(Karma.World.GeneratedWorld generatedWorld)
+    {
+        _server.SeedGeneratedWorldContent(generatedWorld);
+        RefreshLocalSnapshot();
+    }
+
     public ServerProcessResult SendLocal(
         IntentType type,
         IReadOnlyDictionary<string, string> payload)

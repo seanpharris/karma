@@ -137,6 +137,27 @@ public sealed class AuthoritativeWorldServer
             dropOwnerName);
     }
 
+    public void SeedGeneratedWorldContent(GeneratedWorld generatedWorld)
+    {
+        var odditiesById = generatedWorld.Oddities.ToDictionary(item => item.Id);
+        for (var i = 0; i < generatedWorld.OddityPlacements.Count; i++)
+        {
+            var placement = generatedWorld.OddityPlacements[i];
+            if (!odditiesById.TryGetValue(placement.ItemId, out var item))
+            {
+                continue;
+            }
+
+            var entityId = $"generated_oddity_{i}_{SanitizeEntityId(placement.ItemId)}";
+            if (_worldItems.ContainsKey(entityId))
+            {
+                continue;
+            }
+
+            SeedWorldItem(entityId, item, new TilePosition(placement.X, placement.Y));
+        }
+    }
+
     public void SeedWorldStructure(string entityId, string structureId, TilePosition position)
     {
         var definition = StructureArtCatalog.GetById(structureId);
@@ -1656,6 +1677,11 @@ public sealed class AuthoritativeWorldServer
         }
 
         return new TilePosition(random.Next(minX, maxX + 1), random.Next(minY, maxY + 1));
+    }
+
+    private static string SanitizeEntityId(string value)
+    {
+        return string.Concat(value.Select(character => char.IsLetterOrDigit(character) ? char.ToLowerInvariant(character) : '_')).Trim('_');
     }
 
     private static int GetNearestDistanceSquared(TilePosition candidate, IReadOnlyCollection<TilePosition> existingSpawns)
