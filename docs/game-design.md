@@ -38,6 +38,8 @@ continue for post-match wandering, debugging, and result review.
 
 The local prototype advances the server match timer during play and shows the
 server snapshot's match summary in the HUD.
+During a running match, the match summary shows the current Saint and Scourge
+leaders so players can chase either victory path before the winners are locked.
 
 ## Procedural World Data
 

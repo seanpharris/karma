@@ -55,12 +55,15 @@ public partial class GameplaySmokeTest : Node
         var matchServer = new AuthoritativeWorldServer(state, "match-test-world");
         ExpectEqual(MatchStatus.Running, matchServer.Match.Status, "new server match starts running");
         ExpectEqual(30 * 60, matchServer.Match.RemainingSeconds, "new server match starts with full duration remaining");
+        ExpectEqual("rival_paragon", matchServer.Match.CurrentSaintId, "running match snapshot exposes current Saint leader");
+        ExpectEqual("rival_renegade", matchServer.Match.CurrentScourgeId, "running match snapshot exposes current Scourge leader");
         matchServer.AdvanceMatchTime((30 * 60) - 1);
         ExpectEqual(MatchStatus.Running, matchServer.Match.Status, "match stays running before timer expires");
         matchServer.AdvanceMatchTime(1);
         ExpectEqual(MatchStatus.Finished, matchServer.Match.Status, "match finishes when timer expires");
         ExpectEqual("rival_paragon", matchServer.Match.SaintWinnerId, "finished match locks current Saint winner");
         ExpectEqual("rival_renegade", matchServer.Match.ScourgeWinnerId, "finished match locks current Scourge winner");
+        ExpectTrue(matchServer.Match.Summary.Contains("Match complete"), "finished match summary reports completion");
         ExpectTrue(matchServer.EventLog.Any(serverEvent => serverEvent.EventId.Contains("match_finished")), "finished match emits server event");
         ExpectEqual("rival_paragon", matchServer.CreateInterestSnapshot(GameState.LocalPlayerId).Match.SaintWinnerId, "interest snapshot includes Saint match winner");
         var karmaBeforePostMatchIntent = state.LocalKarma.Score;

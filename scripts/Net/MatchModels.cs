@@ -12,6 +12,12 @@ public sealed record MatchSnapshot(
     MatchStatus Status,
     int DurationSeconds,
     int ElapsedSeconds,
+    string CurrentSaintId,
+    string CurrentSaintName,
+    int CurrentSaintScore,
+    string CurrentScourgeId,
+    string CurrentScourgeName,
+    int CurrentScourgeScore,
     string SaintWinnerId,
     string SaintWinnerName,
     int SaintWinnerScore,
@@ -22,7 +28,7 @@ public sealed record MatchSnapshot(
     public int RemainingSeconds => System.Math.Max(0, DurationSeconds - ElapsedSeconds);
 
     public string Summary => Status == MatchStatus.Running
-        ? $"Match: {FormatTime(RemainingSeconds)} remaining"
+        ? $"Match: {FormatTime(RemainingSeconds)} | Saint {CurrentSaintName} ({CurrentSaintScore:+#;-#;0}) | Scourge {CurrentScourgeName} ({CurrentScourgeScore:+#;-#;0})"
         : $"Match complete: Saint {SaintWinnerName} ({SaintWinnerScore:+#;-#;0}) | Scourge {ScourgeWinnerName} ({ScourgeWinnerScore:+#;-#;0})";
 
     private static string FormatTime(int seconds)
@@ -65,13 +71,20 @@ public sealed class MatchState
 
     public MatchSnapshot Snapshot(LeaderboardStanding currentStanding)
     {
+        var leaders = SnapshotBuilder.LeaderboardFrom(currentStanding);
         var winners = Status == MatchStatus.Finished
             ? _winners
-            : SnapshotBuilder.LeaderboardFrom(currentStanding);
+            : leaders;
         return new MatchSnapshot(
             Status,
             _durationSeconds,
             _elapsedSeconds,
+            leaders.SaintPlayerId,
+            leaders.SaintName,
+            leaders.SaintScore,
+            leaders.ScourgePlayerId,
+            leaders.ScourgeName,
+            leaders.ScourgeScore,
             winners.SaintPlayerId,
             winners.SaintName,
             winners.SaintScore,
