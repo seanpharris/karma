@@ -60,6 +60,9 @@ Interest snapshots also carry a compact sync hint so future network clients can
 show/debug whether they received a full refresh or an incremental update.
 The local prototype client now applies snapshots through a cache that tracks
 visible chunk revisions, matching the shape a real network client will need.
+Players can use the mouse wheel to zoom the camera between a close character
+view and a wider scouting view. The zoom range is clamped so it improves local
+awareness without turning into a whole-map reveal.
 The server has an in-process network protocol adapter with explicit envelopes
 for joins, intents, snapshot requests, pings, and errors, ready to sit behind a
 real transport later. Those envelopes can be serialized as readable JSON for

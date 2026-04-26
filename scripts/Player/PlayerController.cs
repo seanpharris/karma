@@ -9,8 +9,13 @@ namespace Karma.Player;
 public partial class PlayerController : CharacterBody2D
 {
     [Export] public float Speed { get; set; } = 120f;
+    [Export] public float MinCameraZoom { get; set; } = 1.25f;
+    [Export] public float MaxCameraZoom { get; set; } = 5f;
+    [Export] public float CameraZoomStep { get; set; } = 0.25f;
+
     private GameState _gameState = null!;
     private PrototypeServerSession _serverSession;
+    private Camera2D _camera;
     private TilePosition? _lastSentTile;
     private Vector2I _lastFacing = Vector2I.Down;
 
@@ -18,6 +23,7 @@ public partial class PlayerController : CharacterBody2D
     {
         _gameState = GetNode<GameState>("/root/GameState");
         _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
+        _camera = GetNodeOrNull<Camera2D>("Camera2D");
         SendMoveIfTileChanged();
     }
 
@@ -39,6 +45,20 @@ public partial class PlayerController : CharacterBody2D
 
     public override void _UnhandledInput(InputEvent @event)
     {
+        if (@event is InputEventMouseButton { Pressed: true } mouseButton)
+        {
+            if (mouseButton.ButtonIndex == MouseButton.WheelUp)
+            {
+                AdjustCameraZoom(CameraZoomStep);
+            }
+            else if (mouseButton.ButtonIndex == MouseButton.WheelDown)
+            {
+                AdjustCameraZoom(-CameraZoomStep);
+            }
+
+            return;
+        }
+
         if (@event is not InputEventKey { Pressed: true, Echo: false } key)
         {
             return;
@@ -56,6 +76,24 @@ public partial class PlayerController : CharacterBody2D
         {
             PlaceFirstLooseItemThroughServer();
         }
+    }
+
+    public void AdjustCameraZoom(float delta)
+    {
+        if (_camera is null)
+        {
+            return;
+        }
+
+        var nextZoom = CalculateCameraZoom(_camera.Zoom.X, delta, MinCameraZoom, MaxCameraZoom);
+        _camera.Zoom = new Vector2(nextZoom, nextZoom);
+    }
+
+    public static float CalculateCameraZoom(float currentZoom, float delta, float minZoom, float maxZoom)
+    {
+        var lower = Mathf.Min(minZoom, maxZoom);
+        var upper = Mathf.Max(minZoom, maxZoom);
+        return Mathf.Clamp(currentZoom + delta, lower, upper);
     }
 
     private void EquipThroughServer(string itemId)

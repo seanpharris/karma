@@ -108,6 +108,9 @@ Targets:
 - Let the local prototype client read the same interest snapshot summary that a
   real network client would consume, so UI/debug feedback is based on server
   visibility rather than scene assumptions.
+- Keep camera zoom client-side and clamped. Zoom can change how much of the
+  already-rendered local area is visible, but server interest snapshots still
+  decide what terrain, players, NPCs, items, and events the client receives.
 - Route future transports through explicit network message envelopes for join,
   intent, snapshot request, ping, and response/error messages. The current
   in-process protocol adapter uses those envelopes before any socket layer is

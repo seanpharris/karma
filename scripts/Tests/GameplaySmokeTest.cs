@@ -5,6 +5,7 @@ using Karma.Core;
 using Karma.Data;
 using Karma.Generation;
 using Karma.Net;
+using Karma.Player;
 using Karma.World;
 
 namespace Karma.Tests;
@@ -86,6 +87,10 @@ public partial class GameplaySmokeTest : Node
             MatchDurationSeconds: 30 * 60);
         ExpectEqual(3, wideInterestConfig.InterestRadiusChunks, "server config expands chunk radius for wider interest ranges");
         ExpectEqual(30 * 60, ServerConfig.Prototype4Player.MatchDurationSeconds, "prototype server profile uses 30 minute matches");
+        ExpectEqual(3.25f, PlayerController.CalculateCameraZoom(3f, 0.25f, 1.25f, 5f), "camera zoom can move closer");
+        ExpectEqual(2.75f, PlayerController.CalculateCameraZoom(3f, -0.25f, 1.25f, 5f), "camera zoom can move farther out");
+        ExpectEqual(1.25f, PlayerController.CalculateCameraZoom(1.25f, -5f, 1.25f, 5f), "camera zoom clamps farthest view");
+        ExpectEqual(5f, PlayerController.CalculateCameraZoom(5f, 5f, 1.25f, 5f), "camera zoom clamps closest view");
         var matchServer = new AuthoritativeWorldServer(state, "match-test-world");
         ExpectEqual(MatchStatus.Running, matchServer.Match.Status, "new server match starts running");
         ExpectEqual(30 * 60, matchServer.Match.RemainingSeconds, "new server match starts with full duration remaining");
