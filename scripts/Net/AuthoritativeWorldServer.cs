@@ -15,6 +15,7 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, long> _lastAttackTickByPlayer = new();
     private readonly Dictionary<string, long> _karmaBreakGraceUntilTickByPlayer = new();
     private readonly Dictionary<string, Queue<DropClaim>> _dropClaimsByHolderItem = new();
+    private readonly Dictionary<string, TilePosition> _initialSpawnByPlayer = new();
     private readonly HashSet<string> _connectedPlayerIds = new();
     private readonly Dictionary<string, WorldItemEntity> _worldItems = new();
     private readonly Dictionary<string, WorldStructureEntity> _worldStructures = new();
@@ -26,6 +27,8 @@ public sealed class AuthoritativeWorldServer
     private bool _matchRewardsPaid;
     private const long AttackCooldownTicks = 3;
     private const long KarmaBreakGraceTicks = 5;
+    private const int MinimumInitialSpawnSeparationTiles = 10;
+    private const int SpawnEdgePaddingTiles = 4;
     private sealed record DropClaim(string OwnerId, string OwnerName);
 
     public AuthoritativeWorldServer(GameState state, string worldId, ServerConfig config = null)
@@ -53,6 +56,7 @@ public sealed class AuthoritativeWorldServer
     public void SetTileMap(GeneratedTileMap tileMap)
     {
         _tileMap = tileMap;
+        AssignConnectedInitialSpawns();
     }
 
     public void AdvanceIdleTicks(long ticks)
@@ -164,6 +168,8 @@ public sealed class AuthoritativeWorldServer
         }
 
         _state.RegisterPlayer(playerId, displayName);
+        var spawnPosition = AssignInitialSpawnPosition(playerId);
+        _state.SetPlayerPosition(playerId, spawnPosition);
         _connectedPlayerIds.Add(playerId);
         AppendEvent(
             "player_joined",
@@ -172,6 +178,8 @@ public sealed class AuthoritativeWorldServer
             {
                 ["playerId"] = playerId,
                 ["displayName"] = displayName,
+                ["spawnX"] = spawnPosition.X.ToString(),
+                ["spawnY"] = spawnPosition.Y.ToString(),
                 ["connectedPlayers"] = _connectedPlayerIds.Count.ToString(),
                 ["maxPlayers"] = Config.MaxPlayers.ToString()
             });
@@ -1458,7 +1466,7 @@ public sealed class AuthoritativeWorldServer
 
     private void RespawnPlayer(string playerId)
     {
-        _state.SetPlayerPosition(playerId, GetRespawnPosition(playerId));
+        _state.SetPlayerPosition(playerId, GetKarmaBreakRespawnPosition(playerId));
     }
 
     private IReadOnlyList<string> GetStatusEffectsFor(PlayerState player)
@@ -1572,7 +1580,104 @@ public sealed class AuthoritativeWorldServer
         };
     }
 
-    private static TilePosition GetRespawnPosition(string playerId)
+    private void AssignConnectedInitialSpawns()
+    {
+        foreach (var playerId in _connectedPlayerIds.OrderBy(id => id))
+        {
+            if (_initialSpawnByPlayer.ContainsKey(playerId) || !_state.Players.TryGetValue(playerId, out var player) || player.Position != TilePosition.Origin)
+            {
+                continue;
+            }
+
+            _state.SetPlayerPosition(playerId, AssignInitialSpawnPosition(playerId));
+        }
+    }
+
+    private TilePosition AssignInitialSpawnPosition(string playerId)
+    {
+        if (_initialSpawnByPlayer.TryGetValue(playerId, out var existing))
+        {
+            return existing;
+        }
+
+        var random = new Random(HashCode.Combine(WorldId, playerId, Config.MaxPlayers));
+        var existingSpawns = _initialSpawnByPlayer.Values.ToArray();
+        var candidates = BuildSpawnCandidates(random, existingSpawns);
+        var spawn = candidates
+            .OrderByDescending(candidate => GetNearestDistanceSquared(candidate, existingSpawns))
+            .ThenBy(_ => random.Next())
+            .FirstOrDefault();
+
+        if (spawn == default && existingSpawns.Length > 0)
+        {
+            spawn = GetFallbackSpawnPosition(_initialSpawnByPlayer.Count);
+        }
+
+        _initialSpawnByPlayer[playerId] = spawn;
+        return spawn;
+    }
+
+    private IReadOnlyList<TilePosition> BuildSpawnCandidates(Random random, IReadOnlyCollection<TilePosition> existingSpawns)
+    {
+        var candidates = new List<TilePosition>();
+        var minimumDistanceSquared = MinimumInitialSpawnSeparationTiles * MinimumInitialSpawnSeparationTiles;
+
+        for (var attempt = 0; attempt < 96; attempt++)
+        {
+            var candidate = GetRandomSpawnCandidate(random);
+            if (existingSpawns.All(existing => candidate.DistanceSquaredTo(existing) >= minimumDistanceSquared))
+            {
+                candidates.Add(candidate);
+            }
+        }
+
+        if (candidates.Count == 0)
+        {
+            for (var attempt = 0; attempt < 32; attempt++)
+            {
+                candidates.Add(GetRandomSpawnCandidate(random));
+            }
+        }
+
+        return candidates;
+    }
+
+    private TilePosition GetRandomSpawnCandidate(Random random)
+    {
+        var minX = SpawnEdgePaddingTiles;
+        var minY = SpawnEdgePaddingTiles;
+        var maxX = 63;
+        var maxY = 63;
+
+        if (_tileMap is not null)
+        {
+            maxX = Math.Max(minX, _tileMap.Width - SpawnEdgePaddingTiles - 1);
+            maxY = Math.Max(minY, _tileMap.Height - SpawnEdgePaddingTiles - 1);
+        }
+
+        return new TilePosition(random.Next(minX, maxX + 1), random.Next(minY, maxY + 1));
+    }
+
+    private static int GetNearestDistanceSquared(TilePosition candidate, IReadOnlyCollection<TilePosition> existingSpawns)
+    {
+        return existingSpawns.Count == 0
+            ? int.MaxValue
+            : existingSpawns.Min(existing => candidate.DistanceSquaredTo(existing));
+    }
+
+    private static TilePosition GetFallbackSpawnPosition(int index)
+    {
+        return index switch
+        {
+            0 => new TilePosition(8, 8),
+            1 => new TilePosition(55, 8),
+            2 => new TilePosition(8, 55),
+            3 => new TilePosition(55, 55),
+            _ => new TilePosition(8 + (index * 7 % 48), 8 + (index * 11 % 48))
+        };
+    }
+
+    private static TilePosition GetKarmaBreakRespawnPosition(string playerId)
     {
         return playerId switch
         {

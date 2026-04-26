@@ -19,6 +19,12 @@ combination of all of those.
 
 ## First Game Mode: Match
 
+Players begin each match at random spawn tiles chosen by the server with a soft
+minimum separation so the opening does not immediately collapse into one pile.
+Initial teams are not part of the default match start. Temporary in-game team or
+posse status can be layered on later, but a Karma Break/death clears that status
+so respawn is a true social reset.
+
 The first shipped game type should be a timed match. Players join a generated
 world and compete for 30 minutes. At the end of the timer, the current Saint
 highest karma and current Scourge lowest karma are both match winners.

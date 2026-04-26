@@ -26,6 +26,8 @@ public sealed class PlayerState
     public int Health { get; private set; } = 100;
     public int Scrip { get; private set; }
     public TilePosition Position { get; private set; } = TilePosition.Origin;
+    public string TeamId { get; private set; } = string.Empty;
+    public bool HasTeam => !string.IsNullOrWhiteSpace(TeamId);
     public IReadOnlyList<GameItem> Inventory => _inventory;
     public IReadOnlyDictionary<EquipmentSlot, GameItem> Equipment => _equipment;
 
@@ -42,6 +44,17 @@ public sealed class PlayerState
         Karma.Reset();
         IsAlive = true;
         Health = MaxHealth;
+        ClearTeamStatus();
+    }
+
+    public void SetTeam(string teamId)
+    {
+        TeamId = teamId.Trim();
+    }
+
+    public void ClearTeamStatus()
+    {
+        TeamId = string.Empty;
     }
 
     public void SetPosition(TilePosition position)

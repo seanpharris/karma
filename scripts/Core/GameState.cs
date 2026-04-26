@@ -150,6 +150,30 @@ public partial class GameState : Node
         return true;
     }
 
+    public bool SetPlayerTeam(string playerId, string teamId)
+    {
+        EnsurePrototypePlayers();
+        if (!_players.TryGetValue(playerId, out var player) || string.IsNullOrWhiteSpace(teamId))
+        {
+            return false;
+        }
+
+        player.SetTeam(teamId);
+        return true;
+    }
+
+    public bool ClearPlayerTeamStatus(string playerId)
+    {
+        EnsurePrototypePlayers();
+        if (!_players.TryGetValue(playerId, out var player))
+        {
+            return false;
+        }
+
+        player.ClearTeamStatus();
+        return true;
+    }
+
     public LeaderboardStanding GetLeaderboardStanding()
     {
         EnsurePrototypePlayers();

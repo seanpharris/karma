@@ -67,6 +67,14 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             localSession.LastLocalSnapshot.Tick > previousSessionTick,
             "prototype server session refreshes local snapshot after accepted stand-in intent");
+        var shopApproach = localSession.SendLocal(
+            IntentType.Move,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["x"] = "6",
+                ["y"] = "4"
+            });
+        ExpectTrue(shopApproach.WasAccepted, "prototype server session can move local player into shop range after random spawn");
         var localScripBeforeOffer = state.LocalScrip;
         var localPurchase = localSession.PurchaseOffer(StarterShopCatalog.DallenWhoopieCushionOfferId);
         ExpectTrue(localPurchase.WasAccepted, "prototype server session purchases visible shop offers");
@@ -424,6 +432,23 @@ public partial class GameplaySmokeTest : Node
             }));
         ExpectTrue(postMatchMove.WasAccepted, "finished match still allows movement");
         ExpectEqual(4, server.ConnectedPlayerIds.Count, "prototype server starts with four connected player slots");
+        var spawnState = new GameState();
+        spawnState.RegisterPlayer(GameState.LocalPlayerId, "Spawn Tester");
+        spawnState.RegisterPlayer("peer_stand_in", "Spawn Peer");
+        spawnState.RegisterPlayer("rival_paragon", "Spawn Paragon");
+        spawnState.RegisterPlayer("rival_renegade", "Spawn Renegade");
+        var spawnServer = new AuthoritativeWorldServer(spawnState, "spawn-test-world");
+        var spawnWorld = WorldGenerator.Generate(WorldConfig.FromServerConfig(
+            "spawn-test-world",
+            new WorldSeed(42, "Spawn Test", "test"),
+            ServerConfig.Prototype4Player));
+        spawnServer.SetTileMap(spawnWorld.TileMap);
+        var initialSpawns = spawnServer.ConnectedPlayerIds
+            .Select(playerId => spawnState.Players[playerId].Position)
+            .ToArray();
+        ExpectEqual(4, initialSpawns.Distinct().Count(), "initial match spawns are unique per connected player");
+        ExpectTrue(initialSpawns.All(spawn => spawn.X >= 4 && spawn.Y >= 4 && spawn.X < spawnWorld.TileMap.Width - 4 && spawn.Y < spawnWorld.TileMap.Height - 4), "initial match spawns avoid map edges");
+        ExpectTrue(initialSpawns.SelectMany((spawn, index) => initialSpawns.Skip(index + 1).Select(other => spawn.DistanceSquaredTo(other))).All(distanceSquared => distanceSquared >= 100), "initial match spawns keep players separated");
         ExpectFalse(server.JoinPlayer("overflow_player", "Overflow Player").WasAccepted, "prototype server rejects players beyond capacity");
         ExpectEqual(1000, WorldConfig.FromServerConfig(
             "scale-test",
@@ -885,6 +910,7 @@ public partial class GameplaySmokeTest : Node
             state.Inventory.Count(item => item.Id == StarterItems.WhoopieCushionId),
             "consumed whoopie cushion removes one inventory item");
         var questServer = new AuthoritativeWorldServer(state, "quest-test-world");
+        state.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(3, 4));
         var serverStartQuest = questServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             1,
@@ -1196,6 +1222,7 @@ public partial class GameplaySmokeTest : Node
             HudController.FormatLatestServerEvent(new[] { discountedPurchase.Event }).Contains("base 18"),
             "HUD formats discounted shop purchases");
         state.AddItem("peer_stand_in", StarterItems.WhoopieCushion);
+        ExpectTrue(state.SetPlayerTeam("peer_stand_in", "ad-hoc-posse"), "players can hold temporary team status");
         var peerKarmaBreak = transferServer.ProcessIntent(new ServerIntent(
             "peer_stand_in",
             1,
@@ -1203,6 +1230,7 @@ public partial class GameplaySmokeTest : Node
             new System.Collections.Generic.Dictionary<string, string>()));
         ExpectTrue(peerKarmaBreak.WasAccepted, "server accepts peer Karma Break intent");
         ExpectFalse(state.HasItem("peer_stand_in", StarterItems.WhoopieCushionId), "Karma Break drains loose inventory");
+        ExpectFalse(state.Players["peer_stand_in"].HasTeam, "Karma Break clears temporary team status");
         ExpectEqual(new TilePosition(4, 4), state.Players["peer_stand_in"].Position, "explicit Karma Break respawns peer at server spawn tile");
         ExpectTrue(
             transferServer.WorldItems.Values.Any(entity => entity.EntityId.StartsWith("drop_peer_stand_in") && entity.Item.Id == StarterItems.WhoopieCushionId),
