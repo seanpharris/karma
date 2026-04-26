@@ -180,6 +180,7 @@ Useful docs:
 
 - `docs/theme-art-curation-standard.md` — broad multi-theme standard and prompts.
 - `docs/character-art-generation-workflow.md` — character prompt and validator workflow.
+- `docs/prototype-model-art-prompts.md` — paste-ready prompts for current prototype NPC, item, weapon, tool, and station models.
 - `docs/character-animation-pipeline.md` — base-body plus skin/outfit layering plan.
 
 ## Audit Commands

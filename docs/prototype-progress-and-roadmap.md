@@ -55,7 +55,7 @@ and the next practical build slices.
 - The prototype player now has animated movement rather than a static sprite.
 - Runtime supports 8-direction character animation names and fallback to 4-direction sheets.
 - Current generated/extracted 8-direction engineer sheet is active, with a transparent runtime PNG pipeline.
-- Art curation docs/tools exist for generated sheets, theme packs, audits, and future base-body + outfit/skin layering.
+- Art curation docs/tools exist for generated sheets, theme packs, audits, current prototype model prompts, and future base-body + outfit/skin layering.
 - Research notes now point toward a professional paper-doll/layered character standard inspired by LPC/RapidLPC/Godot LPC patterns, while avoiding direct art imports unless licensing is deliberately accepted.
 
 ### Reusable code research
