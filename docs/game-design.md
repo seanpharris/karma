@@ -121,6 +121,9 @@ starting with `assets/art/tilesets/scifi_station_atlas.png`.
 The current prototype uses mapped regions from that sci-fi atlas for core
 terrain and structure ids while keeping placeholder colors available for future
 unmapped tile ids.
+Actor sprites use the same approach: player, Mara, and peer stand-in have
+source regions reserved in `assets/art/sprites/scifi_character_atlas.png`, with
+procedural fallbacks until that sheet is present locally.
 
 ## NPC Relationships
 

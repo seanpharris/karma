@@ -36,10 +36,15 @@ public sealed record PrototypeSpriteDefinition(
     PrototypeSpriteKind Kind,
     string DisplayName,
     Vector2 Size,
-    IReadOnlyList<PrototypeSpriteLayer> Layers);
+    IReadOnlyList<PrototypeSpriteLayer> Layers,
+    string AtlasPath = "",
+    Rect2 AtlasRegion = new(),
+    bool HasAtlasRegion = false);
 
 public static class PrototypeSpriteCatalog
 {
+    public const string CharacterAtlasPath = "res://assets/art/sprites/scifi_character_atlas.png";
+
     public static PrototypeSpriteKind GetKindForItem(string itemId)
     {
         return itemId switch
@@ -62,19 +67,22 @@ public static class PrototypeSpriteCatalog
                 "Player",
                 new Color(0.22f, 0.76f, 0.94f),
                 new Color(0.08f, 0.19f, 0.24f),
-                new Color(0.96f, 0.94f, 0.72f)),
+                new Color(0.96f, 0.94f, 0.72f),
+                new Rect2(24f, 84f, 42f, 84f)),
             PrototypeSpriteKind.Mara => Humanoid(
                 kind,
                 "Mara Venn",
                 new Color(0.94f, 0.69f, 0.28f),
                 new Color(0.21f, 0.14f, 0.11f),
-                new Color(0.58f, 0.93f, 0.76f)),
+                new Color(0.58f, 0.93f, 0.76f),
+                new Rect2(599f, 86f, 42f, 84f)),
             PrototypeSpriteKind.Peer => Humanoid(
                 kind,
                 "Stranded Player",
                 new Color(0.65f, 0.45f, 0.94f),
                 new Color(0.18f, 0.14f, 0.28f),
-                new Color(0.94f, 0.82f, 0.51f)),
+                new Color(0.94f, 0.82f, 0.51f),
+                new Rect2(252f, 84f, 42f, 84f)),
             PrototypeSpriteKind.WhoopieCushion => WhoopieCushion(),
             PrototypeSpriteKind.DeflatedBalloon => DeflatedBalloon(),
             PrototypeSpriteKind.RepairKit => RepairKit(),
@@ -85,7 +93,8 @@ public static class PrototypeSpriteCatalog
                 "Unknown",
                 Colors.White,
                 Colors.Black,
-                Colors.White)
+                Colors.White,
+                new Rect2())
         };
     }
 
@@ -94,7 +103,8 @@ public static class PrototypeSpriteCatalog
         string displayName,
         Color body,
         Color outline,
-        Color accent)
+        Color accent,
+        Rect2 atlasRegion)
     {
         return new PrototypeSpriteDefinition(
             kind,
@@ -111,7 +121,10 @@ public static class PrototypeSpriteCatalog
                 Rect(accent, -5f, 0f, 10f, 3f),
                 Rect(outline, -3f, -20f, 2f, 2f),
                 Rect(outline, 2f, -20f, 2f, 2f)
-            });
+            },
+            CharacterAtlasPath,
+            atlasRegion,
+            HasAtlasRegion: true);
     }
 
     private static PrototypeSpriteDefinition WhoopieCushion()

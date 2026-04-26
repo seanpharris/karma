@@ -218,6 +218,8 @@ public partial class GameplaySmokeTest : Node
         var whoopieSprite = PrototypeSpriteCatalog.Get(PrototypeSpriteKind.WhoopieCushion);
         ExpectEqual("Player", playerSprite.DisplayName, "prototype sprite catalog names player model");
         ExpectTrue(playerSprite.Layers.Count >= 8, "prototype player sprite has layered pixel art");
+        ExpectEqual(PrototypeSpriteCatalog.CharacterAtlasPath, playerSprite.AtlasPath, "prototype player sprite records character atlas path");
+        ExpectTrue(playerSprite.HasAtlasRegion, "prototype player sprite can use character atlas art");
         ExpectTrue(whoopieSprite.Layers.Any(layer => layer.Shape == PrototypeSpriteShape.Circle), "prototype item sprite supports rounded prop art");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.RepairKit).Layers.Count >= 4, "prototype tool sprite has recognizable layers");
         ExpectEqual(
