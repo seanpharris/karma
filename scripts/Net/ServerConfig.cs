@@ -23,6 +23,9 @@ public sealed record ServerConfig(
     public const int DefaultMatchDurationSeconds = 30 * 60;
     public const int DefaultChunkSizeTiles = 32;
 
+    public int InterestRadiusChunks =>
+        Math.Max(1, (int)Math.Ceiling(InterestRadiusTiles / (double)ChunkSizeTiles));
+
     public static ServerConfig Prototype4Player { get; } = new(
         MaxPlayers: 4,
         TargetPlayers: 4,

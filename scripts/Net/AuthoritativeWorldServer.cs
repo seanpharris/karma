@@ -249,7 +249,7 @@ public sealed class AuthoritativeWorldServer
         }
 
         return _tileMap
-            .GetChunksAround(player.Position.X, player.Position.Y, radiusChunks: 1)
+            .GetChunksAround(player.Position.X, player.Position.Y, Config.InterestRadiusChunks)
             .Select(ToSnapshot)
             .ToArray();
     }

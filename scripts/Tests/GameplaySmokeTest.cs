@@ -54,6 +54,17 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(4, ServerConfig.Prototype4Player.MaxPlayers, "prototype server profile supports 4 players");
         ExpectEqual(100, ServerConfig.Large100Player.MaxPlayers, "large server profile supports 100 players");
         ExpectEqual(32, ServerConfig.Large100Player.ChunkSizeTiles, "large server profile uses chunked world tiles");
+        ExpectEqual(1, ServerConfig.Large100Player.InterestRadiusChunks, "large server profile derives map chunk interest radius");
+        var wideInterestConfig = new ServerConfig(
+            MaxPlayers: 4,
+            TargetPlayers: 4,
+            Scale: WorldScale.Small,
+            TickRate: 20,
+            InterestRadiusTiles: 65,
+            CombatRangeTiles: 2,
+            ChunkSizeTiles: 32,
+            MatchDurationSeconds: 30 * 60);
+        ExpectEqual(3, wideInterestConfig.InterestRadiusChunks, "server config expands chunk radius for wider interest ranges");
         ExpectEqual(30 * 60, ServerConfig.Prototype4Player.MatchDurationSeconds, "prototype server profile uses 30 minute matches");
         var matchServer = new AuthoritativeWorldServer(state, "match-test-world");
         ExpectEqual(MatchStatus.Running, matchServer.Match.Status, "new server match starts running");

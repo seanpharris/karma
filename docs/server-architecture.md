@@ -78,6 +78,9 @@ Targets:
   nearby chunks/entities through interest snapshots.
 - Generated tile maps expose chunk coordinates and nearby chunk queries so the
   server/client can stream map data around each player.
+- Map chunk interest radius is derived from the server interest radius and
+  chunk size, so tuning visibility for 4-player prototypes or 100-player worlds
+  changes terrain streaming without special-case code.
 - Interest snapshots include nearby map chunk snapshots when the server has a
   generated tile map registered for the world.
 - Map chunk snapshots include stable chunk keys and deterministic revisions so
