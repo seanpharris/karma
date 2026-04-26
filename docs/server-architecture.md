@@ -150,8 +150,9 @@ Targets:
 - Validate shop purchases on the server: known offer id, reachable vendor NPC,
   known item id, player-specific perk pricing, wallet balance, inventory
   mutation, and syncable purchase event.
-- Validate item use intents on the server: known item id, equippable slot,
-  inventory/equipment mutation, and syncable equipment event.
+- Validate item use intents on the server: known item id, equipment or tool
+  behavior, target range where needed, inventory/equipment mutation, and
+  syncable item event.
 - Validate pickup interactions on the server: visible world item entity,
   one-time availability, player inventory mutation, and syncable pickup event.
 - Validate placed objects on the server: item ownership, short placement range,

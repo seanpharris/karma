@@ -41,6 +41,9 @@ prototype interaction prompt can buy the first visible offer for quick testing.
 Shop prices are calculated by the server for each player, so economy perks such
 as Trusted Discount and Shifty Prices change both the displayed offer price and
 the authoritative wallet debit.
+Tools can have server-owned effects instead of only living in inventory. The
+first functional tool is the repair kit, which can heal a nearby player and is
+consumed when used.
 
 Prototype matches stay small, but the production large-world target is
 `1000 x 1000` tiles at `16px` logical tile scale. Large worlds must be treated

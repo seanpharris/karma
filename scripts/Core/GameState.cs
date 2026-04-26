@@ -265,6 +265,29 @@ public partial class GameState : Node
         return died;
     }
 
+    public bool HealPlayer(string healerId, string targetId, int amount, string reason)
+    {
+        EnsurePrototypePlayers();
+        if (!_players.TryGetValue(targetId, out var target))
+        {
+            return false;
+        }
+
+        var before = target.Health;
+        target.Heal(amount);
+        var actualHealing = target.Health - before;
+        if (actualHealing <= 0)
+        {
+            return false;
+        }
+
+        WorldEvents.Add(WorldEventType.Combat, $"{target.DisplayName} recovered {actualHealing} health: {reason}", healerId, targetId);
+        EmitSignal(SignalName.KarmaEvent, $"{target.DisplayName} recovered {actualHealing} health: {reason}");
+        EmitCombatChanged();
+        EmitWorldEventsChanged();
+        return true;
+    }
+
     public bool StartEntanglement(
         string playerId,
         string npcId,

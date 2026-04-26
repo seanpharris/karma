@@ -725,9 +725,27 @@ public partial class GameplaySmokeTest : Node
                 ["entityId"] = "pickup_practice_stick"
             })).WasAccepted, "server rejects duplicate pickup intent");
 
-        var serverEquip = server.ProcessIntent(new ServerIntent(
+        state.AddItem(StarterItems.RepairKit);
+        var repairKitCountBeforeUse = state.Inventory.Count(item => item.Id == StarterItems.RepairKitId);
+        state.DamagePlayer(GameState.LocalPlayerId, "peer_stand_in", 40, "repair kit smoke test");
+        var peerHealthBeforeRepair = state.Players["peer_stand_in"].Health;
+        var serverRepair = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             6,
+            IntentType.UseItem,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["itemId"] = StarterItems.RepairKitId,
+                ["targetId"] = "peer_stand_in"
+            }));
+        ExpectTrue(serverRepair.WasAccepted, "server accepts repair kit use intent");
+        ExpectEqual(peerHealthBeforeRepair + 25, state.Players["peer_stand_in"].Health, "repair kit heals nearby target");
+        ExpectEqual(repairKitCountBeforeUse - 1, state.Inventory.Count(item => item.Id == StarterItems.RepairKitId), "repair kit use consumes one item");
+        ExpectTrue(serverRepair.Event.EventId.Contains("item_used"), "repair kit use emits item event");
+
+        var serverEquip = server.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            7,
             IntentType.UseItem,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -738,7 +756,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(serverEquip.Event.EventId.Contains("item_equipped"), "server item intent emits equipment event");
         ExpectFalse(server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            7,
+            8,
             IntentType.UseItem,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -748,7 +766,7 @@ public partial class GameplaySmokeTest : Node
         var peerHealthBeforeAttack = state.Players["peer_stand_in"].Health;
         var serverAttack = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            8,
+            9,
             IntentType.Attack,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -780,7 +798,7 @@ public partial class GameplaySmokeTest : Node
 
         var staleIntent = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            8,
+            9,
             IntentType.KarmaAction,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -789,7 +807,7 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(staleIntent.WasAccepted, "server rejects duplicate sequence intent");
         ExpectTrue(state.LocalKarma.Score > 0, "rejected stale intent does not mutate karma");
         var deltaInterestSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId, afterTick: 2);
-        ExpectEqual(8, deltaInterestSnapshot.ServerEvents.Count, "interest snapshot can return visible events after a tick");
+        ExpectEqual(9, deltaInterestSnapshot.ServerEvents.Count, "interest snapshot can return visible events after a tick");
         ExpectTrue(deltaInterestSnapshot.SyncHint.IsDelta, "delta interest snapshot reports delta sync hint");
         ExpectEqual(2L, deltaInterestSnapshot.SyncHint.AfterTick, "delta interest snapshot records requested after-tick");
         ExpectEqual(deltaInterestSnapshot.ServerEvents.Count, deltaInterestSnapshot.SyncHint.ServerEventCount, "delta sync hint counts returned server events");
@@ -806,7 +824,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(maraDialogue.Choices.Any(choice => choice.ActionId == PrototypeActions.HelpMaraId), "server dialogue exposes approved NPC choices");
         var startDialogue = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            9,
+            10,
             IntentType.StartDialogue,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -817,7 +835,7 @@ public partial class GameplaySmokeTest : Node
         var karmaBeforeDialogueChoice = state.LocalKarma.Score;
         var selectDialogueChoice = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            10,
+            11,
             IntentType.SelectDialogueChoice,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -829,7 +847,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(selectDialogueChoice.Event.EventId.Contains("dialogue_choice_selected"), "dialogue choice emits server event");
         ExpectFalse(server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            11,
+            12,
             IntentType.SelectDialogueChoice,
             new System.Collections.Generic.Dictionary<string, string>
             {

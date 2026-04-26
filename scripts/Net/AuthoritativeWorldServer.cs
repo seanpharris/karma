@@ -828,6 +828,11 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, $"Unknown item id: {itemId}.");
         }
 
+        if (item.Id == StarterItems.RepairKitId)
+        {
+            return ProcessRepairKitUse(intent, item);
+        }
+
         if (item.Slot == EquipmentSlot.None)
         {
             return Reject(intent, $"Item cannot be equipped: {item.Name}.");
@@ -846,6 +851,42 @@ public sealed class AuthoritativeWorldServer
                 ["playerId"] = intent.PlayerId,
                 ["itemId"] = item.Id,
                 ["slot"] = item.Slot.ToString()
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessRepairKitUse(ServerIntent intent, GameItem item)
+    {
+        var targetId = intent.Payload.TryGetValue("targetId", out var payloadTargetId)
+            ? payloadTargetId
+            : intent.PlayerId;
+        if (targetId != intent.PlayerId && !CanReachPlayer(intent.PlayerId, targetId, out var rejectionReason))
+        {
+            return Reject(intent, rejectionReason);
+        }
+
+        if (!_state.HasItem(intent.PlayerId, item.Id))
+        {
+            return Reject(intent, $"Player does not have item: {item.Name}.");
+        }
+
+        const int repairKitHealing = 25;
+        if (!_state.HealPlayer(intent.PlayerId, targetId, repairKitHealing, $"{item.Name} field repair"))
+        {
+            return Reject(intent, $"{item.Name} had no injured target to repair.");
+        }
+
+        _state.ConsumeItem(intent.PlayerId, item.Id);
+        var serverEvent = AppendEvent(
+            "item_used",
+            $"{intent.PlayerId} used {item.Id} on {targetId}",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["targetId"] = targetId,
+                ["itemId"] = item.Id,
+                ["healing"] = repairKitHealing.ToString()
             });
 
         return ServerProcessResult.Accepted(serverEvent);
