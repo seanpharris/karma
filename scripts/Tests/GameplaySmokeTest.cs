@@ -242,6 +242,21 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(generatedApply.ApplyResult.World.Npcs.Any(npc => npc.Id.StartsWith("generated_npc_42_")), "content generation service adds generated NPCs through adapter boundary");
         var repeatedContent = contentModel.Generate(modelPrompt);
         ExpectEqual(generatedContent.Proposal.Npcs[0].Name, repeatedContent.Proposal.Npcs[0].Name, "deterministic content model is stable for a prompt seed");
+        var proposalJson = WorldContentProposalJson.Write(generatedContent.Proposal);
+        ExpectTrue(proposalJson.Contains("generated_npc_42_0"), "content proposal JSON writes generated NPC ids");
+        var parsedProposal = WorldContentProposalJson.ParseAndValidate(proposalJson);
+        ExpectTrue(parsedProposal.IsUsable, "content proposal JSON parses and validates model output");
+        ExpectEqual(generatedContent.Proposal.Npcs[0].Name, parsedProposal.Proposal.Npcs[0].Name, "content proposal JSON round-trips NPC data");
+        var jsonContentModel = new JsonWorldContentModel(
+            "json-prototype-content-v1",
+            _ => proposalJson);
+        var jsonModelResult = jsonContentModel.Generate(modelPrompt);
+        ExpectTrue(jsonModelResult.IsUsable, "JSON content model adapts provider text into validated proposals");
+        ExpectEqual("json-prototype-content-v1", jsonModelResult.ModelId, "JSON content model records provider model id");
+        var badJsonContentModel = new JsonWorldContentModel(
+            "json-bad-content-v1",
+            _ => "{ nope");
+        ExpectFalse(badJsonContentModel.Generate(modelPrompt).IsUsable, "JSON content model rejects malformed provider text");
 
         ExpectEqual(0, state.LocalKarma.Score, "new players start at neutral karma");
         ExpectEqual("Unmarked", state.LocalKarma.TierName, "new players start unmarked");

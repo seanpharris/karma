@@ -44,6 +44,8 @@ LLM proposal validation rules:
 - model providers are hidden behind a content generation interface, so Codex,
   hosted APIs, local models, and deterministic test generators can be swapped
   without changing server gameplay systems
+- model output is treated as proposal JSON: parse it, validate it, then apply it
+  through the same server-owned adapter path
 
 ## Multiplayer Scale
 

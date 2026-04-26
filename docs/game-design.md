@@ -80,6 +80,8 @@ validates it before it becomes live state.
 Model access is routed through a content generation adapter. During prototyping
 that adapter can be deterministic or Codex-backed; later it can point at a
 smaller local model as long as it returns the same proposal schema.
+Provider text is parsed as proposal JSON and rejected if malformed or invalid,
+so model swaps should affect generation quality rather than core game rules.
 
 Tile art should map onto stable logical ids such as `clinic_floor`,
 `wall_metal`, `door_airlock`, and `duel_ring_floor`. This lets us keep
