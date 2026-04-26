@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using Karma.Data;
 
 namespace Karma.Art;
 
@@ -39,6 +40,19 @@ public sealed record PrototypeSpriteDefinition(
 
 public static class PrototypeSpriteCatalog
 {
+    public static PrototypeSpriteKind GetKindForItem(string itemId)
+    {
+        return itemId switch
+        {
+            StarterItems.WhoopieCushionId => PrototypeSpriteKind.WhoopieCushion,
+            StarterItems.DeflatedBalloonId => PrototypeSpriteKind.DeflatedBalloon,
+            StarterItems.RepairKitId => PrototypeSpriteKind.RepairKit,
+            StarterItems.PracticeStickId => PrototypeSpriteKind.PracticeStick,
+            StarterItems.WorkVestId => PrototypeSpriteKind.WorkVest,
+            _ => PrototypeSpriteKind.WhoopieCushion
+        };
+    }
+
     public static PrototypeSpriteDefinition Get(PrototypeSpriteKind kind)
     {
         return kind switch

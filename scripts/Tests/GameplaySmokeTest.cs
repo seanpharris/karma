@@ -219,6 +219,14 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(playerSprite.Layers.Count >= 8, "prototype player sprite has layered pixel art");
         ExpectTrue(whoopieSprite.Layers.Any(layer => layer.Shape == PrototypeSpriteShape.Circle), "prototype item sprite supports rounded prop art");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.RepairKit).Layers.Count >= 4, "prototype tool sprite has recognizable layers");
+        ExpectEqual(
+            PrototypeSpriteKind.WorkVest,
+            PrototypeSpriteCatalog.GetKindForItem(StarterItems.WorkVestId),
+            "prototype sprite catalog maps armor item visuals");
+        ExpectEqual(
+            PrototypeSpriteKind.PracticeStick,
+            PrototypeSpriteCatalog.GetKindForItem(StarterItems.PracticeStickId),
+            "prototype sprite catalog maps weapon item visuals");
         ExpectEqual(5, generatedA.Locations.Count, "small world generates prototype location count");
         ExpectEqual(12, generatedA.Npcs.Count, "prototype target players generate starter NPC population");
         ExpectTrue(generatedA.Oddities.Any(item => item.Id == StarterItems.DeflatedBalloonId), "generated world includes absurd oddities");
