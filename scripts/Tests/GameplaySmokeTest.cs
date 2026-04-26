@@ -67,6 +67,12 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             generatedA.TileMap.Tiles.Any(tile => tile.ZoneId == "duel_ring" && tile.FloorId == WorldTileIds.DuelRingFloor),
             "world generation assigns logical duel ring tiles");
+        var artSet = ThemeArtRegistry.GetForTheme(generatedA.Theme);
+        ExpectTrue(artSet.Tiles.ContainsKey(WorldTileIds.ClinicFloor), "theme art registry maps clinic floor tile id");
+        ExpectEqual(
+            ThemeArtRegistry.PlaceholderAtlasPath,
+            artSet.GetTile(WorldTileIds.DoorAirlock).AtlasPath,
+            "theme art registry keeps future atlas path for tile ids");
         ExpectEqual(5, generatedA.Locations.Count, "small world generates prototype location count");
         ExpectEqual(12, generatedA.Npcs.Count, "prototype target players generate starter NPC population");
         ExpectTrue(generatedA.Oddities.Any(item => item.Id == StarterItems.DeflatedBalloonId), "generated world includes absurd oddities");

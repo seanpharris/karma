@@ -48,7 +48,7 @@ public partial class WorldRoot : Node2D
             ZIndex = -100
         };
         AddChild(_tileMapRenderer);
-        _tileMapRenderer.SetTileMap(GeneratedWorld.TileMap);
+        _tileMapRenderer.SetTileMap(GeneratedWorld.TileMap, ThemeArtRegistry.GetForTheme(GeneratedWorld.Theme));
     }
 
     private void RenderServerItems(ClientInterestSnapshot snapshot)

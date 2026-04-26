@@ -36,6 +36,10 @@ Tile art should map onto stable logical ids such as `clinic_floor`,
 procedural generation, collision, and server state stable while swapping
 placeholder visuals for real tileset sheets later.
 
+Theme art is routed through an art registry. Each logical tile id has a
+placeholder color now and an atlas path/coordinate reserved for future sprites,
+starting with `assets/art/tilesets/scifi_station_atlas.png`.
+
 ## NPC Relationships
 
 Karma is global score and path identity. NPC relationships are local memory.

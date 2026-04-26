@@ -9,3 +9,12 @@ Place source art here while we build the asset pipeline.
 Prefer descriptive lowercase names such as `scifi_station_atlas.png` or
 `western_props_32px.png`. Keep original files intact; we can create cropped or
 Godot-specific resources from them later.
+
+The current code expects the first sci-fi tileset candidate at:
+
+`tilesets/scifi_station_atlas.png`
+
+That path is registered in `scripts/World/ThemeArtRegistry.cs`. For now the
+game still renders placeholder colors, but the registry already stores atlas
+coordinates so we can switch logical tile ids to real art without changing
+world generation.
