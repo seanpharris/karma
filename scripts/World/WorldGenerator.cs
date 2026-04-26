@@ -167,6 +167,8 @@ public static class WorldGenerator
         var locations = GenerateLocations(random, config, theme, locationCount);
         var npcs = GenerateNpcs(random, config, locations);
         var placements = GenerateNpcPlacements(locations, npcs);
+        var oddities = GenerateOddities(config);
+        var oddityPlacements = GenerateOddityPlacements(random, config, locations, oddities);
 
         return new GeneratedWorld(
             config,
@@ -175,7 +177,8 @@ public static class WorldGenerator
             locations,
             npcs,
             placements,
-            GenerateOddities(config),
+            oddities,
+            oddityPlacements,
             StarterFactions.All);
     }
 
@@ -408,6 +411,47 @@ public static class WorldGenerator
         };
 
         return prefixes[random.Next(prefixes.Length)];
+    }
+
+    private static IReadOnlyList<GeneratedOddityPlacement> GenerateOddityPlacements(
+        Random random,
+        WorldConfig config,
+        IReadOnlyList<GeneratedLocation> locations,
+        IReadOnlyList<GameItem> oddities)
+    {
+        var reserved = locations
+            .Select(location => new TilePosition(location.X, location.Y))
+            .Append(new TilePosition(config.WidthTiles / 2, config.HeightTiles / 2))
+            .ToArray();
+        var points = ProceduralPlacementSampler.GenerateSeparatedPoints(
+            random,
+            config.WidthTiles,
+            config.HeightTiles,
+            oddities.Count,
+            edgePadding: 3,
+            candidateAttemptsPerPoint: 18,
+            reserved);
+        var placements = new List<GeneratedOddityPlacement>(oddities.Count);
+
+        for (var i = 0; i < oddities.Count; i++)
+        {
+            var nearestLocation = locations
+                .OrderBy(location => new TilePosition(location.X, location.Y).DistanceSquaredTo(points[i]))
+                .First();
+            placements.Add(new GeneratedOddityPlacement(
+                oddities[i].Id,
+                nearestLocation.Id,
+                BuildOddityPlacementReason(oddities[i], nearestLocation),
+                points[i].X,
+                points[i].Y));
+        }
+
+        return placements;
+    }
+
+    private static string BuildOddityPlacementReason(GameItem oddity, GeneratedLocation location)
+    {
+        return $"{oddity.Name} spawned near {location.Name} to support {location.ThemeTag} choices: {location.KarmaHook}";
     }
 
     private static IReadOnlyList<GameItem> GenerateOddities(WorldConfig config)

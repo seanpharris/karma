@@ -703,6 +703,13 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(8, samplePoints.Count, "procedural placement sampler returns requested point count");
         ExpectTrue(samplePoints.All(point => point.X >= 4 && point.Y >= 4 && point.X < 60 && point.Y < 60), "procedural placement sampler respects edge padding");
         ExpectTrue(samplePoints.All(point => point.DistanceSquaredTo(new TilePosition(32, 32)) >= 25), "procedural placement sampler avoids reserved points");
+        ExpectEqual(generatedA.Oddities.Count, generatedA.OddityPlacements.Count, "generated oddities receive deterministic world placements");
+        ExpectTrue(
+            generatedA.OddityPlacements.All(placement => placement.X >= 3 && placement.Y >= 3 && placement.X < generatedA.Config.WidthTiles - 3 && placement.Y < generatedA.Config.HeightTiles - 3),
+            "generated oddity placements respect edge padding");
+        ExpectTrue(
+            generatedA.OddityPlacements.Any(placement => placement.PlacementReason.Contains("choices")),
+            "generated oddity placements explain their local gameplay reason");
         ExpectTrue(artSet.Tiles.ContainsKey(WorldTileIds.ClinicFloor), "theme art registry maps clinic floor tile id");
         ExpectEqual(
             ThemeArtRegistry.PlaceholderAtlasPath,

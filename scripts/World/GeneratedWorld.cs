@@ -12,6 +12,7 @@ public sealed record GeneratedWorld(
     IReadOnlyList<NpcProfile> Npcs,
     IReadOnlyList<GeneratedNpcPlacement> NpcPlacements,
     IReadOnlyList<GameItem> Oddities,
+    IReadOnlyList<GeneratedOddityPlacement> OddityPlacements,
     IReadOnlyList<FactionProfile> Factions)
 {
     public string Summary =>
@@ -39,6 +40,13 @@ public sealed record GeneratedNpcPlacement(
     string Role,
     string Faction,
     string GameplayHook,
+    int X,
+    int Y);
+
+public sealed record GeneratedOddityPlacement(
+    string ItemId,
+    string LocationId,
+    string PlacementReason,
     int X,
     int Y);
 
