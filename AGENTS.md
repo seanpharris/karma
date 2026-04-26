@@ -182,6 +182,8 @@ Godot 2D top-down template:
   Godot `AnimatedSprite2D` with `SpriteFrames` from cataloged atlas regions.
 - Mapped props/items should use `PrototypeAtlasSprite`, which builds a Godot
   `Sprite2D` with an `AtlasTexture` from the same catalog data.
+- Mapped structures should use `StructureSprite`, which now also builds a
+  native `Sprite2D`/`AtlasTexture` from `StructureArtCatalog`.
 - Keep `PrototypeSprite` for temporary procedural fallbacks when an atlas region
   is missing.
 - Runtime character sheets should eventually use clean `32 x 32` frame grids.

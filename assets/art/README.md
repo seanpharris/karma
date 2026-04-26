@@ -69,6 +69,10 @@ Godot `Sprite2D` with an `AtlasTexture` from catalog source rectangles. If a
 region is missing, the component falls back to `PrototypeSprite` procedural
 placeholder art.
 
+Mapped structures use `StructureSprite`, which builds a native `Sprite2D` with
+an `AtlasTexture` from `StructureArtCatalog` and keeps its procedural greenhouse
+fallback for missing regions.
+
 For clean runtime character sheets, use the `32 x 32` grid documented in
 `AGENTS.md`. Once a sheet lands, map its top-left runtime-frame origin with
 `PrototypeSpriteCatalog.FourDirectionGridAnimations(...)` so Godot receives

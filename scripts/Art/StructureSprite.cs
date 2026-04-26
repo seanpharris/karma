@@ -8,12 +8,13 @@ public partial class StructureSprite : Node2D
     [Export] public string StructureId { get; set; } = string.Empty;
     [Export] public bool PreferAtlasArt { get; set; } = true;
 
-    private Texture2D _atlasTexture;
+    private Sprite2D _sprite;
     private string _atlasPath = string.Empty;
+    private Rect2 _atlasRegion = new();
 
     public override void _Ready()
     {
-        LoadAtlas();
+        BuildVisual();
         QueueRedraw();
     }
 
@@ -22,28 +23,38 @@ public partial class StructureSprite : Node2D
         var definition = GetDefinition();
         DrawShadow(definition.Size);
 
-        if (PreferAtlasArt && definition.HasAtlasRegion && _atlasTexture is not null)
+        if (ShouldUseNativeAtlas(definition))
         {
-            DrawTextureRectRegion(
-                _atlasTexture,
-                new Rect2(-definition.Size.X * 0.5f, -definition.Size.Y, definition.Size.X, definition.Size.Y),
-                definition.AtlasRegion);
             return;
         }
 
         DrawFallbackGreenhouse(definition);
     }
 
-    private void LoadAtlas()
+    public static AtlasTexture CreateAtlasTexture(Texture2D texture, StructureSpriteDefinition definition)
     {
-        var definition = GetDefinition();
-        if (!definition.HasAtlasRegion || _atlasPath == definition.AtlasPath)
+        return new AtlasTexture
         {
-            return;
+            Atlas = texture,
+            Region = definition.AtlasRegion
+        };
+    }
+
+    public static Vector2 CalculateScale(StructureSpriteDefinition definition)
+    {
+        if (definition.AtlasRegion.Size.X <= 0f || definition.AtlasRegion.Size.Y <= 0f)
+        {
+            return Vector2.One;
         }
 
-        _atlasPath = definition.AtlasPath;
-        _atlasTexture = AtlasTextureLoader.Load(_atlasPath, removeDarkBackground: true);
+        return new Vector2(
+            definition.Size.X / definition.AtlasRegion.Size.X,
+            definition.Size.Y / definition.AtlasRegion.Size.Y);
+    }
+
+    public static Vector2 CalculateOffset(StructureSpriteDefinition definition)
+    {
+        return new Vector2(0f, -definition.Size.Y * 0.5f);
     }
 
     private StructureSpriteDefinition GetDefinition()
@@ -51,6 +62,54 @@ public partial class StructureSprite : Node2D
         return string.IsNullOrWhiteSpace(StructureId)
             ? StructureArtCatalog.Get(Kind)
             : StructureArtCatalog.GetById(StructureId);
+    }
+
+    private bool ShouldUseNativeAtlas(StructureSpriteDefinition definition)
+    {
+        return PreferAtlasArt && definition.HasAtlasRegion && _sprite is not null;
+    }
+
+    private void BuildVisual()
+    {
+        var definition = GetDefinition();
+        if (!PreferAtlasArt || !definition.HasAtlasRegion)
+        {
+            ClearNativeSprite();
+            return;
+        }
+
+        if (_sprite is not null && _atlasPath == definition.AtlasPath && _atlasRegion == definition.AtlasRegion)
+        {
+            return;
+        }
+
+        ClearNativeSprite();
+
+        var texture = AtlasTextureLoader.Load(definition.AtlasPath, removeDarkBackground: true);
+        if (texture is null)
+        {
+            return;
+        }
+
+        _atlasPath = definition.AtlasPath;
+        _atlasRegion = definition.AtlasRegion;
+        _sprite = new Sprite2D
+        {
+            Name = "Sprite2D",
+            Texture = CreateAtlasTexture(texture, definition),
+            Centered = true,
+            Offset = CalculateOffset(definition),
+            Scale = CalculateScale(definition)
+        };
+        AddChild(_sprite);
+    }
+
+    private void ClearNativeSprite()
+    {
+        _sprite?.QueueFree();
+        _sprite = null;
+        _atlasPath = string.Empty;
+        _atlasRegion = new Rect2();
     }
 
     private void DrawShadow(Vector2 size)

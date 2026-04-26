@@ -566,6 +566,13 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(StructureArtCatalog.GreenhouseAtlasPath, greenhouse.AtlasPath, "structure catalog records greenhouse atlas path");
         ExpectTrue(greenhouse.HasAtlasRegion, "structure catalog maps greenhouse atlas art");
         ExpectTrue(StructureArtCatalog.All.ContainsKey(StructureSpriteKind.GreenhouseDamaged), "structure catalog maps greenhouse variants");
+        var testStructureAtlas = StructureSprite.CreateAtlasTexture(testTexture, greenhouse);
+        ExpectEqual(greenhouse.AtlasRegion, testStructureAtlas.Region, "native structure sprite preserves catalog source region");
+        ExpectEqual(
+            new Vector2(greenhouse.Size.X / greenhouse.AtlasRegion.Size.X, greenhouse.Size.Y / greenhouse.AtlasRegion.Size.Y),
+            StructureSprite.CalculateScale(greenhouse),
+            "native structure sprite scales source art to catalog display size");
+        ExpectEqual(new Vector2(0f, -greenhouse.Size.Y * 0.5f), StructureSprite.CalculateOffset(greenhouse), "native structure sprite anchors art to its footprint");
         var greenhouseNode = new StructureSprite();
         ExpectTrue(greenhouseNode.PreferAtlasArt, "structure sprite prefers mapped atlas art");
         ExpectEqual(
