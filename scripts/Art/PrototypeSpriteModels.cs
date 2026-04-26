@@ -65,6 +65,11 @@ public sealed record PrototypeSpriteLayer(
     float Radius,
     float Width);
 
+public sealed record PrototypeSpriteAnimation(
+    string Name,
+    float Speed,
+    IReadOnlyList<Rect2> Frames);
+
 public sealed record PrototypeSpriteDefinition(
     PrototypeSpriteKind Kind,
     string DisplayName,
@@ -72,7 +77,8 @@ public sealed record PrototypeSpriteDefinition(
     IReadOnlyList<PrototypeSpriteLayer> Layers,
     string AtlasPath = "",
     Rect2 AtlasRegion = new(),
-    bool HasAtlasRegion = false);
+    bool HasAtlasRegion = false,
+    IReadOnlyList<PrototypeSpriteAnimation> Animations = null);
 
 public static class PrototypeSpriteCatalog
 {
@@ -248,7 +254,62 @@ public static class PrototypeSpriteCatalog
             },
             atlasPath,
             atlasRegion,
-            HasAtlasRegion: true);
+            HasAtlasRegion: true,
+            Animations: StillCharacterAnimations(atlasRegion));
+    }
+
+    public static IReadOnlyList<PrototypeSpriteAnimation> StillCharacterAnimations(Rect2 frame)
+    {
+        return new[]
+        {
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleDownAnimation, 1f, new[] { frame }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleUpAnimation, 1f, new[] { frame }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleLeftAnimation, 1f, new[] { frame }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleRightAnimation, 1f, new[] { frame }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkDownAnimation, 5f, new[] { frame }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkUpAnimation, 5f, new[] { frame }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkLeftAnimation, 5f, new[] { frame }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkRightAnimation, 5f, new[] { frame })
+        };
+    }
+
+    public static IReadOnlyList<PrototypeSpriteAnimation> FourDirectionGridAnimations(
+        Vector2 origin,
+        int frameSize = 32,
+        int walkFramesPerDirection = 4)
+    {
+        var size = new Vector2(frameSize, frameSize);
+        return new[]
+        {
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleDownAnimation, 1f, new[] { RectAt(origin, 0, 0, size) }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleUpAnimation, 1f, new[] { RectAt(origin, 1, 0, size) }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleLeftAnimation, 1f, new[] { RectAt(origin, 2, 0, size) }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleRightAnimation, 1f, new[] { RectAt(origin, 3, 0, size) }),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkDownAnimation, 6f, Row(origin, 1, size, walkFramesPerDirection)),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkUpAnimation, 6f, Row(origin, 2, size, walkFramesPerDirection)),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkLeftAnimation, 6f, Row(origin, 3, size, walkFramesPerDirection)),
+            new PrototypeSpriteAnimation(PrototypeCharacterSprite.WalkRightAnimation, 6f, Row(origin, 4, size, walkFramesPerDirection))
+        };
+    }
+
+    private static IReadOnlyList<Rect2> Row(Vector2 origin, int row, Vector2 size, int count)
+    {
+        var frames = new Rect2[Mathf.Max(1, count)];
+        for (var column = 0; column < frames.Length; column++)
+        {
+            frames[column] = RectAt(origin, column, row, size);
+        }
+
+        return frames;
+    }
+
+    private static Rect2 RectAt(Vector2 origin, int column, int row, Vector2 size)
+    {
+        return new Rect2(
+            origin.X + (column * size.X),
+            origin.Y + (row * size.Y),
+            size.X,
+            size.Y);
     }
 
     private static PrototypeSpriteDefinition WhoopieCushion()

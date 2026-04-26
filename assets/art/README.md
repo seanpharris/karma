@@ -68,6 +68,11 @@ Props and pickups still use `PrototypeSprite`, which can draw mapped atlas
 regions or readable procedural placeholders. That keeps generated/server-owned
 objects easy to iterate while character art moves toward proper Godot
 `AnimatedSprite2D` resources.
+
+For clean runtime character sheets, use the `32 x 32` grid documented in
+`AGENTS.md`. Once a sheet lands, map its top-left runtime-frame origin with
+`PrototypeSpriteCatalog.FourDirectionGridAnimations(...)` so Godot receives
+named `SpriteFrames` animations instead of a single still frame.
 The current core item models also have source regions mapped for
 `sprites/scifi_item_atlas.png`: whoopie cushion, deflated balloon, repair kit,
 practice stick, work vest, and scrip.

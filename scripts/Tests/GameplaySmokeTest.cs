@@ -112,6 +112,35 @@ public partial class GameplaySmokeTest : Node
             PrototypeCharacterSprite.ResolveAnimationName(Vector2.Zero),
             "native character sprite idles when parent is not moving");
         ExpectEqual(
+            PrototypeCharacterSprite.IdleLeftAnimation,
+            PrototypeCharacterSprite.ResolveAnimationName(Vector2.Zero, CardinalDirection.Left),
+            "native character sprite preserves last facing direction while idle");
+        var gridAnimations = PrototypeSpriteCatalog.FourDirectionGridAnimations(Vector2.Zero);
+        ExpectEqual(
+            new Rect2(0f, 32f, 32f, 32f),
+            gridAnimations.First(animation => animation.Name == PrototypeCharacterSprite.WalkDownAnimation).Frames.First(),
+            "four-direction character grid maps walk-down to row one");
+        ExpectEqual(
+            4,
+            gridAnimations.First(animation => animation.Name == PrototypeCharacterSprite.WalkRightAnimation).Frames.Count,
+            "four-direction character grid maps four walk frames per direction");
+        var testImage = Image.CreateEmpty(128, 160, false, Image.Format.Rgba8);
+        var testTexture = ImageTexture.CreateFromImage(testImage);
+        var testDefinition = new PrototypeSpriteDefinition(
+            PrototypeSpriteKind.Player,
+            "Test Grid Character",
+            new Vector2(32f, 32f),
+            System.Array.Empty<PrototypeSpriteLayer>(),
+            "res://test-grid.png",
+            new Rect2(0f, 0f, 32f, 32f),
+            HasAtlasRegion: true,
+            Animations: gridAnimations);
+        var nativeFrames = PrototypeCharacterSprite.CreateSpriteFrames(testTexture, testDefinition);
+        ExpectEqual(
+            4,
+            nativeFrames.GetFrameCount(PrototypeCharacterSprite.WalkRightAnimation),
+            "native character sprite creates multi-frame walk animations");
+        ExpectEqual(
             0,
             ProjectSettings.GetSetting("rendering/textures/canvas_textures/default_texture_filter").AsInt32(),
             "project uses nearest-neighbor texture filtering for pixel art");

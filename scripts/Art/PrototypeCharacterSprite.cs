@@ -6,6 +6,9 @@ namespace Karma.Art;
 public partial class PrototypeCharacterSprite : Node2D
 {
     public const string IdleDownAnimation = "idle-down";
+    public const string IdleUpAnimation = "idle-up";
+    public const string IdleLeftAnimation = "idle-left";
+    public const string IdleRightAnimation = "idle-right";
     public const string WalkDownAnimation = "walk-down";
     public const string WalkUpAnimation = "walk-up";
     public const string WalkLeftAnimation = "walk-left";
@@ -18,6 +21,7 @@ public partial class PrototypeCharacterSprite : Node2D
     private AnimatedSprite2D _sprite;
     private PrototypeSprite _fallback;
     private PrototypeSpriteKind _loadedKind;
+    private CardinalDirection _lastFacing = CardinalDirection.Down;
 
     public override void _Ready()
     {
@@ -31,7 +35,13 @@ public partial class PrototypeCharacterSprite : Node2D
             return;
         }
 
-        var animationName = ResolveAnimationName(GetParentVelocity());
+        var velocity = GetParentVelocity();
+        if (velocity.LengthSquared() > 0.01f)
+        {
+            _lastFacing = DirectionHelper.ToCardinalDirection(velocity);
+        }
+
+        var animationName = ResolveAnimationName(velocity, _lastFacing);
         if (_sprite.Animation != animationName)
         {
             _sprite.Play(animationName);
@@ -57,9 +67,20 @@ public partial class PrototypeCharacterSprite : Node2D
 
     public static string ResolveAnimationName(Vector2 velocity)
     {
+        return ResolveAnimationName(velocity, CardinalDirection.Down);
+    }
+
+    public static string ResolveAnimationName(Vector2 velocity, CardinalDirection idleDirection)
+    {
         if (velocity.LengthSquared() <= 0.01f)
         {
-            return IdleDownAnimation;
+            return idleDirection switch
+            {
+                CardinalDirection.Up => IdleUpAnimation,
+                CardinalDirection.Left => IdleLeftAnimation,
+                CardinalDirection.Right => IdleRightAnimation,
+                _ => IdleDownAnimation
+            };
         }
 
         return DirectionHelper.ToCardinalDirection(velocity) switch
@@ -76,17 +97,15 @@ public partial class PrototypeCharacterSprite : Node2D
         var frames = new SpriteFrames();
         frames.RemoveAnimation("default");
 
-        var frame = new AtlasTexture
-        {
-            Atlas = texture,
-            Region = definition.AtlasRegion
-        };
+        var animations = definition.Animations is { Count: > 0 }
+            ? definition.Animations
+            : PrototypeSpriteCatalog.StillCharacterAnimations(definition.AtlasRegion);
 
-        AddLoopingAnimation(frames, IdleDownAnimation, frame, 1f);
-        AddLoopingAnimation(frames, WalkDownAnimation, frame, 5f);
-        AddLoopingAnimation(frames, WalkUpAnimation, frame, 5f);
-        AddLoopingAnimation(frames, WalkLeftAnimation, frame, 5f);
-        AddLoopingAnimation(frames, WalkRightAnimation, frame, 5f);
+        foreach (var animation in animations)
+        {
+            AddLoopingAnimation(frames, animation, texture);
+        }
+
         return frames;
     }
 
@@ -95,12 +114,21 @@ public partial class PrototypeCharacterSprite : Node2D
         BuildVisual();
     }
 
-    private static void AddLoopingAnimation(SpriteFrames frames, string name, Texture2D texture, float speed)
+    private static void AddLoopingAnimation(SpriteFrames frames, PrototypeSpriteAnimation animation, Texture2D texture)
     {
-        frames.AddAnimation(name);
-        frames.SetAnimationLoop(name, true);
-        frames.SetAnimationSpeed(name, speed);
-        frames.AddFrame(name, texture);
+        frames.AddAnimation(animation.Name);
+        frames.SetAnimationLoop(animation.Name, true);
+        frames.SetAnimationSpeed(animation.Name, animation.Speed);
+        foreach (var region in animation.Frames)
+        {
+            frames.AddFrame(
+                animation.Name,
+                new AtlasTexture
+                {
+                    Atlas = texture,
+                    Region = region
+                });
+        }
     }
 
     private void BuildVisual()

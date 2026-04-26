@@ -183,8 +183,11 @@ Godot 2D top-down template:
 - Keep `PrototypeSprite` for temporary props/items and as a procedural fallback
   when an atlas region is missing.
 - Runtime character sheets should eventually use clean `32 x 32` frame grids.
-  When a proper grid exists, map all idle/walk frames into `SpriteFrames`
-  animations instead of using one reference frame for every direction.
+  When a proper grid exists, map it with
+  `PrototypeSpriteCatalog.FourDirectionGridAnimations(origin, frameSize: 32)`.
+  The expected animation names are `idle-down`, `idle-up`, `idle-left`,
+  `idle-right`, `walk-down`, `walk-up`, `walk-left`, and `walk-right`.
+  Walk rows default to four frames each.
 - Stable world tiles should eventually become Godot `TileSet` resources with
   atlas sources, terrain rules, collision, and animated tile data. Until then,
   the server-friendly generated tile renderer can keep drawing cataloged atlas
