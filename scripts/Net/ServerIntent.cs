@@ -11,6 +11,7 @@ public enum IntentType
     AcceptDuel,
     Attack,
     UseItem,
+    PurchaseItem,
     TransferItem,
     TransferCurrency,
     PlaceObject,

@@ -413,6 +413,24 @@ public partial class GameState : Node
         return true;
     }
 
+    public bool PurchaseItem(string playerId, GameItem item, int price)
+    {
+        EnsurePrototypePlayers();
+        if (!SpendScrip(playerId, price))
+        {
+            return false;
+        }
+
+        _players[playerId].AddItem(item);
+        EmitSignal(SignalName.KarmaEvent, $"{_players[playerId].DisplayName} bought {item.Name} for {price} scrip.");
+        if (playerId == LocalPlayerId)
+        {
+            EmitInventoryChanged();
+        }
+
+        return true;
+    }
+
     public bool TransferScrip(string fromPlayerId, string toPlayerId, int amount)
     {
         EnsurePrototypePlayers();

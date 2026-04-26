@@ -469,6 +469,27 @@ public partial class GameplaySmokeTest : Node
                 ["targetId"] = "peer_stand_in",
                 ["amount"] = "9999"
             })).WasAccepted, "server rejects scrip transfer without funds");
+        var localScripBeforePurchase = state.LocalScrip;
+        var shopPurchase = transferServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            5,
+            IntentType.PurchaseItem,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["offerId"] = StarterShopCatalog.DallenWhoopieCushionOfferId
+            }));
+        ExpectTrue(shopPurchase.WasAccepted, "server accepts nearby shop purchase");
+        ExpectEqual(localScripBeforePurchase - 7, state.LocalScrip, "shop purchase debits scrip");
+        ExpectTrue(state.HasItem(GameState.LocalPlayerId, StarterItems.WhoopieCushionId), "shop purchase adds item to inventory");
+        ExpectTrue(shopPurchase.Event.EventId.Contains("item_purchased"), "shop purchase emits server event");
+        ExpectFalse(transferServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            6,
+            IntentType.PurchaseItem,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["offerId"] = StarterShopCatalog.DallenWorkVestOfferId
+            })).WasAccepted, "server rejects shop purchase without enough scrip");
         state.AddItem("peer_stand_in", StarterItems.WhoopieCushion);
         var peerKarmaBreak = transferServer.ProcessIntent(new ServerIntent(
             "peer_stand_in",
@@ -487,7 +508,7 @@ public partial class GameplaySmokeTest : Node
         var karmaBeforeDropPickup = state.LocalKarma.Score;
         var dropPickup = transferServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            5,
+            7,
             IntentType.Interact,
             new System.Collections.Generic.Dictionary<string, string>
             {

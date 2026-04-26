@@ -143,6 +143,8 @@ Targets:
 - Validate player-to-player scrip transfers on the server: connected target,
   proximity, positive amount, wallet balance, wallet mutation, karma
   consequence, and syncable currency event.
+- Validate shop purchases on the server: known offer id, reachable vendor NPC,
+  known item id, wallet balance, inventory mutation, and syncable purchase event.
 - Validate item use intents on the server: known item id, equippable slot,
   inventory/equipment mutation, and syncable equipment event.
 - Validate pickup interactions on the server: visible world item entity,

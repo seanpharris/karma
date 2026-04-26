@@ -129,6 +129,7 @@ public sealed class AuthoritativeWorldServer
             IntentType.AcceptDuel => ProcessAcceptDuel(intent),
             IntentType.Attack => ProcessAttack(intent),
             IntentType.UseItem => ProcessUseItem(intent),
+            IntentType.PurchaseItem => ProcessPurchaseItem(intent),
             IntentType.TransferItem => ProcessTransferItem(intent),
             IntentType.TransferCurrency => ProcessTransferCurrency(intent),
             IntentType.PlaceObject => ProcessPlaceObject(intent),
@@ -794,6 +795,49 @@ public sealed class AuthoritativeWorldServer
                 ["playerId"] = intent.PlayerId,
                 ["itemId"] = item.Id,
                 ["slot"] = item.Slot.ToString()
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessPurchaseItem(ServerIntent intent)
+    {
+        if (!intent.Payload.TryGetValue("offerId", out var offerId))
+        {
+            return Reject(intent, "PurchaseItem intent requires offerId.");
+        }
+
+        if (!StarterShopCatalog.TryGet(offerId, out var offer))
+        {
+            return Reject(intent, $"Unknown shop offer id: {offerId}.");
+        }
+
+        if (!CanReachNpc(intent.PlayerId, offer.VendorNpcId, out var rejectionReason))
+        {
+            return Reject(intent, rejectionReason);
+        }
+
+        if (!StarterItems.TryGetById(offer.ItemId, out var item))
+        {
+            return Reject(intent, $"Shop offer points to unknown item id: {offer.ItemId}.");
+        }
+
+        if (!_state.PurchaseItem(intent.PlayerId, item, offer.Price))
+        {
+            return Reject(intent, $"Not enough scrip for offer: {offer.Id}.");
+        }
+
+        var serverEvent = AppendEvent(
+            "item_purchased",
+            $"{intent.PlayerId} purchased {item.Id} for {offer.Price} scrip",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["vendorNpcId"] = offer.VendorNpcId,
+                ["offerId"] = offer.Id,
+                ["itemId"] = item.Id,
+                ["price"] = offer.Price.ToString(),
+                ["currency"] = offer.Currency
             });
 
         return ServerProcessResult.Accepted(serverEvent);
