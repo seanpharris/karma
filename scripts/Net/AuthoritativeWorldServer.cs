@@ -156,6 +156,17 @@ public sealed class AuthoritativeWorldServer
             _state.Quests.AddDefinition(quest);
         }
 
+        foreach (var placement in generatedWorld.StructurePlacements.OrderBy(placement => placement.StructureId))
+        {
+            var entityId = placement.StructureId;
+            if (_worldStructures.ContainsKey(entityId))
+            {
+                continue;
+            }
+
+            SeedGeneratedStructure(placement);
+        }
+
         var npcsById = generatedWorld.Npcs.ToDictionary(npc => npc.Id);
         foreach (var placement in generatedWorld.NpcPlacements.OrderBy(placement => placement.NpcId))
         {
@@ -200,6 +211,22 @@ public sealed class AuthoritativeWorldServer
             InteractionPrompt: FormatStationPrompt(location),
             InteractionResult: $"{location.Name} is a {location.ThemeTag} station for {location.Role}: {location.KarmaHook}. Faction interest: {location.SuggestedFaction}.",
             Integrity: 100);
+    }
+
+    private void SeedGeneratedStructure(GeneratedStructurePlacement placement)
+    {
+        var markerDefinition = StructureArtCatalog.Get(StructureSpriteKind.GreenhouseGlassPanel);
+        _worldStructures[placement.StructureId] = new WorldStructureEntity(
+            placement.StructureId,
+            markerDefinition.Id,
+            placement.Name,
+            "generated-structure",
+            new TilePosition(placement.X, placement.Y),
+            IsVisible: true,
+            IsInteractable: true,
+            InteractionPrompt: FormatStructurePrompt(placement.Name, placement.Integrity),
+            InteractionResult: $"{placement.Name} is tied to {placement.SuggestedFaction}. Local pressure: {placement.GameplayHook}.",
+            Integrity: placement.Integrity);
     }
 
     public void SeedWorldStructure(string entityId, string structureId, TilePosition position)

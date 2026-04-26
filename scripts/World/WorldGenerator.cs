@@ -168,6 +168,7 @@ public static class WorldGenerator
         var npcs = GenerateNpcs(random, config, locations);
         var placements = GenerateNpcPlacements(locations, npcs);
         var quests = GenerateStationQuests(locations, npcs, placements);
+        var structurePlacements = GenerateStructurePlacements(config, locations);
         var oddities = GenerateOddities(config);
         var oddityPlacements = GenerateOddityPlacements(random, config, locations, oddities);
 
@@ -179,6 +180,7 @@ public static class WorldGenerator
             npcs,
             placements,
             quests,
+            structurePlacements,
             oddities,
             oddityPlacements,
             StarterFactions.All);
@@ -349,6 +351,62 @@ public static class WorldGenerator
         }
 
         return placements;
+    }
+
+    private static IReadOnlyList<GeneratedStructurePlacement> GenerateStructurePlacements(
+        WorldConfig config,
+        IReadOnlyList<GeneratedLocation> locations)
+    {
+        var placements = new List<GeneratedStructurePlacement>();
+        foreach (var location in locations)
+        {
+            var x = Math.Clamp(location.X + 1, 2, config.WidthTiles - 3);
+            var y = Math.Clamp(location.Y + 1, 2, config.HeightTiles - 3);
+            placements.Add(new GeneratedStructurePlacement(
+                $"generated_structure_{SanitizeQuestId(location.Id)}",
+                location.Id,
+                BuildStructureName(location),
+                location.KarmaHook,
+                location.SuggestedFaction,
+                x,
+                y,
+                GetInitialStructureIntegrity(location)));
+        }
+
+        return placements;
+    }
+
+    private static string BuildStructureName(GeneratedLocation location)
+    {
+        return location.ThemeTag switch
+        {
+            "care" => $"{location.Name} filter stack",
+            "trade" => $"{location.Name} ledger kiosk",
+            "repair" => $"{location.Name} public workbench",
+            "rumor" => $"{location.Name} notice relay",
+            "relationship" => $"{location.Name} mediation table",
+            "temptation" => $"{location.Name} supply lockup",
+            "chaos" => $"{location.Name} oddity rig",
+            "combat" => $"{location.Name} duel beacon",
+            "sustenance" => $"{location.Name} irrigation pump",
+            "crime" => $"{location.Name} shadow dropbox",
+            "redemption" => $"{location.Name} apology terminal",
+            "broadcast" => $"{location.Name} signal booster",
+            "loyalty" => $"{location.Name} memorial relay",
+            "judgment" => $"{location.Name} witness stand",
+            _ => $"{location.Name} station fixture"
+        };
+    }
+
+    private static int GetInitialStructureIntegrity(GeneratedLocation location)
+    {
+        return location.ThemeTag switch
+        {
+            "repair" or "care" or "sustenance" => 55,
+            "crime" or "temptation" or "chaos" => 45,
+            "broadcast" or "judgment" => 65,
+            _ => 70
+        };
     }
 
     private static IReadOnlyList<QuestDefinition> GenerateStationQuests(

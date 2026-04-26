@@ -12,6 +12,7 @@ public sealed record GeneratedWorld(
     IReadOnlyList<NpcProfile> Npcs,
     IReadOnlyList<GeneratedNpcPlacement> NpcPlacements,
     IReadOnlyList<QuestDefinition> Quests,
+    IReadOnlyList<GeneratedStructurePlacement> StructurePlacements,
     IReadOnlyList<GameItem> Oddities,
     IReadOnlyList<GeneratedOddityPlacement> OddityPlacements,
     IReadOnlyList<FactionProfile> Factions)
@@ -43,6 +44,16 @@ public sealed record GeneratedNpcPlacement(
     string GameplayHook,
     int X,
     int Y);
+
+public sealed record GeneratedStructurePlacement(
+    string StructureId,
+    string LocationId,
+    string Name,
+    string GameplayHook,
+    string SuggestedFaction,
+    int X,
+    int Y,
+    int Integrity);
 
 public sealed record GeneratedOddityPlacement(
     string ItemId,

@@ -697,6 +697,10 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             generatedA.Quests.Any(quest => quest.Description.Contains("local karma hook")),
             "generated station quests explain the local karma hook");
+        ExpectEqual(generatedA.Locations.Count, generatedA.StructurePlacements.Count, "world generation creates one repairable/sabotageable structure per station");
+        ExpectTrue(
+            generatedA.StructurePlacements.Any(placement => placement.GameplayHook.Contains("repair") || placement.GameplayHook.Contains("sabotage") || placement.GameplayHook.Contains("rumor")),
+            "generated structures carry station gameplay hooks");
         var samplePoints = ProceduralPlacementSampler.GenerateSeparatedPoints(
             new Random(99),
             width: 64,
@@ -719,13 +723,42 @@ public partial class GameplaySmokeTest : Node
         generatedContentState.RegisterPlayer(GameState.LocalPlayerId, "Generated Content Tester");
         var generatedContentServer = new AuthoritativeWorldServer(generatedContentState, "generated-content-test");
         generatedContentServer.SeedGeneratedWorldContent(generatedA);
-        ExpectEqual(3 + generatedA.Locations.Count, generatedContentServer.WorldStructures.Count, "server seeds generated station markers as structures alongside starter structures");
+        ExpectEqual(3 + generatedA.Locations.Count + generatedA.StructurePlacements.Count, generatedContentServer.WorldStructures.Count, "server seeds generated station markers and generated structures alongside starter structures");
         var firstGeneratedLocation = generatedA.Locations[0];
         generatedContentState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(firstGeneratedLocation.X, firstGeneratedLocation.Y));
         var generatedStationSnapshot = generatedContentServer.CreateInterestSnapshot(GameState.LocalPlayerId);
         var generatedStation = generatedStationSnapshot.Structures.FirstOrDefault(structure => structure.Name == firstGeneratedLocation.Name && structure.Category == "station");
         ExpectTrue(generatedStation is not null, "interest snapshot exposes generated station markers near the player");
         ExpectTrue(generatedStation?.InteractionPrompt.Contains(firstGeneratedLocation.KarmaHook) == true, "generated station marker prompt exposes its karma hook");
+        var firstGeneratedStructurePlacement = generatedA.StructurePlacements[0];
+        generatedContentState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(firstGeneratedStructurePlacement.X, firstGeneratedStructurePlacement.Y));
+        var generatedStructureSnapshot = generatedContentServer.CreateInterestSnapshot(GameState.LocalPlayerId);
+        var generatedStructure = generatedStructureSnapshot.Structures.FirstOrDefault(structure => structure.EntityId == firstGeneratedStructurePlacement.StructureId);
+        ExpectTrue(generatedStructure is not null, "interest snapshot exposes generated station structures near the player");
+        ExpectTrue(generatedStructure?.InteractionPrompt.Contains("repair") == true, "generated station structures expose repair interactions");
+        generatedContentState.AddItem(GameState.LocalPlayerId, StarterItems.MultiTool);
+        var repairGeneratedStructure = generatedContentServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            72,
+            IntentType.Interact,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["entityId"] = firstGeneratedStructurePlacement.StructureId,
+                ["action"] = "repair"
+            }));
+        ExpectTrue(repairGeneratedStructure.WasAccepted, "server accepts repair on generated station structures");
+        ExpectTrue(int.Parse(repairGeneratedStructure.Event.Data["integrity"]) > firstGeneratedStructurePlacement.Integrity, "generated structure repair improves integrity");
+        var sabotageGeneratedStructure = generatedContentServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            73,
+            IntentType.Interact,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["entityId"] = firstGeneratedStructurePlacement.StructureId,
+                ["action"] = "sabotage"
+            }));
+        ExpectTrue(sabotageGeneratedStructure.WasAccepted, "server accepts sabotage on generated station structures");
+        ExpectTrue(int.Parse(sabotageGeneratedStructure.Event.Data["integrity"]) < int.Parse(repairGeneratedStructure.Event.Data["integrity"]), "generated structure sabotage damages integrity");
         var seededGeneratedNpcCount = generatedA.Npcs.Count(npc => npc.Id != StarterNpcs.Mara.Id && npc.Id != StarterNpcs.Dallen.Id);
         ExpectEqual(2 + seededGeneratedNpcCount, generatedContentServer.Npcs.Count, "server seeds generated NPC placements without duplicating starter NPCs");
         var firstGeneratedNpcPlacement = generatedA.NpcPlacements.First(placement => placement.NpcId != StarterNpcs.Mara.Id && placement.NpcId != StarterNpcs.Dallen.Id);
@@ -743,7 +776,7 @@ public partial class GameplaySmokeTest : Node
         var firstGeneratedQuest = generatedA.Quests.First(quest => quest.GiverNpcId == firstGeneratedNpcPlacement.NpcId);
         var startGeneratedQuest = generatedContentServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            70,
+            80,
             IntentType.StartQuest,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -752,7 +785,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(startGeneratedQuest.WasAccepted, "server accepts generated station quest start near giver");
         var completeGeneratedQuest = generatedContentServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            71,
+            81,
             IntentType.CompleteQuest,
             new System.Collections.Generic.Dictionary<string, string>
             {

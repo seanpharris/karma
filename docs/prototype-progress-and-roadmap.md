@@ -29,6 +29,7 @@ and the next practical build slices.
 - Each station carries a role, theme tag, karma hook, and suggested faction.
 - NPCs derive from stations, giving them roles, needs, secrets, likes/dislikes, factions, and station placements.
 - Generated station locations are seeded as inspectable server structure markers, so their roles and karma hooks are visible in snapshots/rendering.
+- Each generated station now also gets a repairable/sabotageable fixture tied to its gameplay hook and suggested faction.
 - Generated NPC placements are seeded into the authoritative server world and show up through interest snapshots/rendering.
 - Generated NPCs now provide station-specific dialogue choices and station-driven quests derived from local needs and karma hooks.
 - Oddities now have generated placements with local gameplay reasons tied to nearby stations.
@@ -52,7 +53,7 @@ and the next practical build slices.
 
 ### Gameplay integration
 
-- Generated station locations have inspectable markers, but the marker art is still a placeholder greenhouse component and needs proper sign/landmark visuals.
+- Generated station locations have inspectable markers and interactable fixtures, but their art is still placeholder greenhouse components and needs proper sign/landmark visuals.
 - Generated NPCs have first-pass station dialogue/quests, but those choices are still broad templates rather than bespoke quest chains.
 - Generated oddities are server-seeded, but pickup placement needs more visual/station context and balancing.
 - Generated NPC needs/secrets should feed real quests, dialogue choices, rumors, bounties, and faction consequences.
@@ -86,8 +87,8 @@ and the next practical build slices.
 
 ## What we need to do next
 
-1. **Expand generated structures.** Add station-specific repair/sabotage targets with integrity and faction consequences.
-2. **Deepen station quests/dialogue.** Turn broad generated choices into multi-step repair, rumor, theft, apology, bounty, delivery, and mediation tasks.
+1. **Deepen station quests/dialogue.** Turn broad generated choices into multi-step repair, rumor, theft, apology, bounty, delivery, and mediation tasks.
+2. **Improve generated structure consequences.** Add station/faction-specific reputation effects instead of routing all repair/sabotage through the Civic Repair Guild.
 3. **Improve respawn candidate pools.** Prefer safe stations/landmarks and avoid active combat heat, not just death/player positions.
 5. **Improve station presentation.** Replace placeholder station marker art with signs, landmarks, or theme-specific props.
 6. **Wire one more perk.** Good candidates: `Paragon Favor`, `Abyssal Mark`, or deeper `Renegade Nerve` intimidation behavior.
