@@ -92,10 +92,11 @@ public sealed record ClientInterestSnapshot(
     IReadOnlyList<QuestSnapshot> Quests,
     IReadOnlyList<WorldItemSnapshot> WorldItems,
     LeaderboardSnapshot Leaderboard,
+    MatchSnapshot Match,
     IReadOnlyList<Duel> Duels,
     IReadOnlyList<ServerEvent> ServerEvents,
     IReadOnlyList<WorldEvent> WorldEvents)
 {
     public string Summary =>
-        $"{Players.Count} visible players, {Npcs.Count} visible NPCs, {Dialogues.Count} dialogues, {Quests.Count} quests, {WorldItems.Count} visible items, {Duels.Count} duels, {ServerEvents.Count} server events, {WorldEvents.Count} world events";
+        $"{Players.Count} visible players, {Npcs.Count} visible NPCs, {Dialogues.Count} dialogues, {Quests.Count} quests, {WorldItems.Count} visible items, {Duels.Count} duels, {Match.Summary}, {ServerEvents.Count} server events, {WorldEvents.Count} world events";
 }

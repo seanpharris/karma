@@ -15,9 +15,11 @@ public sealed record ServerConfig(
     WorldScale Scale,
     int TickRate,
     int InterestRadiusTiles,
-    int CombatRangeTiles)
+    int CombatRangeTiles,
+    int MatchDurationSeconds)
 {
     public const int AbsoluteMaxPlayers = 100;
+    public const int DefaultMatchDurationSeconds = 30 * 60;
 
     public static ServerConfig Prototype4Player { get; } = new(
         MaxPlayers: 4,
@@ -25,7 +27,8 @@ public sealed record ServerConfig(
         Scale: WorldScale.Small,
         TickRate: 20,
         InterestRadiusTiles: 24,
-        CombatRangeTiles: 2);
+        CombatRangeTiles: 2,
+        MatchDurationSeconds: DefaultMatchDurationSeconds);
 
     public static ServerConfig Large100Player { get; } = new(
         MaxPlayers: 100,
@@ -33,7 +36,8 @@ public sealed record ServerConfig(
         Scale: WorldScale.Large,
         TickRate: 20,
         InterestRadiusTiles: 16,
-        CombatRangeTiles: 2);
+        CombatRangeTiles: 2,
+        MatchDurationSeconds: DefaultMatchDurationSeconds);
 
     public void Validate()
     {
@@ -60,6 +64,11 @@ public sealed record ServerConfig(
         if (CombatRangeTiles < 1)
         {
             throw new InvalidOperationException("CombatRangeTiles must be positive.");
+        }
+
+        if (MatchDurationSeconds < 1)
+        {
+            throw new InvalidOperationException("MatchDurationSeconds must be positive.");
         }
     }
 }

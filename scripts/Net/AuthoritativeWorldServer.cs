@@ -14,6 +14,7 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, WorldItemEntity> _worldItems = new();
     private readonly Dictionary<string, NpcEntity> _npcs = new();
     private readonly List<ServerEvent> _eventLog = new();
+    private readonly MatchState _match;
     private long _tick;
 
     public AuthoritativeWorldServer(GameState state, string worldId, ServerConfig config = null)
@@ -22,6 +23,7 @@ public sealed class AuthoritativeWorldServer
         WorldId = worldId;
         Config = config ?? ServerConfig.Prototype4Player;
         Config.Validate();
+        _match = new MatchState(Config.MatchDurationSeconds);
         SeedConnectedPlayers();
         SeedStarterNpcs();
     }
@@ -33,6 +35,27 @@ public sealed class AuthoritativeWorldServer
     public IReadOnlyCollection<string> ConnectedPlayerIds => _connectedPlayerIds;
     public IReadOnlyDictionary<string, WorldItemEntity> WorldItems => _worldItems;
     public IReadOnlyDictionary<string, NpcEntity> Npcs => _npcs;
+    public MatchSnapshot Match => _match.Snapshot(_state.GetLeaderboardStanding());
+
+    public void AdvanceMatchTime(int seconds)
+    {
+        var previousStatus = _match.Status;
+        _match.Advance(seconds, _state.GetLeaderboardStanding());
+        if (previousStatus != MatchStatus.Finished && _match.Status == MatchStatus.Finished)
+        {
+            var snapshot = Match;
+            AppendEvent(
+                "match_finished",
+                snapshot.Summary,
+                new Dictionary<string, string>
+                {
+                    ["saintWinnerId"] = snapshot.SaintWinnerId,
+                    ["saintWinnerScore"] = snapshot.SaintWinnerScore.ToString(),
+                    ["scourgeWinnerId"] = snapshot.ScourgeWinnerId,
+                    ["scourgeWinnerScore"] = snapshot.ScourgeWinnerScore.ToString()
+                });
+        }
+    }
 
     public void SeedWorldItem(string entityId, GameItem item, TilePosition position)
     {
@@ -193,6 +216,7 @@ public sealed class AuthoritativeWorldServer
             visibleQuests,
             visibleWorldItems,
             SnapshotBuilder.LeaderboardFrom(standing),
+            _match.Snapshot(standing),
             visibleDuels,
             events,
             worldEvents);

@@ -48,6 +48,18 @@ public partial class GameplaySmokeTest : Node
         ServerConfig.Large100Player.Validate();
         ExpectEqual(4, ServerConfig.Prototype4Player.MaxPlayers, "prototype server profile supports 4 players");
         ExpectEqual(100, ServerConfig.Large100Player.MaxPlayers, "large server profile supports 100 players");
+        ExpectEqual(30 * 60, ServerConfig.Prototype4Player.MatchDurationSeconds, "prototype server profile uses 30 minute matches");
+        var matchServer = new AuthoritativeWorldServer(state, "match-test-world");
+        ExpectEqual(MatchStatus.Running, matchServer.Match.Status, "new server match starts running");
+        ExpectEqual(30 * 60, matchServer.Match.RemainingSeconds, "new server match starts with full duration remaining");
+        matchServer.AdvanceMatchTime((30 * 60) - 1);
+        ExpectEqual(MatchStatus.Running, matchServer.Match.Status, "match stays running before timer expires");
+        matchServer.AdvanceMatchTime(1);
+        ExpectEqual(MatchStatus.Finished, matchServer.Match.Status, "match finishes when timer expires");
+        ExpectEqual("rival_paragon", matchServer.Match.SaintWinnerId, "finished match locks current Saint winner");
+        ExpectEqual("rival_renegade", matchServer.Match.ScourgeWinnerId, "finished match locks current Scourge winner");
+        ExpectTrue(matchServer.EventLog.Any(serverEvent => serverEvent.EventId.Contains("match_finished")), "finished match emits server event");
+        ExpectEqual("rival_paragon", matchServer.CreateInterestSnapshot(GameState.LocalPlayerId).Match.SaintWinnerId, "interest snapshot includes Saint match winner");
         ExpectEqual(4, server.ConnectedPlayerIds.Count, "prototype server starts with four connected player slots");
         ExpectFalse(server.JoinPlayer("overflow_player", "Overflow Player").WasAccepted, "prototype server rejects players beyond capacity");
         ExpectEqual(1000, WorldConfig.FromServerConfig(
@@ -419,6 +431,7 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(2, server.EventLog.Count, "server records accepted move and karma intent events");
         var interestSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId);
         ExpectEqual(2, interestSnapshot.Players.Count, "interest snapshot includes self and nearby players");
+        ExpectEqual(MatchStatus.Running, interestSnapshot.Match.Status, "interest snapshot includes match status");
         ExpectTrue(interestSnapshot.Players.Any(player => player.Id == GameState.LocalPlayerId), "interest snapshot includes local player");
         ExpectTrue(interestSnapshot.Players.Any(player => player.Id == "peer_stand_in"), "interest snapshot includes nearby peer");
         ExpectFalse(interestSnapshot.Players.Any(player => player.Id == "rival_paragon"), "interest snapshot excludes distant rival");

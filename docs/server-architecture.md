@@ -24,6 +24,7 @@ Good LLM uses:
 Server-owned systems:
 
 - Karma score
+- Match timer and match winners
 - Inventory
 - Combat
 - Position
@@ -81,6 +82,8 @@ Targets:
   update in coarse batches.
 - Keep LLM generation out of the live tick loop.
 - Process player input as intent with sequence numbers.
+- Keep match time server-owned. Interest snapshots include match status so
+  clients can render the timer/winners without computing authority locally.
 - Validate PvP attack intents on the server: connected target, range check,
   karma consequence, damage, combat event, and Karma Break if lethal.
 - Validate duel request/accept intents on the server: both players must be

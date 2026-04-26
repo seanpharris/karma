@@ -30,6 +30,10 @@ Prototype matches stay small, but the production large-world target is
 `1000 x 1000` tiles at `16px` logical tile scale. Large worlds must be treated
 as streamed/chunked spaces, not fully simulated or rendered to every client.
 
+Match time is server-owned and deterministic. The server advances elapsed match
+seconds, emits a `match_finished` event when time expires, and locks the Saint
+and Scourge winners from the leaderboard at that moment.
+
 ## Procedural World Data
 
 World generation should produce structured data first:
