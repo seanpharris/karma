@@ -77,6 +77,8 @@ public sealed record WorldStructureSnapshot(
     string Category,
     int TileX,
     int TileY,
+    int WidthPx,
+    int HeightPx,
     bool IsInteractable,
     string InteractionPrompt);
 

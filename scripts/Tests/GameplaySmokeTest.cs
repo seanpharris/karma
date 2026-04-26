@@ -710,6 +710,7 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(localInterest.VisiblePlayerIds.Contains("rival_paragon"), "interest area excludes distant players");
         ExpectTrue(localInterest.VisibleEntityIds.Contains("pickup_practice_stick"), "interest area includes nearby pickup entities");
         ExpectTrue(localInterest.VisibleStructureIds.Contains("structure_greenhouse_standard"), "interest area includes nearby structures");
+        ExpectTrue(localInterest.VisibleStructureIds.Contains("structure_greenhouse_planter"), "interest area includes greenhouse prop structures");
 
         var serverHelp = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
@@ -733,6 +734,8 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(interestSnapshot.Players.Any(player => player.Id == "rival_paragon"), "interest snapshot excludes distant rival");
         ExpectTrue(interestSnapshot.Npcs.Any(npc => npc.Id == StarterNpcs.Mara.Id), "interest snapshot includes visible NPCs");
         ExpectTrue(interestSnapshot.Structures.Any(structure => structure.StructureId == StructureArtCatalog.Get(StructureSpriteKind.GreenhouseStandard).Id), "interest snapshot includes visible structures");
+        ExpectTrue(interestSnapshot.Structures.Count >= 3, "interest snapshot includes starter greenhouse structure set");
+        ExpectTrue(interestSnapshot.Structures.All(structure => structure.WidthPx > 0 && structure.HeightPx > 0), "structure snapshots include render footprint");
         ExpectTrue(interestSnapshot.Structures.Any(structure => structure.IsInteractable && structure.InteractionPrompt.Contains("inspect")), "interest snapshot includes structure interaction prompt");
         var greenhouseInteract = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,

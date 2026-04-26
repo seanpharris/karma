@@ -1311,6 +1311,7 @@ public sealed class AuthoritativeWorldServer
 
     private static WorldStructureSnapshot ToSnapshot(WorldStructureEntity entity)
     {
+        var definition = StructureArtCatalog.GetById(entity.StructureId);
         return new WorldStructureSnapshot(
             entity.EntityId,
             entity.StructureId,
@@ -1318,6 +1319,8 @@ public sealed class AuthoritativeWorldServer
             entity.Category,
             entity.Position.X,
             entity.Position.Y,
+            (int)definition.Size.X,
+            (int)definition.Size.Y,
             entity.IsInteractable,
             entity.InteractionPrompt);
     }
@@ -1553,6 +1556,14 @@ public sealed class AuthoritativeWorldServer
             "structure_greenhouse_standard",
             StructureArtCatalog.Get(StructureSpriteKind.GreenhouseStandard).Id,
             new TilePosition(8, 3));
+        SeedWorldStructure(
+            "structure_greenhouse_planter",
+            StructureArtCatalog.Get(StructureSpriteKind.GreenhousePlanter).Id,
+            new TilePosition(6, 7));
+        SeedWorldStructure(
+            "structure_greenhouse_grow_rack",
+            StructureArtCatalog.Get(StructureSpriteKind.GreenhouseGrowRack).Id,
+            new TilePosition(10, 7));
     }
 }
 

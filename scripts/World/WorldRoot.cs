@@ -111,9 +111,11 @@ public partial class WorldRoot : Node2D
             {
                 Shape = new RectangleShape2D
                 {
-                    Size = new Vector2(192f, 128f)
+                    Size = new Vector2(
+                        Mathf.Max(32f, structure.WidthPx),
+                        Mathf.Max(32f, structure.HeightPx))
                 },
-                Position = new Vector2(0f, 12f)
+                Position = new Vector2(0f, -Mathf.Max(32f, structure.HeightPx) * 0.5f)
             });
             AddChild(node);
             _renderedServerStructures[structure.EntityId] = node;
