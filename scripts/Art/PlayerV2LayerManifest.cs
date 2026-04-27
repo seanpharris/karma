@@ -37,12 +37,14 @@ public sealed record PlayerV2Appearance(IReadOnlyDictionary<string, string> Sele
 
 public sealed class PlayerV2LayerManifest
 {
-    public const string DefaultManifestPath = "res://assets/art/sprites/player_v2/player_v2_manifest.json";
+    public const string DefaultManifestPath = "res://assets/art/sprites/player_v2/player_model_32x64_manifest.json";
+    public const string LegacyManifestPath = "res://assets/art/sprites/player_v2/player_v2_manifest.json";
 
     public PlayerV2LayerManifest(
         string manifestPath,
         string schema,
-        int frameSize,
+        int frameWidth,
+        int frameHeight,
         int columns,
         int rows,
         IReadOnlyList<string> directions,
@@ -54,7 +56,8 @@ public sealed class PlayerV2LayerManifest
     {
         ManifestPath = manifestPath;
         Schema = schema;
-        FrameSize = frameSize;
+        FrameWidth = frameWidth;
+        FrameHeight = frameHeight;
         Columns = columns;
         Rows = rows;
         Directions = directions;
@@ -67,7 +70,10 @@ public sealed class PlayerV2LayerManifest
 
     public string ManifestPath { get; }
     public string Schema { get; }
-    public int FrameSize { get; }
+    public int FrameSize => FrameWidth;
+    public int FrameWidth { get; }
+    public int FrameHeight { get; }
+    public Vector2I FrameDimensions => new(FrameWidth, FrameHeight);
     public int Columns { get; }
     public int Rows { get; }
     public IReadOnlyList<string> Directions { get; }
@@ -104,7 +110,8 @@ public sealed class PlayerV2LayerManifest
         return new PlayerV2LayerManifest(
             manifestPath,
             RequiredString(root, "schema"),
-            root.GetProperty("frameSize").GetInt32(),
+            ReadFrameWidth(root),
+            ReadFrameHeight(root),
             root.GetProperty("columns").GetInt32(),
             root.GetProperty("rows").GetInt32(),
             ReadStringArray(root, "directions"),
@@ -239,7 +246,7 @@ public sealed class PlayerV2LayerManifest
             target.BlendRect(image, new Rect2I(Vector2I.Zero, image.GetSize()), Vector2I.Zero);
         }
 
-        return target ?? Image.CreateEmpty(FrameSize * Columns, FrameSize * Rows, false, Image.Format.Rgba8);
+        return target ?? Image.CreateEmpty(FrameWidth * Columns, FrameHeight * Rows, false, Image.Format.Rgba8);
     }
 
     public string ResolveLayerPath(PlayerV2LayerDefinition layer)
@@ -277,6 +284,26 @@ public sealed class PlayerV2LayerManifest
         return characters.Length == 0
             ? "layer"
             : new string(characters);
+    }
+
+    private static int ReadFrameWidth(JsonElement root)
+    {
+        if (root.TryGetProperty("frameWidth", out var frameWidth))
+        {
+            return frameWidth.GetInt32();
+        }
+
+        return root.GetProperty("frameSize").GetInt32();
+    }
+
+    private static int ReadFrameHeight(JsonElement root)
+    {
+        if (root.TryGetProperty("frameHeight", out var frameHeight))
+        {
+            return frameHeight.GetInt32();
+        }
+
+        return root.GetProperty("frameSize").GetInt32();
     }
 
     private static IReadOnlyList<string> ReadStringArray(JsonElement root, string name)

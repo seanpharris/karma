@@ -4,35 +4,25 @@ This folder is the first runtime-visible step toward the intended character art
 architecture: build one canonical base body, then add skin, hair, outfit, and
 held-tool layers instead of generating bespoke art for every character variant.
 
-Important: Sean chose the `64x64` Gemini candidate scale/style as the actual v2
-visual target after reviewing the prototype. The current `32x32` layered sheets
-in this folder are now architecture/fallback assets, not the art style to polish.
+Important: the active runtime target is now the original native `32x64` player
+contract. The older `32x32` layered mannequin sheets remain compatibility and
+architecture-reference assets only, not the art style to polish.
 
 ## Active preview
 
-- `player_v2_manifest.json`
-  - Declares the current frame contract, directions, animation rows, layer slots,
-    available layer files, and the default preview stack.
-  - `scripts/Art/PlayerV2LayerManifest.cs` can load this manifest, build default
-    or custom slot selections, composite selected layers into an image, and export
-    deterministic cached composite PNGs for selected appearances.
-  - Gameplay can route `SetAppearance` intents through the authoritative server;
-    the Escape menu now has a prototype Appearance panel, and `V`/`B`/`N`
-    remain quick debug shortcuts to cycle the local player's skin, hair, and
-    outfit layers.
-  - This is the bridge from a hardcoded generated preview toward real character
-    customization/composition.
-- `player_v2_layered_preview_8dir.png`
-  - 256x288, 8 columns x 9 rows, 32x32 frames.
-  - This is a generated composite of the default manifest stack.
-  - It deliberately matches the old prototype sheet contract and remains useful
-    for compositor/selection tests, but the preferred default visual preview is
-    now `assets/art/sprites/generated/player_v2_engineer_8dir_4row_candidate.png`
-    when that 64x64 candidate exists.
+- `player_model_32x64_manifest.json`
+  - Active runtime layer manifest. It declares rectangular `32x64` frames, 8 direction columns, 4 animation rows, layer slots, available layer files, and the default preview stack.
+  - `scripts/Art/PlayerV2LayerManifest.cs` loads this manifest by default, builds default or custom slot selections, composites selected layers into an image, and exports deterministic cached composite PNGs for selected appearances.
+  - Gameplay routes `SetAppearance` intents through the authoritative server; the Escape menu Appearance panel and `V`/`B`/`N` debug shortcuts now cycle native `32x64` skin, hair, and outfit layers.
+- `player_model_32x64_layered_preview.png`
+  - 256x256, 8 columns x 4 rows, 32x64 frames.
+  - Pixel-perfect recomposite of the canonical 32x64 model's default layer stack.
+- `player_v2_manifest.json` and `player_v2_layered_preview_8dir.png`
+  - Legacy 32x32 mannequin/compositor assets. Keep them as fallback/reference only.
 
 ## Layers
 
-Layer files live in `layers/`. Current legacy/runtime-compositor layers share the exact same 8-direction/9-row, 32x32 grid:
+Legacy layer files live in `layers/`. These fallback compositor layers share the exact same 8-direction/9-row, 32x32 grid:
 
 - `base_body_8dir.png` — neutral mannequin/body-guide silhouette.
 - `skin_light_8dir.png`, `skin_medium_8dir.png`, `skin_deep_8dir.png` — replaceable skin layers.
@@ -61,8 +51,11 @@ Additional base-model references:
   - Starter manifest for the native 32x64 paper-doll split.
   - Uses rectangular metadata (`frameWidth: 32`, `frameHeight: 64`) and the same 8-direction/4-row contract.
 - `layers_32x64/*.png`
-  - First split of the canonical skeleton into base, skin, hair, and outfit layers.
+  - Active split of the canonical skeleton into base, skin, hair, and outfit layers.
   - `player_model_32x64_layered_preview.png` is a pixel-perfect recomposite of `player_model_32x64_8dir_4row.png` so we can iterate layers without changing the current runtime silhouette accidentally.
+  - Skin/hair/outfit variants are real composited runtime options; old 32x32 IDs are accepted only as migration/fallback cycle inputs.
+- `imported/`
+  - Review-only folder for normalized PixelLab/downloaded candidates. Runtime should not load imported candidates until one is explicitly curated and promoted.
 
 The layer order is:
 

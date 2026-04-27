@@ -172,22 +172,28 @@ public sealed record PlayerAppearanceSelection(
     string HeldToolLayerId)
 {
     public static PlayerAppearanceSelection Default { get; } = new(
-        "base_body",
-        "skin_medium",
-        "hair_short_dark",
-        "outfit_engineer",
-        "tool_multitool");
+        "base_body_32x64",
+        "skin_medium_32x64",
+        "hair_short_dark_32x64",
+        "outfit_engineer_32x64",
+        string.Empty);
 
     public IReadOnlyDictionary<string, string> ToLayerIdsBySlot()
     {
-        return new Dictionary<string, string>
+        var layers = new Dictionary<string, string>
         {
             ["base"] = BaseLayerId,
             ["skin"] = SkinLayerId,
             ["hair"] = HairLayerId,
-            ["outfit"] = OutfitLayerId,
-            ["held_tool"] = HeldToolLayerId
+            ["outfit"] = OutfitLayerId
         };
+
+        if (!string.IsNullOrWhiteSpace(HeldToolLayerId))
+        {
+            layers["held_tool"] = HeldToolLayerId;
+        }
+
+        return layers;
     }
 
     public PlayerAppearanceSelection Normalized()

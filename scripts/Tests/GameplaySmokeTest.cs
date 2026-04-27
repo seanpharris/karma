@@ -66,9 +66,9 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(hudProbe.GetNode<PanelContainer>("HudRoot/ChatInputPanel").Visible, "local chat input can close without sending");
         ExpectEqual("hello station", HudController.NormalizeLocalChatInput(" hello\nstation  "), "local chat input normalizes whitespace");
         ExpectTrue(HudController.FormatAppearanceSummary(PlayerAppearanceSelection.Default).Contains("Medium skin"), "appearance summary formats selected layers");
-        ExpectEqual("skin_deep", HudController.BuildAppearanceCyclePayload("skin", PlayerAppearanceSelection.Default)["skinLayerId"], "appearance panel builds skin cycle server payload");
-        ExpectEqual("hair_short_blond", HudController.BuildAppearanceCyclePayload("hair", PlayerAppearanceSelection.Default)["hairLayerId"], "appearance panel builds hair cycle server payload");
-        ExpectEqual("outfit_settler", HudController.BuildAppearanceCyclePayload("outfit", PlayerAppearanceSelection.Default)["outfitLayerId"], "appearance panel builds outfit cycle server payload");
+        ExpectEqual("skin_deep_32x64", HudController.BuildAppearanceCyclePayload("skin", PlayerAppearanceSelection.Default)["skinLayerId"], "appearance panel builds skin cycle server payload");
+        ExpectEqual("hair_short_blond_32x64", HudController.BuildAppearanceCyclePayload("hair", PlayerAppearanceSelection.Default)["hairLayerId"], "appearance panel builds hair cycle server payload");
+        ExpectEqual("outfit_settler_32x64", HudController.BuildAppearanceCyclePayload("outfit", PlayerAppearanceSelection.Default)["outfitLayerId"], "appearance panel builds outfit cycle server payload");
         hudProbe.ToggleDeveloperOverlay();
         ExpectTrue(hudProbe.GetNode<PanelContainer>("HudRoot/DeveloperPanel").Visible, "tilde developer overlay can be toggled visible");
         ExpectEqual(0, HudController.WrapDeveloperPageIndex(4), "developer overlay page index wraps forward");
@@ -321,36 +321,41 @@ public partial class GameplaySmokeTest : Node
             "project uses nearest-neighbor texture filtering for pixel art");
         var artAssets = ArtAssetManifest.GetUniqueAssets();
         ExpectTrue(artAssets.Count >= 8, "art manifest discovers cataloged atlas assets");
-        var playerV2ManifestPath = "res://assets/art/sprites/player_v2/player_v2_manifest.json";
-        ExpectTrue(FileAccess.FileExists(playerV2ManifestPath), "player v2 layered manifest exists");
-        using (var playerV2Manifest = JsonDocument.Parse(FileAccess.GetFileAsString(playerV2ManifestPath)))
+        var nativePlayerV2ManifestPath = PlayerV2LayerManifest.DefaultManifestPath;
+        ExpectTrue(FileAccess.FileExists(nativePlayerV2ManifestPath), "native 32x64 player v2 layered manifest exists");
+        using (var nativePlayerV2Manifest = JsonDocument.Parse(FileAccess.GetFileAsString(nativePlayerV2ManifestPath)))
         {
-            var manifestRoot = playerV2Manifest.RootElement;
-            ExpectEqual("karma.player_v2.layers.v1", manifestRoot.GetProperty("schema").GetString(), "player v2 manifest declares layer schema");
-            ExpectEqual(32, manifestRoot.GetProperty("frameSize").GetInt32(), "player v2 manifest matches prototype frame size");
-            ExpectEqual(8, manifestRoot.GetProperty("columns").GetInt32(), "player v2 manifest declares eight direction columns");
-            ExpectEqual(9, manifestRoot.GetProperty("rows").GetInt32(), "player v2 manifest declares nine animation rows");
-            ExpectEqual(9, manifestRoot.GetProperty("layers").GetArrayLength(), "player v2 manifest exposes base, skins, hair, outfits, and held tool layers");
-            ExpectEqual(5, manifestRoot.GetProperty("previewStack").GetArrayLength(), "player v2 manifest preview stack composes a playable character");
+            var manifestRoot = nativePlayerV2Manifest.RootElement;
+            ExpectEqual("karma.player_v2.layers_32x64.v1", manifestRoot.GetProperty("schema").GetString(), "native player v2 manifest declares 32x64 layer schema");
+            ExpectEqual(32, manifestRoot.GetProperty("frameWidth").GetInt32(), "native player v2 manifest declares 32px frame width");
+            ExpectEqual(64, manifestRoot.GetProperty("frameHeight").GetInt32(), "native player v2 manifest declares 64px frame height");
+            ExpectEqual(8, manifestRoot.GetProperty("columns").GetInt32(), "native player v2 manifest declares eight direction columns");
+            ExpectEqual(4, manifestRoot.GetProperty("rows").GetInt32(), "native player v2 manifest declares four animation rows");
+            ExpectEqual(8, manifestRoot.GetProperty("layers").GetArrayLength(), "native player v2 manifest exposes base, skins, hair, and outfit layers");
+            ExpectEqual(4, manifestRoot.GetProperty("previewStack").GetArrayLength(), "native player v2 manifest preview stack composes a playable character");
             ExpectTrue(
-                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "skin_light"),
-                "player v2 manifest exposes swappable light skin layer");
+                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "skin_light_32x64"),
+                "native player v2 manifest exposes swappable light skin layer");
             ExpectTrue(
-                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "skin_deep"),
-                "player v2 manifest exposes swappable deep skin layer");
+                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "skin_deep_32x64"),
+                "native player v2 manifest exposes swappable deep skin layer");
             ExpectTrue(
-                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "hair_short_blond"),
-                "player v2 manifest exposes swappable blond hair layer");
+                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "hair_short_blond_32x64"),
+                "native player v2 manifest exposes swappable blond hair layer");
             ExpectTrue(
-                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "outfit_settler"),
-                "player v2 manifest exposes swappable settler outfit layer");
+                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "outfit_settler_32x64"),
+                "native player v2 manifest exposes swappable settler outfit layer");
         }
+        var playerV2ManifestPath = PlayerV2LayerManifest.LegacyManifestPath;
+        ExpectTrue(FileAccess.FileExists(playerV2ManifestPath), "legacy 32x32 player v2 layered manifest remains available");
         ExpectTrue(FileAccess.FileExists("res://assets/art/sprites/player_v2/layers/skin_light_8dir.png"), "player v2 generates light skin layer");
         ExpectTrue(FileAccess.FileExists("res://assets/art/sprites/player_v2/layers/skin_deep_8dir.png"), "player v2 generates deep skin layer");
         ExpectTrue(FileAccess.FileExists("res://assets/art/sprites/player_v2/layers/hair_short_blond_8dir.png"), "player v2 generates blond hair layer");
         ExpectTrue(FileAccess.FileExists("res://assets/art/sprites/player_v2/layers/outfit_settler_8dir.png"), "player v2 generates settler outfit layer");
         var playerV2LayerManifest = PlayerV2LayerManifest.LoadDefault();
-        ExpectEqual("karma.player_v2.layers.v1", playerV2LayerManifest.Schema, "player v2 layer manifest loader reads schema");
+        ExpectEqual("karma.player_v2.layers_32x64.v1", playerV2LayerManifest.Schema, "player v2 layer manifest loader reads native 32x64 schema");
+        ExpectEqual(32, playerV2LayerManifest.FrameWidth, "player v2 layer manifest loader reads rectangular frame width");
+        ExpectEqual(64, playerV2LayerManifest.FrameHeight, "player v2 layer manifest loader reads rectangular frame height");
         ExpectEqual(3, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "skin"), "player v2 layer manifest loader exposes skin variants");
         ExpectEqual(2, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "hair"), "player v2 layer manifest loader exposes hair variants");
         ExpectEqual(2, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "outfit"), "player v2 layer manifest loader exposes outfit variants");
@@ -359,9 +364,9 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             playerV2LayerManifest.GetLayerStack(defaultPlayerV2Appearance).SequenceEqual(playerV2LayerManifest.PreviewStack),
             "player v2 default appearance matches manifest preview stack");
-        var lightSkinSelection = PlayerAppearanceSelection.Default with { SkinLayerId = "skin_light" };
+        var lightSkinSelection = PlayerAppearanceSelection.Default with { SkinLayerId = "skin_light_32x64" };
         var lightSkinPlayerV2Appearance = playerV2LayerManifest.CreateAppearance(lightSkinSelection);
-        ExpectEqual("skin_light", lightSkinPlayerV2Appearance.GetLayerIdForSlot("skin"), "player v2 appearance can override skin layer");
+        ExpectEqual("skin_light_32x64", lightSkinPlayerV2Appearance.GetLayerIdForSlot("skin"), "player v2 appearance can override skin layer");
         ExpectFalse(
             playerV2LayerManifest.GetLayerStack(lightSkinPlayerV2Appearance).SequenceEqual(playerV2LayerManifest.PreviewStack),
             "player v2 custom appearance produces a different layer stack");
@@ -373,7 +378,7 @@ public partial class GameplaySmokeTest : Node
         const string testCompositeRoot = "user://karma_test/player_v2/composites";
         var lightSkinCompositePath = playerV2LayerManifest.ExportAppearanceComposite(lightSkinSelection, testCompositeRoot);
         ExpectTrue(FileAccess.FileExists(lightSkinCompositePath), "player v2 appearance compositor exports selected appearance composite");
-        ExpectTrue(lightSkinCompositePath.Contains("skin_light"), "player v2 appearance composite path names selected skin layer");
+        ExpectTrue(lightSkinCompositePath.Contains("skin_light_32x64"), "player v2 appearance composite path names selected skin layer");
         ExpectEqual(0, CountImagePixelDifferences(Image.LoadFromFile(lightSkinCompositePath), lightSkinPlayerV2Preview), "player v2 exported appearance matches composed image");
         var defaultPlayerDefinition = PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Player);
         var lightSkinPlayerDefinition = PrototypeCharacterSprite.WithAtlasPath(defaultPlayerDefinition, lightSkinCompositePath);
@@ -2139,14 +2144,14 @@ public partial class GameplaySmokeTest : Node
             IntentType.SetAppearance,
             new System.Collections.Generic.Dictionary<string, string>
             {
-                ["skinLayerId"] = "skin_light"
+                ["skinLayerId"] = "skin_light_32x64"
             }));
         ExpectTrue(serverSetAppearance.WasAccepted, "server accepts player appearance selection intents");
-        ExpectEqual("skin_light", state.LocalPlayer.Appearance.SkinLayerId, "server appearance intent updates authoritative player state");
+        ExpectEqual("skin_light_32x64", state.LocalPlayer.Appearance.SkinLayerId, "server appearance intent updates authoritative player state");
         ExpectTrue(
             HudController.FormatLatestServerEvent(new[] { serverSetAppearance.Event }).Contains("Light skin"),
             "HUD formats player appearance change events");
-        ExpectEqual("skin_light", server.CreateInterestSnapshot(GameState.LocalPlayerId).Players.Single(player => player.Id == GameState.LocalPlayerId).Appearance.SkinLayerId, "interest snapshots expose updated player appearance selections");
+        ExpectEqual("skin_light_32x64", server.CreateInterestSnapshot(GameState.LocalPlayerId).Players.Single(player => player.Id == GameState.LocalPlayerId).Appearance.SkinLayerId, "interest snapshots expose updated player appearance selections");
         var serverRejectsInvalidAppearance = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             1001,
@@ -2156,15 +2161,15 @@ public partial class GameplaySmokeTest : Node
                 ["skinLayerId"] = "skin_not_real"
             }));
         ExpectFalse(serverRejectsInvalidAppearance.WasAccepted, "server rejects unknown player appearance layers");
-        ExpectEqual("skin_deep", PlayerController.CycleSkinLayerId("skin_medium"), "player controller cycles skin appearance layers");
-        ExpectEqual("hair_short_blond", PlayerController.CycleHairLayerId("hair_short_dark"), "player controller cycles hair appearance layers");
-        ExpectEqual("outfit_settler", PlayerController.CycleOutfitLayerId("outfit_engineer"), "player controller cycles outfit appearance layers");
+        ExpectEqual("skin_deep_32x64", PlayerController.CycleSkinLayerId("skin_medium_32x64"), "player controller cycles skin appearance layers");
+        ExpectEqual("hair_short_blond_32x64", PlayerController.CycleHairLayerId("hair_short_dark_32x64"), "player controller cycles hair appearance layers");
+        ExpectEqual("outfit_settler_32x64", PlayerController.CycleOutfitLayerId("outfit_engineer_32x64"), "player controller cycles outfit appearance layers");
         var customAppearancePlayer = state.RegisterPlayer("appearance-test", "Appearance Tester");
-        customAppearancePlayer.SetAppearance(PlayerAppearanceSelection.Default with { SkinLayerId = "skin_deep" });
+        customAppearancePlayer.SetAppearance(PlayerAppearanceSelection.Default with { SkinLayerId = "skin_deep_32x64" });
         var customAppearanceSnapshot = SnapshotBuilder.PlayersFrom(
             new[] { customAppearancePlayer },
             new LeaderboardStanding(string.Empty, string.Empty, 0, string.Empty, string.Empty, 0)).Single();
-        ExpectEqual("skin_deep", customAppearanceSnapshot.Appearance.SkinLayerId, "snapshot captures custom player skin layer selection");
+        ExpectEqual("skin_deep_32x64", customAppearanceSnapshot.Appearance.SkinLayerId, "snapshot captures custom player skin layer selection");
         ExpectTrue(snapshot.Summary.Contains("players"), "snapshot has readable summary");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"leaderboard\""), "snapshot JSON includes leaderboard");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"standing\""), "snapshot JSON includes player standing");

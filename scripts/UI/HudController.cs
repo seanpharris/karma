@@ -1304,7 +1304,7 @@ public partial class HudController : CanvasLayer
 
         return string.Join(" ", layerId
             .Split('_', StringSplitOptions.RemoveEmptyEntries)
-            .Where(part => part != "skin" && part != "hair" && part != "outfit" && part != "tool")
+            .Where(part => part != "skin" && part != "hair" && part != "outfit" && part != "tool" && part != "32x64")
             .Select(part => char.ToUpperInvariant(part[0]) + part[1..]));
     }
 

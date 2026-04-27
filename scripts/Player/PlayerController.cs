@@ -362,10 +362,13 @@ public partial class PlayerController : CharacterBody2D
     {
         return currentSkinLayerId switch
         {
-            "skin_light" => "skin_medium",
-            "skin_medium" => "skin_deep",
-            "skin_deep" => "skin_light",
-            _ => "skin_medium"
+            "skin_light_32x64" => "skin_medium_32x64",
+            "skin_medium_32x64" => "skin_deep_32x64",
+            "skin_deep_32x64" => "skin_light_32x64",
+            "skin_light" => "skin_medium_32x64",
+            "skin_medium" => "skin_deep_32x64",
+            "skin_deep" => "skin_light_32x64",
+            _ => "skin_medium_32x64"
         };
     }
 
@@ -373,9 +376,11 @@ public partial class PlayerController : CharacterBody2D
     {
         return currentHairLayerId switch
         {
-            "hair_short_dark" => "hair_short_blond",
-            "hair_short_blond" => "hair_short_dark",
-            _ => "hair_short_dark"
+            "hair_short_dark_32x64" => "hair_short_blond_32x64",
+            "hair_short_blond_32x64" => "hair_short_dark_32x64",
+            "hair_short_dark" => "hair_short_blond_32x64",
+            "hair_short_blond" => "hair_short_dark_32x64",
+            _ => "hair_short_dark_32x64"
         };
     }
 
@@ -383,9 +388,11 @@ public partial class PlayerController : CharacterBody2D
     {
         return currentOutfitLayerId switch
         {
-            "outfit_engineer" => "outfit_settler",
-            "outfit_settler" => "outfit_engineer",
-            _ => "outfit_engineer"
+            "outfit_engineer_32x64" => "outfit_settler_32x64",
+            "outfit_settler_32x64" => "outfit_engineer_32x64",
+            "outfit_engineer" => "outfit_settler_32x64",
+            "outfit_settler" => "outfit_engineer_32x64",
+            _ => "outfit_engineer_32x64"
         };
     }
 
