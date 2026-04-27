@@ -42,8 +42,99 @@ func _save_runtime_sheet(source: Image) -> void:
 		for row in 4:
 			# Center the 32x64 model in a 64x64 runtime cell so the current
 			# square-frame animation code can preview this model immediately.
-			runtime.blit_rect(source, source_rect, Vector2i((direction * RUNTIME_FRAME) + ((RUNTIME_FRAME - FRAME_W) / 2), row * RUNTIME_FRAME))
+			# Walk rows get a small bob so stepping reads at prototype zoom.
+			var cell_origin := Vector2i(direction * RUNTIME_FRAME, row * RUNTIME_FRAME)
+			var bob := 0 if row == 0 else 2 if row == 1 else -1 if row == 2 else 1
+			runtime.blit_rect(source, source_rect, cell_origin + Vector2i((RUNTIME_FRAME - FRAME_W) / 2, bob))
+			if row > 0:
+				_draw_runtime_walk_pose(runtime, direction, row, cell_origin + Vector2i(0, bob))
 	runtime.save_png(RUNTIME_OUTPUT)
+
+func _draw_runtime_walk_pose(img: Image, direction: int, phase: int, cell: Vector2i) -> void:
+	var x0 := cell.x + ((RUNTIME_FRAME - FRAME_W) / 2)
+	var y0 := cell.y
+	# Cut out the static lower limbs/forearms from the centered base frame, then
+	# redraw them offset per phase. This gives the preview sheet visible stepping
+	# without needing a full animation authoring pass yet.
+	_rclear(img, Vector2i(x0 + 5, y0 + 39), Vector2i(23, 24))
+	_rclear(img, Vector2i(x0 + 3, y0 + 21), Vector2i(8, 28))
+	_rclear(img, Vector2i(x0 + 21, y0 + 21), Vector2i(8, 28))
+	match direction:
+		0, 4:
+			_draw_front_back_walk(img, x0, y0, phase, direction == 4)
+		1, 7:
+			_draw_diagonal_walk(img, x0, y0, phase, direction == 7, false)
+		2, 6:
+			_draw_side_walk(img, x0, y0, phase, direction == 6)
+		3, 5:
+			_draw_diagonal_walk(img, x0, y0, phase, direction == 5, true)
+
+func _draw_front_back_walk(img: Image, x0: int, y0: int, phase: int, back: bool) -> void:
+	var left_y := 46 if phase == 1 else 40 if phase == 2 else 43
+	var right_y := 40 if phase == 1 else 46 if phase == 2 else 43
+	var left_x := 9 if phase == 3 else 10
+	var right_x := 19 if phase == 3 else 18
+	_rleg(img, x0 + left_x, y0 + left_y, 4, 15, back)
+	_rleg(img, x0 + right_x, y0 + right_y, 4, 15, back)
+	_rboot(img, x0 + left_x - 1, y0 + left_y + 14, phase == 1)
+	_rboot(img, x0 + right_x, y0 + right_y + 14, phase == 2)
+	_rarm(img, x0 + (5 if phase == 1 else 7), y0 + (28 if phase == 1 else 22 if phase == 2 else 25), 4, 19, back)
+	_rarm(img, x0 + (23 if phase == 1 else 21), y0 + (22 if phase == 1 else 28 if phase == 2 else 25), 4, 19, back)
+
+func _draw_side_walk(img: Image, x0: int, y0: int, phase: int, flip: bool) -> void:
+	var lead_x := 8 if phase == 1 else 18 if phase == 2 else 11
+	var trail_x := 22 if phase == 1 else 12 if phase == 2 else 21
+	if flip:
+		lead_x = FRAME_W - lead_x - 4
+		trail_x = FRAME_W - trail_x - 4
+	_rleg(img, x0 + lead_x, y0 + 44, 4, 14, false)
+	_rleg(img, x0 + trail_x, y0 + 41, 4, 17, true)
+	_rboot(img, x0 + lead_x - 1, y0 + 58, phase == 1)
+	_rboot(img, x0 + trail_x, y0 + 55, phase == 2)
+	_rarm(img, x0 + (6 if not flip else 24), y0 + (28 if phase == 1 else 22 if phase == 2 else 25), 4, 18, false)
+	_rarm(img, x0 + (24 if not flip else 5), y0 + (22 if phase == 1 else 28 if phase == 2 else 25), 3, 17, false)
+
+func _draw_diagonal_walk(img: Image, x0: int, y0: int, phase: int, flip: bool, back: bool) -> void:
+	var near_x := 8 if phase == 1 else 17 if phase == 2 else 10
+	var far_x := 21 if phase == 1 else 12 if phase == 2 else 20
+	if flip:
+		near_x = FRAME_W - near_x - 4
+		far_x = FRAME_W - far_x - 4
+	_rleg(img, x0 + near_x, y0 + 45, 4, 13, back)
+	_rleg(img, x0 + far_x, y0 + 41, 4, 17, back)
+	_rboot(img, x0 + near_x - 1, y0 + 58, phase == 1)
+	_rboot(img, x0 + far_x, y0 + 55, phase == 2)
+	_rarm(img, x0 + (5 if not flip else 24), y0 + (28 if phase == 1 else 22 if phase == 2 else 25), 4, 18, back)
+	_rarm(img, x0 + (24 if not flip else 5), y0 + (22 if phase == 1 else 28 if phase == 2 else 25), 3, 17, back)
+
+func _rleg(img: Image, x: int, y: int, w: int, h: int, back: bool) -> void:
+	_rrect(img, Vector2i(x, y), Vector2i(w, h), O)
+	_rrect(img, Vector2i(x + 1, y + 1), Vector2i(max(1, w - 2), h - 2), SUIT_D if back else SUIT)
+
+func _rboot(img: Image, x: int, y: int, forward: bool) -> void:
+	_rrect(img, Vector2i(x, y), Vector2i(6, 3), O)
+	_rrect(img, Vector2i(x + 1, y), Vector2i(4, 2), BOOT)
+	if forward:
+		_rpixel(img, Vector2i(x + 5, y + 1), SOLE)
+	else:
+		_rpixel(img, Vector2i(x, y + 1), SOLE)
+
+func _rarm(img: Image, x: int, y: int, w: int, h: int, back: bool) -> void:
+	_rrect(img, Vector2i(x, y), Vector2i(w, h), O)
+	_rrect(img, Vector2i(x + 1, y + 1), Vector2i(max(1, w - 2), h - 2), SUIT_D if back else SUIT)
+	_rrect(img, Vector2i(x + 1, y + h - 3), Vector2i(max(1, w - 2), 3), SKIN_D)
+
+func _rrect(img: Image, pos: Vector2i, size: Vector2i, color: Color) -> void:
+	for y in size.y:
+		for x in size.x:
+			_rpixel(img, pos + Vector2i(x, y), color)
+
+func _rclear(img: Image, pos: Vector2i, size: Vector2i) -> void:
+	_rrect(img, pos, size, Color(0, 0, 0, 0))
+
+func _rpixel(img: Image, p: Vector2i, color: Color) -> void:
+	if p.x >= 0 and p.y >= 0 and p.x < img.get_width() and p.y < img.get_height():
+		img.set_pixel(p.x, p.y, color)
 
 func _draw_direction(img: Image, dir: int, o: Vector2i) -> void:
 	match dir:
