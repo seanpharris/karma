@@ -17,3 +17,14 @@ These files are generated reference candidates, not validated runtime sheets.
 Do not wire these directly into runtime. Next step is either generate a stricter sheet,
 manually crop/paint a true 8-column x 4-row sheet from the best poses, or use them as
 style references for a human/AI cleanup pass.
+
+## 2026-04-26 Gemini smaller direction batches
+
+- `karma_player_v2_front_pose_batch.jpg`
+  - Front-facing only, green chroma background. Useful for idle/front reference, but walk progression is subtle.
+- `karma_player_v2_right_pose_batch.jpg`
+  - Right-facing only, green chroma background. Strongest extraction/reference candidate so far; side walk/run silhouettes are readable and consistent.
+- `karma_player_v2_back_pose_batch.jpg`
+  - Back-facing only, green chroma background. Useful rear-view supplement, but color/outfit consistency may need matching to the other batches.
+
+The smaller-batch approach works better than asking Gemini for a full 8-direction sheet. Next practical step: extract the best front/right/back frames, mirror right to left as a temporary prototype, and hand/AI-clean diagonals into a true runtime sheet.
