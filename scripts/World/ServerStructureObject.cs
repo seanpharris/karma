@@ -65,9 +65,27 @@ public partial class ServerStructureObject : Area2D
             {
                 return "sabotage";
             }
+
+            if (key.Keycode == Key.L)
+            {
+                return "enter";
+            }
+
+            if (key.Keycode == Key.O)
+            {
+                return "exit";
+            }
         }
 
         return string.Empty;
+    }
+
+    public static string FormatStructurePrompt(string prompt)
+    {
+        var safePrompt = string.IsNullOrWhiteSpace(prompt) ? "Press E to inspect." : prompt.Trim();
+        return safePrompt.Contains("L - Enter", System.StringComparison.Ordinal)
+            ? safePrompt
+            : $"{safePrompt}\nL - Enter / O - Exit building placeholder";
     }
 
     private void OnBodyEntered(Node2D body)
@@ -81,7 +99,7 @@ public partial class ServerStructureObject : Area2D
         var prompt = string.IsNullOrWhiteSpace(InteractionPrompt)
             ? $"Press E to inspect {StructureName}."
             : InteractionPrompt;
-        _hud?.ShowPrompt(prompt);
+        _hud?.ShowPrompt(FormatStructurePrompt(prompt));
     }
 
     private void OnBodyExited(Node2D body)

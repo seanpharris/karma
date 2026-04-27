@@ -1854,9 +1854,34 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             HudController.FormatLatestServerEvent(new[] { greenhouseInteract.Event }).Contains("inspected Greenhouse"),
             "HUD formats structure inspection events");
-        ExpectFalse(server.ProcessIntent(new ServerIntent(
+        ExpectTrue(ServerStructureObject.FormatStructurePrompt("Press E to inspect Greenhouse.").Contains("L - Enter"), "structure prompt advertises building entry controls");
+        var structureEnter = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             4,
+            IntentType.Interact,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["entityId"] = "structure_greenhouse_standard",
+                ["action"] = "enter"
+            }));
+        ExpectTrue(structureEnter.WasAccepted, "server accepts structure entry placeholder");
+        ExpectEqual("inside", structureEnter.Event.Data["entryState"], "structure entry event reports inside state");
+        ExpectTrue(server.CreateInterestSnapshot(GameState.LocalPlayerId).Players.First(player => player.Id == GameState.LocalPlayerId).StatusEffects.Contains("Inside: Greenhouse"), "structure entry appears as player status effect");
+        var structureExit = server.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            5,
+            IntentType.Interact,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["entityId"] = "structure_greenhouse_standard",
+                ["action"] = "exit"
+            }));
+        ExpectTrue(structureExit.WasAccepted, "server accepts structure exit placeholder");
+        ExpectEqual("outside", structureExit.Event.Data["entryState"], "structure exit event reports outside state");
+        ExpectFalse(server.CreateInterestSnapshot(GameState.LocalPlayerId).Players.First(player => player.Id == GameState.LocalPlayerId).StatusEffects.Contains("Inside: Greenhouse"), "structure exit clears inside status effect");
+        ExpectFalse(server.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            6,
             IntentType.Interact,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1867,7 +1892,7 @@ public partial class GameplaySmokeTest : Node
         var scripBeforeStructureRepair = state.LocalScrip;
         var structureRepair = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            5,
+            7,
             IntentType.Interact,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1887,7 +1912,7 @@ public partial class GameplaySmokeTest : Node
             "HUD formats structure repair bounty");
         var structureSabotage = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            6,
+            8,
             IntentType.Interact,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1929,7 +1954,7 @@ public partial class GameplaySmokeTest : Node
         state.AddItem(StarterItems.DeflatedBalloon);
         var serverPlace = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            7,
+            9,
             IntentType.PlaceObject,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1964,7 +1989,7 @@ public partial class GameplaySmokeTest : Node
 
         var serverPickup = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            8,
+            10,
             IntentType.Interact,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -1992,7 +2017,7 @@ public partial class GameplaySmokeTest : Node
         var peerHealthBeforeRepair = state.Players["peer_stand_in"].Health;
         var serverRepair = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            10,
+            11,
             IntentType.UseItem,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -2007,7 +2032,7 @@ public partial class GameplaySmokeTest : Node
 
         var serverEquip = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            11,
+            12,
             IntentType.UseItem,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -2021,7 +2046,7 @@ public partial class GameplaySmokeTest : Node
             "HUD formats equipment events");
         ExpectFalse(server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            12,
+            13,
             IntentType.UseItem,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -2031,7 +2056,7 @@ public partial class GameplaySmokeTest : Node
         var peerHealthBeforeAttack = state.Players["peer_stand_in"].Health;
         var serverAttack = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            13,
+            14,
             IntentType.Attack,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -2073,7 +2098,7 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(staleIntent.WasAccepted, "server rejects duplicate sequence intent");
         ExpectTrue(state.LocalKarma.Score > 0, "rejected stale intent does not mutate karma");
         var deltaInterestSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId, afterTick: 2);
-        ExpectEqual(13, deltaInterestSnapshot.ServerEvents.Count, "interest snapshot can return visible events after a tick");
+        ExpectEqual(15, deltaInterestSnapshot.ServerEvents.Count, "interest snapshot can return visible events after a tick");
         ExpectTrue(deltaInterestSnapshot.SyncHint.IsDelta, "delta interest snapshot reports delta sync hint");
         ExpectEqual(2L, deltaInterestSnapshot.SyncHint.AfterTick, "delta interest snapshot records requested after-tick");
         ExpectEqual(deltaInterestSnapshot.ServerEvents.Count, deltaInterestSnapshot.SyncHint.ServerEventCount, "delta sync hint counts returned server events");
@@ -2090,7 +2115,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(maraDialogue.Choices.Any(choice => choice.ActionId == PrototypeActions.HelpMaraId), "server dialogue exposes approved NPC choices");
         var startDialogue = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            14,
+            15,
             IntentType.StartDialogue,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -2104,7 +2129,7 @@ public partial class GameplaySmokeTest : Node
         var karmaBeforeDialogueChoice = state.LocalKarma.Score;
         var selectDialogueChoice = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            15,
+            16,
             IntentType.SelectDialogueChoice,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -2119,7 +2144,7 @@ public partial class GameplaySmokeTest : Node
             "HUD formats dialogue choice events");
         ExpectFalse(server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            16,
+            17,
             IntentType.SelectDialogueChoice,
             new System.Collections.Generic.Dictionary<string, string>
             {

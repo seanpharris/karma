@@ -14,6 +14,8 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, int> _lastSequenceByPlayer = new();
     private readonly Dictionary<string, long> _lastAttackTickByPlayer = new();
     private readonly Dictionary<string, long> _karmaBreakGraceUntilTickByPlayer = new();
+    private readonly Dictionary<string, string> _enteredStructureByPlayer = new();
+    private readonly Dictionary<string, TilePosition> _entryPositionByPlayer = new();
     private readonly Dictionary<string, Queue<DropClaim>> _dropClaimsByHolderItem = new();
     private readonly Dictionary<string, TilePosition> _initialSpawnByPlayer = new();
     private readonly HashSet<string> _connectedPlayerIds = new();
@@ -779,9 +781,14 @@ public sealed class AuthoritativeWorldServer
         var action = intent.Payload.TryGetValue("action", out var payloadAction)
             ? payloadAction
             : "inspect";
-        if (action != "inspect" && action != "repair" && action != "sabotage")
+        if (action != "inspect" && action != "repair" && action != "sabotage" && action != "enter" && action != "exit")
         {
             return Reject(intent, $"Unknown structure interaction action: {action}.");
+        }
+
+        if (action == "enter" || action == "exit")
+        {
+            return ProcessStructureEntryInteraction(intent, player, structure, action);
         }
 
         if (structure.Category == "station" && action != "inspect")
@@ -881,6 +888,81 @@ public sealed class AuthoritativeWorldServer
                 ["factionId"] = factionId,
                 ["factionDelta"] = factionDelta.ToString(),
                 ["factionReputation"] = factionReputation.ToString()
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessStructureEntryInteraction(
+        ServerIntent intent,
+        PlayerState player,
+        WorldStructureEntity structure,
+        string action)
+    {
+        var entering = action == "enter";
+        var result = string.Empty;
+        if (entering)
+        {
+            if (_enteredStructureByPlayer.TryGetValue(intent.PlayerId, out var currentEntityId) &&
+                _worldStructures.TryGetValue(currentEntityId, out var currentStructure))
+            {
+                return Reject(intent, $"Already inside {currentStructure.Name}; exit before entering another structure.");
+            }
+
+            _entryPositionByPlayer[intent.PlayerId] = player.Position;
+            _enteredStructureByPlayer[intent.PlayerId] = structure.EntityId;
+            result = $"Entered {structure.Name}. Interior placeholder active; real rooms will attach here later.";
+        }
+        else
+        {
+            if (!_enteredStructureByPlayer.TryGetValue(intent.PlayerId, out var currentEntityId))
+            {
+                return Reject(intent, "You are not inside a structure.");
+            }
+
+            if (currentEntityId != structure.EntityId)
+            {
+                return Reject(intent, $"Exit the current structure before using {structure.Name}.");
+            }
+
+            _enteredStructureByPlayer.Remove(intent.PlayerId);
+            if (_entryPositionByPlayer.Remove(intent.PlayerId, out var entryPosition))
+            {
+                _state.SetPlayerPosition(intent.PlayerId, entryPosition);
+            }
+
+            result = $"Exited {structure.Name}.";
+        }
+
+        _state.AddWorldEvent(
+            WorldEventType.Structure,
+            $"{player.DisplayName} {(entering ? "entered" : "exited")} {structure.Name}.",
+            intent.PlayerId,
+            structure.EntityId);
+
+        var factionId = string.IsNullOrWhiteSpace(structure.FactionId)
+            ? StarterFactions.CivicRepairGuildId
+            : structure.FactionId;
+        var serverEvent = AppendEvent(
+            "structure_interacted",
+            $"{intent.PlayerId} {action} {structure.StructureId}",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["entityId"] = structure.EntityId,
+                ["structureId"] = structure.StructureId,
+                ["action"] = action,
+                ["result"] = result,
+                ["entryState"] = entering ? "inside" : "outside",
+                ["insideStructureId"] = entering ? structure.EntityId : string.Empty,
+                ["insideStructureName"] = entering ? structure.Name : string.Empty,
+                ["integrity"] = structure.Integrity.ToString(),
+                ["condition"] = FormatStructureCondition(structure.Integrity),
+                ["karmaAmount"] = "0",
+                ["scripReward"] = "0",
+                ["factionId"] = factionId,
+                ["factionDelta"] = "0",
+                ["factionReputation"] = _state.Factions.GetReputation(factionId, intent.PlayerId).ToString()
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -1821,6 +1903,12 @@ public sealed class AuthoritativeWorldServer
             _tick < lastAttackTick + AttackCooldownTicks)
         {
             statuses.Add($"Attack Cooldown ({lastAttackTick + AttackCooldownTicks - _tick})");
+        }
+
+        if (_enteredStructureByPlayer.TryGetValue(player.Id, out var structureEntityId) &&
+            _worldStructures.TryGetValue(structureEntityId, out var structure))
+        {
+            statuses.Add($"Inside: {structure.Name}");
         }
 
         return statuses;
