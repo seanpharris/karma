@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using Karma.Data;
 
 namespace Karma.Art;
 
@@ -130,6 +131,11 @@ public sealed class PlayerV2LayerManifest
         }
 
         return new PlayerV2Appearance(selected);
+    }
+
+    public PlayerV2Appearance CreateAppearance(PlayerAppearanceSelection selection)
+    {
+        return CreateAppearance(selection.ToLayerIdsBySlot());
     }
 
     public PlayerV2Appearance CreateAppearance(IReadOnlyDictionary<string, string> layerIdsBySlot)

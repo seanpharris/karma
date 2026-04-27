@@ -77,6 +77,11 @@ public static class SnapshotJson
             builder.Append($"\"standing\": \"{player.Standing}\", ");
             builder.Append($"\"tileX\": {player.TileX}, \"tileY\": {player.TileY}, ");
             builder.Append($"\"scrip\": {player.Scrip}, ");
+            builder.Append($"\"appearance\": {{ \"base\": \"{Escape(player.Appearance.BaseLayerId)}\", ");
+            builder.Append($"\"skin\": \"{Escape(player.Appearance.SkinLayerId)}\", ");
+            builder.Append($"\"hair\": \"{Escape(player.Appearance.HairLayerId)}\", ");
+            builder.Append($"\"outfit\": \"{Escape(player.Appearance.OutfitLayerId)}\", ");
+            builder.Append($"\"heldTool\": \"{Escape(player.Appearance.HeldToolLayerId)}\" }}, ");
             builder.Append($"\"inventory\": [{string.Join(", ", player.InventoryItemIds.Select(itemId => $"\"{Escape(itemId)}\""))}], ");
             builder.Append($"\"health\": {player.Health}, \"maxHealth\": {player.MaxHealth}, ");
             builder.Append($"\"statusEffects\": [{string.Join(", ", player.StatusEffects.Select(status => $"\"{Escape(status)}\""))}] }}");

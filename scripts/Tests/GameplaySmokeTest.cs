@@ -340,10 +340,8 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             playerV2LayerManifest.GetLayerStack(defaultPlayerV2Appearance).SequenceEqual(playerV2LayerManifest.PreviewStack),
             "player v2 default appearance matches manifest preview stack");
-        var lightSkinPlayerV2Appearance = playerV2LayerManifest.CreateAppearance(new Dictionary<string, string>
-        {
-            ["skin"] = "skin_light"
-        });
+        var lightSkinSelection = PlayerAppearanceSelection.Default with { SkinLayerId = "skin_light" };
+        var lightSkinPlayerV2Appearance = playerV2LayerManifest.CreateAppearance(lightSkinSelection);
         ExpectEqual("skin_light", lightSkinPlayerV2Appearance.GetLayerIdForSlot("skin"), "player v2 appearance can override skin layer");
         ExpectFalse(
             playerV2LayerManifest.GetLayerStack(lightSkinPlayerV2Appearance).SequenceEqual(playerV2LayerManifest.PreviewStack),
@@ -2005,6 +2003,13 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(snapshot.Players.All(player => player.InventoryItemIds is not null), "snapshot captures per-player inventory");
         ExpectTrue(snapshot.Players.Any(player => player.Id == GameState.LocalPlayerId && player.TileX == 3 && player.TileY == 4), "snapshot captures player tile position");
         ExpectTrue(snapshot.Players.Any(player => player.Id == GameState.LocalPlayerId && player.Scrip == state.LocalScrip), "snapshot captures player scrip");
+        ExpectTrue(snapshot.Players.All(player => player.Appearance == PlayerAppearanceSelection.Default), "snapshot captures default player appearance selections");
+        var customAppearancePlayer = state.RegisterPlayer("appearance-test", "Appearance Tester");
+        customAppearancePlayer.SetAppearance(PlayerAppearanceSelection.Default with { SkinLayerId = "skin_deep" });
+        var customAppearanceSnapshot = SnapshotBuilder.PlayersFrom(
+            new[] { customAppearancePlayer },
+            new LeaderboardStanding(string.Empty, string.Empty, 0, string.Empty, string.Empty, 0)).Single();
+        ExpectEqual("skin_deep", customAppearanceSnapshot.Appearance.SkinLayerId, "snapshot captures custom player skin layer selection");
         ExpectTrue(snapshot.Summary.Contains("players"), "snapshot has readable summary");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"leaderboard\""), "snapshot JSON includes leaderboard");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"standing\""), "snapshot JSON includes player standing");
@@ -2012,6 +2017,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"inventory\""), "snapshot JSON includes per-player inventory");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"scrip\""), "snapshot JSON includes player scrip");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"statusEffects\""), "snapshot JSON includes player status effects");
+        ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"appearance\""), "snapshot JSON includes player appearance selection");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"duels\""), "snapshot JSON includes duels");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"scripReward\""), "snapshot JSON includes quest scrip rewards");
         ExpectTrue(SnapshotJson.Write(snapshot).Contains("\"karmaProgress\""), "snapshot JSON includes karma progress");

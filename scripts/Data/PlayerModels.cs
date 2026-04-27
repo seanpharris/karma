@@ -26,6 +26,7 @@ public sealed class PlayerState
     public int Health { get; private set; } = 100;
     public int Scrip { get; private set; }
     public TilePosition Position { get; private set; } = TilePosition.Origin;
+    public PlayerAppearanceSelection Appearance { get; private set; } = PlayerAppearanceSelection.Default;
     public string TeamId { get; private set; } = string.Empty;
     public bool HasTeam => !string.IsNullOrWhiteSpace(TeamId);
     public IReadOnlyList<GameItem> Inventory => _inventory;
@@ -60,6 +61,11 @@ public sealed class PlayerState
     public void SetPosition(TilePosition position)
     {
         Position = position;
+    }
+
+    public void SetAppearance(PlayerAppearanceSelection appearance)
+    {
+        Appearance = appearance.Normalized();
     }
 
     public void AddItem(GameItem item)
@@ -155,6 +161,50 @@ public sealed class PlayerState
         }
 
         Health = System.Math.Min(MaxHealth, Health + amount);
+    }
+}
+
+public sealed record PlayerAppearanceSelection(
+    string BaseLayerId,
+    string SkinLayerId,
+    string HairLayerId,
+    string OutfitLayerId,
+    string HeldToolLayerId)
+{
+    public static PlayerAppearanceSelection Default { get; } = new(
+        "base_body",
+        "skin_medium",
+        "hair_short_dark",
+        "outfit_engineer",
+        "tool_multitool");
+
+    public IReadOnlyDictionary<string, string> ToLayerIdsBySlot()
+    {
+        return new Dictionary<string, string>
+        {
+            ["base"] = BaseLayerId,
+            ["skin"] = SkinLayerId,
+            ["hair"] = HairLayerId,
+            ["outfit"] = OutfitLayerId,
+            ["held_tool"] = HeldToolLayerId
+        };
+    }
+
+    public PlayerAppearanceSelection Normalized()
+    {
+        return new PlayerAppearanceSelection(
+            Normalize(BaseLayerId, Default.BaseLayerId),
+            Normalize(SkinLayerId, Default.SkinLayerId),
+            Normalize(HairLayerId, Default.HairLayerId),
+            Normalize(OutfitLayerId, Default.OutfitLayerId),
+            Normalize(HeldToolLayerId, Default.HeldToolLayerId));
+    }
+
+    private static string Normalize(string layerId, string fallback)
+    {
+        return string.IsNullOrWhiteSpace(layerId)
+            ? fallback
+            : layerId.Trim();
     }
 }
 
