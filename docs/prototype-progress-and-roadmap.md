@@ -73,6 +73,7 @@ and the next practical build slices.
 - Downed/rescue/carry/execute mechanics are now documented as a future core karma loop that also informs v2 character animations.
 - Proximity communication research now prioritizes player-to-player proximity voice/text first, with NPC speech-to-text/LLM/text-to-speech interactions parked as research/to-do.
 - Server-owned local text chat now exists as the first proximity communication slice: `SendLocalChat` messages are filtered by listener distance, carry distance/volume falloff in interest snapshots, can be sent from gameplay with `/` or `T`, and render in the HUD/developer overlay plus short-lived world chat bubbles.
+- Gemini-generated player v2 references now have an extraction pass: direction-specific front/right/back pose batches are chroma-keyed into transparent `64x64` candidate frames and composited into `assets/art/sprites/generated/player_v2_engineer_8dir_4row_candidate.png` for review. It is not wired into runtime yet because diagonals are placeholder/mirrored and the runtime still expects the existing prototype sheet contract.
 - NPC voice research direction is to keep current walk-up options, then later make interactions feel more organic with contextual greetings/exclamations, optional spoken/freeform player input, bounded LLM responses, subtitles, and spatial NPC voice playback.
 - Generated station locations have inspectable markers and interactable fixtures, but their art is still placeholder greenhouse components and needs proper sign/landmark visuals.
 - Generated NPCs have first-pass station dialogue/quests, but those choices are still broad templates rather than bespoke quest chains.
@@ -111,13 +112,14 @@ and the next practical build slices.
 
 1. **Deepen station quests/dialogue.** Turn broad generated choices into multi-step repair, rumor, theft, apology, bounty, delivery, and mediation tasks.
 2. **Prototype player communication.** Add chat tabs/log polish and server-side chat expiry, then use the audibility/falloff model to prototype fake audio before real player-to-player proximity voice.
-3. **Improve generated structure consequences.** Tune faction-specific rewards/penalties by station role and let stabilized/compromised station state affect local prices and richer quest branches.
-4. **Improve respawn candidate pools.** Prefer safe stations/landmarks and avoid active combat heat, not just death/player positions.
-5. **Improve station presentation.** Replace placeholder station marker art with signs, landmarks, or theme-specific props.
-6. **Wire one more perk.** Good candidates: `Paragon Favor`, `Abyssal Mark`, or deeper `Renegade Nerve` intimidation behavior.
-7. **Improve world layout.** Generate roads/paths between stations and shape districts around the station graph.
-8. **Balance generated oddities.** Tune station proximity, rarity, and item selection so pickups support interesting choices instead of noise.
-9. **Keep documentation current.** Update this file after each meaningful gameplay slice.
+3. **Upgrade player art pipeline.** Clean true diagonal v2 frames and decide whether to wire the 64x64/4-row candidate sheet into runtime or wait for a fuller layered v2 contract.
+4. **Improve generated structure consequences.** Tune faction-specific rewards/penalties by station role and let stabilized/compromised station state affect local prices and richer quest branches.
+5. **Improve respawn candidate pools.** Prefer safe stations/landmarks and avoid active combat heat, not just death/player positions.
+6. **Improve station presentation.** Replace placeholder station marker art with signs, landmarks, or theme-specific props.
+7. **Wire one more perk.** Good candidates: `Paragon Favor`, `Abyssal Mark`, or deeper `Renegade Nerve` intimidation behavior.
+8. **Improve world layout.** Generate roads/paths between stations and shape districts around the station graph.
+9. **Balance generated oddities.** Tune station proximity, rarity, and item selection so pickups support interesting choices instead of noise.
+10. **Keep documentation current.** Update this file after each meaningful gameplay slice.
 
 ## Verification standard
 

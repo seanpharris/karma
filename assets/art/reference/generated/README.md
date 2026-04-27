@@ -27,4 +27,4 @@ style references for a human/AI cleanup pass.
 - `karma_player_v2_back_pose_batch.jpg`
   - Back-facing only, green chroma background. Useful rear-view supplement, but color/outfit consistency may need matching to the other batches.
 
-The smaller-batch approach works better than asking Gemini for a full 8-direction sheet. Next practical step: extract the best front/right/back frames, mirror right to left as a temporary prototype, and hand/AI-clean diagonals into a true runtime sheet.
+The smaller-batch approach works better than asking Gemini for a full 8-direction sheet. The first extraction pass now lives in `assets/art/sprites/generated/`: it extracts the best front/right/back frames, mirrors right to left as a temporary prototype, and composites a 64x64-frame 8-direction candidate sheet. Remaining art work: hand/AI-clean true diagonals and style-match the back/front/right batches.
