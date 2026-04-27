@@ -47,6 +47,7 @@ func _load_and_extract(direction: String) -> Array[Image]:
 		frame.fill(Color(0, 0, 0, 0))
 		var cropped := image.get_region(source_rect)
 		_key_chroma(cropped)
+		_remove_edge_background(cropped)
 		var bounds := _content_bounds(cropped)
 		if bounds.size.x <= 0 or bounds.size.y <= 0:
 			frames.append(frame)
@@ -60,6 +61,7 @@ func _load_and_extract(direction: String) -> Array[Image]:
 		sprite.resize(target_w, target_h, Image.INTERPOLATE_NEAREST)
 		var dest := Vector2i((FRAME_SIZE - target_w) / 2, FRAME_SIZE - target_h - 3)
 		frame.blit_rect(sprite, Rect2i(Vector2i.ZERO, sprite.get_size()), dest)
+		_remove_edge_background(frame)
 		frames.append(frame)
 	return frames
 
@@ -75,6 +77,52 @@ func _key_chroma(image: Image) -> void:
 				image.set_pixel(x, y, Color(0, 0, 0, 0))
 			else:
 				image.set_pixel(x, y, Color(color.r, color.g, color.b, 1.0))
+
+func _remove_edge_background(image: Image) -> void:
+	var width := image.get_width()
+	var height := image.get_height()
+	var visited := PackedByteArray()
+	visited.resize(width * height)
+	var queue: Array[Vector2i] = []
+	for x in width:
+		_queue_background_pixel(image, visited, queue, Vector2i(x, 0))
+		_queue_background_pixel(image, visited, queue, Vector2i(x, height - 1))
+	for y in height:
+		_queue_background_pixel(image, visited, queue, Vector2i(0, y))
+		_queue_background_pixel(image, visited, queue, Vector2i(width - 1, y))
+	var index := 0
+	while index < queue.size():
+		var point := queue[index]
+		index += 1
+		image.set_pixel(point.x, point.y, Color(0, 0, 0, 0))
+		_queue_background_pixel(image, visited, queue, point + Vector2i.LEFT)
+		_queue_background_pixel(image, visited, queue, point + Vector2i.RIGHT)
+		_queue_background_pixel(image, visited, queue, point + Vector2i.UP)
+		_queue_background_pixel(image, visited, queue, point + Vector2i.DOWN)
+
+func _queue_background_pixel(image: Image, visited: PackedByteArray, queue: Array[Vector2i], point: Vector2i) -> void:
+	if point.x < 0 or point.y < 0 or point.x >= image.get_width() or point.y >= image.get_height():
+		return
+	var offset := point.y * image.get_width() + point.x
+	if visited[offset] != 0:
+		return
+	visited[offset] = 1
+	if _is_background_pixel(image.get_pixel(point.x, point.y)):
+		queue.append(point)
+
+func _is_background_pixel(color: Color) -> bool:
+	if color.a <= 0.05:
+		return true
+	var r: int = int(round(color.r * 255.0))
+	var g: int = int(round(color.g * 255.0))
+	var b: int = int(round(color.b * 255.0))
+	var green_distance: int = abs(r - CHROMA_R) + abs(g - CHROMA_G) + abs(b - CHROMA_B)
+	var is_green := green_distance <= CHROMA_TOLERANCE or (g > 96 and g > r * 1.2 and g > b * 1.2)
+	var max_channel: int = max(r, max(g, b))
+	var min_channel: int = min(r, min(g, b))
+	var is_near_black := max_channel <= 38
+	var is_dark_flat := max_channel <= 58 and max_channel - min_channel <= 24
+	return is_green or is_near_black or is_dark_flat
 
 func _content_bounds(image: Image) -> Rect2i:
 	var min_x := image.get_width()

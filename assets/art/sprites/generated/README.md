@@ -2,7 +2,9 @@
 
 These PNGs are extracted/normalized from Gemini reference batches. They are
 transparent, exact-size candidate sheets, but they are still **prototype
-candidates**, not final v2 runtime art.
+candidates**, not final v2 runtime art. The extractor removes chroma and dark
+edge-connected source backgrounds so the 64px runtime preview can be judged
+in-game without opaque background blocks.
 
 ## Files
 
@@ -21,7 +23,8 @@ candidates**, not final v2 runtime art.
 ## Caveats
 
 - Diagonals are temporary placeholders, not true diagonal art.
-- The source images were JPEGs, so chroma extraction may leave imperfect edges.
+- The source images were JPEGs, so chroma/background extraction may still leave
+  imperfect edge pixels around the character art.
 - Rows are `idle`, `walk A`, `walk B`, `sprint/ready`, not the full v2 animation
   contract yet.
 - This should not replace `assets/art/sprites/scifi_engineer_player_8dir.png`
