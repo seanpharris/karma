@@ -8,7 +8,21 @@ bin/
 obj/
 .vs/
 .vscode/
+.venv/
+.venv_broken_store*/
+.tmp/
+test_tmp/
+__pycache__/
+*.pyc
 
 *.tmp
 *.log
 debug/*.json
+
+# Sprite pipeline generated assets
+input_raw/*
+!input_raw/.gitkeep
+output_sprites/*
+!output_sprites/.gitkeep
+output_sheets/*
+!output_sheets/.gitkeep

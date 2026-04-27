@@ -1,0 +1,159 @@
+{
+  "layout": "variable",
+  "columns": 3,
+  "sprites": [
+    {
+      "name": "animal_pen",
+      "source_file": "animal_pen.png",
+      "sheet_x": 0,
+      "sheet_y": 0,
+      "width": 96,
+      "height": 96,
+      "anchor": [
+        48,
+        88
+      ],
+      "footprint_tiles": [
+        6,
+        6
+      ],
+      "category": "building"
+    },
+    {
+      "name": "barn",
+      "source_file": "barn.png",
+      "sheet_x": 96,
+      "sheet_y": 0,
+      "width": 96,
+      "height": 96,
+      "anchor": [
+        48,
+        88
+      ],
+      "footprint_tiles": [
+        6,
+        6
+      ],
+      "category": "building"
+    },
+    {
+      "name": "doctor_office",
+      "source_file": "doctor_office.png",
+      "sheet_x": 192,
+      "sheet_y": 0,
+      "width": 96,
+      "height": 96,
+      "anchor": [
+        48,
+        88
+      ],
+      "footprint_tiles": [
+        6,
+        6
+      ],
+      "category": "building"
+    },
+    {
+      "name": "farmhouse",
+      "source_file": "farmhouse.png",
+      "sheet_x": 0,
+      "sheet_y": 96,
+      "width": 96,
+      "height": 96,
+      "anchor": [
+        48,
+        88
+      ],
+      "footprint_tiles": [
+        6,
+        6
+      ],
+      "category": "building"
+    },
+    {
+      "name": "general_store",
+      "source_file": "general_store.png",
+      "sheet_x": 96,
+      "sheet_y": 96,
+      "width": 96,
+      "height": 96,
+      "anchor": [
+        48,
+        88
+      ],
+      "footprint_tiles": [
+        6,
+        6
+      ],
+      "category": "building"
+    },
+    {
+      "name": "mine_entrance",
+      "source_file": "mine_entrance.png",
+      "sheet_x": 192,
+      "sheet_y": 96,
+      "width": 128,
+      "height": 128,
+      "anchor": [
+        64,
+        120
+      ],
+      "footprint_tiles": [
+        8,
+        8
+      ],
+      "category": "building"
+    },
+    {
+      "name": "ore_storage",
+      "source_file": "ore_storage.png",
+      "sheet_x": 0,
+      "sheet_y": 224,
+      "width": 96,
+      "height": 96,
+      "anchor": [
+        48,
+        88
+      ],
+      "footprint_tiles": [
+        6,
+        6
+      ],
+      "category": "building"
+    },
+    {
+      "name": "saloon",
+      "source_file": "saloon.png",
+      "sheet_x": 96,
+      "sheet_y": 224,
+      "width": 96,
+      "height": 96,
+      "anchor": [
+        48,
+        88
+      ],
+      "footprint_tiles": [
+        6,
+        6
+      ],
+      "category": "building"
+    },
+    {
+      "name": "sheriff_office",
+      "source_file": "sheriff_office.png",
+      "sheet_x": 192,
+      "sheet_y": 224,
+      "width": 96,
+      "height": 96,
+      "anchor": [
+        48,
+        88
+      ],
+      "footprint_tiles": [
+        6,
+        6
+      ],
+      "category": "building"
+    }
+  ]
+}
