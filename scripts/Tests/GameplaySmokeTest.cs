@@ -331,6 +331,13 @@ public partial class GameplaySmokeTest : Node
         }
         ExpectTrue(FileAccess.FileExists("res://assets/art/sprites/player_v2/layers/skin_light_8dir.png"), "player v2 generates light skin layer");
         ExpectTrue(FileAccess.FileExists("res://assets/art/sprites/player_v2/layers/skin_deep_8dir.png"), "player v2 generates deep skin layer");
+        var playerV2LayerManifest = PlayerV2LayerManifest.LoadDefault();
+        ExpectEqual("karma.player_v2.layers.v1", playerV2LayerManifest.Schema, "player v2 layer manifest loader reads schema");
+        ExpectEqual(3, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "skin"), "player v2 layer manifest loader exposes skin variants");
+        ExpectTrue(playerV2LayerManifest.Layers.All(layer => FileAccess.FileExists(playerV2LayerManifest.ResolveLayerPath(layer))), "player v2 layer manifest loader resolves layer paths");
+        var recomposedPlayerV2Preview = playerV2LayerManifest.ComposePreviewStack();
+        var savedPlayerV2Preview = Image.LoadFromFile(playerV2LayerManifest.CompositePath);
+        ExpectEqual(0, CountImagePixelDifferences(savedPlayerV2Preview, recomposedPlayerV2Preview), "player v2 layer compositor reproduces saved preview stack");
         var expectedPlayerAtlasPath = FileAccess.FileExists(PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath)
             ? PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
             : FileAccess.FileExists(PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath)
@@ -2154,6 +2161,28 @@ public partial class GameplaySmokeTest : Node
         }
 
         return transparentPixels;
+    }
+
+    private static int CountImagePixelDifferences(Image firstImage, Image secondImage)
+    {
+        if (firstImage.GetWidth() != secondImage.GetWidth() || firstImage.GetHeight() != secondImage.GetHeight())
+        {
+            return int.MaxValue;
+        }
+
+        var differences = 0;
+        for (var y = 0; y < firstImage.GetHeight(); y++)
+        {
+            for (var x = 0; x < firstImage.GetWidth(); x++)
+            {
+                if (!firstImage.GetPixel(x, y).IsEqualApprox(secondImage.GetPixel(x, y)))
+                {
+                    differences++;
+                }
+            }
+        }
+
+        return differences;
     }
 
     private static int CountPixelDifferences(Image image, Vector2I firstFrame, Vector2I secondFrame)
