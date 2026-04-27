@@ -13,6 +13,27 @@ public sealed record PlayerV2LayerDefinition(
     bool Required = false,
     bool IsDefault = false);
 
+public sealed record PlayerV2Appearance(IReadOnlyDictionary<string, string> SelectedLayerIdsBySlot)
+{
+    public static PlayerV2Appearance Empty { get; } = new(new Dictionary<string, string>());
+
+    public PlayerV2Appearance WithLayer(string slot, string layerId)
+    {
+        var selected = new Dictionary<string, string>(SelectedLayerIdsBySlot, StringComparer.Ordinal)
+        {
+            [slot] = layerId
+        };
+        return new PlayerV2Appearance(selected);
+    }
+
+    public string GetLayerIdForSlot(string slot)
+    {
+        return SelectedLayerIdsBySlot.TryGetValue(slot, out var layerId)
+            ? layerId
+            : string.Empty;
+    }
+}
+
 public sealed class PlayerV2LayerManifest
 {
     public const string DefaultManifestPath = "res://assets/art/sprites/player_v2/player_v2_manifest.json";
@@ -93,9 +114,60 @@ public sealed class PlayerV2LayerManifest
             ResolveRelativePath(manifestPath, RequiredString(root, "composite")));
     }
 
+    public PlayerV2Appearance CreateDefaultAppearance()
+    {
+        var selected = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var slot in LayerOrder)
+        {
+            var slotLayers = Layers.Where(layer => layer.Slot == slot).ToArray();
+            var selectedLayer = slotLayers.FirstOrDefault(layer => layer.IsDefault) ??
+                                slotLayers.FirstOrDefault(layer => layer.Required) ??
+                                slotLayers.FirstOrDefault();
+            if (selectedLayer is not null)
+            {
+                selected[slot] = selectedLayer.Id;
+            }
+        }
+
+        return new PlayerV2Appearance(selected);
+    }
+
+    public PlayerV2Appearance CreateAppearance(IReadOnlyDictionary<string, string> layerIdsBySlot)
+    {
+        var appearance = CreateDefaultAppearance();
+        foreach (var (slot, layerId) in layerIdsBySlot)
+        {
+            appearance = appearance.WithLayer(slot, layerId);
+        }
+
+        ValidateAppearance(appearance);
+        return appearance;
+    }
+
+    public IReadOnlyList<string> GetLayerStack(PlayerV2Appearance appearance)
+    {
+        ValidateAppearance(appearance);
+        var orderedLayerIds = new List<string>();
+        foreach (var slot in LayerOrder)
+        {
+            var layerId = appearance.GetLayerIdForSlot(slot);
+            if (!string.IsNullOrWhiteSpace(layerId))
+            {
+                orderedLayerIds.Add(layerId);
+            }
+        }
+
+        return orderedLayerIds;
+    }
+
     public Image ComposePreviewStack()
     {
         return Compose(PreviewStack);
+    }
+
+    public Image Compose(PlayerV2Appearance appearance)
+    {
+        return Compose(GetLayerStack(appearance));
     }
 
     public Image Compose(IEnumerable<string> layerIds)
@@ -135,6 +207,28 @@ public sealed class PlayerV2LayerManifest
     public string ResolveLayerPath(PlayerV2LayerDefinition layer)
     {
         return ResolveRelativePath(ManifestPath, layer.Path);
+    }
+
+    private void ValidateAppearance(PlayerV2Appearance appearance)
+    {
+        var byId = Layers.ToDictionary(layer => layer.Id, StringComparer.Ordinal);
+        foreach (var (slot, layerId) in appearance.SelectedLayerIdsBySlot)
+        {
+            if (!LayerOrder.Contains(slot, StringComparer.Ordinal))
+            {
+                throw new InvalidOperationException($"Unknown player v2 layer slot: {slot}");
+            }
+
+            if (!byId.TryGetValue(layerId, out var layer))
+            {
+                throw new InvalidOperationException($"Unknown player v2 layer id: {layerId}");
+            }
+
+            if (!string.Equals(layer.Slot, slot, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException($"Player v2 layer {layerId} belongs to slot {layer.Slot}, not {slot}");
+            }
+        }
     }
 
     private static IReadOnlyList<string> ReadStringArray(JsonElement root, string name)

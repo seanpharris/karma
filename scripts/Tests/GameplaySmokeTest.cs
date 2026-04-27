@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Godot;
@@ -335,9 +336,23 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual("karma.player_v2.layers.v1", playerV2LayerManifest.Schema, "player v2 layer manifest loader reads schema");
         ExpectEqual(3, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "skin"), "player v2 layer manifest loader exposes skin variants");
         ExpectTrue(playerV2LayerManifest.Layers.All(layer => FileAccess.FileExists(playerV2LayerManifest.ResolveLayerPath(layer))), "player v2 layer manifest loader resolves layer paths");
+        var defaultPlayerV2Appearance = playerV2LayerManifest.CreateDefaultAppearance();
+        ExpectTrue(
+            playerV2LayerManifest.GetLayerStack(defaultPlayerV2Appearance).SequenceEqual(playerV2LayerManifest.PreviewStack),
+            "player v2 default appearance matches manifest preview stack");
+        var lightSkinPlayerV2Appearance = playerV2LayerManifest.CreateAppearance(new Dictionary<string, string>
+        {
+            ["skin"] = "skin_light"
+        });
+        ExpectEqual("skin_light", lightSkinPlayerV2Appearance.GetLayerIdForSlot("skin"), "player v2 appearance can override skin layer");
+        ExpectFalse(
+            playerV2LayerManifest.GetLayerStack(lightSkinPlayerV2Appearance).SequenceEqual(playerV2LayerManifest.PreviewStack),
+            "player v2 custom appearance produces a different layer stack");
         var recomposedPlayerV2Preview = playerV2LayerManifest.ComposePreviewStack();
         var savedPlayerV2Preview = Image.LoadFromFile(playerV2LayerManifest.CompositePath);
         ExpectEqual(0, CountImagePixelDifferences(savedPlayerV2Preview, recomposedPlayerV2Preview), "player v2 layer compositor reproduces saved preview stack");
+        var lightSkinPlayerV2Preview = playerV2LayerManifest.Compose(lightSkinPlayerV2Appearance);
+        ExpectTrue(CountImagePixelDifferences(recomposedPlayerV2Preview, lightSkinPlayerV2Preview) > 0, "player v2 appearance compositor changes output when skin changes");
         var expectedPlayerAtlasPath = FileAccess.FileExists(PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath)
             ? PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
             : FileAccess.FileExists(PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath)

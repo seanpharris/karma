@@ -9,6 +9,8 @@ held-tool layers instead of generating bespoke art for every character variant.
 - `player_v2_manifest.json`
   - Declares the current frame contract, directions, animation rows, layer slots,
     available layer files, and the default preview stack.
+  - `scripts/Art/PlayerV2LayerManifest.cs` can load this manifest, build default
+    or custom slot selections, and composite selected layers into an image.
   - This is the bridge from a hardcoded generated preview toward real character
     customization/composition.
 - `player_v2_layered_preview_8dir.png`
@@ -48,6 +50,7 @@ Run from the repo root:
 
 - Replace the generated mannequin pixels with polished true base-body art.
 - Add alternate skin palettes, hair, outfits, and silhouettes.
-- Move composition from this generator into a reusable export/compositor step.
+- Add a runtime/export path that saves composed appearance variants from selected
+  manifest slots instead of relying on one saved preview file.
 - Later upgrade to 48x48 or 64x64 frames once the runtime/compositor contract is
   ready.
