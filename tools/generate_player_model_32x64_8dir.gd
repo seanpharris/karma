@@ -1,8 +1,10 @@
 extends SceneTree
 
 const OUTPUT := "res://assets/art/sprites/player_v2/player_model_32x64_8dir.png"
+const RUNTIME_OUTPUT := "res://assets/art/sprites/player_v2/player_model_32x64_8dir_runtime.png"
 const FRAME_W := 32
 const FRAME_H := 64
+const RUNTIME_FRAME := 64
 const DIRECTIONS := 8
 
 const O := Color(0.045, 0.038, 0.032, 1.0)
@@ -27,8 +29,21 @@ func _init() -> void:
 	for direction in DIRECTIONS:
 		_draw_direction(sheet, direction, Vector2i(direction * FRAME_W, 0))
 	sheet.save_png(OUTPUT)
+	_save_runtime_sheet(sheet)
 	print("Generated 32x64 8-direction player model: ", OUTPUT)
+	print("Generated runtime-centered player model sheet: ", RUNTIME_OUTPUT)
 	quit(0)
+
+func _save_runtime_sheet(source: Image) -> void:
+	var runtime := Image.create(RUNTIME_FRAME * DIRECTIONS, RUNTIME_FRAME * 4, false, Image.FORMAT_RGBA8)
+	runtime.fill(Color(0, 0, 0, 0))
+	for direction in DIRECTIONS:
+		var source_rect := Rect2i(direction * FRAME_W, 0, FRAME_W, FRAME_H)
+		for row in 4:
+			# Center the 32x64 model in a 64x64 runtime cell so the current
+			# square-frame animation code can preview this model immediately.
+			runtime.blit_rect(source, source_rect, Vector2i((direction * RUNTIME_FRAME) + ((RUNTIME_FRAME - FRAME_W) / 2), row * RUNTIME_FRAME))
+	runtime.save_png(RUNTIME_OUTPUT)
 
 func _draw_direction(img: Image, dir: int, o: Vector2i) -> void:
 	match dir:

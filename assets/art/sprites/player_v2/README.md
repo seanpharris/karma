@@ -49,7 +49,11 @@ Additional base-model references:
 - `player_model_32x64_8dir.png`
   - 256x64, 8 columns x 1 row, 32x64 cells.
   - First built-out single-model attempt using the 32x64 dimensions: skin/head, work outfit, backpack/armor cues, and transparent background.
-  - Intended as a focused standardization target, not active runtime art yet.
+  - Intended as a focused standardization target.
+- `player_model_32x64_8dir_runtime.png`
+  - 512x256, 8 columns x 4 rows, 64x64 runtime cells.
+  - Centers the 32x64 model in square runtime cells so the prototype can preview it before the renderer/compositor supports rectangular 32x64 frames directly.
+  - This is currently preferred over the knight reference when present.
 
 The layer order is:
 
