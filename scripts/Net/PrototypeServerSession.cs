@@ -141,12 +141,15 @@ public partial class PrototypeServerSession : Node
             : "Shops: " + string.Join(", ", snapshot.ShopOffers
                 .Take(3)
                 .Select(offer => $"{offer.ItemName} {offer.Price} {offer.Currency}"));
+        var chatText = snapshot.LocalChatMessages.Count == 0
+            ? "Local chat: quiet"
+            : $"Local chat: {snapshot.LocalChatMessages[^1].SpeakerName}: {snapshot.LocalChatMessages[^1].Text}";
         var eventText = snapshot.ServerEvents.Count == 0
             ? "Events: quiet"
             : $"Events: {snapshot.ServerEvents[^1].Description}";
         var syncMode = snapshot.SyncHint.IsDelta ? "delta" : "full";
         var syncText = $"Sync: {syncMode}, after tick {snapshot.SyncHint.AfterTick}, map rev {snapshot.SyncHint.VisibleMapRevision}, chunks +{applyResult.AddedChunks}/~{applyResult.UnchangedChunks}/-{applyResult.RemovedChunks}";
 
-        return $"{snapshot.Summary}\n{dialogueText} | {questText} | {shopText}\n{eventText}\n{syncText}";
+        return $"{snapshot.Summary}\n{dialogueText} | {questText} | {shopText}\n{chatText}\n{eventText}\n{syncText}";
     }
 }

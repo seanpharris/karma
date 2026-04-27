@@ -15,6 +15,7 @@ public partial class HudController : CanvasLayer
     private GameState _gameState = null!;
     private Label _karmaLabel = new();
     private Label _eventLabel = new();
+    private Label _chatLabel = new();
     private Label _staminaLabel = new();
     private Label _healthLabel = new();
     private ProgressBar _healthBar = new();
@@ -309,6 +310,16 @@ public partial class HudController : CanvasLayer
         };
         root.AddChild(_eventLabel);
 
+        _chatLabel = new Label
+        {
+            OffsetLeft = 16,
+            OffsetTop = 126,
+            OffsetRight = 700,
+            OffsetBottom = 156,
+            Text = "Local chat: quiet"
+        };
+        root.AddChild(_chatLabel);
+
         _staminaLabel = new Label
         {
             OffsetLeft = 300,
@@ -345,9 +356,9 @@ public partial class HudController : CanvasLayer
         _inventoryLabel = new Label
         {
             OffsetLeft = 16,
-            OffsetTop = 128,
+            OffsetTop = 158,
             OffsetRight = 700,
-            OffsetBottom = 158,
+            OffsetBottom = 188,
             Text = "Inventory: empty"
         };
         root.AddChild(_inventoryLabel);
@@ -723,6 +734,7 @@ public partial class HudController : CanvasLayer
             }
 
             _eventLabel.Text = FormatLatestServerEvent(snapshot.ServerEvents);
+            _chatLabel.Text = FormatLocalChatSummary(snapshot.LocalChatMessages);
         }
 
         _syncLabel.Text = $"Sync: {snapshotSummary}";
@@ -809,6 +821,13 @@ public partial class HudController : CanvasLayer
             var saintReward = ReadEventData(latest, "saintScripReward", "0");
             var scourgeReward = ReadEventData(latest, "scourgeScripReward", "0");
             return $"Match complete — results locked. Saint: {saint} ({FormatSignedScore(saintScore)}, +{saintReward} scrip). Scourge: {scourge} ({FormatSignedScore(scourgeScore)}, +{scourgeReward} scrip).";
+        }
+
+        if (latest.EventId.Contains("local_chat"))
+        {
+            var displayName = ReadEventData(latest, "displayName", ReadEventData(latest, "playerId", "Someone"));
+            var text = ReadEventData(latest, "text", "...");
+            return $"{displayName} says: {text}";
         }
 
         if (latest.EventId.Contains("player_moved"))
@@ -1194,6 +1213,18 @@ public partial class HudController : CanvasLayer
         return string.Join("\n", lines);
     }
 
+    public static string FormatLocalChatSummary(IReadOnlyList<LocalChatMessageSnapshot> messages)
+    {
+        if (messages is null || messages.Count == 0)
+        {
+            return "Local chat: quiet";
+        }
+
+        var latest = messages[^1];
+        var volumePercent = Mathf.RoundToInt(latest.Volume * 100f);
+        return $"Local chat: {latest.SpeakerName} ({latest.DistanceTiles} tiles, {volumePercent}%): {latest.Text}";
+    }
+
     public static string FormatDeveloperOverlay(ClientInterestSnapshot snapshot, string perfLine)
     {
         return FormatDeveloperOverlay(snapshot, perfLine, 0);
@@ -1320,7 +1351,20 @@ public partial class HudController : CanvasLayer
 
     private static void AppendDeveloperEventsPage(List<string> lines, ClientInterestSnapshot snapshot)
     {
-        lines.Add($"Events: server {snapshot.SyncHint.ServerEventCount}, world {snapshot.SyncHint.WorldEventCount}");
+        lines.Add($"Events: server {snapshot.SyncHint.ServerEventCount}, world {snapshot.SyncHint.WorldEventCount}, local chat {snapshot.LocalChatMessages.Count}");
+        lines.Add(string.Empty);
+        lines.Add("Recent local chat:");
+        foreach (var chat in snapshot.LocalChatMessages.TakeLast(6))
+        {
+            var volumePercent = Mathf.RoundToInt(chat.Volume * 100f);
+            lines.Add($"- [{chat.Tick}] {chat.SpeakerName} ({chat.DistanceTiles} tiles/{volumePercent}%): {chat.Text}");
+        }
+
+        if (snapshot.LocalChatMessages.Count == 0)
+        {
+            lines.Add("none");
+        }
+
         lines.Add(string.Empty);
         lines.Add("Recent server events:");
         foreach (var serverEvent in snapshot.ServerEvents.TakeLast(8))

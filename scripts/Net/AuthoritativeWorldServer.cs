@@ -21,6 +21,7 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, WorldStructureEntity> _worldStructures = new();
     private readonly Dictionary<string, NpcEntity> _npcs = new();
     private readonly List<ServerEvent> _eventLog = new();
+    private readonly List<LocalChatMessage> _localChatLog = new();
     private readonly MatchState _match;
     private GeneratedTileMap _tileMap;
     private long _tick;
@@ -30,7 +31,17 @@ public sealed class AuthoritativeWorldServer
     private const int MinimumInitialSpawnSeparationTiles = 10;
     private const int MinimumRespawnSeparationTiles = 12;
     private const int SpawnEdgePaddingTiles = 4;
+    public const int LocalChatClearRadiusTiles = 4;
+    public const int LocalChatMaxRadiusTiles = 18;
+    public const int LocalChatMaxMessageLength = 180;
     private sealed record DropClaim(string OwnerId, string OwnerName);
+    private sealed record LocalChatMessage(
+        string MessageId,
+        long Tick,
+        string SpeakerId,
+        string SpeakerName,
+        string Text,
+        TilePosition SpeakerPosition);
 
     public AuthoritativeWorldServer(GameState state, string worldId, ServerConfig config = null)
     {
@@ -52,6 +63,9 @@ public sealed class AuthoritativeWorldServer
     public IReadOnlyDictionary<string, WorldItemEntity> WorldItems => _worldItems;
     public IReadOnlyDictionary<string, WorldStructureEntity> WorldStructures => _worldStructures;
     public IReadOnlyDictionary<string, NpcEntity> Npcs => _npcs;
+    public IReadOnlyList<LocalChatMessageSnapshot> LocalChatLog => _localChatLog
+        .Select(message => ToLocalChatSnapshot(message, message.SpeakerPosition))
+        .ToArray();
     public MatchSnapshot Match => _match.Snapshot(_state.GetLeaderboardStanding());
 
     public void SetTileMap(GeneratedTileMap tileMap)
@@ -322,6 +336,7 @@ public sealed class AuthoritativeWorldServer
             IntentType.CompleteQuest => ProcessCompleteQuest(intent),
             IntentType.StartEntanglement => ProcessStartEntanglement(intent),
             IntentType.ExposeEntanglement => ProcessExposeEntanglement(intent),
+            IntentType.SendLocalChat => ProcessSendLocalChat(intent),
             IntentType.KarmaAction => ProcessKarmaAction(intent),
             IntentType.KarmaBreak => ProcessKarmaBreak(intent),
             _ => Reject(intent, $"Unsupported intent type: {intent.Type}")
@@ -330,7 +345,7 @@ public sealed class AuthoritativeWorldServer
 
     private static bool IsPostMatchIntentAllowed(IntentType type)
     {
-        return type is IntentType.Move or IntentType.StartDialogue;
+        return type is IntentType.Move or IntentType.StartDialogue or IntentType.SendLocalChat;
     }
 
     public PlayerInterest GetInterestFor(string playerId)
@@ -406,6 +421,7 @@ public sealed class AuthoritativeWorldServer
             .Select(ToSnapshot)
             .ToArray();
         var visibleShopOffers = CreateVisibleShopOffers(playerId, interest.VisibleNpcIds, standing);
+        var visibleLocalChat = CreateVisibleLocalChat(playerId);
         var visibleDuels = _state.Duels.All
             .Where(duel => IsDuelVisibleTo(duel, visiblePlayerIds))
             .OrderBy(duel => duel.Id)
@@ -433,6 +449,7 @@ public sealed class AuthoritativeWorldServer
             visibleWorldItems,
             visibleStructures,
             visibleShopOffers,
+            visibleLocalChat,
             SnapshotBuilder.LeaderboardFrom(standing),
             _match.Snapshot(standing),
             visibleDuels,
@@ -484,6 +501,21 @@ public sealed class AuthoritativeWorldServer
             .ToArray();
     }
 
+    private IReadOnlyList<LocalChatMessageSnapshot> CreateVisibleLocalChat(string playerId)
+    {
+        if (!_state.Players.TryGetValue(playerId, out var listener))
+        {
+            return Array.Empty<LocalChatMessageSnapshot>();
+        }
+
+        var maxDistanceSquared = LocalChatMaxRadiusTiles * LocalChatMaxRadiusTiles;
+        return _localChatLog
+            .Where(message => listener.Position.DistanceSquaredTo(message.SpeakerPosition) <= maxDistanceSquared)
+            .OrderBy(message => message.Tick)
+            .Select(message => ToLocalChatSnapshot(message, listener.Position))
+            .ToArray();
+    }
+
     private IReadOnlyList<ShopOfferSnapshot> CreateVisibleShopOffers(
         string playerId,
         IReadOnlyCollection<string> visibleNpcIds,
@@ -517,6 +549,50 @@ public sealed class AuthoritativeWorldServer
                 ["playerId"] = intent.PlayerId,
                 ["x"] = x.ToString(),
                 ["y"] = y.ToString()
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessSendLocalChat(ServerIntent intent)
+    {
+        if (!intent.Payload.TryGetValue("text", out var rawText))
+        {
+            return Reject(intent, "SendLocalChat intent requires text.");
+        }
+
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var player))
+        {
+            return Reject(intent, $"Unknown player: {intent.PlayerId}.");
+        }
+
+        var text = SanitizeLocalChatText(rawText);
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return Reject(intent, "Local chat message cannot be empty.");
+        }
+
+        var message = new LocalChatMessage(
+            $"{WorldId}:{_tick}:local_chat:{intent.PlayerId}",
+            _tick,
+            player.Id,
+            player.DisplayName,
+            text,
+            player.Position);
+        _localChatLog.Add(message);
+
+        var serverEvent = AppendEvent(
+            "local_chat",
+            $"{player.DisplayName}: {text}",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = player.Id,
+                ["displayName"] = player.DisplayName,
+                ["text"] = text,
+                ["x"] = player.Position.X.ToString(),
+                ["y"] = player.Position.Y.ToString(),
+                ["clearRadiusTiles"] = LocalChatClearRadiusTiles.ToString(),
+                ["maxRadiusTiles"] = LocalChatMaxRadiusTiles.ToString()
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -2010,6 +2086,11 @@ public sealed class AuthoritativeWorldServer
 
     private static bool IsEventVisibleTo(ServerEvent serverEvent, IReadOnlySet<string> visiblePlayerIds)
     {
+        if (serverEvent.EventId.Contains("local_chat"))
+        {
+            return false;
+        }
+
         if (!serverEvent.Data.TryGetValue("playerId", out var playerId))
         {
             return true;
@@ -2034,6 +2115,49 @@ public sealed class AuthoritativeWorldServer
 
         return visiblePlayerIds.Contains(worldEvent.SourcePlayerId) ||
             visiblePlayerIds.Contains(worldEvent.TargetId);
+    }
+
+    public static float CalculateLocalChatVolume(int distanceTiles)
+    {
+        if (distanceTiles <= LocalChatClearRadiusTiles)
+        {
+            return 1f;
+        }
+
+        if (distanceTiles >= LocalChatMaxRadiusTiles)
+        {
+            return 0f;
+        }
+
+        var t = (distanceTiles - LocalChatClearRadiusTiles) / (float)(LocalChatMaxRadiusTiles - LocalChatClearRadiusTiles);
+        var smooth = t * t * (3f - (2f * t));
+        return Math.Clamp(1f - smooth, 0f, 1f);
+    }
+
+    private static string SanitizeLocalChatText(string rawText)
+    {
+        var text = string.Join(" ", (rawText ?? string.Empty)
+            .Replace('\r', ' ')
+            .Replace('\n', ' ')
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries));
+        return text.Length <= LocalChatMaxMessageLength
+            ? text
+            : text[..LocalChatMaxMessageLength];
+    }
+
+    private static LocalChatMessageSnapshot ToLocalChatSnapshot(LocalChatMessage message, TilePosition listenerPosition)
+    {
+        var distanceTiles = (int)MathF.Ceiling(MathF.Sqrt(listenerPosition.DistanceSquaredTo(message.SpeakerPosition)));
+        return new LocalChatMessageSnapshot(
+            message.MessageId,
+            message.Tick,
+            message.SpeakerId,
+            message.SpeakerName,
+            message.Text,
+            message.SpeakerPosition.X,
+            message.SpeakerPosition.Y,
+            distanceTiles,
+            CalculateLocalChatVolume(distanceTiles));
     }
 
     private static WorldItemSnapshot ToSnapshot(WorldItemEntity entity)

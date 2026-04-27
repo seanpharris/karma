@@ -21,6 +21,7 @@ public enum IntentType
     CompleteQuest,
     StartEntanglement,
     ExposeEntanglement,
+    SendLocalChat,
     KarmaAction,
     KarmaBreak
 }
@@ -37,6 +38,17 @@ public sealed record ServerEvent(
     long Tick,
     string Description,
     IReadOnlyDictionary<string, string> Data);
+
+public sealed record LocalChatMessageSnapshot(
+    string MessageId,
+    long Tick,
+    string SpeakerId,
+    string SpeakerName,
+    string Text,
+    int SpeakerTileX,
+    int SpeakerTileY,
+    int DistanceTiles,
+    float Volume);
 
 public sealed record PlayerInterest(
     string PlayerId,
@@ -165,6 +177,7 @@ public sealed record ClientInterestSnapshot(
     IReadOnlyList<WorldItemSnapshot> WorldItems,
     IReadOnlyList<WorldStructureSnapshot> Structures,
     IReadOnlyList<ShopOfferSnapshot> ShopOffers,
+    IReadOnlyList<LocalChatMessageSnapshot> LocalChatMessages,
     LeaderboardSnapshot Leaderboard,
     MatchSnapshot Match,
     IReadOnlyList<Duel> Duels,
@@ -173,5 +186,5 @@ public sealed record ClientInterestSnapshot(
     IReadOnlyList<WorldEvent> WorldEvents)
 {
     public string Summary =>
-        $"{Players.Count} visible players, {Npcs.Count} visible NPCs, {Dialogues.Count} dialogues, {Quests.Count} quests, {MapChunks.Count} map chunks, {WorldItems.Count} visible items, {Structures.Count} visible structures, {ShopOffers.Count} shop offers, {Duels.Count} duels, {Match.Summary}, {SyncHint.ServerEventCount} server events, {SyncHint.WorldEventCount} world events";
+        $"{Players.Count} visible players, {Npcs.Count} visible NPCs, {Dialogues.Count} dialogues, {Quests.Count} quests, {MapChunks.Count} map chunks, {WorldItems.Count} visible items, {Structures.Count} visible structures, {ShopOffers.Count} shop offers, {LocalChatMessages.Count} local chat messages, {Duels.Count} duels, {Match.Summary}, {SyncHint.ServerEventCount} server events, {SyncHint.WorldEventCount} world events";
 }

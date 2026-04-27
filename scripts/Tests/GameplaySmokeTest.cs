@@ -113,6 +113,30 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(localScripBeforeOffer - 7, state.LocalScrip, "prototype shop helper debits local scrip");
         ExpectTrue(state.HasItem(GameState.LocalPlayerId, StarterItems.WhoopieCushionId), "prototype shop helper adds purchased item");
         state.SetPlayerPosition("peer_stand_in", TilePosition.Origin);
+        var chatState = new GameState();
+        chatState.SetPlayerPosition(GameState.LocalPlayerId, TilePosition.Origin);
+        chatState.SetPlayerPosition("peer_stand_in", new TilePosition(3, 0));
+        chatState.SetPlayerPosition("rival_paragon", new TilePosition(30, 0));
+        var chatServer = new AuthoritativeWorldServer(chatState, "chat-test-world");
+        var localChat = chatServer.ProcessIntent(new ServerIntent(
+            "peer_stand_in",
+            1,
+            IntentType.SendLocalChat,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["text"] = "  anyone need a hand?\n"
+            }));
+        ExpectTrue(localChat.WasAccepted, "server accepts local chat intents");
+        var localChatSnapshot = chatServer.CreateInterestSnapshot(GameState.LocalPlayerId);
+        ExpectTrue(localChatSnapshot.LocalChatMessages.Any(message => message.Text == "anyone need a hand?"), "interest snapshot exposes nearby local chat");
+        var nearbyChat = localChatSnapshot.LocalChatMessages.First(message => message.SpeakerId == "peer_stand_in");
+        ExpectEqual(3, nearbyChat.DistanceTiles, "local chat snapshots include speaker distance");
+        ExpectEqual(1f, nearbyChat.Volume, "local chat is full volume inside clear radius");
+        var farChatSnapshot = chatServer.CreateInterestSnapshot("rival_paragon");
+        ExpectFalse(farChatSnapshot.LocalChatMessages.Any(message => message.SpeakerId == "peer_stand_in"), "interest snapshot hides local chat outside audible radius");
+        ExpectEqual(1f, AuthoritativeWorldServer.CalculateLocalChatVolume(AuthoritativeWorldServer.LocalChatClearRadiusTiles), "local chat falloff stays full at clear radius");
+        ExpectEqual(0f, AuthoritativeWorldServer.CalculateLocalChatVolume(AuthoritativeWorldServer.LocalChatMaxRadiusTiles), "local chat falloff reaches silence at max radius");
+        ExpectTrue(HudController.FormatLocalChatSummary(localChatSnapshot.LocalChatMessages).Contains("Stranded Player"), "HUD formats local chat speaker summaries");
         var server = new AuthoritativeWorldServer(state, "test-world");
         ServerConfig.Prototype4Player.Validate();
         ServerConfig.Large100Player.Validate();
