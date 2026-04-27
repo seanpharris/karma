@@ -79,7 +79,12 @@ Run from the repo root:
 
 # Optional built-out 32x64 player model attempt:
 & 'C:\Users\pharr\Downloads\Godot_v4.6.2-stable_mono_win64\Godot_v4.6.2-stable_mono_win64\Godot_v4.6.2-stable_mono_win64_console.exe' --headless --path 'C:\Users\pharr\code\karma' --script 'res://tools/generate_player_model_32x64_8dir.gd'
+
+# Optional PixelLab MCP download import/normalization:
+python tools/import_pixellab_character.py path\to\pixellab-download.png --output-dir assets\art\sprites\player_v2\imported --output-stem pixellab_engineer_v1
 ```
+
+See `docs/pixellab-mcp-workflow.md` for the PixelLab MCP candidate-generation workflow and token-safety notes.
 
 ## Next steps
 
