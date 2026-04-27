@@ -18,11 +18,11 @@ without opaque background blocks.
 
 ## Caveats
 
-- Left-facing directions and back diagonals are temporary mirrored/placeholder art.
+- Left-facing directions and back diagonals are temporary mirrored/placeholder art. Runtime movement deliberately reuses back-facing frames for up-left/up-right until true back-diagonal poses exist.
 - The source images were JPEGs, so chroma/background extraction may still leave
   imperfect edge pixels around the character art.
-- Rows are `idle`, `walk A`, `walk B`, `sprint/ready`, not the full v2 animation
-  contract yet.
+- Rows are `idle`, `walk A`, `walk B`, `tool-ready`, not the full v2 animation
+  contract yet. Normal movement samples only `idle`, `walk A`, and `walk B` so the tool row does not pop during walking.
 - This is the current 64px visual target/preview, but not the final paper-doll layer architecture.
 
 ## Regenerate

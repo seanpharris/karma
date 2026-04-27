@@ -1027,7 +1027,7 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(expectedPlayerAtlasPath, playerSprite.AtlasPath, "prototype player sprite records active engineer atlas path");
         ExpectTrue(playerSprite.HasAtlasRegion, "prototype player sprite can use character atlas art");
         var expectedPlayerWalkFrameCount = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
-            ? 3
+            ? 2
             : expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
               expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
                 ? 7
@@ -1037,7 +1037,7 @@ public partial class GameplaySmokeTest : Node
             playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkDownAnimation).Frames.Count,
             "prototype player sprite maps multi-frame walk animations");
         var expectedWalkRightFinalFrame = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
-            ? new Rect2(128f, 192f, 64f, 64f)
+            ? new Rect2(128f, 128f, 64f, 64f)
             : expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
               expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
                 ? new Rect2(64f, 64f, 32f, 32f)
@@ -1046,6 +1046,17 @@ public partial class GameplaySmokeTest : Node
             expectedWalkRightFinalFrame,
             playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkRightAnimation).Frames[^1],
             "prototype player sprite maps the active engineer sheet walk-right row");
+        if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath)
+        {
+            ExpectEqual(
+                new Rect2(4f * 64f, 1f * 64f, 64f, 64f),
+                playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkUpRightAnimation).Frames[0],
+                "64px preview player sprite uses back-facing frames for temporary up-right movement");
+            ExpectEqual(
+                new Rect2(4f * 64f, 2f * 64f, 64f, 64f),
+                playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkUpLeftAnimation).Frames[^1],
+                "64px preview player sprite uses back-facing frames for temporary up-left movement");
+        }
         ExpectEqual(PrototypeSpriteKind.Dallen, PrototypeSpriteCatalog.GetKindForNpc(StarterNpcs.Dallen.Id), "prototype sprite catalog maps Dallen NPC visuals");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Dallen).HasAtlasRegion, "prototype Dallen sprite can use character atlas art");
         ExpectTrue(ServerNpcObject.FormatPrompt("Dallen Venn", "Trader", "Free Settlers").Contains("Faction: Free Settlers"), "server NPC prompt formats faction");
