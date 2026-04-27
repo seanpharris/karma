@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text.Json;
 using Godot;
 using Karma.Art;
 using Karma.Core;
@@ -310,6 +311,26 @@ public partial class GameplaySmokeTest : Node
             "project uses nearest-neighbor texture filtering for pixel art");
         var artAssets = ArtAssetManifest.GetUniqueAssets();
         ExpectTrue(artAssets.Count >= 8, "art manifest discovers cataloged atlas assets");
+        var playerV2ManifestPath = "res://assets/art/sprites/player_v2/player_v2_manifest.json";
+        ExpectTrue(FileAccess.FileExists(playerV2ManifestPath), "player v2 layered manifest exists");
+        using (var playerV2Manifest = JsonDocument.Parse(FileAccess.GetFileAsString(playerV2ManifestPath)))
+        {
+            var manifestRoot = playerV2Manifest.RootElement;
+            ExpectEqual("karma.player_v2.layers.v1", manifestRoot.GetProperty("schema").GetString(), "player v2 manifest declares layer schema");
+            ExpectEqual(32, manifestRoot.GetProperty("frameSize").GetInt32(), "player v2 manifest matches prototype frame size");
+            ExpectEqual(8, manifestRoot.GetProperty("columns").GetInt32(), "player v2 manifest declares eight direction columns");
+            ExpectEqual(9, manifestRoot.GetProperty("rows").GetInt32(), "player v2 manifest declares nine animation rows");
+            ExpectEqual(7, manifestRoot.GetProperty("layers").GetArrayLength(), "player v2 manifest exposes base, three skins, hair, outfit, and held tool layers");
+            ExpectEqual(5, manifestRoot.GetProperty("previewStack").GetArrayLength(), "player v2 manifest preview stack composes a playable character");
+            ExpectTrue(
+                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "skin_light"),
+                "player v2 manifest exposes swappable light skin layer");
+            ExpectTrue(
+                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "skin_deep"),
+                "player v2 manifest exposes swappable deep skin layer");
+        }
+        ExpectTrue(FileAccess.FileExists("res://assets/art/sprites/player_v2/layers/skin_light_8dir.png"), "player v2 generates light skin layer");
+        ExpectTrue(FileAccess.FileExists("res://assets/art/sprites/player_v2/layers/skin_deep_8dir.png"), "player v2 generates deep skin layer");
         var expectedPlayerAtlasPath = FileAccess.FileExists(PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath)
             ? PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
             : FileAccess.FileExists(PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath)

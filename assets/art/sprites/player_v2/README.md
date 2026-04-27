@@ -6,10 +6,15 @@ held-tool layers instead of generating bespoke art for every character variant.
 
 ## Active preview
 
+- `player_v2_manifest.json`
+  - Declares the current frame contract, directions, animation rows, layer slots,
+    available layer files, and the default preview stack.
+  - This is the bridge from a hardcoded generated preview toward real character
+    customization/composition.
 - `player_v2_layered_preview_8dir.png`
   - 256x288, 8 columns x 9 rows, 32x32 frames.
-  - This is a generated composite of the layer files below and is currently the
-    preferred player runtime sheet when present.
+  - This is a generated composite of the default manifest stack and is currently
+    the preferred player runtime sheet when present.
   - It deliberately matches the existing prototype sheet contract so it can be
     viewed in-game immediately without a larger renderer rewrite.
 
@@ -18,7 +23,7 @@ held-tool layers instead of generating bespoke art for every character variant.
 Layer files live in `layers/` and share the exact same 8-direction/9-row grid:
 
 - `base_body_8dir.png` — neutral mannequin/body-guide silhouette.
-- `skin_medium_8dir.png` — replaceable skin layer.
+- `skin_light_8dir.png`, `skin_medium_8dir.png`, `skin_deep_8dir.png` — replaceable skin layers.
 - `hair_short_dark_8dir.png` — replaceable hair layer.
 - `outfit_engineer_8dir.png` — replaceable clothing/equipment layer.
 - `tool_multitool_8dir.png` — held-tool overlay for tool/interact rows.

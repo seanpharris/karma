@@ -1,0 +1,84 @@
+{
+	"animations": [
+		"idle",
+		"walk1",
+		"walk2",
+		"walk3",
+		"walk4",
+		"run",
+		"tool_use",
+		"melee",
+		"interact"
+	],
+	"columns": 8,
+	"composite": "player_v2_layered_preview_8dir.png",
+	"directions": [
+		"front",
+		"front_right",
+		"right",
+		"back_right",
+		"back",
+		"back_left",
+		"left",
+		"front_left"
+	],
+	"frameSize": 32,
+	"layerOrder": [
+		"base",
+		"skin",
+		"hair",
+		"outfit",
+		"held_tool"
+	],
+	"layers": [
+		{
+			"id": "base_body",
+			"path": "layers/base_body_8dir.png",
+			"required": true,
+			"slot": "base"
+		},
+		{
+			"id": "skin_light",
+			"path": "layers/skin_light_8dir.png",
+			"slot": "skin"
+		},
+		{
+			"default": true,
+			"id": "skin_medium",
+			"path": "layers/skin_medium_8dir.png",
+			"slot": "skin"
+		},
+		{
+			"id": "skin_deep",
+			"path": "layers/skin_deep_8dir.png",
+			"slot": "skin"
+		},
+		{
+			"default": true,
+			"id": "hair_short_dark",
+			"path": "layers/hair_short_dark_8dir.png",
+			"slot": "hair"
+		},
+		{
+			"default": true,
+			"id": "outfit_engineer",
+			"path": "layers/outfit_engineer_8dir.png",
+			"slot": "outfit"
+		},
+		{
+			"default": true,
+			"id": "tool_multitool",
+			"path": "layers/tool_multitool_8dir.png",
+			"slot": "held_tool"
+		}
+	],
+	"previewStack": [
+		"base_body",
+		"skin_medium",
+		"hair_short_dark",
+		"outfit_engineer",
+		"tool_multitool"
+	],
+	"rows": 9,
+	"schema": "karma.player_v2.layers.v1"
+}
