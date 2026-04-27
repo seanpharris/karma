@@ -144,7 +144,15 @@ public partial class PlayerController : CharacterBody2D
         }
         else if (key.Keycode == Key.V)
         {
-            CycleSkinThroughServer();
+            CycleAppearanceThroughServer(AppearanceCycleSlot.Skin);
+        }
+        else if (key.Keycode == Key.B)
+        {
+            CycleAppearanceThroughServer(AppearanceCycleSlot.Hair);
+        }
+        else if (key.Keycode == Key.N)
+        {
+            CycleAppearanceThroughServer(AppearanceCycleSlot.Outfit);
         }
     }
 
@@ -321,17 +329,33 @@ public partial class PlayerController : CharacterBody2D
             });
     }
 
-    private void CycleSkinThroughServer()
+    private enum AppearanceCycleSlot
+    {
+        Skin,
+        Hair,
+        Outfit
+    }
+
+    private void CycleAppearanceThroughServer(AppearanceCycleSlot slot)
     {
         var current = _serverSession?.LastLocalSnapshot?.Players
             .FirstOrDefault(player => player.Id == GameState.LocalPlayerId)?
             .Appearance ?? PlayerAppearanceSelection.Default;
-        SendLocalWithPrompt(
-            IntentType.SetAppearance,
-            new System.Collections.Generic.Dictionary<string, string>
-            {
-                ["skinLayerId"] = CycleSkinLayerId(current.SkinLayerId)
-            });
+        var payload = new System.Collections.Generic.Dictionary<string, string>();
+        switch (slot)
+        {
+            case AppearanceCycleSlot.Hair:
+                payload["hairLayerId"] = CycleHairLayerId(current.HairLayerId);
+                break;
+            case AppearanceCycleSlot.Outfit:
+                payload["outfitLayerId"] = CycleOutfitLayerId(current.OutfitLayerId);
+                break;
+            default:
+                payload["skinLayerId"] = CycleSkinLayerId(current.SkinLayerId);
+                break;
+        }
+
+        SendLocalWithPrompt(IntentType.SetAppearance, payload);
     }
 
     public static string CycleSkinLayerId(string currentSkinLayerId)
@@ -342,6 +366,26 @@ public partial class PlayerController : CharacterBody2D
             "skin_medium" => "skin_deep",
             "skin_deep" => "skin_light",
             _ => "skin_medium"
+        };
+    }
+
+    public static string CycleHairLayerId(string currentHairLayerId)
+    {
+        return currentHairLayerId switch
+        {
+            "hair_short_dark" => "hair_short_blond",
+            "hair_short_blond" => "hair_short_dark",
+            _ => "hair_short_dark"
+        };
+    }
+
+    public static string CycleOutfitLayerId(string currentOutfitLayerId)
+    {
+        return currentOutfitLayerId switch
+        {
+            "outfit_engineer" => "outfit_settler",
+            "outfit_settler" => "outfit_engineer",
+            _ => "outfit_engineer"
         };
     }
 

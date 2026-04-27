@@ -60,9 +60,19 @@
 			"slot": "hair"
 		},
 		{
+			"id": "hair_short_blond",
+			"path": "layers/hair_short_blond_8dir.png",
+			"slot": "hair"
+		},
+		{
 			"default": true,
 			"id": "outfit_engineer",
 			"path": "layers/outfit_engineer_8dir.png",
+			"slot": "outfit"
+		},
+		{
+			"id": "outfit_settler",
+			"path": "layers/outfit_settler_8dir.png",
 			"slot": "outfit"
 		},
 		{

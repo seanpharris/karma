@@ -321,7 +321,7 @@ public partial class GameplaySmokeTest : Node
             ExpectEqual(32, manifestRoot.GetProperty("frameSize").GetInt32(), "player v2 manifest matches prototype frame size");
             ExpectEqual(8, manifestRoot.GetProperty("columns").GetInt32(), "player v2 manifest declares eight direction columns");
             ExpectEqual(9, manifestRoot.GetProperty("rows").GetInt32(), "player v2 manifest declares nine animation rows");
-            ExpectEqual(7, manifestRoot.GetProperty("layers").GetArrayLength(), "player v2 manifest exposes base, three skins, hair, outfit, and held tool layers");
+            ExpectEqual(9, manifestRoot.GetProperty("layers").GetArrayLength(), "player v2 manifest exposes base, skins, hair, outfits, and held tool layers");
             ExpectEqual(5, manifestRoot.GetProperty("previewStack").GetArrayLength(), "player v2 manifest preview stack composes a playable character");
             ExpectTrue(
                 manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "skin_light"),
@@ -329,12 +329,22 @@ public partial class GameplaySmokeTest : Node
             ExpectTrue(
                 manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "skin_deep"),
                 "player v2 manifest exposes swappable deep skin layer");
+            ExpectTrue(
+                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "hair_short_blond"),
+                "player v2 manifest exposes swappable blond hair layer");
+            ExpectTrue(
+                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "outfit_settler"),
+                "player v2 manifest exposes swappable settler outfit layer");
         }
         ExpectTrue(FileAccess.FileExists("res://assets/art/sprites/player_v2/layers/skin_light_8dir.png"), "player v2 generates light skin layer");
         ExpectTrue(FileAccess.FileExists("res://assets/art/sprites/player_v2/layers/skin_deep_8dir.png"), "player v2 generates deep skin layer");
+        ExpectTrue(FileAccess.FileExists("res://assets/art/sprites/player_v2/layers/hair_short_blond_8dir.png"), "player v2 generates blond hair layer");
+        ExpectTrue(FileAccess.FileExists("res://assets/art/sprites/player_v2/layers/outfit_settler_8dir.png"), "player v2 generates settler outfit layer");
         var playerV2LayerManifest = PlayerV2LayerManifest.LoadDefault();
         ExpectEqual("karma.player_v2.layers.v1", playerV2LayerManifest.Schema, "player v2 layer manifest loader reads schema");
         ExpectEqual(3, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "skin"), "player v2 layer manifest loader exposes skin variants");
+        ExpectEqual(2, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "hair"), "player v2 layer manifest loader exposes hair variants");
+        ExpectEqual(2, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "outfit"), "player v2 layer manifest loader exposes outfit variants");
         ExpectTrue(playerV2LayerManifest.Layers.All(layer => FileAccess.FileExists(playerV2LayerManifest.ResolveLayerPath(layer))), "player v2 layer manifest loader resolves layer paths");
         var defaultPlayerV2Appearance = playerV2LayerManifest.CreateDefaultAppearance();
         ExpectTrue(
@@ -481,7 +491,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(peerPrompt.Contains("HP: 25/100"), "peer prompt includes authoritative health");
         ExpectTrue(peerPrompt.Contains("Status: Karma Break Grace (4)"), "peer prompt includes active status effects");
         ExpectTrue(peerPrompt.Contains("Duel: Active"), "peer prompt includes duel state");
-        ExpectTrue(peerPrompt.Contains("V - Cycle your prototype skin layer"), "peer prompt explains prototype appearance shortcut");
+        ExpectTrue(peerPrompt.Contains("V/B/N - Cycle prototype skin/hair/outfit layers"), "peer prompt explains prototype appearance shortcut");
         ExpectTrue(peerPrompt.Contains("Attack blocked by Karma Break grace"), "peer prompt explains blocked attacks during grace");
         ExpectTrue(peerPrompt.Contains("Duel already pending/active"), "peer prompt explains unavailable duel requests");
         ExpectTrue(peerPrompt.Contains("Let them duel strike you"), "peer prompt labels peer-authored duel attacks");
@@ -2044,6 +2054,8 @@ public partial class GameplaySmokeTest : Node
             }));
         ExpectFalse(serverRejectsInvalidAppearance.WasAccepted, "server rejects unknown player appearance layers");
         ExpectEqual("skin_deep", PlayerController.CycleSkinLayerId("skin_medium"), "player controller cycles skin appearance layers");
+        ExpectEqual("hair_short_blond", PlayerController.CycleHairLayerId("hair_short_dark"), "player controller cycles hair appearance layers");
+        ExpectEqual("outfit_settler", PlayerController.CycleOutfitLayerId("outfit_engineer"), "player controller cycles outfit appearance layers");
         var customAppearancePlayer = state.RegisterPlayer("appearance-test", "Appearance Tester");
         customAppearancePlayer.SetAppearance(PlayerAppearanceSelection.Default with { SkinLayerId = "skin_deep" });
         var customAppearanceSnapshot = SnapshotBuilder.PlayersFrom(

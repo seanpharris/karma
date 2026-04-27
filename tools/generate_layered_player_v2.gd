@@ -19,9 +19,14 @@ const SKIN_DEEP_SHADE := Color8(61, 38, 31, 255)
 const BODY_GUIDE := Color8(82, 124, 150, 255)
 const BODY_GUIDE_SHADE := Color8(39, 62, 83, 255)
 const HAIR := Color8(38, 28, 24, 255)
+const HAIR_LIGHT := Color8(164, 118, 55, 255)
+const HAIR_LIGHT_SHADE := Color8(96, 64, 32, 255)
 const SUIT := Color8(35, 62, 78, 255)
 const SUIT_SHADE := Color8(18, 35, 48, 255)
 const SUIT_LIGHT := Color8(74, 132, 155, 255)
+const COAT := Color8(94, 68, 42, 255)
+const COAT_SHADE := Color8(48, 37, 28, 255)
+const COAT_LIGHT := Color8(144, 104, 62, 255)
 const ACCENT := Color8(230, 185, 68, 255)
 const TOOL := Color8(118, 128, 132, 255)
 const OUTLINE := Color8(18, 20, 23, 255)
@@ -33,7 +38,9 @@ func _init() -> void:
 	var skin_medium := _new_sheet()
 	var skin_deep := _new_sheet()
 	var hair := _new_sheet()
+	var hair_light := _new_sheet()
 	var outfit := _new_sheet()
+	var outfit_settler := _new_sheet()
 	var tool := _new_sheet()
 	var composite := _new_sheet()
 	for row in ROWS:
@@ -42,15 +49,19 @@ func _init() -> void:
 			_draw_skin_frame(skin_light, col, row, SKIN_LIGHT, SKIN_LIGHT_SHADE)
 			_draw_skin_frame(skin_medium, col, row, SKIN_MEDIUM, SKIN_MEDIUM_SHADE)
 			_draw_skin_frame(skin_deep, col, row, SKIN_DEEP, SKIN_DEEP_SHADE)
-			_draw_hair_frame(hair, col, row)
-			_draw_outfit_frame(outfit, col, row)
+			_draw_hair_frame(hair, col, row, HAIR, HAIR)
+			_draw_hair_frame(hair_light, col, row, HAIR_LIGHT, HAIR_LIGHT_SHADE)
+			_draw_outfit_frame(outfit, col, row, SUIT, SUIT_SHADE, SUIT_LIGHT, ACCENT)
+			_draw_outfit_frame(outfit_settler, col, row, COAT, COAT_SHADE, COAT_LIGHT, SKIN_LIGHT_SHADE)
 			_draw_tool_frame(tool, col, row)
 	_save(base, LAYER_DIR + "/base_body_8dir.png")
 	_save(skin_light, LAYER_DIR + "/skin_light_8dir.png")
 	_save(skin_medium, LAYER_DIR + "/skin_medium_8dir.png")
 	_save(skin_deep, LAYER_DIR + "/skin_deep_8dir.png")
 	_save(hair, LAYER_DIR + "/hair_short_dark_8dir.png")
+	_save(hair_light, LAYER_DIR + "/hair_short_blond_8dir.png")
 	_save(outfit, LAYER_DIR + "/outfit_engineer_8dir.png")
+	_save(outfit_settler, LAYER_DIR + "/outfit_settler_8dir.png")
 	_save(tool, LAYER_DIR + "/tool_multitool_8dir.png")
 	_write_manifest()
 	_composite_from_manifest(composite, [
@@ -99,7 +110,9 @@ func _write_manifest() -> void:
 			{ "id": "skin_medium", "slot": "skin", "path": "layers/skin_medium_8dir.png", "default": true },
 			{ "id": "skin_deep", "slot": "skin", "path": "layers/skin_deep_8dir.png" },
 			{ "id": "hair_short_dark", "slot": "hair", "path": "layers/hair_short_dark_8dir.png", "default": true },
+			{ "id": "hair_short_blond", "slot": "hair", "path": "layers/hair_short_blond_8dir.png" },
 			{ "id": "outfit_engineer", "slot": "outfit", "path": "layers/outfit_engineer_8dir.png", "default": true },
+			{ "id": "outfit_settler", "slot": "outfit", "path": "layers/outfit_settler_8dir.png" },
 			{ "id": "tool_multitool", "slot": "held_tool", "path": "layers/tool_multitool_8dir.png", "default": true }
 		],
 		"previewStack": ["base_body", "skin_medium", "hair_short_dark", "outfit_engineer", "tool_multitool"],
@@ -154,31 +167,32 @@ func _draw_skin_frame(sheet: Image, col: int, row: int, skin: Color, shade: Colo
 	_rect(sheet, o.x + 10 + pose.left_arm_x, o.y + 17 + pose.left_arm_y, 2, 3, skin)
 	_rect(sheet, o.x + 20 + pose.right_arm_x, o.y + 17 + pose.right_arm_y, 2, 3, skin)
 
-func _draw_hair_frame(sheet: Image, col: int, row: int) -> void:
+func _draw_hair_frame(sheet: Image, col: int, row: int, hair_color: Color, shade_color: Color) -> void:
 	var o := Vector2i(col * FRAME_SIZE, row * FRAME_SIZE)
 	var face := _face(col)
-	_rect(sheet, o.x + 12 + face.head_x, o.y + 3, 8, 3, HAIR)
+	_rect(sheet, o.x + 12 + face.head_x, o.y + 3, 8, 3, hair_color)
 	if col == Direction.BACK or col == Direction.BACK_LEFT or col == Direction.BACK_RIGHT:
-		_rect(sheet, o.x + 12 + face.head_x, o.y + 5, 8, 4, HAIR)
+		_rect(sheet, o.x + 12 + face.head_x, o.y + 5, 8, 4, hair_color)
 	else:
-		_rect(sheet, o.x + 12 + face.head_x, o.y + 5, 2, 3, HAIR)
+		_rect(sheet, o.x + 12 + face.head_x, o.y + 5, 2, 3, hair_color)
+		_rect(sheet, o.x + 18 + face.head_x, o.y + 4, 1, 1, shade_color)
 
-func _draw_outfit_frame(sheet: Image, col: int, row: int) -> void:
+func _draw_outfit_frame(sheet: Image, col: int, row: int, suit: Color, suit_shade: Color, suit_light: Color, accent: Color) -> void:
 	var o := Vector2i(col * FRAME_SIZE, row * FRAME_SIZE)
 	var pose := _pose(row)
-	_rect(sheet, o.x + 13 + pose.torso_x, o.y + 10, 6, 11, SUIT)
-	_rect(sheet, o.x + 13 + pose.torso_x, o.y + 18, 6, 3, SUIT_SHADE)
-	_rect(sheet, o.x + 15 + pose.torso_x, o.y + 10, 2, 8, SUIT_LIGHT)
-	_rect(sheet, o.x + 13 + pose.torso_x, o.y + 13, 6, 2, ACCENT)
+	_rect(sheet, o.x + 13 + pose.torso_x, o.y + 10, 6, 11, suit)
+	_rect(sheet, o.x + 13 + pose.torso_x, o.y + 18, 6, 3, suit_shade)
+	_rect(sheet, o.x + 15 + pose.torso_x, o.y + 10, 2, 8, suit_light)
+	_rect(sheet, o.x + 13 + pose.torso_x, o.y + 13, 6, 2, accent)
 	var side := _side_sign(col)
 	if col == Direction.FRONT_RIGHT or col == Direction.FRONT_LEFT:
-		_rect(sheet, o.x + 16 + side, o.y + 10, 2, 5, SUIT_LIGHT)
+		_rect(sheet, o.x + 16 + side, o.y + 10, 2, 5, suit_light)
 	elif col == Direction.BACK_RIGHT or col == Direction.BACK_LEFT:
-		_rect(sheet, o.x + 14 + side, o.y + 10, 2, 5, SUIT_SHADE)
-	_rect(sheet, o.x + 10 + pose.left_arm_x, o.y + 12 + pose.left_arm_y, 2, 5, SUIT)
-	_rect(sheet, o.x + 20 + pose.right_arm_x, o.y + 12 + pose.right_arm_y, 2, 5, SUIT)
-	_rect(sheet, o.x + 13 + pose.left_leg_x, o.y + 21, 2, 6, SUIT_SHADE)
-	_rect(sheet, o.x + 18 + pose.right_leg_x, o.y + 21, 2, 6, SUIT_SHADE)
+		_rect(sheet, o.x + 14 + side, o.y + 10, 2, 5, suit_shade)
+	_rect(sheet, o.x + 10 + pose.left_arm_x, o.y + 12 + pose.left_arm_y, 2, 5, suit)
+	_rect(sheet, o.x + 20 + pose.right_arm_x, o.y + 12 + pose.right_arm_y, 2, 5, suit)
+	_rect(sheet, o.x + 13 + pose.left_leg_x, o.y + 21, 2, 6, suit_shade)
+	_rect(sheet, o.x + 18 + pose.right_leg_x, o.y + 21, 2, 6, suit_shade)
 
 func _draw_tool_frame(sheet: Image, col: int, row: int) -> void:
 	if row != 6 and row != 8:
