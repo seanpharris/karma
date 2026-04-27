@@ -1,0 +1,82 @@
+{
+  "schema": "karma.player_v2.layers_32x64.v1",
+  "frameWidth": 32,
+  "frameHeight": 64,
+  "columns": 8,
+  "rows": 4,
+  "directions": [
+    "front",
+    "front_right",
+    "right",
+    "back_right",
+    "back",
+    "back_left",
+    "left",
+    "front_left"
+  ],
+  "animations": [
+    "idle",
+    "walk1",
+    "walk2",
+    "walk3"
+  ],
+  "layerOrder": [
+    "base",
+    "skin",
+    "hair",
+    "outfit"
+  ],
+  "layers": [
+    {
+      "id": "base_body_32x64",
+      "slot": "base",
+      "path": "layers_32x64/base_body_32x64.png",
+      "required": true
+    },
+    {
+      "id": "skin_light_32x64",
+      "slot": "skin",
+      "path": "layers_32x64/skin_light_32x64.png"
+    },
+    {
+      "id": "skin_medium_32x64",
+      "slot": "skin",
+      "path": "layers_32x64/skin_medium_32x64.png",
+      "default": true
+    },
+    {
+      "id": "skin_deep_32x64",
+      "slot": "skin",
+      "path": "layers_32x64/skin_deep_32x64.png"
+    },
+    {
+      "id": "hair_short_dark_32x64",
+      "slot": "hair",
+      "path": "layers_32x64/hair_short_dark_32x64.png",
+      "default": true
+    },
+    {
+      "id": "hair_short_blond_32x64",
+      "slot": "hair",
+      "path": "layers_32x64/hair_short_blond_32x64.png"
+    },
+    {
+      "id": "outfit_engineer_32x64",
+      "slot": "outfit",
+      "path": "layers_32x64/outfit_engineer_32x64.png",
+      "default": true
+    },
+    {
+      "id": "outfit_settler_32x64",
+      "slot": "outfit",
+      "path": "layers_32x64/outfit_settler_32x64.png"
+    }
+  ],
+  "previewStack": [
+    "base_body_32x64",
+    "skin_medium_32x64",
+    "hair_short_dark_32x64",
+    "outfit_engineer_32x64"
+  ],
+  "composite": "player_model_32x64_layered_preview.png"
+}

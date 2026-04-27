@@ -57,6 +57,12 @@ Additional base-model references:
 - `player_model_32x64_8dir_runtime.png`
   - 512x256, 8 columns x 4 rows, 64x64 runtime cells.
   - Centers the 32x64 animated contract in square runtime cells as a compatibility/debug preview, but the prototype now prefers the real rectangular 32x64 contract when present.
+- `player_model_32x64_manifest.json`
+  - Starter manifest for the native 32x64 paper-doll split.
+  - Uses rectangular metadata (`frameWidth: 32`, `frameHeight: 64`) and the same 8-direction/4-row contract.
+- `layers_32x64/*.png`
+  - First split of the canonical skeleton into base, skin, hair, and outfit layers.
+  - `player_model_32x64_layered_preview.png` is a pixel-perfect recomposite of `player_model_32x64_8dir_4row.png` so we can iterate layers without changing the current runtime silhouette accidentally.
 
 The layer order is:
 
@@ -78,6 +84,9 @@ Run from the repo root:
 
 # Optional built-out 32x64 player model attempt:
 & 'C:\Users\pharr\Downloads\Godot_v4.6.2-stable_mono_win64\Godot_v4.6.2-stable_mono_win64\Godot_v4.6.2-stable_mono_win64_console.exe' --headless --path 'C:\Users\pharr\code\karma' --script 'res://tools/generate_player_model_32x64_8dir.gd'
+
+# Split the canonical 32x64 model into starter paper-doll layers:
+python tools/generate_player_model_32x64_layers.py
 
 # Optional PixelLab MCP download import/normalization:
 python tools/import_pixellab_character.py path\to\pixellab-download.png --output-dir assets\art\sprites\player_v2\imported --output-stem pixellab_engineer_v1
