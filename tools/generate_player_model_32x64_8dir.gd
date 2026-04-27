@@ -1,6 +1,7 @@
 extends SceneTree
 
 const OUTPUT := "res://assets/art/sprites/player_v2/player_model_32x64_8dir.png"
+const ANIM_OUTPUT := "res://assets/art/sprites/player_v2/player_model_32x64_8dir_4row.png"
 const RUNTIME_OUTPUT := "res://assets/art/sprites/player_v2/player_model_32x64_8dir_runtime.png"
 const FRAME_W := 32
 const FRAME_H := 64
@@ -29,29 +30,43 @@ func _init() -> void:
 	for direction in DIRECTIONS:
 		_draw_direction(sheet, direction, Vector2i(direction * FRAME_W, 0))
 	sheet.save_png(OUTPUT)
-	_save_runtime_sheet(sheet)
+	var animated_sheet := _create_animated_sheet(sheet)
+	animated_sheet.save_png(ANIM_OUTPUT)
+	_save_runtime_sheet(animated_sheet)
 	print("Generated 32x64 8-direction player model: ", OUTPUT)
+	print("Generated 32x64 8-direction animated model: ", ANIM_OUTPUT)
 	print("Generated runtime-centered player model sheet: ", RUNTIME_OUTPUT)
 	quit(0)
+
+func _create_animated_sheet(source: Image) -> Image:
+	var animated := Image.create(FRAME_W * DIRECTIONS, FRAME_H * 4, false, Image.FORMAT_RGBA8)
+	animated.fill(Color(0, 0, 0, 0))
+	for direction in DIRECTIONS:
+		var source_rect := Rect2i(direction * FRAME_W, 0, FRAME_W, FRAME_H)
+		for row in 4:
+			# Row 1 is the neutral facing pose; rows 2-4 are a compact
+			# walk-cycle contract for the 32x64 model/layer pipeline.
+			var cell_origin := Vector2i(direction * FRAME_W, row * FRAME_H)
+			var bob := 0 if row == 0 else 2 if row == 1 else -1 if row == 2 else 1
+			animated.blit_rect(source, source_rect, cell_origin + Vector2i(0, bob))
+			if row > 0:
+				_draw_walk_pose(animated, direction, row, cell_origin + Vector2i(0, bob), 0)
+	return animated
 
 func _save_runtime_sheet(source: Image) -> void:
 	var runtime := Image.create(RUNTIME_FRAME * DIRECTIONS, RUNTIME_FRAME * 4, false, Image.FORMAT_RGBA8)
 	runtime.fill(Color(0, 0, 0, 0))
 	for direction in DIRECTIONS:
-		var source_rect := Rect2i(direction * FRAME_W, 0, FRAME_W, FRAME_H)
 		for row in 4:
 			# Center the 32x64 model in a 64x64 runtime cell so the current
 			# square-frame animation code can preview this model immediately.
-			# Walk rows get a small bob so stepping reads at prototype zoom.
+			var source_rect := Rect2i(direction * FRAME_W, row * FRAME_H, FRAME_W, FRAME_H)
 			var cell_origin := Vector2i(direction * RUNTIME_FRAME, row * RUNTIME_FRAME)
-			var bob := 0 if row == 0 else 2 if row == 1 else -1 if row == 2 else 1
-			runtime.blit_rect(source, source_rect, cell_origin + Vector2i((RUNTIME_FRAME - FRAME_W) / 2, bob))
-			if row > 0:
-				_draw_runtime_walk_pose(runtime, direction, row, cell_origin + Vector2i(0, bob))
+			runtime.blit_rect(source, source_rect, cell_origin + Vector2i((RUNTIME_FRAME - FRAME_W) / 2, 0))
 	runtime.save_png(RUNTIME_OUTPUT)
 
-func _draw_runtime_walk_pose(img: Image, direction: int, phase: int, cell: Vector2i) -> void:
-	var x0 := cell.x + ((RUNTIME_FRAME - FRAME_W) / 2)
+func _draw_walk_pose(img: Image, direction: int, phase: int, cell: Vector2i, x_offset: int) -> void:
+	var x0 := cell.x + x_offset
 	var y0 := cell.y
 	# Cut out the static lower limbs/forearms from the centered base frame, then
 	# redraw them offset per phase. This gives the preview sheet visible stepping
