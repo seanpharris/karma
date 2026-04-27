@@ -385,9 +385,11 @@ public partial class GameplaySmokeTest : Node
             PrototypeCharacterSprite.CreateSpriteFrames(AtlasTextureLoader.Load(lightSkinCompositePath, forceImageLoad: true), lightSkinPlayerDefinition)
                 .HasAnimation(PrototypeCharacterSprite.WalkRightAnimation),
             "appearance composite atlas creates walk animations for runtime sprites");
-        var expectedPlayerAtlasPath = FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath)
-            ? PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath
-            : FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath)
+        var expectedPlayerAtlasPath = FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath)
+            ? PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath
+            : FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath)
+                ? PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath
+                : FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath)
                 ? PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath
                 : FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath)
                     ? PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
@@ -396,34 +398,41 @@ public partial class GameplaySmokeTest : Node
                         : FileAccess.FileExists(PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath)
                             ? PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath
                             : PrototypeSpriteCatalog.EngineerPlayerAtlasPath;
-        var expectedPlayerSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
-                                 expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath ||
-                                 expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
-            ? new Vector2(64f, 64f)
+        var expectedPlayerSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath
+            ? new Vector2(32f, 64f)
+            : expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
+              expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath ||
+              expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
+                ? new Vector2(64f, 64f)
             : expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
               expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
                 ? new Vector2(32f, 32f)
                 : new Vector2(30f, 40f);
-        if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
+        if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath ||
+            expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
             expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath ||
             expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath ||
             expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
             expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath)
         {
             var engineerImage = Image.LoadFromFile(expectedPlayerAtlasPath);
-            var expectedSheetSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
-                                    expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath ||
-                                    expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
-                ? new Vector2I(512, 256)
-                : new Vector2I(256, 288);
+            var expectedSheetSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath
+                ? new Vector2I(256, 256)
+                : expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
+                  expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath ||
+                  expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
+                    ? new Vector2I(512, 256)
+                    : new Vector2I(256, 288);
             ExpectEqual(expectedSheetSize.X, engineerImage.GetWidth(), "active 8-direction runtime sheet has expected width");
             ExpectEqual(expectedSheetSize.Y, engineerImage.GetHeight(), "active 8-direction runtime sheet has expected height");
             ExpectTrue(CountTransparentPixels(engineerImage) > 0, "active 8-direction runtime sheet keeps transparent background pixels");
-            var expectedFrameSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
-                                    expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath ||
-                                    expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
-                ? 64
-                : CharacterSheetLayout.StandardFrameSize;
+            var expectedFrameSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath
+                ? new Vector2I(32, 64)
+                : expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
+                  expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath ||
+                  expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
+                    ? new Vector2I(64, 64)
+                    : new Vector2I(CharacterSheetLayout.StandardFrameSize, CharacterSheetLayout.StandardFrameSize);
             if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
                 expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath ||
                 expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath)
@@ -1040,7 +1049,8 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(playerSprite.Layers.Count >= 8, "prototype player sprite has layered pixel art");
         ExpectEqual(expectedPlayerAtlasPath, playerSprite.AtlasPath, "prototype player sprite records active engineer atlas path");
         ExpectTrue(playerSprite.HasAtlasRegion, "prototype player sprite can use character atlas art");
-        var expectedPlayerWalkFrameCount = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
+        var expectedPlayerWalkFrameCount = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath ||
+                                           expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
                                            expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath
             ? 3
             : expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
@@ -1053,9 +1063,11 @@ public partial class GameplaySmokeTest : Node
             expectedPlayerWalkFrameCount,
             playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkDownAnimation).Frames.Count,
             "prototype player sprite maps multi-frame walk animations");
-        var expectedWalkRightFinalFrame = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
-                                          expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath
-            ? new Rect2(2f * 64f, 3f * 64f, 64f, 64f)
+        var expectedWalkRightFinalFrame = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath
+            ? new Rect2(2f * 32f, 3f * 64f, 32f, 64f)
+            : expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
+              expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath
+                ? new Rect2(2f * 64f, 3f * 64f, 64f, 64f)
             : expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
                 ? new Rect2(128f, 192f, 64f, 64f)
                 : expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
@@ -1066,8 +1078,19 @@ public partial class GameplaySmokeTest : Node
             expectedWalkRightFinalFrame,
             playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkRightAnimation).Frames[^1],
             "prototype player sprite maps the active engineer sheet walk-right row");
-        if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
-            expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath)
+        if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath)
+        {
+            ExpectEqual(
+                new Rect2(3f * 32f, 1f * 64f, 32f, 64f),
+                playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkUpRightAnimation).Frames[0],
+                "32x64 player sprite maps up-right movement to the true up-right column");
+            ExpectEqual(
+                new Rect2(5f * 32f, 3f * 64f, 32f, 64f),
+                playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkUpLeftAnimation).Frames[^1],
+                "32x64 player sprite maps up-left movement to the true up-left column");
+        }
+        else if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
+                 expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath)
         {
             ExpectEqual(
                 new Rect2(3f * 64f, 1f * 64f, 64f, 64f),
@@ -2340,17 +2363,22 @@ public partial class GameplaySmokeTest : Node
 
     private static int CountPixelDifferences(Image image, Vector2I firstFrame, Vector2I secondFrame, int frameSize = CharacterSheetLayout.StandardFrameSize)
     {
+        return CountPixelDifferences(image, firstFrame, secondFrame, new Vector2I(frameSize, frameSize));
+    }
+
+    private static int CountPixelDifferences(Image image, Vector2I firstFrame, Vector2I secondFrame, Vector2I frameSize)
+    {
         var differences = 0;
-        for (var y = 0; y < frameSize; y++)
+        for (var y = 0; y < frameSize.Y; y++)
         {
-            for (var x = 0; x < frameSize; x++)
+            for (var x = 0; x < frameSize.X; x++)
             {
                 var first = image.GetPixel(
-                    (firstFrame.X * frameSize) + x,
-                    (firstFrame.Y * frameSize) + y);
+                    (firstFrame.X * frameSize.X) + x,
+                    (firstFrame.Y * frameSize.Y) + y);
                 var second = image.GetPixel(
-                    (secondFrame.X * frameSize) + x,
-                    (secondFrame.Y * frameSize) + y);
+                    (secondFrame.X * frameSize.X) + x,
+                    (secondFrame.Y * frameSize.Y) + y);
                 if (!first.IsEqualApprox(second))
                 {
                     differences++;

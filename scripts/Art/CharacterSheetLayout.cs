@@ -59,6 +59,13 @@ public static class CharacterSheetLayout
         Vector2 origin,
         int frameSize = 64)
     {
+        return EightDirectionFourRowWalkTemplate(origin, new Vector2(frameSize, frameSize));
+    }
+
+    public static IReadOnlyList<PrototypeSpriteAnimation> EightDirectionFourRowWalkTemplate(
+        Vector2 origin,
+        Vector2 frameSize)
+    {
         return EightDirectionRows(origin, frameSize, idleRow: 0, walkStartRow: 1, walkFramesPerDirection: 3);
     }
 
@@ -99,7 +106,16 @@ public static class CharacterSheetLayout
         int walkStartRow,
         int walkFramesPerDirection)
     {
-        var size = new Vector2(frameSize, frameSize);
+        return EightDirectionRows(origin, new Vector2(frameSize, frameSize), idleRow, walkStartRow, walkFramesPerDirection);
+    }
+
+    private static IReadOnlyList<PrototypeSpriteAnimation> EightDirectionRows(
+        Vector2 origin,
+        Vector2 size,
+        int idleRow,
+        int walkStartRow,
+        int walkFramesPerDirection)
+    {
         return new[]
         {
             new PrototypeSpriteAnimation(PrototypeCharacterSprite.IdleDownAnimation, 1f, new[] { DirectionFrame(origin, CharacterSheetDirection.Front, idleRow, size) }),

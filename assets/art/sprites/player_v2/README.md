@@ -52,12 +52,11 @@ Additional base-model references:
   - Intended as a focused standardization target.
 - `player_model_32x64_8dir_4row.png`
   - 256x256, 8 columns x 4 rows, 32x64 cells.
-  - Current canonical 32x64 skeleton contract: row 1 idle/facing, rows 2-4 walk stepping.
+  - Current canonical 32x64 skeleton contract and active default runtime player sheet: row 1 idle/facing, rows 2-4 walk stepping.
   - Same runtime direction order: front/down, front-right, right, back-right, back, back-left, left, front-left.
 - `player_model_32x64_8dir_runtime.png`
   - 512x256, 8 columns x 4 rows, 64x64 runtime cells.
-  - Centers the 32x64 animated contract in square runtime cells so the prototype can preview it before the renderer/compositor supports rectangular 32x64 frames directly.
-  - This is currently preferred over the knight reference when present.
+  - Centers the 32x64 animated contract in square runtime cells as a compatibility/debug preview, but the prototype now prefers the real rectangular 32x64 contract when present.
 
 The layer order is:
 
