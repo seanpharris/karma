@@ -27,4 +27,14 @@ style references for a human/AI cleanup pass.
 - `karma_player_v2_back_pose_batch.jpg`
   - Back-facing only, green chroma background. Useful rear-view supplement, but color/outfit consistency may need matching to the other batches.
 
-The smaller-batch approach works better than asking Gemini for a full 8-direction sheet. The first extraction pass now lives in `assets/art/sprites/generated/`: it extracts the best front/right/back frames, mirrors right to left as a temporary prototype, and composites a 64x64-frame 8-direction candidate sheet. Remaining art work: hand/AI-clean true diagonals and style-match the back/front/right batches.
+The smaller-batch approach worked better than the first broad full-sheet prompts, but separate direction generations drifted in style.
+
+## 2026-04-26 Gemini 64px full-sheet chroma regeneration
+
+- `karma_player_v2_64px_full_sheet_chroma_regen.jpg`
+  - Full 4x4 prompt with one consistent sci-fi frontier engineer on a flat #00FF00 chroma background.
+  - Rows requested: front, right, back, front-right.
+  - Columns requested: idle, walk A, walk B, tool-ready.
+  - This became the current temporary 64px runtime candidate after chroma extraction and normalization.
+
+The current extraction pass lives in `assets/art/sprites/generated/` and is produced by `tools/extract_player_v2_64px_full_sheet.gd`. It keys the chroma background, normalizes each cell into 64x64 frames, transposes direction rows into runtime animation rows, mirrors temporary left-facing directions, and writes `player_v2_engineer_8dir_4row_candidate.png`. Remaining art work: stronger true top-down poses, true back diagonals, final per-frame alignment, and eventually rebuilding the paper-doll layer stack at this 64px style/scale.
