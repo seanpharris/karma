@@ -21,6 +21,7 @@ public enum IntentType
     CompleteQuest,
     StartEntanglement,
     ExposeEntanglement,
+    SetAppearance,
     SendLocalChat,
     KarmaAction,
     KarmaBreak

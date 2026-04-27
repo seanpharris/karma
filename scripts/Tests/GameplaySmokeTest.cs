@@ -2019,6 +2019,27 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(snapshot.Players.Any(player => player.Id == GameState.LocalPlayerId && player.TileX == 3 && player.TileY == 4), "snapshot captures player tile position");
         ExpectTrue(snapshot.Players.Any(player => player.Id == GameState.LocalPlayerId && player.Scrip == state.LocalScrip), "snapshot captures player scrip");
         ExpectTrue(snapshot.Players.All(player => player.Appearance == PlayerAppearanceSelection.Default), "snapshot captures default player appearance selections");
+        var serverSetAppearance = server.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            1000,
+            IntentType.SetAppearance,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["skinLayerId"] = "skin_light"
+            }));
+        ExpectTrue(serverSetAppearance.WasAccepted, "server accepts player appearance selection intents");
+        ExpectEqual("skin_light", state.LocalPlayer.Appearance.SkinLayerId, "server appearance intent updates authoritative player state");
+        ExpectEqual("skin_light", server.CreateInterestSnapshot(GameState.LocalPlayerId).Players.Single(player => player.Id == GameState.LocalPlayerId).Appearance.SkinLayerId, "interest snapshots expose updated player appearance selections");
+        var serverRejectsInvalidAppearance = server.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            1001,
+            IntentType.SetAppearance,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["skinLayerId"] = "skin_not_real"
+            }));
+        ExpectFalse(serverRejectsInvalidAppearance.WasAccepted, "server rejects unknown player appearance layers");
+        ExpectEqual("skin_deep", PlayerController.CycleSkinLayerId("skin_medium"), "player controller cycles skin appearance layers");
         var customAppearancePlayer = state.RegisterPlayer("appearance-test", "Appearance Tester");
         customAppearancePlayer.SetAppearance(PlayerAppearanceSelection.Default with { SkinLayerId = "skin_deep" });
         var customAppearanceSnapshot = SnapshotBuilder.PlayersFrom(

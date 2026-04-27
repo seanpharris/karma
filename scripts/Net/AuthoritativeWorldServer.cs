@@ -336,6 +336,7 @@ public sealed class AuthoritativeWorldServer
             IntentType.CompleteQuest => ProcessCompleteQuest(intent),
             IntentType.StartEntanglement => ProcessStartEntanglement(intent),
             IntentType.ExposeEntanglement => ProcessExposeEntanglement(intent),
+            IntentType.SetAppearance => ProcessSetAppearance(intent),
             IntentType.SendLocalChat => ProcessSendLocalChat(intent),
             IntentType.KarmaAction => ProcessKarmaAction(intent),
             IntentType.KarmaBreak => ProcessKarmaBreak(intent),
@@ -345,7 +346,7 @@ public sealed class AuthoritativeWorldServer
 
     private static bool IsPostMatchIntentAllowed(IntentType type)
     {
-        return type is IntentType.Move or IntentType.StartDialogue or IntentType.SendLocalChat;
+        return type is IntentType.Move or IntentType.StartDialogue or IntentType.SetAppearance or IntentType.SendLocalChat;
     }
 
     public PlayerInterest GetInterestFor(string playerId)
@@ -549,6 +550,47 @@ public sealed class AuthoritativeWorldServer
                 ["playerId"] = intent.PlayerId,
                 ["x"] = x.ToString(),
                 ["y"] = y.ToString()
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessSetAppearance(ServerIntent intent)
+    {
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var player))
+        {
+            return Reject(intent, $"Unknown player: {intent.PlayerId}.");
+        }
+
+        var selection = new PlayerAppearanceSelection(
+            ReadPayloadOrDefault(intent.Payload, "baseLayerId", player.Appearance.BaseLayerId),
+            ReadPayloadOrDefault(intent.Payload, "skinLayerId", player.Appearance.SkinLayerId),
+            ReadPayloadOrDefault(intent.Payload, "hairLayerId", player.Appearance.HairLayerId),
+            ReadPayloadOrDefault(intent.Payload, "outfitLayerId", player.Appearance.OutfitLayerId),
+            ReadPayloadOrDefault(intent.Payload, "heldToolLayerId", player.Appearance.HeldToolLayerId));
+        try
+        {
+            PlayerV2LayerManifest.LoadDefault().CreateAppearance(selection);
+        }
+        catch (Exception exception)
+        {
+            return Reject(intent, $"Invalid player appearance selection: {exception.Message}");
+        }
+
+        _state.SetPlayerAppearance(intent.PlayerId, selection);
+
+        var updated = _state.Players[intent.PlayerId].Appearance;
+        var serverEvent = AppendEvent(
+            "player_appearance_changed",
+            $"{player.DisplayName} changed appearance",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["baseLayerId"] = updated.BaseLayerId,
+                ["skinLayerId"] = updated.SkinLayerId,
+                ["hairLayerId"] = updated.HairLayerId,
+                ["outfitLayerId"] = updated.OutfitLayerId,
+                ["heldToolLayerId"] = updated.HeldToolLayerId
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -1831,6 +1873,16 @@ public sealed class AuthoritativeWorldServer
     {
         value = 0;
         return payload.TryGetValue(key, out var text) && int.TryParse(text, out value);
+    }
+
+    private static string ReadPayloadOrDefault(
+        IReadOnlyDictionary<string, string> payload,
+        string key,
+        string fallback)
+    {
+        return payload.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+            ? value
+            : fallback;
     }
 
     private static Dictionary<string, string> WithRespawnData(

@@ -142,6 +142,10 @@ public partial class PlayerController : CharacterBody2D
         {
             UseRepairKitOnSelfThroughServer();
         }
+        else if (key.Keycode == Key.V)
+        {
+            CycleSkinThroughServer();
+        }
     }
 
     public void AdjustCameraZoom(float delta)
@@ -315,6 +319,30 @@ public partial class PlayerController : CharacterBody2D
                 ["itemId"] = StarterItems.RepairKitId,
                 ["targetId"] = GameState.LocalPlayerId
             });
+    }
+
+    private void CycleSkinThroughServer()
+    {
+        var current = _serverSession?.LastLocalSnapshot?.Players
+            .FirstOrDefault(player => player.Id == GameState.LocalPlayerId)?
+            .Appearance ?? PlayerAppearanceSelection.Default;
+        SendLocalWithPrompt(
+            IntentType.SetAppearance,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["skinLayerId"] = CycleSkinLayerId(current.SkinLayerId)
+            });
+    }
+
+    public static string CycleSkinLayerId(string currentSkinLayerId)
+    {
+        return currentSkinLayerId switch
+        {
+            "skin_light" => "skin_medium",
+            "skin_medium" => "skin_deep",
+            "skin_deep" => "skin_light",
+            _ => "skin_medium"
+        };
     }
 
     private void SendLocalWithPrompt(

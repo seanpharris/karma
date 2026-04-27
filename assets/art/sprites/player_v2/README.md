@@ -12,6 +12,9 @@ held-tool layers instead of generating bespoke art for every character variant.
   - `scripts/Art/PlayerV2LayerManifest.cs` can load this manifest, build default
     or custom slot selections, composite selected layers into an image, and export
     deterministic cached composite PNGs for selected appearances.
+  - Gameplay can route `SetAppearance` intents through the authoritative server;
+    the current prototype maps `V` to cycle the local player's skin layer for
+    quick runtime inspection.
   - This is the bridge from a hardcoded generated preview toward real character
     customization/composition.
 - `player_v2_layered_preview_8dir.png`
@@ -51,6 +54,8 @@ Run from the repo root:
 
 - Replace the generated mannequin pixels with polished true base-body art.
 - Add alternate skin palettes, hair, outfits, and silhouettes.
+- Add a real appearance selection UI instead of the current `V` key prototype
+  skin-cycle shortcut.
 - Broaden per-snapshot rendering beyond the local player and prototype peer to
   dynamically spawned player avatars once multiplayer stand-ins are expanded.
 - Later upgrade to 48x48 or 64x64 frames once the runtime/compositor contract is

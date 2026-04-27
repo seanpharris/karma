@@ -150,6 +150,18 @@ public partial class GameState : Node
         return true;
     }
 
+    public bool SetPlayerAppearance(string playerId, PlayerAppearanceSelection appearance)
+    {
+        EnsurePrototypePlayers();
+        if (!_players.TryGetValue(playerId, out var player))
+        {
+            return false;
+        }
+
+        player.SetAppearance(appearance);
+        return true;
+    }
+
     public bool SetPlayerTeam(string playerId, string teamId)
     {
         EnsurePrototypePlayers();
