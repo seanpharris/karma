@@ -37,4 +37,15 @@ The smaller-batch approach worked better than the first broad full-sheet prompts
   - Columns requested: idle, walk A, walk B, tool-ready.
   - This became the current temporary 64px runtime candidate after chroma extraction and normalization.
 
-The current extraction pass lives in `assets/art/sprites/generated/` and is produced by `tools/extract_player_v2_64px_full_sheet.gd`. It keys the chroma background, normalizes each cell into 64x64 frames, transposes direction rows into runtime animation rows, mirrors temporary left-facing directions, and writes `player_v2_engineer_8dir_4row_candidate.png`. Remaining art work: stronger true top-down poses, true back diagonals, final per-frame alignment, and eventually rebuilding the paper-doll layer stack at this 64px style/scale.
+The current extraction pass lives in `assets/art/sprites/generated/` and is produced by `tools/extract_player_v2_64px_full_sheet.gd`. It keys the chroma background, normalizes each cell into 64x64 frames, transposes direction rows into runtime animation rows, mirrors temporary left-facing directions, and writes `player_v2_engineer_8dir_4row_candidate.png`.
+
+## 2026-04-26 Gemini strict walk-strip movement patch
+
+- `karma_player_v2_64px_right_walk_strict.jpg`
+- `karma_player_v2_64px_up_right_walk_strict.jpg`
+- `karma_player_v2_64px_back_walk_strict.jpg`
+  - Strict one-row chroma prompts for visible no-tool walking steps.
+  - Merged into the runtime candidate with `tools/merge_player_v2_64px_walk_strips.gd`.
+  - Runtime columns patched: right, back-right/up-right, back/up, mirrored back-left/up-left, and mirrored left.
+
+Remaining art work: stronger front/down stepping, final per-frame alignment/artifact cleanup, true bespoke left-facing frames instead of mirrors, and eventually rebuilding the paper-doll layer stack at this 64px style/scale.
