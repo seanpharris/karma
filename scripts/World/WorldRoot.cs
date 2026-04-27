@@ -10,7 +10,9 @@ namespace Karma.World;
 public partial class WorldRoot : Node2D
 {
     public const long LocalChatBubbleVisibleTicks = 10;
+    private const string StaticPrototypePeerId = "peer_stand_in";
     private readonly Dictionary<string, Node2D> _renderedServerNpcs = new();
+    private readonly Dictionary<string, Node2D> _renderedRemotePlayers = new();
     private readonly Dictionary<string, Label> _renderedChatBubbles = new();
     private readonly Dictionary<string, Node2D> _renderedServerItems = new();
     private readonly Dictionary<string, Node2D> _renderedServerStructures = new();
@@ -73,6 +75,7 @@ public partial class WorldRoot : Node2D
 
         _tileMapRenderer.SetChunks(snapshot.MapChunks, ThemeArtRegistry.GetForTheme(GeneratedWorld.Theme));
         RenderServerNpcs(snapshot);
+        RenderRemotePlayers(snapshot);
         RenderServerStructures(snapshot);
         RenderServerItems(snapshot);
         RenderLocalChatBubbles(snapshot);
@@ -131,6 +134,75 @@ public partial class WorldRoot : Node2D
             AddChild(node);
             _renderedServerNpcs[npc.Id] = node;
         }
+    }
+
+    private void RenderRemotePlayers(ClientInterestSnapshot snapshot)
+    {
+        if (snapshot is null)
+        {
+            return;
+        }
+
+        var visiblePlayerIds = snapshot.Players
+            .Where(player => ShouldRenderRemotePlayer(snapshot, player))
+            .Select(player => player.Id)
+            .ToHashSet();
+        foreach (var removedId in _renderedRemotePlayers.Keys.Where(id => !visiblePlayerIds.Contains(id)).ToArray())
+        {
+            _renderedRemotePlayers[removedId].QueueFree();
+            _renderedRemotePlayers.Remove(removedId);
+        }
+
+        foreach (var player in snapshot.Players.Where(candidate => ShouldRenderRemotePlayer(snapshot, candidate)))
+        {
+            var position = new Vector2(player.TileX * 32f, player.TileY * 32f);
+            if (_renderedRemotePlayers.TryGetValue(player.Id, out var existing))
+            {
+                existing.Position = position;
+                TopDownDepth.Apply(existing);
+                existing.GetNodeOrNull<PrototypeCharacterSprite>("RemotePlayerSprite")?.ApplyPlayerAppearanceSelection(player.Appearance);
+                var label = existing.GetNodeOrNull<Label>("RemotePlayerName");
+                if (label is not null)
+                {
+                    label.Text = player.DisplayName;
+                }
+
+                continue;
+            }
+
+            var node = new Node2D
+            {
+                Name = $"RemotePlayer_{player.Id}",
+                Position = position
+            };
+            node.ZIndex = TopDownDepth.CalculateZIndex(position.Y);
+            var sprite = new PrototypeCharacterSprite
+            {
+                Name = "RemotePlayerSprite",
+                Kind = PrototypeSpriteKind.Player
+            };
+            sprite.ApplyPlayerAppearanceSelection(player.Appearance);
+            node.AddChild(sprite);
+            node.AddChild(new Label
+            {
+                Name = "RemotePlayerName",
+                Text = player.DisplayName,
+                Position = new Vector2(-48f, -70f),
+                Size = new Vector2(96f, 18f),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                ZIndex = TopDownDepth.HudOffsetZ
+            });
+            AddChild(node);
+            _renderedRemotePlayers[player.Id] = node;
+        }
+    }
+
+    public static bool ShouldRenderRemotePlayer(ClientInterestSnapshot snapshot, PlayerSnapshot player)
+    {
+        return snapshot is not null &&
+            player is not null &&
+            player.Id != snapshot.PlayerId &&
+            player.Id != StaticPrototypePeerId;
     }
 
     private void RenderLocalChatBubbles(ClientInterestSnapshot snapshot)

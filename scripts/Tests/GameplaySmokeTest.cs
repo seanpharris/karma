@@ -88,6 +88,9 @@ public partial class GameplaySmokeTest : Node
         var localSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         ExpectTrue(localSession is not null, "prototype server session autoload is available");
         ExpectTrue(localSession.LastLocalSnapshot.Summary.Contains("visible"), "prototype server session exposes local interest snapshot");
+        var localPlayerSnapshot = localSession.LastLocalSnapshot.Players.First(player => player.Id == localSession.LastLocalSnapshot.PlayerId);
+        ExpectFalse(WorldRoot.ShouldRenderRemotePlayer(localSession.LastLocalSnapshot, localPlayerSnapshot), "world renderer does not duplicate the local player avatar");
+        ExpectTrue(WorldRoot.ShouldRenderRemotePlayer(localSession.LastLocalSnapshot, localPlayerSnapshot with { Id = "remote_player_preview", DisplayName = "Remote Preview" }), "world renderer can draw dynamic remote player avatars from snapshots");
         ExpectTrue(localSession.LastLocalSnapshot.ShopOffers.Any(), "prototype server session exposes nearby shop offers");
         ExpectEqual(25, state.LocalScrip, "prototype local player starts with scrip");
         var localMatchRemaining = localSession.LastLocalSnapshot.Match.RemainingSeconds;

@@ -90,10 +90,12 @@ Implemented in this slice: the Escape appearance panel now shows separate curren
 
 ### 9. Apply appearance rendering to more player avatars
 
-Status: pending
+Status: done
 
 - Broaden snapshot-driven appearance rendering beyond local player and prototype peer.
 - Ensure dynamically spawned/multiplayer stand-ins resolve selected layer stacks.
+
+Implemented in this slice: `WorldRoot` now creates, updates, and removes dynamic remote-player avatar nodes from snapshot players outside the local player and static prototype peer, applying each snapshot appearance through the player-v2 compositor.
 
 ### 10. Return to gameplay systems after the character pipeline stabilizes
 
