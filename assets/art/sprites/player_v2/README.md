@@ -32,13 +32,20 @@ in this folder are now architecture/fallback assets, not the art style to polish
 
 ## Layers
 
-Layer files live in `layers/` and share the exact same 8-direction/9-row grid:
+Layer files live in `layers/`. Current legacy/runtime-compositor layers share the exact same 8-direction/9-row, 32x32 grid:
 
 - `base_body_8dir.png` — neutral mannequin/body-guide silhouette.
 - `skin_light_8dir.png`, `skin_medium_8dir.png`, `skin_deep_8dir.png` — replaceable skin layers.
 - `hair_short_dark_8dir.png`, `hair_short_blond_8dir.png` — replaceable hair layers.
 - `outfit_engineer_8dir.png`, `outfit_settler_8dir.png` — replaceable clothing/equipment layers.
 - `tool_multitool_8dir.png` — held-tool overlay for tool/interact rows.
+
+Additional base-model references:
+
+- `base_model_32x64_8dir.png`
+  - 256x64, 8 columns x 1 row, 32x64 cells.
+  - Direction order: front/down, front-right, right, back-right, back, back-left, left, front-left.
+  - Rough neutral body/proportion layer for testing a taller paper-doll base model; not wired into the current 32x32 compositor manifest yet.
 
 The layer order is:
 
@@ -54,6 +61,9 @@ Run from the repo root:
 
 ```powershell
 & 'C:\Users\pharr\Downloads\Godot_v4.6.2-stable_mono_win64\Godot_v4.6.2-stable_mono_win64\Godot_v4.6.2-stable_mono_win64_console.exe' --headless --path 'C:\Users\pharr\code\karma' --script 'res://tools/generate_layered_player_v2.gd'
+
+# Optional taller base-model reference:
+& 'C:\Users\pharr\Downloads\Godot_v4.6.2-stable_mono_win64\Godot_v4.6.2-stable_mono_win64\Godot_v4.6.2-stable_mono_win64_console.exe' --headless --path 'C:\Users\pharr\code\karma' --script 'res://tools/generate_base_model_32x64_8dir.gd'
 ```
 
 ## Next steps
