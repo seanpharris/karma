@@ -129,8 +129,7 @@ public sealed class PlayerV2LayerManifest
         {
             var slotLayers = Layers.Where(layer => layer.Slot == slot).ToArray();
             var selectedLayer = slotLayers.FirstOrDefault(layer => layer.IsDefault) ??
-                                slotLayers.FirstOrDefault(layer => layer.Required) ??
-                                slotLayers.FirstOrDefault();
+                                slotLayers.FirstOrDefault(layer => layer.Required);
             if (selectedLayer is not null)
             {
                 selected[slot] = selectedLayer.Id;

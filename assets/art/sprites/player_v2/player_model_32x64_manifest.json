@@ -24,7 +24,10 @@
     "base",
     "skin",
     "hair",
-    "outfit"
+    "outfit",
+    "backpack",
+    "held_tool",
+    "weapon"
   ],
   "layers": [
     {
@@ -70,6 +73,21 @@
       "id": "outfit_settler_32x64",
       "slot": "outfit",
       "path": "layers_32x64/outfit_settler_32x64.png"
+    },
+    {
+      "id": "backpack_daypack_32x64",
+      "slot": "backpack",
+      "path": "layers_32x64/backpack_daypack_32x64.png"
+    },
+    {
+      "id": "tool_multitool_32x64",
+      "slot": "held_tool",
+      "path": "layers_32x64/tool_multitool_32x64.png"
+    },
+    {
+      "id": "weapon_practice_baton_32x64",
+      "slot": "weapon",
+      "path": "layers_32x64/weapon_practice_baton_32x64.png"
     }
   ],
   "previewStack": [

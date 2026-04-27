@@ -60,19 +60,23 @@ Status: blocked until PixelLab output exists
 
 ### 6. Improve the `32x64` skeleton art pass
 
-Status: pending
+Status: done
 
 - Improve proportions, hands/feet, diagonal silhouettes, and frame-to-frame consistency.
 - Preserve the contract: `8 columns x 4 rows`, `32x64` cells.
 - Avoid breaking current runtime readability.
 
+Implemented in this slice: added a small waist/gear cue across directions, regenerated the one-row, 4-row, and compatibility runtime sheets, then regenerated native layer splits with pixel-perfect default recomposition.
+
 ### 7. Add tool/backpack/weapon overlay layers
 
-Status: pending
+Status: done
 
 - Keep ordinary idle/walk tool-free.
 - Add overlays for backpack, held tool, and future weapon/tool states.
 - Prepare for later action rows without contaminating movement frames.
+
+Implemented in this slice: added optional `backpack_daypack_32x64`, `tool_multitool_32x64`, and `weapon_practice_baton_32x64` layers to the native manifest. They are omitted from the default preview stack and can be composed explicitly for future loadout/action states.
 
 ### 8. Expand the appearance menu
 

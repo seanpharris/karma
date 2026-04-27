@@ -331,7 +331,7 @@ public partial class GameplaySmokeTest : Node
             ExpectEqual(64, manifestRoot.GetProperty("frameHeight").GetInt32(), "native player v2 manifest declares 64px frame height");
             ExpectEqual(8, manifestRoot.GetProperty("columns").GetInt32(), "native player v2 manifest declares eight direction columns");
             ExpectEqual(4, manifestRoot.GetProperty("rows").GetInt32(), "native player v2 manifest declares four animation rows");
-            ExpectEqual(8, manifestRoot.GetProperty("layers").GetArrayLength(), "native player v2 manifest exposes base, skins, hair, and outfit layers");
+            ExpectEqual(11, manifestRoot.GetProperty("layers").GetArrayLength(), "native player v2 manifest exposes base, skins, hair, outfit, and overlay layers");
             ExpectEqual(4, manifestRoot.GetProperty("previewStack").GetArrayLength(), "native player v2 manifest preview stack composes a playable character");
             ExpectTrue(
                 manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "skin_light_32x64"),
@@ -345,6 +345,15 @@ public partial class GameplaySmokeTest : Node
             ExpectTrue(
                 manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "outfit_settler_32x64"),
                 "native player v2 manifest exposes swappable settler outfit layer");
+            ExpectTrue(
+                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "backpack_daypack_32x64"),
+                "native player v2 manifest exposes backpack overlay layer");
+            ExpectTrue(
+                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "tool_multitool_32x64"),
+                "native player v2 manifest exposes held tool overlay layer");
+            ExpectTrue(
+                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "weapon_practice_baton_32x64"),
+                "native player v2 manifest exposes weapon overlay layer");
         }
         var playerV2ManifestPath = PlayerV2LayerManifest.LegacyManifestPath;
         ExpectTrue(FileAccess.FileExists(playerV2ManifestPath), "legacy 32x32 player v2 layered manifest remains available");
@@ -359,6 +368,9 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(3, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "skin"), "player v2 layer manifest loader exposes skin variants");
         ExpectEqual(2, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "hair"), "player v2 layer manifest loader exposes hair variants");
         ExpectEqual(2, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "outfit"), "player v2 layer manifest loader exposes outfit variants");
+        ExpectEqual(1, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "backpack"), "player v2 layer manifest loader exposes backpack overlay variants");
+        ExpectEqual(1, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "held_tool"), "player v2 layer manifest loader exposes held tool overlay variants");
+        ExpectEqual(1, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "weapon"), "player v2 layer manifest loader exposes weapon overlay variants");
         ExpectTrue(playerV2LayerManifest.Layers.All(layer => FileAccess.FileExists(playerV2LayerManifest.ResolveLayerPath(layer))), "player v2 layer manifest loader resolves layer paths");
         var defaultPlayerV2Appearance = playerV2LayerManifest.CreateDefaultAppearance();
         ExpectTrue(
@@ -375,6 +387,9 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(0, CountImagePixelDifferences(savedPlayerV2Preview, recomposedPlayerV2Preview), "player v2 layer compositor reproduces saved preview stack");
         var lightSkinPlayerV2Preview = playerV2LayerManifest.Compose(lightSkinPlayerV2Appearance);
         ExpectTrue(CountImagePixelDifferences(recomposedPlayerV2Preview, lightSkinPlayerV2Preview) > 0, "player v2 appearance compositor changes output when skin changes");
+        var toolPlayerV2Appearance = playerV2LayerManifest.CreateAppearance(PlayerAppearanceSelection.Default with { HeldToolLayerId = "tool_multitool_32x64" });
+        ExpectTrue(playerV2LayerManifest.GetLayerStack(toolPlayerV2Appearance).Contains("tool_multitool_32x64"), "player v2 appearance can include held tool overlay layer");
+        ExpectTrue(CountImagePixelDifferences(recomposedPlayerV2Preview, playerV2LayerManifest.Compose(toolPlayerV2Appearance)) > 0, "player v2 held tool overlay changes composed output");
         const string testCompositeRoot = "user://karma_test/player_v2/composites";
         var lightSkinCompositePath = playerV2LayerManifest.ExportAppearanceComposite(lightSkinSelection, testCompositeRoot);
         ExpectTrue(FileAccess.FileExists(lightSkinCompositePath), "player v2 appearance compositor exports selected appearance composite");

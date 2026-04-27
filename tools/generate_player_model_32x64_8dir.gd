@@ -165,6 +165,7 @@ func _draw_direction(img: Image, dir: int, o: Vector2i) -> void:
 func _front(img: Image, o: Vector2i) -> void:
 	_legs(img, o, 11, 17, false)
 	_torso(img, o, 10, 21, 12, false)
+	_waist_cue(img, o, 10, 40, 12, false)
 	_arm(img, o, 6, 23, 4, 23, false)
 	_arm(img, o, 22, 23, 4, 23, false)
 	_head_front(img, o, 11, 6, false)
@@ -174,6 +175,7 @@ func _front(img: Image, o: Vector2i) -> void:
 func _back(img: Image, o: Vector2i) -> void:
 	_legs(img, o, 11, 17, true)
 	_torso(img, o, 9, 21, 14, true)
+	_waist_cue(img, o, 9, 40, 14, true)
 	_arm(img, o, 6, 24, 4, 22, true)
 	_arm(img, o, 22, 24, 4, 22, true)
 	_head_back(img, o, 11, 6)
@@ -183,6 +185,7 @@ func _side(img: Image, o: Vector2i, flip: bool) -> void:
 	_legs_side(img, o, flip)
 	_mrect(img, o, 12, 21, 10, 23, O, flip)
 	_mrect(img, o, 13, 22, 8, 21, SUIT, flip)
+	_mrect(img, o, 13, 40, 8, 2, PLATE, flip)
 	_mrect(img, o, 15, 24, 6, 12, PLATE_L, flip)
 	_mrect(img, o, 9, 24, 4, 21, O, flip)
 	_mrect(img, o, 10, 25, 2, 19, SUIT_D, flip)
@@ -195,6 +198,7 @@ func _front_diag(img: Image, o: Vector2i, flip: bool) -> void:
 	_legs_diag(img, o, flip, false)
 	_mrect(img, o, 10, 21, 13, 23, O, flip)
 	_mrect(img, o, 11, 22, 11, 21, SUIT, flip)
+	_mrect(img, o, 11, 40, 11, 2, PLATE, flip)
 	_mrect(img, o, 14, 24, 7, 11, PLATE_L, flip)
 	_mrect(img, o, 7, 24, 4, 21, O, flip)
 	_mrect(img, o, 8, 25, 2, 18, SUIT_D, flip)
@@ -206,6 +210,7 @@ func _back_diag(img: Image, o: Vector2i, flip: bool) -> void:
 	_legs_diag(img, o, flip, true)
 	_mrect(img, o, 9, 21, 14, 23, O, flip)
 	_mrect(img, o, 10, 22, 12, 21, SUIT_D, flip)
+	_mrect(img, o, 10, 40, 12, 2, PACK, flip)
 	_mrect(img, o, 10, 23, 11, 16, PACK, flip)
 	_mrect(img, o, 7, 24, 4, 21, O, flip)
 	_mrect(img, o, 8, 25, 2, 18, SUIT_D, flip)
@@ -248,6 +253,10 @@ func _torso(img: Image, o: Vector2i, x: int, y: int, w: int, back: bool) -> void
 func _chest_plate(img: Image, o: Vector2i, x: int, y: int, w: int, h: int) -> void:
 	_rect(img, o + Vector2i(x, y), Vector2i(w, h), PLATE)
 	_rect(img, o + Vector2i(x + 1, y + 1), Vector2i(w - 2, 2), PLATE_L)
+
+func _waist_cue(img: Image, o: Vector2i, x: int, y: int, w: int, back: bool) -> void:
+	_rect(img, o + Vector2i(x + 1, y), Vector2i(w - 2, 2), PACK if back else PLATE)
+	_pixel(img, o + Vector2i(x + int(w / 2), y), PLATE if back else PLATE_L)
 
 func _pack(img: Image, o: Vector2i, x: int, y: int, w: int, h: int) -> void:
 	_rect(img, o + Vector2i(x, y), Vector2i(w, h), O)

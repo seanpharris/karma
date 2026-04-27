@@ -115,6 +115,62 @@ def compose(layers: list[ImagePixels]) -> ImagePixels:
     return out
 
 
+
+def draw_rect(image: ImagePixels, x: int, y: int, w: int, h: int, color: tuple[int, int, int, int]) -> None:
+    for yy in range(max(0, y), min(HEIGHT, y + h)):
+        for xx in range(max(0, x), min(WIDTH, x + w)):
+            image[yy][xx] = color
+
+
+def cell_rect(image: ImagePixels, column: int, row: int, x: int, y: int, w: int, h: int, color: tuple[int, int, int]) -> None:
+    draw_rect(image, column * 32 + x, row * 64 + y, w, h, (*color, 255))
+
+
+def make_backpack_overlay() -> ImagePixels:
+    image = blank()
+    for row in range(4):
+        for column in range(8):
+            # Small pack/bedroll silhouette. It is most visible from side/back but
+            # also gives front views shoulder straps for future loadout toggles.
+            if column in {3, 4, 5}:
+                cell_rect(image, column, row, 10, 24, 12, 15, OUTLINE)
+                cell_rect(image, column, row, 11, 25, 10, 13, PACK)
+                cell_rect(image, column, row, 13, 27, 6, 2, PLATE)
+            elif column in {2, 6}:
+                cell_rect(image, column, row, 9, 25, 6, 16, OUTLINE)
+                cell_rect(image, column, row, 10, 26, 4, 14, PACK)
+            else:
+                cell_rect(image, column, row, 9, 23, 2, 18, PACK)
+                cell_rect(image, column, row, 21, 23, 2, 18, PACK)
+    return image
+
+
+def make_tool_overlay() -> ImagePixels:
+    image = blank()
+    for row in range(4):
+        for column in range(8):
+            x = column * 32
+            y = row * 64
+            # Compact multitool/wrench placeholder kept separate from walk frames.
+            draw_rect(image, x + 23, y + 39, 2, 11, (*PLATE_L, 255))
+            draw_rect(image, x + 21, y + 38, 5, 2, (*OUTLINE, 255))
+            draw_rect(image, x + 22, y + 39, 3, 2, (*PLATE, 255))
+            image[y + 49][x + 24] = (*VISOR, 255)
+    return image
+
+
+def make_weapon_overlay() -> ImagePixels:
+    image = blank()
+    for row in range(4):
+        for column in range(8):
+            x = column * 32
+            y = row * 64
+            # Practice baton silhouette for future combat/tool state rows.
+            draw_rect(image, x + 6, y + 38, 3, 15, (*OUTLINE, 255))
+            draw_rect(image, x + 7, y + 39, 1, 13, (*PLATE_L, 255))
+            draw_rect(image, x + 5, y + 50, 5, 2, (*BOOT, 255))
+    return image
+
 def main() -> int:
     width, height, source = read_png_rgba(SOURCE)
     if (width, height) != (WIDTH, HEIGHT):
@@ -142,6 +198,9 @@ def main() -> int:
             PLATE_L: SETTLER_PLATE,
             PACK: SETTLER_D,
         }),
+        "backpack_daypack_32x64": make_backpack_overlay(),
+        "tool_multitool_32x64": make_tool_overlay(),
+        "weapon_practice_baton_32x64": make_weapon_overlay(),
     }
 
     for layer_id, image in layers.items():
@@ -172,7 +231,7 @@ def main() -> int:
         "rows": 4,
         "directions": ["front", "front_right", "right", "back_right", "back", "back_left", "left", "front_left"],
         "animations": ["idle", "walk1", "walk2", "walk3"],
-        "layerOrder": ["base", "skin", "hair", "outfit"],
+        "layerOrder": ["base", "skin", "hair", "outfit", "backpack", "held_tool", "weapon"],
         "layers": [
             {"id": "base_body_32x64", "slot": "base", "path": "layers_32x64/base_body_32x64.png", "required": True},
             {"id": "skin_light_32x64", "slot": "skin", "path": "layers_32x64/skin_light_32x64.png"},
@@ -182,6 +241,9 @@ def main() -> int:
             {"id": "hair_short_blond_32x64", "slot": "hair", "path": "layers_32x64/hair_short_blond_32x64.png"},
             {"id": "outfit_engineer_32x64", "slot": "outfit", "path": "layers_32x64/outfit_engineer_32x64.png", "default": True},
             {"id": "outfit_settler_32x64", "slot": "outfit", "path": "layers_32x64/outfit_settler_32x64.png"},
+            {"id": "backpack_daypack_32x64", "slot": "backpack", "path": "layers_32x64/backpack_daypack_32x64.png"},
+            {"id": "tool_multitool_32x64", "slot": "held_tool", "path": "layers_32x64/tool_multitool_32x64.png"},
+            {"id": "weapon_practice_baton_32x64", "slot": "weapon", "path": "layers_32x64/weapon_practice_baton_32x64.png"},
         ],
         "previewStack": ["base_body_32x64", "skin_medium_32x64", "hair_short_dark_32x64", "outfit_engineer_32x64"],
         "composite": "player_model_32x64_layered_preview.png",

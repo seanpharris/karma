@@ -51,9 +51,9 @@ Additional base-model references:
   - Starter manifest for the native 32x64 paper-doll split.
   - Uses rectangular metadata (`frameWidth: 32`, `frameHeight: 64`) and the same 8-direction/4-row contract.
 - `layers_32x64/*.png`
-  - Active split of the canonical skeleton into base, skin, hair, and outfit layers.
+  - Active split of the canonical skeleton into base, skin, hair, outfit, backpack, held-tool, and weapon overlay layers.
   - `player_model_32x64_layered_preview.png` is a pixel-perfect recomposite of `player_model_32x64_8dir_4row.png` so we can iterate layers without changing the current runtime silhouette accidentally.
-  - Skin/hair/outfit variants are real composited runtime options; old 32x32 IDs are accepted only as migration/fallback cycle inputs.
+  - Skin/hair/outfit variants are real composited runtime options; backpack/tool/weapon overlays are review-ready optional layers for future loadout/action states. Old 32x32 IDs are accepted only as migration/fallback cycle inputs.
 - `imported/`
   - Review-only folder for normalized PixelLab/downloaded candidates. Runtime should not load imported candidates until one is explicitly curated and promoted.
 
@@ -63,7 +63,9 @@ The layer order is:
 2. skin
 3. hair
 4. outfit
-5. held tool
+5. backpack overlay
+6. held tool overlay
+7. weapon overlay
 
 ## Regenerate
 
