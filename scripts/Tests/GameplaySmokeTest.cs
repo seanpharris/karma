@@ -385,28 +385,48 @@ public partial class GameplaySmokeTest : Node
             PrototypeCharacterSprite.CreateSpriteFrames(AtlasTextureLoader.Load(lightSkinCompositePath, forceImageLoad: true), lightSkinPlayerDefinition)
                 .HasAnimation(PrototypeCharacterSprite.WalkRightAnimation),
             "appearance composite atlas creates walk animations for runtime sprites");
-        var expectedPlayerAtlasPath = FileAccess.FileExists(PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath)
-            ? PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
-            : FileAccess.FileExists(PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath)
-                ? PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath
-                : PrototypeSpriteCatalog.EngineerPlayerAtlasPath;
-        var expectedPlayerSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
-                                 expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
-            ? new Vector2(32f, 32f)
-            : new Vector2(30f, 40f);
-        if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
+        var expectedPlayerAtlasPath = FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath)
+            ? PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
+            : FileAccess.FileExists(PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath)
+                ? PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
+                : FileAccess.FileExists(PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath)
+                    ? PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath
+                    : PrototypeSpriteCatalog.EngineerPlayerAtlasPath;
+        var expectedPlayerSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
+            ? new Vector2(64f, 64f)
+            : expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
+              expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
+                ? new Vector2(32f, 32f)
+                : new Vector2(30f, 40f);
+        if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath ||
+            expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
             expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath)
         {
             var engineerImage = Image.LoadFromFile(expectedPlayerAtlasPath);
-            ExpectEqual(256, engineerImage.GetWidth(), "active 8-direction runtime sheet has expected width");
-            ExpectEqual(288, engineerImage.GetHeight(), "active 8-direction runtime sheet has expected height");
+            var expectedSheetSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
+                ? new Vector2I(512, 256)
+                : new Vector2I(256, 288);
+            ExpectEqual(expectedSheetSize.X, engineerImage.GetWidth(), "active 8-direction runtime sheet has expected width");
+            ExpectEqual(expectedSheetSize.Y, engineerImage.GetHeight(), "active 8-direction runtime sheet has expected height");
             ExpectTrue(CountTransparentPixels(engineerImage) > 0, "active 8-direction runtime sheet keeps transparent background pixels");
-            ExpectTrue(
-                CountPixelDifferences(engineerImage, new Vector2I(1, 0), new Vector2I(2, 0)) > 0,
-                "active 8-direction runtime sheet gives front-right a distinct placeholder frame");
-            ExpectTrue(
-                CountPixelDifferences(engineerImage, new Vector2I(3, 0), new Vector2I(2, 0)) > 0,
-                "active 8-direction runtime sheet gives back-right a distinct placeholder frame");
+            var expectedFrameSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
+                ? 64
+                : CharacterSheetLayout.StandardFrameSize;
+            if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath)
+            {
+                ExpectTrue(
+                    CountPixelDifferences(engineerImage, new Vector2I(3, 0), new Vector2I(2, 0), expectedFrameSize) > 0,
+                    "active 64px preview sheet keeps at least one diagonal distinct from side-facing frames");
+            }
+            else
+            {
+                ExpectTrue(
+                    CountPixelDifferences(engineerImage, new Vector2I(1, 0), new Vector2I(2, 0), expectedFrameSize) > 0,
+                    "active 8-direction runtime sheet gives front-right a distinct placeholder frame");
+                ExpectTrue(
+                    CountPixelDifferences(engineerImage, new Vector2I(3, 0), new Vector2I(2, 0), expectedFrameSize) > 0,
+                    "active 8-direction runtime sheet gives back-right a distinct placeholder frame");
+            }
         }
 
         ExpectTrue(
@@ -1006,18 +1026,22 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(playerSprite.Layers.Count >= 8, "prototype player sprite has layered pixel art");
         ExpectEqual(expectedPlayerAtlasPath, playerSprite.AtlasPath, "prototype player sprite records active engineer atlas path");
         ExpectTrue(playerSprite.HasAtlasRegion, "prototype player sprite can use character atlas art");
-        var expectedPlayerWalkFrameCount = expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
-                                           expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
-            ? 7
-            : 4;
+        var expectedPlayerWalkFrameCount = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
+            ? 3
+            : expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
+              expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
+                ? 7
+                : 4;
         ExpectEqual(
             expectedPlayerWalkFrameCount,
             playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkDownAnimation).Frames.Count,
             "prototype player sprite maps multi-frame walk animations");
-        var expectedWalkRightFinalFrame = expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
-                                          expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
-            ? new Rect2(64f, 64f, 32f, 32f)
-            : new Rect2(963f, 860f, 120f, 190f);
+        var expectedWalkRightFinalFrame = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
+            ? new Rect2(128f, 192f, 64f, 64f)
+            : expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
+              expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
+                ? new Rect2(64f, 64f, 32f, 32f)
+                : new Rect2(963f, 860f, 120f, 190f);
         ExpectEqual(
             expectedWalkRightFinalFrame,
             playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkRightAnimation).Frames[^1],
@@ -2267,19 +2291,19 @@ public partial class GameplaySmokeTest : Node
         return differences;
     }
 
-    private static int CountPixelDifferences(Image image, Vector2I firstFrame, Vector2I secondFrame)
+    private static int CountPixelDifferences(Image image, Vector2I firstFrame, Vector2I secondFrame, int frameSize = CharacterSheetLayout.StandardFrameSize)
     {
         var differences = 0;
-        for (var y = 0; y < CharacterSheetLayout.StandardFrameSize; y++)
+        for (var y = 0; y < frameSize; y++)
         {
-            for (var x = 0; x < CharacterSheetLayout.StandardFrameSize; x++)
+            for (var x = 0; x < frameSize; x++)
             {
                 var first = image.GetPixel(
-                    (firstFrame.X * CharacterSheetLayout.StandardFrameSize) + x,
-                    (firstFrame.Y * CharacterSheetLayout.StandardFrameSize) + y);
+                    (firstFrame.X * frameSize) + x,
+                    (firstFrame.Y * frameSize) + y);
                 var second = image.GetPixel(
-                    (secondFrame.X * CharacterSheetLayout.StandardFrameSize) + x,
-                    (secondFrame.Y * CharacterSheetLayout.StandardFrameSize) + y);
+                    (secondFrame.X * frameSize) + x,
+                    (secondFrame.Y * frameSize) + y);
                 if (!first.IsEqualApprox(second))
                 {
                     differences++;

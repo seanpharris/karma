@@ -240,9 +240,20 @@ public partial class PrototypeCharacterSprite : Node2D
         string cacheRoot = "user://player_v2/composites")
     {
         Kind = PrototypeSpriteKind.Player;
+        if (IsDefaultSelection(selection) && FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath))
+        {
+            SetAtlasPathOverride(string.Empty);
+            return PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath;
+        }
+
         var atlasPath = ExportPlayerAppearanceAtlas(selection, cacheRoot);
         SetAtlasPathOverride(atlasPath);
         return atlasPath;
+    }
+
+    private static bool IsDefaultSelection(PlayerAppearanceSelection selection)
+    {
+        return selection == PlayerAppearanceSelection.Default;
     }
 
     public static string ExportPlayerAppearanceAtlas(

@@ -4,6 +4,10 @@ This folder is the first runtime-visible step toward the intended character art
 architecture: build one canonical base body, then add skin, hair, outfit, and
 held-tool layers instead of generating bespoke art for every character variant.
 
+Important: Sean chose the `64x64` Gemini candidate scale/style as the actual v2
+visual target after reviewing the prototype. The current `32x32` layered sheets
+in this folder are now architecture/fallback assets, not the art style to polish.
+
 ## Active preview
 
 - `player_v2_manifest.json`
@@ -20,10 +24,11 @@ held-tool layers instead of generating bespoke art for every character variant.
     customization/composition.
 - `player_v2_layered_preview_8dir.png`
   - 256x288, 8 columns x 9 rows, 32x32 frames.
-  - This is a generated composite of the default manifest stack and is currently
-    the preferred player runtime sheet when present.
-  - It deliberately matches the existing prototype sheet contract so it can be
-    viewed in-game immediately without a larger renderer rewrite.
+  - This is a generated composite of the default manifest stack.
+  - It deliberately matches the old prototype sheet contract and remains useful
+    for compositor/selection tests, but the preferred default visual preview is
+    now `assets/art/sprites/generated/player_v2_engineer_8dir_4row_candidate.png`
+    when that 64x64 candidate exists.
 
 ## Layers
 
@@ -53,11 +58,10 @@ Run from the repo root:
 
 ## Next steps
 
-- Replace the generated mannequin pixels with polished true base-body art.
-- Add more alternate palettes, hair, outfits, tools, and silhouettes.
+- Rebuild these layers at the chosen 64x64 v2 scale/style instead of polishing
+  the 32x32 mannequin.
+- Add more alternate palettes, hair, outfits, tools, and silhouettes at 64x64.
 - Replace the current cycle-only Appearance panel with a fuller picker/dropdown UI
-  once there are enough layers to browse.
+  once there are enough 64x64 layers to browse.
 - Broaden per-snapshot rendering beyond the local player and prototype peer to
   dynamically spawned player avatars once multiplayer stand-ins are expanded.
-- Later upgrade to 48x48 or 64x64 frames once the runtime/compositor contract is
-  ready.
