@@ -80,11 +80,13 @@ Implemented in this slice: added optional `backpack_daypack_32x64`, `tool_multit
 
 ### 8. Expand the appearance menu
 
-Status: pending
+Status: done
 
 - Show current skin/hair/outfit names clearly.
 - Add room for preview thumbnails or selectors once variants grow.
 - Keep non-pausing Escape menu behavior.
+
+Implemented in this slice: the Escape appearance panel now shows separate current skin/hair/outfit/held-tool labels and reserves preview copy for future thumbnails while keeping the existing server-owned cycle buttons.
 
 ### 9. Apply appearance rendering to more player avatars
 

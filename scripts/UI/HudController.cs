@@ -58,6 +58,11 @@ public partial class HudController : CanvasLayer
     private Button _closeEscapeOptionsButton = new();
     private Control _appearancePanel = new();
     private Label _appearanceSummaryLabel = new();
+    private Label _appearanceSkinLabel = new();
+    private Label _appearanceHairLabel = new();
+    private Label _appearanceOutfitLabel = new();
+    private Label _appearanceToolLabel = new();
+    private Label _appearancePreviewLabel = new();
     private Button _cycleSkinButton = new();
     private Button _cycleHairButton = new();
     private Button _cycleOutfitButton = new();
@@ -401,6 +406,11 @@ public partial class HudController : CanvasLayer
     {
         var appearance = GetLocalAppearanceSelection(_serverSession?.LastLocalSnapshot) ?? PlayerAppearanceSelection.Default;
         _appearanceSummaryLabel.Text = FormatAppearanceSummary(appearance);
+        _appearanceSkinLabel.Text = FormatAppearanceDetailLine("Skin", appearance.SkinLayerId);
+        _appearanceHairLabel.Text = FormatAppearanceDetailLine("Hair", appearance.HairLayerId);
+        _appearanceOutfitLabel.Text = FormatAppearanceDetailLine("Outfit", appearance.OutfitLayerId);
+        _appearanceToolLabel.Text = FormatAppearanceDetailLine("Held tool", appearance.HeldToolLayerId);
+        _appearancePreviewLabel.Text = "Preview: live on your character; thumbnails will plug into this panel as variants grow.";
     }
 
     private void ReturnToMainMenu()
@@ -833,6 +843,21 @@ public partial class HudController : CanvasLayer
             AutowrapMode = TextServer.AutowrapMode.WordSmart
         };
         appearanceContent.AddChild(_appearanceSummaryLabel);
+        _appearanceSkinLabel = new Label { Name = "AppearanceSkinLabel", Text = "Skin: default" };
+        _appearanceHairLabel = new Label { Name = "AppearanceHairLabel", Text = "Hair: default" };
+        _appearanceOutfitLabel = new Label { Name = "AppearanceOutfitLabel", Text = "Outfit: default" };
+        _appearanceToolLabel = new Label { Name = "AppearanceToolLabel", Text = "Held tool: none" };
+        _appearancePreviewLabel = new Label
+        {
+            Name = "AppearancePreviewLabel",
+            Text = "Preview: live on your character",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart
+        };
+        appearanceContent.AddChild(_appearanceSkinLabel);
+        appearanceContent.AddChild(_appearanceHairLabel);
+        appearanceContent.AddChild(_appearanceOutfitLabel);
+        appearanceContent.AddChild(_appearanceToolLabel);
+        appearanceContent.AddChild(_appearancePreviewLabel);
         _cycleSkinButton = new Button { Name = "CycleSkinButton", Text = "Cycle skin (V)" };
         _cycleHairButton = new Button { Name = "CycleHairButton", Text = "Cycle hair (B)" };
         _cycleOutfitButton = new Button { Name = "CycleOutfitButton", Text = "Cycle outfit (N)" };
@@ -1311,6 +1336,12 @@ public partial class HudController : CanvasLayer
     public static string FormatAppearanceSummary(PlayerAppearanceSelection appearance)
     {
         return $"Appearance: {FormatAppearanceLayerName(appearance.SkinLayerId)} skin | {FormatAppearanceLayerName(appearance.HairLayerId)} hair | {FormatAppearanceLayerName(appearance.OutfitLayerId)} outfit | {FormatAppearanceLayerName(appearance.HeldToolLayerId)} tool";
+    }
+
+    public static string FormatAppearanceDetailLine(string label, string layerId)
+    {
+        var value = string.IsNullOrWhiteSpace(layerId) ? "none" : FormatAppearanceLayerName(layerId);
+        return $"{label}: {value}";
     }
 
     public static IReadOnlyDictionary<string, string> BuildAppearanceCyclePayload(string slot, PlayerAppearanceSelection current)
