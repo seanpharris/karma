@@ -335,7 +335,8 @@ public partial class PeerStandInController : Area2D
             "X - Equip Work Vest\n" +
             "C - Place first loose inventory item\n" +
             "R - Use Repair Kit on them\n" +
-            "T - Use Repair Kit on yourself";
+            "T - Use Repair Kit on yourself\n" +
+            "V - Cycle your prototype skin layer";
     }
 
     public static string FormatAttackLabel(IReadOnlyList<string> statusEffects, string duelState)

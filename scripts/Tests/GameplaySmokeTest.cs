@@ -481,6 +481,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(peerPrompt.Contains("HP: 25/100"), "peer prompt includes authoritative health");
         ExpectTrue(peerPrompt.Contains("Status: Karma Break Grace (4)"), "peer prompt includes active status effects");
         ExpectTrue(peerPrompt.Contains("Duel: Active"), "peer prompt includes duel state");
+        ExpectTrue(peerPrompt.Contains("V - Cycle your prototype skin layer"), "peer prompt explains prototype appearance shortcut");
         ExpectTrue(peerPrompt.Contains("Attack blocked by Karma Break grace"), "peer prompt explains blocked attacks during grace");
         ExpectTrue(peerPrompt.Contains("Duel already pending/active"), "peer prompt explains unavailable duel requests");
         ExpectTrue(peerPrompt.Contains("Let them duel strike you"), "peer prompt labels peer-authored duel attacks");
@@ -2029,6 +2030,9 @@ public partial class GameplaySmokeTest : Node
             }));
         ExpectTrue(serverSetAppearance.WasAccepted, "server accepts player appearance selection intents");
         ExpectEqual("skin_light", state.LocalPlayer.Appearance.SkinLayerId, "server appearance intent updates authoritative player state");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { serverSetAppearance.Event }).Contains("Light skin"),
+            "HUD formats player appearance change events");
         ExpectEqual("skin_light", server.CreateInterestSnapshot(GameState.LocalPlayerId).Players.Single(player => player.Id == GameState.LocalPlayerId).Appearance.SkinLayerId, "interest snapshots expose updated player appearance selections");
         var serverRejectsInvalidAppearance = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,

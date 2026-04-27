@@ -923,6 +923,15 @@ public partial class HudController : CanvasLayer
             return $"{displayName} says: {text}";
         }
 
+        if (latest.EventId.Contains("player_appearance_changed"))
+        {
+            var player = ReadEventData(latest, "playerId", "Someone");
+            var skin = FormatAppearanceLayerName(ReadEventData(latest, "skinLayerId", string.Empty));
+            var hair = FormatAppearanceLayerName(ReadEventData(latest, "hairLayerId", string.Empty));
+            var outfit = FormatAppearanceLayerName(ReadEventData(latest, "outfitLayerId", string.Empty));
+            return $"{player} changed appearance: {skin} skin, {hair} hair, {outfit} outfit.";
+        }
+
         if (latest.EventId.Contains("player_moved"))
         {
             var player = ReadEventData(latest, "playerId", "Someone");
@@ -1180,6 +1189,19 @@ public partial class HudController : CanvasLayer
         return Karma.Data.StarterItems.TryGetById(itemId, out var item)
             ? item.Name
             : string.IsNullOrWhiteSpace(itemId) ? "item" : itemId;
+    }
+
+    private static string FormatAppearanceLayerName(string layerId)
+    {
+        if (string.IsNullOrWhiteSpace(layerId))
+        {
+            return "default";
+        }
+
+        return string.Join(" ", layerId
+            .Split('_', StringSplitOptions.RemoveEmptyEntries)
+            .Where(part => part != "skin" && part != "hair" && part != "outfit" && part != "tool")
+            .Select(part => char.ToUpperInvariant(part[0]) + part[1..]));
     }
 
     private static string FormatQuestName(string questId)
