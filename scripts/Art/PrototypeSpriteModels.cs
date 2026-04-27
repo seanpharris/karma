@@ -84,6 +84,7 @@ public static class PrototypeSpriteCatalog
 {
     public const string CharacterAtlasPath = "res://assets/art/character.png";
     public const string EngineerPlayerAtlasPath = "res://assets/art/sprites/scifi_engineer_player_sheet.png";
+    public const string LayeredPlayerPreviewEightDirectionAtlasPath = "res://assets/art/sprites/player_v2/player_v2_layered_preview_8dir.png";
     public const string EngineerPlayerEightDirectionAtlasPath = "res://assets/art/sprites/scifi_engineer_player_8dir.png";
     public const string ItemAtlasPath = "res://assets/art/sprites/scifi_item_atlas.png";
     public const string UtilityItemAtlasPath = "res://assets/art/sprites/scifi_utility_item_atlas.png";
@@ -221,7 +222,10 @@ public static class PrototypeSpriteCatalog
 
     private static PrototypeSpriteDefinition Player()
     {
-        if (FileAccess.FileExists(EngineerPlayerEightDirectionAtlasPath))
+        var eightDirectionAtlasPath = FileAccess.FileExists(LayeredPlayerPreviewEightDirectionAtlasPath)
+            ? LayeredPlayerPreviewEightDirectionAtlasPath
+            : EngineerPlayerEightDirectionAtlasPath;
+        if (FileAccess.FileExists(eightDirectionAtlasPath))
         {
             return Humanoid(
                 PrototypeSpriteKind.Player,
@@ -230,7 +234,7 @@ public static class PrototypeSpriteCatalog
                 new Color(0.08f, 0.19f, 0.24f),
                 new Color(0.96f, 0.94f, 0.72f),
                 new Rect2(0f, 0f, CharacterSheetLayout.StandardFrameSize, CharacterSheetLayout.StandardFrameSize),
-                EngineerPlayerEightDirectionAtlasPath,
+                eightDirectionAtlasPath,
                 new Vector2(32f, 32f),
                 CharacterSheetLayout.EightDirectionTemplate(Vector2.Zero));
         }

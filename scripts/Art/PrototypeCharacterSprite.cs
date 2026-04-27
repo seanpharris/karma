@@ -260,7 +260,8 @@ public partial class PrototypeCharacterSprite : Node2D
         var texture = AtlasTextureLoader.Load(
             definition.AtlasPath,
             removeDarkBackground: true,
-            forceImageLoad: definition.AtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath);
+            forceImageLoad: definition.AtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
+                            definition.AtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath);
         if (texture is null)
         {
             AddFallback();

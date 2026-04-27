@@ -74,6 +74,7 @@ and the next practical build slices.
 - Proximity communication research now prioritizes player-to-player proximity voice/text first, with NPC speech-to-text/LLM/text-to-speech interactions parked as research/to-do.
 - Server-owned local text chat now exists as the first proximity communication slice: `SendLocalChat` messages are filtered by listener distance, carry distance/volume falloff in interest snapshots, can be sent from gameplay with `/` or `T`, and render in the HUD/developer overlay plus short-lived world chat bubbles.
 - Gemini-generated player v2 references now have an extraction pass: direction-specific front/right/back pose batches are chroma-keyed into transparent `64x64` candidate frames and composited into `assets/art/sprites/generated/player_v2_engineer_8dir_4row_candidate.png` for review. It is not wired into runtime yet because diagonals are placeholder/mirrored and the runtime still expects the existing prototype sheet contract.
+- The runtime-visible player v2 path now starts with reusable layered art instead of one-off character generation: `tools/generate_layered_player_v2.gd` creates base body, skin, hair, outfit, and tool layers under `assets/art/sprites/player_v2/layers/`, composites them into `player_v2_layered_preview_8dir.png`, and the player catalog prefers that composite when present.
 - NPC voice research direction is to keep current walk-up options, then later make interactions feel more organic with contextual greetings/exclamations, optional spoken/freeform player input, bounded LLM responses, subtitles, and spatial NPC voice playback.
 - Generated station locations have inspectable markers and interactable fixtures, but their art is still placeholder greenhouse components and needs proper sign/landmark visuals.
 - Generated NPCs have first-pass station dialogue/quests, but those choices are still broad templates rather than bespoke quest chains.
@@ -112,7 +113,7 @@ and the next practical build slices.
 
 1. **Deepen station quests/dialogue.** Turn broad generated choices into multi-step repair, rumor, theft, apology, bounty, delivery, and mediation tasks.
 2. **Prototype player communication.** Add chat tabs/log polish and server-side chat expiry, then use the audibility/falloff model to prototype fake audio before real player-to-player proximity voice.
-3. **Upgrade player art pipeline.** Clean true diagonal v2 frames and decide whether to wire the 64x64/4-row candidate sheet into runtime or wait for a fuller layered v2 contract.
+3. **Upgrade player art pipeline.** Replace the generated layered mannequin with polished base-body art, add more skin/outfit/hair layers, and later move from the temporary 32x32 preview contract to the fuller 48x48/64x64 layered v2 contract.
 4. **Improve generated structure consequences.** Tune faction-specific rewards/penalties by station role and let stabilized/compromised station state affect local prices and richer quest branches.
 5. **Improve respawn candidate pools.** Prefer safe stations/landmarks and avoid active combat heat, not just death/player positions.
 6. **Improve station presentation.** Replace placeholder station marker art with signs, landmarks, or theme-specific props.
