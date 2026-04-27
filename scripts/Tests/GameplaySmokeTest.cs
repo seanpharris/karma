@@ -351,10 +351,21 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(0, CountImagePixelDifferences(savedPlayerV2Preview, recomposedPlayerV2Preview), "player v2 layer compositor reproduces saved preview stack");
         var lightSkinPlayerV2Preview = playerV2LayerManifest.Compose(lightSkinPlayerV2Appearance);
         ExpectTrue(CountImagePixelDifferences(recomposedPlayerV2Preview, lightSkinPlayerV2Preview) > 0, "player v2 appearance compositor changes output when skin changes");
-        var lightSkinCompositePath = playerV2LayerManifest.ExportAppearanceComposite(lightSkinSelection, "user://karma_test/player_v2/composites");
+        const string testCompositeRoot = "user://karma_test/player_v2/composites";
+        var lightSkinCompositePath = playerV2LayerManifest.ExportAppearanceComposite(lightSkinSelection, testCompositeRoot);
         ExpectTrue(FileAccess.FileExists(lightSkinCompositePath), "player v2 appearance compositor exports selected appearance composite");
         ExpectTrue(lightSkinCompositePath.Contains("skin_light"), "player v2 appearance composite path names selected skin layer");
         ExpectEqual(0, CountImagePixelDifferences(Image.LoadFromFile(lightSkinCompositePath), lightSkinPlayerV2Preview), "player v2 exported appearance matches composed image");
+        var defaultPlayerDefinition = PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Player);
+        var lightSkinPlayerDefinition = PrototypeCharacterSprite.WithAtlasPath(defaultPlayerDefinition, lightSkinCompositePath);
+        var exportedByCharacterSprite = PrototypeCharacterSprite.ExportPlayerAppearanceAtlas(lightSkinSelection, testCompositeRoot);
+        ExpectEqual(lightSkinCompositePath, exportedByCharacterSprite, "player character sprite resolves selected appearance atlas paths");
+        ExpectEqual(lightSkinCompositePath, lightSkinPlayerDefinition.AtlasPath, "player character sprite can target an appearance composite atlas");
+        ExpectEqual(defaultPlayerDefinition.Animations.Count, lightSkinPlayerDefinition.Animations.Count, "appearance composite atlas keeps player animation contract");
+        ExpectTrue(
+            PrototypeCharacterSprite.CreateSpriteFrames(AtlasTextureLoader.Load(lightSkinCompositePath, forceImageLoad: true), lightSkinPlayerDefinition)
+                .HasAnimation(PrototypeCharacterSprite.WalkRightAnimation),
+            "appearance composite atlas creates walk animations for runtime sprites");
         var expectedPlayerAtlasPath = FileAccess.FileExists(PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath)
             ? PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
             : FileAccess.FileExists(PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath)

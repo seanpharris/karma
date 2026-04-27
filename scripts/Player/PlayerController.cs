@@ -1,6 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 using System.Linq;
+using Karma.Art;
 using Karma.Core;
 using Karma.Data;
 using Karma.Net;
@@ -28,11 +29,13 @@ public partial class PlayerController : CharacterBody2D
     private PrototypeServerSession _serverSession;
     private HudController _hud;
     private Camera2D _camera;
+    private PrototypeCharacterSprite _characterSprite;
     private TilePosition? _lastSentTile;
     private Vector2 _predictedPosition;
     private Vector2I _lastFacing = Vector2I.Down;
     private float _stamina;
     private bool _isExhausted;
+    private PlayerAppearanceSelection _lastAppliedAppearance = null;
 
     public override void _Ready()
     {
@@ -40,6 +43,7 @@ public partial class PlayerController : CharacterBody2D
         _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         _hud = GetNodeOrNull<HudController>("/root/Main/Hud");
         _camera = GetNodeOrNull<Camera2D>("Camera2D");
+        _characterSprite = GetNodeOrNull<PrototypeCharacterSprite>("PlayerSprite");
         _stamina = MaxStamina;
         UpdateStaminaHud();
         _predictedPosition = GlobalPosition;
@@ -392,6 +396,8 @@ public partial class PlayerController : CharacterBody2D
             return;
         }
 
+        ApplyAppearance(player.Appearance);
+
         var authoritativePosition = CalculateWorldPosition(player.TileX, player.TileY);
         if (!ShouldSnapToAuthoritativePosition(GlobalPosition, authoritativePosition, _predictedPosition))
         {
@@ -403,6 +409,17 @@ public partial class PlayerController : CharacterBody2D
         Velocity = Vector2.Zero;
         _lastSentTile = new TilePosition(player.TileX, player.TileY);
         TopDownDepth.Apply(this);
+    }
+
+    private void ApplyAppearance(PlayerAppearanceSelection appearance)
+    {
+        if (_characterSprite is null || _lastAppliedAppearance == appearance)
+        {
+            return;
+        }
+
+        _characterSprite.ApplyPlayerAppearanceSelection(appearance);
+        _lastAppliedAppearance = appearance;
     }
 
     private static TilePosition ToTilePosition(Vector2 position)

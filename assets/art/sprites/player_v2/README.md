@@ -51,7 +51,7 @@ Run from the repo root:
 
 - Replace the generated mannequin pixels with polished true base-body art.
 - Add alternate skin palettes, hair, outfits, and silhouettes.
-- Wire player/NPC rendering to resolve per-snapshot appearance selections to
-  cached composites instead of relying on one saved preview file.
+- Broaden per-snapshot rendering beyond the local player and prototype peer to
+  dynamically spawned player avatars once multiplayer stand-ins are expanded.
 - Later upgrade to 48x48 or 64x64 frames once the runtime/compositor contract is
   ready.

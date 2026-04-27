@@ -1,4 +1,5 @@
 using Godot;
+using Karma.Data;
 using Karma.Util;
 
 namespace Karma.Art;
@@ -35,12 +36,14 @@ public partial class PrototypeCharacterSprite : Node2D
     public const string WalkDownLeftAnimation = "walk-down-left";
 
     [Export] public PrototypeSpriteKind Kind { get; set; } = PrototypeSpriteKind.Player;
+    [Export] public string AtlasPathOverride { get; set; } = string.Empty;
     [Export] public bool DrawShadow { get; set; } = true;
     [Export] public bool PreferAtlasArt { get; set; } = true;
 
     private AnimatedSprite2D _sprite;
     private PrototypeSprite _fallback;
     private PrototypeSpriteKind _loadedKind;
+    private string _loadedAtlasPathOverride = string.Empty;
     private CharacterFacingDirection _lastFacing = CharacterFacingDirection.Down;
 
     public override void _Ready()
@@ -216,7 +219,53 @@ public partial class PrototypeCharacterSprite : Node2D
 
     public void Rebuild()
     {
+        _loadedAtlasPathOverride = "__force_rebuild__";
         BuildVisual();
+    }
+
+    public void SetAtlasPathOverride(string atlasPath)
+    {
+        var normalized = atlasPath?.Trim() ?? string.Empty;
+        if (AtlasPathOverride == normalized)
+        {
+            return;
+        }
+
+        AtlasPathOverride = normalized;
+        Rebuild();
+    }
+
+    public string ApplyPlayerAppearanceSelection(
+        PlayerAppearanceSelection selection,
+        string cacheRoot = "user://player_v2/composites")
+    {
+        Kind = PrototypeSpriteKind.Player;
+        var atlasPath = ExportPlayerAppearanceAtlas(selection, cacheRoot);
+        SetAtlasPathOverride(atlasPath);
+        return atlasPath;
+    }
+
+    public static string ExportPlayerAppearanceAtlas(
+        PlayerAppearanceSelection selection,
+        string cacheRoot = "user://player_v2/composites")
+    {
+        return PlayerV2LayerManifest
+            .LoadDefault()
+            .ExportAppearanceComposite(selection, cacheRoot);
+    }
+
+    public static PrototypeSpriteDefinition WithAtlasPath(PrototypeSpriteDefinition definition, string atlasPath)
+    {
+        if (string.IsNullOrWhiteSpace(atlasPath))
+        {
+            return definition;
+        }
+
+        return definition with
+        {
+            AtlasPath = atlasPath,
+            HasAtlasRegion = true
+        };
     }
 
     private static void AddLoopingAnimation(SpriteFrames frames, PrototypeSpriteAnimation animation, Texture2D texture)
@@ -238,18 +287,22 @@ public partial class PrototypeCharacterSprite : Node2D
 
     private void BuildVisual()
     {
-        if (_loadedKind == Kind && (_sprite is not null || _fallback is not null))
+        var normalizedAtlasOverride = AtlasPathOverride?.Trim() ?? string.Empty;
+        if (_loadedKind == Kind &&
+            _loadedAtlasPathOverride == normalizedAtlasOverride &&
+            (_sprite is not null || _fallback is not null))
         {
             return;
         }
 
         _loadedKind = Kind;
+        _loadedAtlasPathOverride = normalizedAtlasOverride;
         _sprite?.QueueFree();
         _fallback?.QueueFree();
         _sprite = null;
         _fallback = null;
 
-        var definition = PrototypeSpriteCatalog.Get(Kind);
+        var definition = WithAtlasPath(PrototypeSpriteCatalog.Get(Kind), normalizedAtlasOverride);
         if (!PreferAtlasArt || !definition.HasAtlasRegion)
         {
             AddFallback();
@@ -261,7 +314,8 @@ public partial class PrototypeCharacterSprite : Node2D
             definition.AtlasPath,
             removeDarkBackground: true,
             forceImageLoad: definition.AtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
-                            definition.AtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath);
+                            definition.AtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath ||
+                            !string.IsNullOrWhiteSpace(normalizedAtlasOverride));
         if (texture is null)
         {
             AddFallback();

@@ -1,6 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 using System.Linq;
+using Karma.Art;
 using Karma.Core;
 using Karma.Data;
 using Karma.Net;
@@ -18,10 +19,12 @@ public partial class PeerStandInController : Area2D
     private GameState _gameState;
     private PrototypeServerSession _serverSession;
     private WorldHealthBar _healthBar;
+    private PrototypeCharacterSprite _characterSprite;
     private int _peerHealth = 100;
     private int _peerMaxHealth = 100;
     private IReadOnlyList<string> _peerStatusEffects = System.Array.Empty<string>();
     private string _peerDuelState = "Duel: none";
+    private PlayerAppearanceSelection _lastAppliedAppearance = null;
 
     public override void _Ready()
     {
@@ -30,6 +33,7 @@ public partial class PeerStandInController : Area2D
         _hud = GetNodeOrNull<HudController>("/root/Main/Hud");
         _gameState = GetNode<GameState>("/root/GameState");
         _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
+        _characterSprite = GetNodeOrNull<PrototypeCharacterSprite>("PeerSprite");
         _gameState.SetPlayerPosition("peer_stand_in", ToTilePosition(GlobalPosition));
         TopDownDepth.Apply(this);
         AddHealthBar();
@@ -399,6 +403,7 @@ public partial class PeerStandInController : Area2D
         var peer = snapshot?.Players.FirstOrDefault(player => player.Id == "peer_stand_in");
         if (peer is not null)
         {
+            ApplyAppearance(peer.Appearance);
             GlobalPosition = PlayerController.CalculateWorldPosition(peer.TileX, peer.TileY);
             TopDownDepth.Apply(this);
             _peerHealth = peer.Health;
@@ -412,6 +417,17 @@ public partial class PeerStandInController : Area2D
                 ShowPrompt();
             }
         }
+    }
+
+    private void ApplyAppearance(PlayerAppearanceSelection appearance)
+    {
+        if (_characterSprite is null || _lastAppliedAppearance == appearance)
+        {
+            return;
+        }
+
+        _characterSprite.ApplyPlayerAppearanceSelection(appearance);
+        _lastAppliedAppearance = appearance;
     }
 
     private static string FormatDuelState(ClientInterestSnapshot snapshot)
