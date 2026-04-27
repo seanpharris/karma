@@ -24,7 +24,11 @@ public sealed class PlayerState
     public bool IsAlive { get; private set; } = true;
     public int MaxHealth { get; } = 100;
     public int Health { get; private set; } = 100;
+    public int Scrip { get; private set; }
     public TilePosition Position { get; private set; } = TilePosition.Origin;
+    public PlayerAppearanceSelection Appearance { get; private set; } = PlayerAppearanceSelection.Default;
+    public string TeamId { get; private set; } = string.Empty;
+    public bool HasTeam => !string.IsNullOrWhiteSpace(TeamId);
     public IReadOnlyList<GameItem> Inventory => _inventory;
     public IReadOnlyDictionary<EquipmentSlot, GameItem> Equipment => _equipment;
 
@@ -41,6 +45,17 @@ public sealed class PlayerState
         Karma.Reset();
         IsAlive = true;
         Health = MaxHealth;
+        ClearTeamStatus();
+    }
+
+    public void SetTeam(string teamId)
+    {
+        TeamId = teamId.Trim();
+    }
+
+    public void ClearTeamStatus()
+    {
+        TeamId = string.Empty;
     }
 
     public void SetPosition(TilePosition position)
@@ -48,9 +63,35 @@ public sealed class PlayerState
         Position = position;
     }
 
+    public void SetAppearance(PlayerAppearanceSelection appearance)
+    {
+        Appearance = appearance.Normalized();
+    }
+
     public void AddItem(GameItem item)
     {
         _inventory.Add(item);
+    }
+
+    public void AddScrip(int amount)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        Scrip += amount;
+    }
+
+    public bool SpendScrip(int amount)
+    {
+        if (amount <= 0 || Scrip < amount)
+        {
+            return false;
+        }
+
+        Scrip -= amount;
+        return true;
     }
 
     public bool HasItem(string itemId)
@@ -120,6 +161,50 @@ public sealed class PlayerState
         }
 
         Health = System.Math.Min(MaxHealth, Health + amount);
+    }
+}
+
+public sealed record PlayerAppearanceSelection(
+    string BaseLayerId,
+    string SkinLayerId,
+    string HairLayerId,
+    string OutfitLayerId,
+    string HeldToolLayerId)
+{
+    public static PlayerAppearanceSelection Default { get; } = new(
+        "base_body",
+        "skin_medium",
+        "hair_short_dark",
+        "outfit_engineer",
+        "tool_multitool");
+
+    public IReadOnlyDictionary<string, string> ToLayerIdsBySlot()
+    {
+        return new Dictionary<string, string>
+        {
+            ["base"] = BaseLayerId,
+            ["skin"] = SkinLayerId,
+            ["hair"] = HairLayerId,
+            ["outfit"] = OutfitLayerId,
+            ["held_tool"] = HeldToolLayerId
+        };
+    }
+
+    public PlayerAppearanceSelection Normalized()
+    {
+        return new PlayerAppearanceSelection(
+            Normalize(BaseLayerId, Default.BaseLayerId),
+            Normalize(SkinLayerId, Default.SkinLayerId),
+            Normalize(HairLayerId, Default.HairLayerId),
+            Normalize(OutfitLayerId, Default.OutfitLayerId),
+            Normalize(HeldToolLayerId, Default.HeldToolLayerId));
+    }
+
+    private static string Normalize(string layerId, string fallback)
+    {
+        return string.IsNullOrWhiteSpace(layerId)
+            ? fallback
+            : layerId.Trim();
     }
 }
 

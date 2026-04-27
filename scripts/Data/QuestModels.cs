@@ -17,7 +17,8 @@ public sealed record QuestDefinition(
     string GiverNpcId,
     string Description,
     IReadOnlyCollection<string> RequiredItemIds,
-    string CompletionActionId);
+    string CompletionActionId,
+    int ScripReward = 0);
 
 public sealed class QuestState
 {
@@ -72,6 +73,14 @@ public sealed class QuestLedger
         return _quests[questId];
     }
 
+    public void AddDefinition(QuestDefinition definition)
+    {
+        if (!_quests.ContainsKey(definition.Id))
+        {
+            _quests[definition.Id] = new QuestState(definition);
+        }
+    }
+
     public string FormatActiveSummary()
     {
         var active = _quests.Values
@@ -86,7 +95,7 @@ public sealed class QuestLedger
     {
         return _quests.Values
             .OrderBy(quest => quest.Definition.Id)
-            .Select(quest => new QuestSnapshot(quest.Definition.Id, quest.Status))
+            .Select(quest => new QuestSnapshot(quest.Definition.Id, quest.Status, quest.Definition.ScripReward))
             .ToArray();
     }
 
@@ -109,7 +118,8 @@ public static class StarterQuests
         StarterNpcs.Mara.Id,
         "Mara needs help repairing filters before the clinic air gets dramatic.",
         new[] { StarterItems.RepairKitId },
-        Core.PrototypeActions.HelpMaraId);
+        Core.PrototypeActions.HelpMaraId,
+        ScripReward: 12);
 
     public static IReadOnlyList<QuestDefinition> All { get; } = new[]
     {

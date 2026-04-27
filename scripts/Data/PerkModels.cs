@@ -19,21 +19,29 @@ public sealed record KarmaPerk(
 
 public static class PerkCatalog
 {
+    public const string TrustedDiscountId = "trusted_discount";
+    public const string ShiftyPricesId = "shifty_prices";
+    public const string CalmingPresenceId = "calming_presence";
+    public const string BeaconAuraId = "beacon_aura";
+    public const string RumorcraftId = "rumorcraft";
+    public const string RenegadeNerveId = "renegade_nerve";
+    public const string DreadReputationId = "dread_reputation";
+
     private static readonly KarmaPerk[] AscensionPerks =
     {
-        new("trusted_discount", "Trusted Discount", PerkPath.Ascension, 10, "Helpful NPCs offer small discounts."),
-        new("calming_presence", "Calming Presence", PerkPath.Ascension, 20, "Angry NPCs are easier to calm."),
-        new("beacon_aura", "Beacon Aura", PerkPath.Ascension, 35, "Nearby allies recover confidence faster."),
+        new(TrustedDiscountId, "Trusted Discount", PerkPath.Ascension, 10, "Helpful NPCs offer small discounts."),
+        new(CalmingPresenceId, "Calming Presence", PerkPath.Ascension, 20, "Negative NPC reactions are softened."),
+        new(BeaconAuraId, "Beacon Aura", PerkPath.Ascension, 35, "Nearby allies recover confidence faster, and your stamina recovers faster."),
         new("paragon_favor", "Paragon Favor", PerkPath.Ascension, 50, "Town allies may defend you."),
         new("exalted_grace", "Exalted Grace", PerkPath.Ascension, 100, "One severe social consequence can be softened.")
     };
 
     private static readonly KarmaPerk[] DescensionPerks =
     {
-        new("shifty_prices", "Shifty Prices", PerkPath.Descension, 10, "Shady traders offer better deals."),
-        new("rumorcraft", "Rumorcraft", PerkPath.Descension, 20, "Rumors spread farther when you start them."),
-        new("renegade_nerve", "Renegade Nerve", PerkPath.Descension, 35, "Intimidation attempts become more reliable."),
-        new("dread_reputation", "Dread Reputation", PerkPath.Descension, 50, "Weaker NPCs may comply out of fear."),
+        new(ShiftyPricesId, "Shifty Prices", PerkPath.Descension, 10, "Shady traders offer better deals."),
+        new(RumorcraftId, "Rumorcraft", PerkPath.Descension, 20, "Rumors spread globally when you expose them."),
+        new(RenegadeNerveId, "Renegade Nerve", PerkPath.Descension, 35, "Intimidation attempts become more reliable, and sprinting costs less stamina."),
+        new(DreadReputationId, "Dread Reputation", PerkPath.Descension, 50, "Fear softens negative NPC reactions to harmful, violent, or deceptive actions."),
         new("abyssal_mark", "Abyssal Mark", PerkPath.Descension, 100, "Criminal factions may protect you.")
     };
 

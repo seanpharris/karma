@@ -18,6 +18,11 @@ __pycache__/
 *.tmp
 *.log
 debug/*.json
+debug/*.png
+debug/*.txt
+debug/**/*.json
+debug/**/*.png
+debug/**/*.txt
 
 # Sprite pipeline generated assets
 input_raw/*

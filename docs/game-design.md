@@ -13,10 +13,38 @@ combination of all of those.
 3. Up to 4 players enter the world.
 4. Players complete tasks, talk to NPCs, fight, trade, prank, steal, help, and betray.
 5. Actions cause the player to Ascend or Descend.
-6. Extreme karma unlocks perks, status, and social power.
-7. Death causes a Karma Break and resets the player's path.
+6. Players earn and spend scrip for tools, cosmetics, services, trades, and bribes.
+7. Extreme karma unlocks perks, status, and social power.
+8. Death causes a Karma Break and resets the player's path.
+
+## World and NPC Generation
+
+World generation should be imaginative but still mechanically useful. The server
+starts from **social stations**: places that create decisions instead of just
+scenery. Examples include clinics, markets, repair yards, rumor boards, saloons,
+restricted sheds, oddity yards, duel rings, farms, black markets, apology engines,
+broadcast towers, war memorials, and witness courts.
+
+Each generated location carries:
+
+- a role, such as care, trade, repair, rumor, combat, crime, or redemption;
+- a local karma hook, such as repair vs sabotage, gift vs theft, expose vs bury,
+  confession vs fake remorse, or clean duel vs cheap shot;
+- a suggested faction that should care about what happens there.
+
+NPCs are then derived from those stations. Instead of random decorative NPCs,
+each generated NPC gets a role, faction, need, secret, likes, dislikes, and a
+placement tied to the station that created them. This keeps environment generation
+and NPC generation connected: the map produces story machines, and the NPCs make
+those machines socially legible.
 
 ## First Game Mode: Match
+
+Players begin each match at random spawn tiles chosen by the server with a soft
+minimum separation so the opening does not immediately collapse into one pile.
+Initial teams are not part of the default match start. Temporary in-game team or
+posse status can be layered on later, but a Karma Break/death clears that status
+so respawn is a true social reset.
 
 The first shipped game type should be a timed match. Players join a generated
 world and compete for 30 minutes. At the end of the timer, the current Saint
@@ -25,14 +53,73 @@ highest karma and current Scourge lowest karma are both match winners.
 This creates two viable races in the same server: Ascend hard enough to become
 the Saint, or Descend hard enough to become the Scourge. Karma Breaks still
 matter because death resets a player's path status during the match.
+When a match ends, the locked Saint and Scourge winners receive server-owned
+scrip payouts in addition to their leaderboard status.
+
+Scrip is the prototype currency. It is separate from karma: karma is the
+Ascend/Descend match score and social identity, while scrip is spendable money
+for tools, cosmetics, services, bribes, and player trades.
+Quests can pay server-owned scrip rewards in addition to their karma and
+relationship consequences.
+The first prototype shop is Dallen's stall, which sells starter objects through
+server-validated offers. Nearby vendor offers are exposed through interest
+snapshots, so distant shops remain hidden until the player is in range. Dallen
+now renders from the server NPC snapshot as the first lightweight vendor body,
+and that body can browse visible offers with `-` and `=` or buy the selected
+offer with `9`.
+Shop prices are calculated by the server for each player, so economy perks such
+as Trusted Discount and Shifty Prices change both the displayed offer price and
+the authoritative wallet debit.
+Tools can have server-owned effects instead of only living in inventory. The
+first functional tool is the repair kit, which can heal a nearby player and is
+consumed when used.
+Consumables use the same server-owned item path: ration packs now restore a
+small amount of health and are consumed on use, while stronger field tools still
+matter for larger repairs or helping another player.
 
 Prototype matches stay small, but the production large-world target is
 `1000 x 1000` tiles at `16px` logical tile scale. Large worlds must be treated
 as streamed/chunked spaces, not fully simulated or rendered to every client.
+The default chunk size is `32 x 32` tiles, giving the large target roughly
+`32 x 32` chunks for streaming and interest management.
+The map chunk stream radius is derived from server visibility settings, letting
+prototype and large-world profiles tune terrain bandwidth differently.
+Client interest snapshots carry nearby map chunk data, so terrain streaming can
+follow the same server-owned visibility path as NPCs, items, and players.
+Chunks carry stable keys and deterministic revisions, which lets clients keep
+cached terrain when the visible chunk has not changed.
+Interest snapshots also carry a compact sync hint so future network clients can
+show/debug whether they received a full refresh or an incremental update.
+The local prototype client now applies snapshots through a cache that tracks
+visible chunk revisions, matching the shape a real network client will need.
+Players can use the mouse wheel to zoom the camera between a close character
+view and a wider scouting view. The zoom range is clamped so it improves local
+awareness without turning into a whole-map reveal.
+The server has an in-process network protocol adapter with explicit envelopes
+for joins, intents, snapshot requests, pings, and errors, ready to sit behind a
+real transport later. Those envelopes can be serialized as readable JSON for
+debugging, replay, and future socket messages.
+The current prototype renderer draws those server-provided chunks with
+placeholder colors until the tileset atlas mapping is ready.
+Renderer state is chunk-cached, so visible chunks can be added, updated, and
+evicted as players move through larger worlds.
+Atlas rendering is opt-in per logical tile id. Until exact source regions are
+mapped from the sheet, placeholder colors remain the readable fallback.
+
+Calming Presence softens negative NPC relationship reactions through goodwill,
+while Dread Reputation softens some harmful, violent, deceptive, or humiliating
+NPC reactions through fear.
 
 Match time is server-owned and deterministic. The server advances elapsed match
 seconds, emits a `match_finished` event when time expires, and locks the Saint
 and Scourge winners from the leaderboard at that moment.
+After winners are locked, score-changing intents are rejected while movement can
+continue for post-match wandering, debugging, and result review.
+
+The local prototype advances the server match timer during play and shows the
+server snapshot's match summary in the HUD.
+During a running match, the match summary shows the current Saint and Scourge
+leaders so players can chase either victory path before the winners are locked.
 
 ## Procedural World Data
 
@@ -48,6 +135,11 @@ World generation should produce structured data first:
 
 LLM-generated content should enter as proposed structured data, then the server
 validates it before it becomes live state.
+Model access is routed through a content generation adapter. During prototyping
+that adapter can be deterministic or Codex-backed; later it can point at a
+smaller local model as long as it returns the same proposal schema.
+Provider text is parsed as proposal JSON and rejected if malformed or invalid,
+so model swaps should affect generation quality rather than core game rules.
 
 Tile art should map onto stable logical ids such as `clinic_floor`,
 `wall_metal`, `door_airlock`, and `duel_ring_floor`. This lets us keep
@@ -57,6 +149,58 @@ placeholder visuals for real tileset sheets later.
 Theme art is routed through an art registry. Each logical tile id has a
 placeholder color now and an atlas path/coordinate reserved for future sprites,
 starting with `assets/art/tilesets/scifi_station_atlas.png`.
+The current prototype uses mapped regions from that sci-fi atlas for core
+terrain and structure ids while keeping placeholder colors available for future
+unmapped tile ids.
+Actor sprites use the same approach: player, Mara, and peer stand-in have
+source regions reserved in `assets/art/sprites/scifi_character_atlas.png`, with
+procedural fallbacks until that sheet is present locally.
+Core item world models use `assets/art/sprites/scifi_item_atlas.png` for
+whoopie cushion, deflated balloon, repair kit, practice stick, work vest, and
+scrip when that item sheet is available.
+Utility item world models use `assets/art/sprites/scifi_utility_item_atlas.png`
+for ration pack, data chip, filter core, contraband package, apology flower,
+and portable terminal.
+Weapon world models use `assets/art/sprites/scifi_weapon_atlas.png` for the
+starter sci-fi weapon set, from non-lethal stun baton up through heavy weapons
+and thrown explosives.
+Tool world models use `assets/art/sprites/scifi_tool_atlas.png` for the wider
+utility set, including repair, medical, hacking, scanning, mobility, and
+resource tools.
+Large structure models are catalog-first. The greenhouse sheet lives at
+`assets/art/structures/scifi_greenhouse_atlas.png` and maps greenhouse variants
+and modular parts without placing them into the active prototype scene yet.
+The prototype server seeds greenhouse structures into local interest snapshots;
+`WorldRoot` renders them from server-owned structure state with atlas art when
+available and a procedural fallback while the sheet is absent. Structures carry
+server-owned integrity. Inspecting records a world event, repairing with a
+multi-tool or welding torch Ascends, restores integrity, pays a small repair
+bounty, and improves Civic Repair Guild reputation. Sabotaging Descends,
+damages integrity, and hurts Civic Repair Guild reputation.
+
+The prototype item set covers the current loops: oddities (`whoopie_cushion`,
+`deflated_balloon`, `apology_flower`), support tools (`repair_kit`,
+`ration_pack`, `filter_core`), equipment (`practice_stick`, `work_vest`), and
+interactible objects (`data_chip`, `contraband_package`, `portable_terminal`).
+The sci-fi weapon expansion adds `stun_baton`, `electro_pistol`, `smg_11`,
+`shotgun_mk1`, `rifle_27`, `sniper_x9`, `plasma_cutter`, `flame_thrower`,
+`grenade_launcher`, `railgun`, `impact_mine`, and `emp_grenade`.
+The sci-fi tool expansion adds `multi_tool`, `welding_torch`, `medi_patch`,
+`lockpick_set`, `flashlight`, `portable_shield`, `hacking_device`, `scanner`,
+`grappling_hook`, `chem_injector`, `power_cell`, `bolt_cutters`, and
+`magnetic_grabber`.
+The runtime catalog exposes all starter items through `StarterItems.All`; the
+prototype scene auto-spawns any cataloged item that is not already hand-placed
+into a small pickup/art showcase near the starter area.
+
+## Karma Perks
+
+Karma perks should be mechanical identity, not just titles. Ascension perks make
+helpful/social play easier to sustain; Descension perks make darker play more
+powerful but more dangerous. Current wired examples include discounts,
+relationship-damage softening, stamina modifiers, Dread Reputation reaction
+softening, and Rumorcraft: once unlocked on the Descension path, exposed rumors
+become global server-owned world events instead of only local gossip.
 
 ## NPC Relationships
 
@@ -114,13 +258,17 @@ the seed of trades, theft, bait, clutter, and emergent jokes.
 
 Player inventories are part of the social sandbox. Giving an item, stealing a
 satchel item, and returning it should move real server-owned objects, not only
-change karma text.
+change karma text. Scrip transfers follow the same server-owned social rule:
+gifting money Ascends, while stealing money Descends and moves the actual
+currency balance.
 
 A Karma Break drops loose inventory into the world as recoverable objects.
 Players keep their body and respawn, but death can scatter props, gifts, stolen
 goods, and jokes into the shared space.
 Picking up another player's Karma Break drop is allowed, but it is remembered as
-claiming someone else's scattered goods and should Descend the picker.
+claiming someone else's scattered goods and Descends the picker. Returning that
+specific drop to its owner is recognized as a restorative gift and Ascends the
+returning player.
 
 ## PvP
 
@@ -141,12 +289,27 @@ outside-duel aggression.
 Prototype controls let the local player request a duel from the stand-in, then
 let the stand-in accept it. This keeps consent explicit while still making the
 loop quick to test in one running client.
+Near the stand-in, the prototype also exposes quick keys for combat/tool loops:
+`Z` equips the practice stick, `X` equips the work vest, `C` places the first
+loose inventory item, `R` uses a repair kit on the stand-in, `7` gifts 5 scrip,
+and `9` steals 3 scrip. `T` uses a repair kit on the local player. `8` lets the
+stand-in attack the local player so the local health bar, cooldowns, and
+duel-strike feedback can be tested in one client.
+Movement uses WASD, and holding left Shift sprints at a modest speed boost for
+faster prototype traversal. Sprinting drains stamina while held and stamina
+recovers when the player stops sprinting. Empty stamina makes the player winded;
+sprint resumes only after stamina recovers to a small buffer.
+Some karma perks affect traversal: Beacon Aura improves stamina recovery, while
+Renegade Nerve reduces sprint stamina cost.
+Calming Presence softens negative NPC relationship reactions, giving high-karma
+players a little more room to recover from awkward social mistakes.
 
 ## Prototype HUD
 
 The HUD is intentionally debug-forward for now. It shows local karma, inventory,
 leaderboard standing, perks, relationships, factions, quests, combat,
-entanglements, duels, recent rumors, and the local server interest snapshot.
+entanglements, duels, sprint stamina, recent rumors, and the local server
+interest snapshot.
 The sync line includes nearby server-approved dialogue choices and visible quest
 state so we can confirm the client is rendering from authoritative state instead
 of trusting scene-only assumptions.

@@ -5,12 +5,14 @@ using Karma.Core;
 using Karma.Data;
 using Karma.Net;
 using Karma.UI;
+using Karma.World;
 
 namespace Karma.Npc;
 
 public partial class NpcController : Area2D
 {
     private bool _playerNearby;
+    private int _selectedOfferIndex;
     private readonly List<string> _choiceIds = new();
     private HudController _hud;
     private PrototypeServerSession _serverSession;
@@ -21,6 +23,7 @@ public partial class NpcController : Area2D
         BodyExited += OnBodyExited;
         _hud = GetNodeOrNull<HudController>("/root/Main/Hud");
         _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
+        TopDownDepth.Apply(this);
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -47,7 +50,19 @@ public partial class NpcController : Area2D
         {
             ExposeMaraEntanglement();
         }
+        else if (key.Keycode == Key.Minus)
+        {
+            CycleShopOffer(-1);
+        }
+        else if (key.Keycode == Key.Equal)
+        {
+            CycleShopOffer(1);
+        }
         else if (key.Keycode == Key.Key9)
+        {
+            PurchaseSelectedOffer();
+        }
+        else if (key.Keycode == Key.Key0)
         {
             _serverSession?.SendLocal(
                 IntentType.KarmaBreak,
@@ -123,6 +138,17 @@ public partial class NpcController : Area2D
         var quest = gameState.Quests.Get(StarterQuests.MaraClinicFiltersId);
         if (_serverSession is null)
         {
+            return;
+        }
+
+        if (quest.Status == QuestStatus.Completed)
+        {
+            _hud?.ShowPrompt(FormatQuestPromptLine(
+                quest.Status,
+                quest.Definition.Title,
+                FormatRequiredItems(quest.Definition.RequiredItemIds),
+                HasRequiredItems(gameState, quest),
+                quest.Definition.ScripReward));
             return;
         }
 
@@ -203,6 +229,49 @@ public partial class NpcController : Area2D
         ShowPromptFromSnapshot();
     }
 
+    private void CycleShopOffer(int direction)
+    {
+        var offers = _serverSession?.LastLocalSnapshot?.ShopOffers;
+        if (offers is null || offers.Count == 0)
+        {
+            _hud?.ShowPrompt("No nearby shop offers.");
+            return;
+        }
+
+        _selectedOfferIndex = WrapIndex(_selectedOfferIndex + direction, offers.Count);
+        ShowPromptFromSnapshot();
+    }
+
+    private void PurchaseSelectedOffer()
+    {
+        if (_serverSession is null)
+        {
+            return;
+        }
+
+        var offers = _serverSession.LastLocalSnapshot.ShopOffers;
+        if (offers.Count > 0)
+        {
+            _selectedOfferIndex = WrapIndex(_selectedOfferIndex, offers.Count);
+        }
+
+        var offer = offers.ElementAtOrDefault(_selectedOfferIndex);
+        if (offer is null)
+        {
+            _hud?.ShowPrompt("No nearby shop offers.");
+            return;
+        }
+
+        var result = _serverSession.PurchaseOffer(offer.OfferId);
+        if (!result.WasAccepted)
+        {
+            _hud?.ShowPrompt(result.RejectionReason);
+            return;
+        }
+
+        ShowPromptFromSnapshot();
+    }
+
     private void ShowPromptFromSnapshot()
     {
         _choiceIds.Clear();
@@ -213,6 +282,8 @@ public partial class NpcController : Area2D
             "Mara Venn needs clinic filters fixed.",
             string.Empty
         };
+        var gameState = GetNode<GameState>("/root/GameState");
+        var clinicQuest = gameState.Quests.Get(StarterQuests.MaraClinicFiltersId);
 
         if (dialogue is null)
         {
@@ -227,11 +298,68 @@ public partial class NpcController : Area2D
             }
         }
 
-        lines.Add("6 - Start/complete Clinic Filters quest");
+        lines.Add(FormatQuestPromptLine(
+            clinicQuest.Status,
+            clinicQuest.Definition.Title,
+            FormatRequiredItems(clinicQuest.Definition.RequiredItemIds),
+            HasRequiredItems(gameState, clinicQuest),
+            clinicQuest.Definition.ScripReward));
         lines.Add("7 - Start a secret entanglement");
         lines.Add("8 - Expose the secret entanglement");
-        lines.Add("9 - Test Karma Break");
+        var offers = _serverSession?.LastLocalSnapshot?.ShopOffers ?? System.Array.Empty<ShopOfferSnapshot>();
+        if (offers.Count > 0)
+        {
+            _selectedOfferIndex = WrapIndex(_selectedOfferIndex, offers.Count);
+            var offer = offers[_selectedOfferIndex];
+            lines.Add(ShopText.FormatOfferLine(offer));
+            lines.Add($"-/= - Browse shop ({_selectedOfferIndex + 1}/{offers.Count})");
+        }
+
+        lines.Add("0 - Test Karma Break");
         _hud?.ShowPrompt(string.Join("\n", lines));
+    }
+
+    private static int WrapIndex(int index, int count)
+    {
+        if (count <= 0)
+        {
+            return 0;
+        }
+
+        return ((index % count) + count) % count;
+    }
+
+    public static string FormatQuestPromptLine(
+        QuestStatus status,
+        string questTitle,
+        string requiredItems,
+        bool hasRequiredItems,
+        int scripReward)
+    {
+        return status switch
+        {
+            QuestStatus.Available => $"6 - Start {questTitle} ({requiredItems}, reward {scripReward} scrip)",
+            QuestStatus.Active when hasRequiredItems => $"6 - Complete {questTitle} ({requiredItems}, reward {scripReward} scrip)",
+            QuestStatus.Active => $"6 - Need {requiredItems} for {questTitle} (reward {scripReward} scrip)",
+            QuestStatus.Completed => $"6 - {questTitle} complete",
+            QuestStatus.Failed => $"6 - {questTitle} failed",
+            _ => $"6 - {questTitle}"
+        };
+    }
+
+    private static string FormatRequiredItems(IReadOnlyCollection<string> itemIds)
+    {
+        if (itemIds.Count == 0)
+        {
+            return "no items required";
+        }
+
+        return string.Join("+", itemIds.Select(id => StarterItems.GetById(id).Name));
+    }
+
+    private static bool HasRequiredItems(GameState gameState, QuestState quest)
+    {
+        return quest.Definition.RequiredItemIds.All(itemId => gameState.HasItem(itemId));
     }
 
     private static int KeyToChoiceIndex(Key key)

@@ -21,6 +21,7 @@ public partial class PickupObject : Area2D
         _hud = GetNodeOrNull<HudController>("/root/Main/Hud");
         _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         EntityId = string.IsNullOrWhiteSpace(EntityId) ? Name.ToString() : EntityId;
+        TopDownDepth.Apply(this, TopDownDepth.ItemOffsetZ);
 
         if (_serverSession is not null && StarterItems.TryGetById(ItemId, out var item))
         {
@@ -65,7 +66,7 @@ public partial class PickupObject : Area2D
 
         _playerNearby = true;
         var item = StarterItems.GetById(ItemId);
-        _hud?.ShowPrompt($"{item.Name}\n\n{item.Description}\n\nPress E to pick it up.");
+        _hud?.ShowPrompt(ItemText.FormatPickupPrompt(item));
     }
 
     private void OnBodyExited(Node2D body)

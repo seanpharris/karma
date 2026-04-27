@@ -24,6 +24,7 @@ Good LLM uses:
 Server-owned systems:
 
 - Karma score
+- Scrip wallets and currency transfers
 - Match timer and match winners
 - Inventory
 - Combat
@@ -41,6 +42,11 @@ LLM proposal validation rules:
 - generated text is bounded
 - accepted proposals are converted into server DTOs
 - rejected proposals never mutate live state
+- model providers are hidden behind a content generation interface, so Codex,
+  hosted APIs, local models, and deterministic test generators can be swapped
+  without changing server gameplay systems
+- model output is treated as proposal JSON: parse it, validate it, then apply it
+  through the same server-owned adapter path
 
 ## Multiplayer Scale
 
@@ -53,6 +59,7 @@ Targets:
 - Prototype: 4 players per world
 - Prototype map: `64 x 64` tiles
 - Production large world target: `1000 x 1000` tiles
+- Default world chunk size: `32 x 32` tiles
 - Stress target: 100 players per world
 - First match type: 30-minute Saint/Scourge race
 - Authoritative host/server
@@ -75,15 +82,53 @@ Targets:
   ids to theme-specific tileset art.
 - Treat large worlds as chunked/streamed spaces. Clients should receive only
   nearby chunks/entities through interest snapshots.
+- Generated tile maps expose chunk coordinates and nearby chunk queries so the
+  server/client can stream map data around each player.
+- Map chunk interest radius is derived from the server interest radius and
+  chunk size, so tuning visibility for 4-player prototypes or 100-player worlds
+  changes terrain streaming without special-case code.
+- Interest snapshots include nearby map chunk snapshots when the server has a
+  generated tile map registered for the world.
+- Interest snapshots include shop offers only for visible vendor NPCs so clients
+  cannot browse or buy from distant vendors without server validation.
+- Map chunk snapshots include stable chunk keys and deterministic revisions so
+  clients can skip unchanged terrain payloads as players move through large
+  worlds.
+- Interest snapshots carry sync hints with the requested delta tick, visible
+  event counts, visible map chunk count, and a map revision checksum. This keeps
+  network clients from guessing whether a snapshot is a full refresh or a
+  smaller incremental update.
+- The prototype client owns a small interest snapshot cache that tracks the last
+  applied tick and visible chunk revisions. Future network transports should
+  feed snapshots through this cache before rendering.
+- The prototype world renderer consumes map chunks from the local server
+  snapshot, keeping terrain rendering on the same path as future network clients.
+- The client renderer keeps a loaded chunk cache and evicts chunks that leave the
+  latest interest snapshot, while retaining unchanged chunk revisions.
 - Let the local prototype client read the same interest snapshot summary that a
   real network client would consume, so UI/debug feedback is based on server
   visibility rather than scene assumptions.
+- Keep camera zoom client-side and clamped. Zoom can change how much of the
+  already-rendered local area is visible, but server interest snapshots still
+  decide what terrain, players, NPCs, items, and events the client receives.
+- Route future transports through explicit network message envelopes for join,
+  intent, snapshot request, ping, and response/error messages. The current
+  in-process protocol adapter uses those envelopes before any socket layer is
+  introduced.
+- Network envelopes can be encoded as JSON with readable enum names so the same
+  protocol can be logged, replayed, or sent over a later transport.
 - Keep NPC simulation tiered: active nearby NPCs update often, distant NPCs
   update in coarse batches.
 - Keep LLM generation out of the live tick loop.
 - Process player input as intent with sequence numbers.
 - Keep match time server-owned. Interest snapshots include match status so
   clients can render the timer/winners without computing authority locally.
+- Include current Saint/Scourge leaders in running match snapshots, then locked
+  Saint/Scourge winners after finish.
+- Pay match winner scrip rewards once, at the same server-owned transition that
+  locks the Saint/Scourge winners.
+- Once a match is finished, reject score-changing intents so the locked
+  Saint/Scourge result cannot be mutated after the timer expires.
 - Validate PvP attack intents on the server: connected target, range check,
   karma consequence, damage, combat event, and Karma Break if lethal.
 - Validate duel request/accept intents on the server: both players must be
@@ -102,8 +147,15 @@ Targets:
 - Validate player-to-player item transfers on the server: connected target,
   proximity, known item id, source inventory ownership, inventory mutation,
   karma consequence, and syncable transfer event.
-- Validate item use intents on the server: known item id, equippable slot,
-  inventory/equipment mutation, and syncable equipment event.
+- Validate player-to-player scrip transfers on the server: connected target,
+  proximity, positive amount, wallet balance, wallet mutation, karma
+  consequence, and syncable currency event.
+- Validate shop purchases on the server: known offer id, reachable vendor NPC,
+  known item id, player-specific perk pricing, wallet balance, inventory
+  mutation, and syncable purchase event.
+- Validate item use intents on the server: known item id, equipment or tool
+  behavior, target range where needed, inventory/equipment mutation, and
+  syncable item event.
 - Validate pickup interactions on the server: visible world item entity,
   one-time availability, player inventory mutation, and syncable pickup event.
 - Validate placed objects on the server: item ownership, short placement range,
@@ -116,7 +168,8 @@ Targets:
 - Include visible NPC dialogue options in client interest snapshots so clients
   render only server-approved choices.
 - Validate quest start/completion on the server: visible quest giver, required
-  item consumption, completion karma mutation, and syncable quest event.
+  item consumption, completion karma mutation, scrip reward payout, and syncable
+  quest event.
 - Include quests from visible NPC givers in client interest snapshots, while
   hiding distant quest state.
 - Validate entanglement start/exposure on the server: visible NPC, known affected

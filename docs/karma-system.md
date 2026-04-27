@@ -44,8 +44,8 @@ Perks unlock from karma magnitude and current leaderboard standing.
 Ascension examples:
 
 - +10: Trusted Discount
-- +20: Calming Presence
-- +35: Beacon Aura
+- +20: Calming Presence (softens negative NPC relationship reactions)
+- +35: Beacon Aura (faster stamina recovery)
 - +50: Paragon Favor
 - +100: Exalted Grace
 - Every +100 after that: repeat Exalted rank perk
@@ -54,8 +54,8 @@ Descension examples:
 
 - -10: Shifty Prices
 - -20: Rumorcraft
-- -35: Renegade Nerve
-- -50: Dread Reputation
+- -35: Renegade Nerve (reduced sprint stamina cost)
+- -50: Dread Reputation (fear softens some negative NPC reactions)
 - -100: Abyssal Mark
 - Every -100 after that: repeat Abyssal rank perk
 
