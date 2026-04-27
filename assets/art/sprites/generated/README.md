@@ -19,9 +19,7 @@ without opaque background blocks.
   - Current preferred prototype player sheet when present. Extracted from the user-provided `assets/art/2D Character Knight/` pack because its true 8-direction walk continuity is much better than the generated candidate sheets.
   - The source pack row order is north-east, east, south-east, south, south-west, west, north-west, north; `tools/extract_knight_preview.gd` remaps it into Karma runtime column order: front/down, front-right, right, back-right, back, back-left, left, front-left.
   - Prototype/reference only until the source/license is confirmed.
-- `player_v2_engineer_8dir_4row_candidate.png`
-  - 512x256, 8 columns x 4 rows, 64x64 frames.
-  - Older generated temporary runtime preview. Built from the full-sheet extracts, then patched with strict right/up-right/back walk strips and mirrored temporary left-facing directions.
+Older generated engineer/64px attempts were moved to `assets/art/archive/player_v2_attempts_2026-04-26/`.
 
 ## Caveats
 

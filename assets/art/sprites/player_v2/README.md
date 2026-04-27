@@ -46,6 +46,10 @@ Additional base-model references:
   - 256x64, 8 columns x 1 row, 32x64 cells.
   - Direction order: front/down, front-right, right, back-right, back, back-left, left, front-left.
   - Rough neutral body/proportion layer for testing a taller paper-doll base model; not wired into the current 32x32 compositor manifest yet.
+- `player_model_32x64_8dir.png`
+  - 256x64, 8 columns x 1 row, 32x64 cells.
+  - First built-out single-model attempt using the 32x64 dimensions: skin/head, work outfit, backpack/armor cues, and transparent background.
+  - Intended as a focused standardization target, not active runtime art yet.
 
 The layer order is:
 
@@ -64,6 +68,9 @@ Run from the repo root:
 
 # Optional taller base-model reference:
 & 'C:\Users\pharr\Downloads\Godot_v4.6.2-stable_mono_win64\Godot_v4.6.2-stable_mono_win64\Godot_v4.6.2-stable_mono_win64_console.exe' --headless --path 'C:\Users\pharr\code\karma' --script 'res://tools/generate_base_model_32x64_8dir.gd'
+
+# Optional built-out 32x64 player model attempt:
+& 'C:\Users\pharr\Downloads\Godot_v4.6.2-stable_mono_win64\Godot_v4.6.2-stable_mono_win64\Godot_v4.6.2-stable_mono_win64_console.exe' --headless --path 'C:\Users\pharr\code\karma' --script 'res://tools/generate_player_model_32x64_8dir.gd'
 ```
 
 ## Next steps
