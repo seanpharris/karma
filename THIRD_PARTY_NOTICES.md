@@ -41,3 +41,13 @@ No source files or assets from those repositories are currently imported. The
 `ProceduralPlacementSampler` is a project-native C# implementation of a common
 best-candidate / blue-noise-style placement pattern inspired by procedural
 generation literature and demos.
+
+## 2D Character Knight Prototype Asset
+
+- Location: `assets/art/2D Character Knight/`
+- Status: user-provided local prototype asset; upstream source/license still needs
+  confirmation before production use or redistribution outside this prototype.
+- Runtime use: `tools/extract_knight_preview.gd` derives
+  `assets/art/sprites/generated/player_v2_knight_8dir_4row_reference.png` as a
+  temporary player movement/reference sheet because its 8-direction animation
+  quality is better than the current generated player sheets.

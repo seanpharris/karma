@@ -14,9 +14,13 @@ without opaque background blocks.
   - 256x64 direction-row extracts from the regenerated full-sheet chroma prompt.
 - `player_v2_64px_right_walk_strict_extract.png`, `player_v2_64px_up_right_walk_strict_extract.png`, `player_v2_64px_up_left_walk_strict_extract.png`, `player_v2_64px_back_walk_strict_extract.png`
   - Strict no-tool walk-strip extracts merged over the weak movement directions.
+- `player_v2_knight_8dir_4row_reference.png`
+  - 512x256, 8 columns x 4 rows, 64x64 frames.
+  - Current preferred prototype player sheet when present. Extracted from the user-provided `assets/art/2D Character Knight/` pack because its true 8-direction walk continuity is much better than the generated candidate sheets.
+  - Prototype/reference only until the source/license is confirmed.
 - `player_v2_engineer_8dir_4row_candidate.png`
   - 512x256, 8 columns x 4 rows, 64x64 frames.
-  - Current temporary runtime preview. Built from the full-sheet extracts, then patched with strict right/up-right/back walk strips and mirrored temporary left-facing directions.
+  - Older generated temporary runtime preview. Built from the full-sheet extracts, then patched with strict right/up-right/back walk strips and mirrored temporary left-facing directions.
 
 ## Caveats
 

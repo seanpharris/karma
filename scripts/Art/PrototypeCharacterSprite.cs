@@ -240,6 +240,12 @@ public partial class PrototypeCharacterSprite : Node2D
         string cacheRoot = "user://player_v2/composites")
     {
         Kind = PrototypeSpriteKind.Player;
+        if (IsDefaultSelection(selection) && FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath))
+        {
+            SetAtlasPathOverride(string.Empty);
+            return PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath;
+        }
+
         if (IsDefaultSelection(selection) && FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath))
         {
             SetAtlasPathOverride(string.Empty);

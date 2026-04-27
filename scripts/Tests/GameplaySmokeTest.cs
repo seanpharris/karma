@@ -385,34 +385,41 @@ public partial class GameplaySmokeTest : Node
             PrototypeCharacterSprite.CreateSpriteFrames(AtlasTextureLoader.Load(lightSkinCompositePath, forceImageLoad: true), lightSkinPlayerDefinition)
                 .HasAnimation(PrototypeCharacterSprite.WalkRightAnimation),
             "appearance composite atlas creates walk animations for runtime sprites");
-        var expectedPlayerAtlasPath = FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath)
-            ? PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
-            : FileAccess.FileExists(PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath)
-                ? PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
-                : FileAccess.FileExists(PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath)
-                    ? PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath
-                    : PrototypeSpriteCatalog.EngineerPlayerAtlasPath;
-        var expectedPlayerSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
+        var expectedPlayerAtlasPath = FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath)
+            ? PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath
+            : FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath)
+                ? PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
+                : FileAccess.FileExists(PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath)
+                    ? PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
+                    : FileAccess.FileExists(PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath)
+                        ? PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath
+                        : PrototypeSpriteCatalog.EngineerPlayerAtlasPath;
+        var expectedPlayerSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath ||
+                                 expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
             ? new Vector2(64f, 64f)
             : expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
               expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
                 ? new Vector2(32f, 32f)
                 : new Vector2(30f, 40f);
-        if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath ||
+        if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath ||
+            expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath ||
             expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
             expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath)
         {
             var engineerImage = Image.LoadFromFile(expectedPlayerAtlasPath);
-            var expectedSheetSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
+            var expectedSheetSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath ||
+                                    expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
                 ? new Vector2I(512, 256)
                 : new Vector2I(256, 288);
             ExpectEqual(expectedSheetSize.X, engineerImage.GetWidth(), "active 8-direction runtime sheet has expected width");
             ExpectEqual(expectedSheetSize.Y, engineerImage.GetHeight(), "active 8-direction runtime sheet has expected height");
             ExpectTrue(CountTransparentPixels(engineerImage) > 0, "active 8-direction runtime sheet keeps transparent background pixels");
-            var expectedFrameSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
+            var expectedFrameSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath ||
+                                    expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
                 ? 64
                 : CharacterSheetLayout.StandardFrameSize;
-            if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath)
+            if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath ||
+                expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath)
             {
                 ExpectTrue(
                     CountPixelDifferences(engineerImage, new Vector2I(3, 0), new Vector2I(2, 0), expectedFrameSize) > 0,
@@ -1026,27 +1033,42 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(playerSprite.Layers.Count >= 8, "prototype player sprite has layered pixel art");
         ExpectEqual(expectedPlayerAtlasPath, playerSprite.AtlasPath, "prototype player sprite records active engineer atlas path");
         ExpectTrue(playerSprite.HasAtlasRegion, "prototype player sprite can use character atlas art");
-        var expectedPlayerWalkFrameCount = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
-            ? 2
-            : expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
-              expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
-                ? 7
-                : 4;
+        var expectedPlayerWalkFrameCount = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath
+            ? 3
+            : expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
+                ? 2
+                : expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
+                  expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
+                    ? 7
+                    : 4;
         ExpectEqual(
             expectedPlayerWalkFrameCount,
             playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkDownAnimation).Frames.Count,
             "prototype player sprite maps multi-frame walk animations");
-        var expectedWalkRightFinalFrame = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
-            ? new Rect2(128f, 192f, 64f, 64f)
-            : expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
-              expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
-                ? new Rect2(64f, 64f, 32f, 32f)
-                : new Rect2(963f, 860f, 120f, 190f);
+        var expectedWalkRightFinalFrame = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath
+            ? new Rect2(2f * 64f, 3f * 64f, 64f, 64f)
+            : expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath
+                ? new Rect2(128f, 192f, 64f, 64f)
+                : expectedPlayerAtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
+                  expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
+                    ? new Rect2(64f, 64f, 32f, 32f)
+                    : new Rect2(963f, 860f, 120f, 190f);
         ExpectEqual(
             expectedWalkRightFinalFrame,
             playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkRightAnimation).Frames[^1],
             "prototype player sprite maps the active engineer sheet walk-right row");
-        if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath)
+        if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath)
+        {
+            ExpectEqual(
+                new Rect2(3f * 64f, 1f * 64f, 64f, 64f),
+                playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkUpRightAnimation).Frames[0],
+                "knight reference player sprite maps up-right movement to the true up-right column");
+            ExpectEqual(
+                new Rect2(5f * 64f, 3f * 64f, 64f, 64f),
+                playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkUpLeftAnimation).Frames[^1],
+                "knight reference player sprite maps up-left movement to the true up-left column");
+        }
+        else if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath)
         {
             ExpectEqual(
                 3,
