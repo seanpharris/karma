@@ -99,12 +99,14 @@ Implemented in this slice: `WorldRoot` now creates, updates, and removes dynamic
 
 ### 10. Return to gameplay systems after the character pipeline stabilizes
 
-Status: pending
+Status: done
 
 Recommended next gameplay slice after tasks 1-9:
 
 - local chat polish and/or fake proximity audio falloff, or
 - downed/rescue/carry/execute/clinic loop.
+
+Implemented in this slice: returned to communication polish by adding bounded server-side local chat retention/pruning, with smoke coverage and doc updates. Fake proximity audio and downed/carry remain future gameplay slices, but this documented follow-through list is complete.
 
 ## Verification expectations
 

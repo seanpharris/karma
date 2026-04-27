@@ -34,6 +34,8 @@ public sealed class AuthoritativeWorldServer
     public const int LocalChatClearRadiusTiles = 4;
     public const int LocalChatMaxRadiusTiles = 18;
     public const int LocalChatMaxMessageLength = 180;
+    public const long LocalChatRetainTicks = 240;
+    public const int LocalChatMaxRetainedMessages = 80;
     private sealed record DropClaim(string OwnerId, string OwnerName);
     private sealed record LocalChatMessage(
         string MessageId,
@@ -82,6 +84,7 @@ public sealed class AuthoritativeWorldServer
         }
 
         _tick += ticks;
+        PruneLocalChatLog();
     }
 
     public void AdvanceMatchTime(int seconds)
@@ -622,6 +625,7 @@ public sealed class AuthoritativeWorldServer
             text,
             player.Position);
         _localChatLog.Add(message);
+        PruneLocalChatLog();
 
         var serverEvent = AppendEvent(
             "local_chat",
@@ -638,6 +642,16 @@ public sealed class AuthoritativeWorldServer
             });
 
         return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private void PruneLocalChatLog()
+    {
+        var oldestTickToKeep = Math.Max(0, _tick - LocalChatRetainTicks);
+        _localChatLog.RemoveAll(message => message.Tick < oldestTickToKeep);
+        if (_localChatLog.Count > LocalChatMaxRetainedMessages)
+        {
+            _localChatLog.RemoveRange(0, _localChatLog.Count - LocalChatMaxRetainedMessages);
+        }
     }
 
     private ServerProcessResult ProcessKarmaAction(ServerIntent intent)

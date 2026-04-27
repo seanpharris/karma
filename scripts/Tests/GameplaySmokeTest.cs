@@ -170,6 +170,21 @@ public partial class GameplaySmokeTest : Node
         chatServer.AdvanceIdleTicks(WorldRoot.LocalChatBubbleVisibleTicks + 1);
         var staleChatSnapshot = chatServer.CreateInterestSnapshot(GameState.LocalPlayerId);
         ExpectFalse(WorldRoot.IsChatBubbleFresh(staleChatSnapshot, staleChatSnapshot.LocalChatMessages.First()), "old local chat messages stop rendering as bubbles");
+        chatServer.AdvanceIdleTicks(AuthoritativeWorldServer.LocalChatRetainTicks + 1);
+        ExpectEqual(0, chatServer.CreateInterestSnapshot(GameState.LocalPlayerId).LocalChatMessages.Count, "server prunes expired local chat history");
+        for (var i = 0; i < AuthoritativeWorldServer.LocalChatMaxRetainedMessages + 5; i++)
+        {
+            var retainedChat = chatServer.ProcessIntent(new ServerIntent(
+                "peer_stand_in",
+                2 + i,
+                IntentType.SendLocalChat,
+                new System.Collections.Generic.Dictionary<string, string>
+                {
+                    ["text"] = $"message {i}"
+                }));
+            ExpectTrue(retainedChat.WasAccepted, "server accepts retained local chat pruning test messages");
+        }
+        ExpectEqual(AuthoritativeWorldServer.LocalChatMaxRetainedMessages, chatServer.LocalChatLog.Count, "server caps retained local chat history");
         var server = new AuthoritativeWorldServer(state, "test-world");
         ServerConfig.Prototype4Player.Validate();
         ServerConfig.Large100Player.Validate();
