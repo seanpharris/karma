@@ -176,6 +176,38 @@ public sealed class PlayerV2LayerManifest
         return Compose(GetLayerStack(appearance));
     }
 
+    public string ExportAppearanceComposite(PlayerAppearanceSelection selection, string cacheRoot = "user://player_v2/composites")
+    {
+        return ExportAppearanceComposite(CreateAppearance(selection), cacheRoot);
+    }
+
+    public string ExportAppearanceComposite(PlayerV2Appearance appearance, string cacheRoot = "user://player_v2/composites")
+    {
+        var layerStack = GetLayerStack(appearance);
+        var outputPath = BuildCompositePath(layerStack, cacheRoot);
+        var globalCacheRoot = ProjectSettings.GlobalizePath(cacheRoot);
+        DirAccess.MakeDirRecursiveAbsolute(globalCacheRoot);
+        var image = Compose(layerStack);
+        var error = image.SavePng(outputPath);
+        if (error != Error.Ok)
+        {
+            throw new InvalidOperationException($"Could not export player v2 appearance composite to {outputPath}: {error}");
+        }
+
+        return outputPath;
+    }
+
+    public string BuildCompositePath(PlayerV2Appearance appearance, string cacheRoot = "user://player_v2/composites")
+    {
+        return BuildCompositePath(GetLayerStack(appearance), cacheRoot);
+    }
+
+    public static string BuildCompositePath(IEnumerable<string> layerIds, string cacheRoot = "user://player_v2/composites")
+    {
+        var key = string.Join("__", layerIds.Select(SanitizeCacheToken));
+        return $"{cacheRoot.TrimEnd('/')}/player_v2__{key}.png";
+    }
+
     public Image Compose(IEnumerable<string> layerIds)
     {
         var byId = Layers.ToDictionary(layer => layer.Id, StringComparer.Ordinal);
@@ -235,6 +267,16 @@ public sealed class PlayerV2LayerManifest
                 throw new InvalidOperationException($"Player v2 layer {layerId} belongs to slot {layer.Slot}, not {slot}");
             }
         }
+    }
+
+    private static string SanitizeCacheToken(string value)
+    {
+        var characters = value
+            .Where(character => char.IsLetterOrDigit(character) || character == '_' || character == '-')
+            .ToArray();
+        return characters.Length == 0
+            ? "layer"
+            : new string(characters);
     }
 
     private static IReadOnlyList<string> ReadStringArray(JsonElement root, string name)
