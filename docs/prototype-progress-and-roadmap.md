@@ -72,7 +72,7 @@ and the next practical build slices.
 - Character art still needs a professional v2 standard: likely `48x48` or `64x64`, true 8-direction, layered paper-doll sheets, animation-group manifests, and a compositor/export pipeline.
 - Downed/rescue/carry/execute mechanics are now documented as a future core karma loop that also informs v2 character animations.
 - Proximity communication research now prioritizes player-to-player proximity voice/text first, with NPC speech-to-text/LLM/text-to-speech interactions parked as research/to-do.
-- Server-owned local text chat now exists as the first proximity communication slice: `SendLocalChat` messages are filtered by listener distance, carry distance/volume falloff in interest snapshots, and render in the HUD/developer overlay.
+- Server-owned local text chat now exists as the first proximity communication slice: `SendLocalChat` messages are filtered by listener distance, carry distance/volume falloff in interest snapshots, can be sent from gameplay with `/` or `T`, and render in the HUD/developer overlay plus short-lived world chat bubbles.
 - NPC voice research direction is to keep current walk-up options, then later make interactions feel more organic with contextual greetings/exclamations, optional spoken/freeform player input, bounded LLM responses, subtitles, and spatial NPC voice playback.
 - Generated station locations have inspectable markers and interactable fixtures, but their art is still placeholder greenhouse components and needs proper sign/landmark visuals.
 - Generated NPCs have first-pass station dialogue/quests, but those choices are still broad templates rather than bespoke quest chains.
@@ -110,7 +110,7 @@ and the next practical build slices.
 ## What we need to do next
 
 1. **Deepen station quests/dialogue.** Turn broad generated choices into multi-step repair, rumor, theft, apology, bounty, delivery, and mediation tasks.
-2. **Prototype player communication.** Add local chat input/bubbles, then use the audibility/falloff model to prototype fake audio before real player-to-player proximity voice.
+2. **Prototype player communication.** Add chat tabs/log polish and server-side chat expiry, then use the audibility/falloff model to prototype fake audio before real player-to-player proximity voice.
 3. **Improve generated structure consequences.** Tune faction-specific rewards/penalties by station role and let stabilized/compromised station state affect local prices and richer quest branches.
 4. **Improve respawn candidate pools.** Prefer safe stations/landmarks and avoid active combat heat, not just death/player positions.
 5. **Improve station presentation.** Replace placeholder station marker art with signs, landmarks, or theme-specific props.

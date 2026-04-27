@@ -22,6 +22,10 @@ without microphone capture or VOIP networking yet.
   - listener distance in tiles,
   - normalized volume.
 - The HUD shows the latest audible local chat line.
+- Press `/` or `T` in gameplay to open the local chat entry; press Enter to send
+  or Esc to cancel.
+- Recent audible messages render as lightweight world-space chat bubbles above
+  speakers for a short prototype window.
 - The developer overlay Events page lists recent audible local chat with distance
   and volume.
 
@@ -38,9 +42,9 @@ the same server-approved audibility metadata.
 
 ## Next steps
 
-1. Add an actual chat input UI and keybind.
-2. Add chat bubbles over nearby speakers.
-3. Add `Local`, `Posse`, and `System` chat tabs or filters.
-4. Decide how long local chat messages remain visible before expiry.
-5. Feed the same falloff/audibility model into a fake audio-source prototype.
-6. Evaluate real VOIP transport after gameplay-side audibility feels right.
+1. Add `Local`, `Posse`, and `System` chat tabs or filters.
+2. Decide server-side message expiry/pruning instead of keeping the prototype log
+   for the whole session.
+3. Improve bubble styling with a proper panel/tail and text-safe contrast.
+4. Feed the same falloff/audibility model into a fake audio-source prototype.
+5. Evaluate real VOIP transport after gameplay-side audibility feels right.

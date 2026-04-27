@@ -9,7 +9,9 @@ namespace Karma.World;
 
 public partial class WorldRoot : Node2D
 {
+    public const long LocalChatBubbleVisibleTicks = 10;
     private readonly Dictionary<string, Node2D> _renderedServerNpcs = new();
+    private readonly Dictionary<string, Label> _renderedChatBubbles = new();
     private readonly Dictionary<string, Node2D> _renderedServerItems = new();
     private readonly Dictionary<string, Node2D> _renderedServerStructures = new();
     private readonly List<PickupObject> _prototypeCatalogPickups = new();
@@ -73,6 +75,7 @@ public partial class WorldRoot : Node2D
         RenderServerNpcs(snapshot);
         RenderServerStructures(snapshot);
         RenderServerItems(snapshot);
+        RenderLocalChatBubbles(snapshot);
     }
 
     private void RenderServerNpcs(ClientInterestSnapshot snapshot)
@@ -128,6 +131,64 @@ public partial class WorldRoot : Node2D
             AddChild(node);
             _renderedServerNpcs[npc.Id] = node;
         }
+    }
+
+    private void RenderLocalChatBubbles(ClientInterestSnapshot snapshot)
+    {
+        var recentMessages = snapshot.LocalChatMessages
+            .Where(message => IsChatBubbleFresh(snapshot, message))
+            .GroupBy(message => message.SpeakerId)
+            .Select(group => group.OrderBy(message => message.Tick).Last())
+            .ToDictionary(message => message.SpeakerId);
+
+        foreach (var removedId in _renderedChatBubbles.Keys.Where(id => !recentMessages.ContainsKey(id)).ToArray())
+        {
+            _renderedChatBubbles[removedId].QueueFree();
+            _renderedChatBubbles.Remove(removedId);
+        }
+
+        foreach (var message in recentMessages.Values)
+        {
+            var position = new Vector2(message.SpeakerTileX * 32f - 80f, message.SpeakerTileY * 32f - 58f);
+            if (_renderedChatBubbles.TryGetValue(message.SpeakerId, out var existing))
+            {
+                existing.Text = FormatChatBubbleText(message);
+                existing.Position = position;
+                continue;
+            }
+
+            var bubble = new Label
+            {
+                Name = $"ChatBubble_{message.SpeakerId}",
+                Text = FormatChatBubbleText(message),
+                Position = position,
+                Size = new Vector2(160f, 42f),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                AutowrapMode = TextServer.AutowrapMode.WordSmart,
+                ZIndex = TopDownDepth.HudOffsetZ
+            };
+            AddChild(bubble);
+            _renderedChatBubbles[message.SpeakerId] = bubble;
+        }
+    }
+
+    public static bool IsChatBubbleFresh(ClientInterestSnapshot snapshot, LocalChatMessageSnapshot message)
+    {
+        return snapshot is not null &&
+            message is not null &&
+            snapshot.Tick - message.Tick <= LocalChatBubbleVisibleTicks;
+    }
+
+    public static string FormatChatBubbleText(LocalChatMessageSnapshot message)
+    {
+        var text = string.IsNullOrWhiteSpace(message.Text) ? "..." : message.Text.Trim();
+        if (text.Length > 56)
+        {
+            text = text[..53] + "...";
+        }
+
+        return $"{message.SpeakerName}: {text}";
     }
 
     private void RenderServerStructures(ClientInterestSnapshot snapshot)

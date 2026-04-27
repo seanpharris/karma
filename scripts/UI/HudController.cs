@@ -16,6 +16,8 @@ public partial class HudController : CanvasLayer
     private Label _karmaLabel = new();
     private Label _eventLabel = new();
     private Label _chatLabel = new();
+    private PanelContainer _chatInputPanel = new();
+    private LineEdit _chatInput = new();
     private Label _staminaLabel = new();
     private Label _healthLabel = new();
     private ProgressBar _healthBar = new();
@@ -77,6 +79,7 @@ public partial class HudController : CanvasLayer
         _backToMenuButton.Pressed += ReturnToMainMenu;
         _quitButton.Pressed += () => GetTree().Quit();
         _closeEscapeOptionsButton.Pressed += HideEscapeOptions;
+        _chatInput.TextSubmitted += OnChatInputSubmitted;
         _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         if (_serverSession is not null)
         {
@@ -154,9 +157,27 @@ public partial class HudController : CanvasLayer
             return;
         }
 
+        if (_chatInputPanel.Visible)
+        {
+            if (key.Keycode == Key.Escape)
+            {
+                CloseLocalChatInput();
+                GetViewport().SetInputAsHandled();
+            }
+
+            return;
+        }
+
         if (key.Keycode == Key.Escape)
         {
             ToggleEscapeMenu();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        if (key.Keycode == Key.Slash || key.Keycode == Key.T)
+        {
+            OpenLocalChatInput();
             GetViewport().SetInputAsHandled();
             return;
         }
@@ -210,6 +231,59 @@ public partial class HudController : CanvasLayer
     public void ShowStamina(string staminaText)
     {
         _staminaLabel.Text = staminaText;
+    }
+
+    public void OpenLocalChatInput()
+    {
+        _chatInputPanel.Visible = true;
+        _chatInput.Text = string.Empty;
+        _chatInput.PlaceholderText = "Local chat — Enter to send, Esc to cancel";
+        _chatInput.GrabFocus();
+    }
+
+    public void CloseLocalChatInput()
+    {
+        _chatInputPanel.Visible = false;
+        _chatInput.Text = string.Empty;
+        if (GetViewport().GuiGetFocusOwner() == _chatInput)
+        {
+            _chatInput.ReleaseFocus();
+        }
+    }
+
+    public bool TrySubmitLocalChatText(string rawText)
+    {
+        var text = NormalizeLocalChatInput(rawText);
+        if (string.IsNullOrWhiteSpace(text) || _serverSession is null)
+        {
+            CloseLocalChatInput();
+            return false;
+        }
+
+        var result = _serverSession.SendLocal(
+            IntentType.SendLocalChat,
+            new Dictionary<string, string>
+            {
+                ["text"] = text
+            });
+        _chatLabel.Text = result.WasAccepted
+            ? $"Local chat: You: {text}"
+            : $"Local chat failed: {result.RejectionReason}";
+        CloseLocalChatInput();
+        return result.WasAccepted;
+    }
+
+    public static string NormalizeLocalChatInput(string rawText)
+    {
+        return string.Join(" ", (rawText ?? string.Empty)
+            .Replace('\r', ' ')
+            .Replace('\n', ' ')
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    private void OnChatInputSubmitted(string text)
+    {
+        TrySubmitLocalChatText(text);
     }
 
     public void ToggleDeveloperOverlay()
@@ -319,6 +393,25 @@ public partial class HudController : CanvasLayer
             Text = "Local chat: quiet"
         };
         root.AddChild(_chatLabel);
+
+        _chatInputPanel = new PanelContainer
+        {
+            Name = "ChatInputPanel",
+            OffsetLeft = 16,
+            OffsetTop = 188,
+            OffsetRight = 560,
+            OffsetBottom = 230,
+            Visible = false
+        };
+        root.AddChild(_chatInputPanel);
+
+        _chatInput = new LineEdit
+        {
+            Name = "LocalChatInput",
+            PlaceholderText = "Local chat — Enter to send, Esc to cancel",
+            MaxLength = AuthoritativeWorldServer.LocalChatMaxMessageLength
+        };
+        _chatInputPanel.AddChild(_chatInput);
 
         _staminaLabel = new Label
         {

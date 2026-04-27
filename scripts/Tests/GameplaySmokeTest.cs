@@ -50,6 +50,14 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/MainMenuButton") is not null, "Escape menu includes main menu action");
         ExpectTrue(hudProbe.GetNodeOrNull<PanelContainer>("HudRoot/DeveloperPanel") is not null, "gameplay HUD includes tilde developer overlay");
         ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/DeveloperPanel/DeveloperMargin/DeveloperOverlayLabel") is not null, "developer overlay includes detailed character label");
+        ExpectTrue(hudProbe.GetNodeOrNull<PanelContainer>("HudRoot/ChatInputPanel") is not null, "gameplay HUD includes local chat input panel");
+        ExpectTrue(hudProbe.GetNodeOrNull<LineEdit>("HudRoot/ChatInputPanel/LocalChatInput") is not null, "gameplay HUD includes local chat text entry");
+        ExpectFalse(hudProbe.GetNode<PanelContainer>("HudRoot/ChatInputPanel").Visible, "local chat input starts closed");
+        hudProbe.OpenLocalChatInput();
+        ExpectTrue(hudProbe.GetNode<PanelContainer>("HudRoot/ChatInputPanel").Visible, "local chat input can open from HUD");
+        hudProbe.CloseLocalChatInput();
+        ExpectFalse(hudProbe.GetNode<PanelContainer>("HudRoot/ChatInputPanel").Visible, "local chat input can close without sending");
+        ExpectEqual("hello station", HudController.NormalizeLocalChatInput(" hello\nstation  "), "local chat input normalizes whitespace");
         hudProbe.ToggleDeveloperOverlay();
         ExpectTrue(hudProbe.GetNode<PanelContainer>("HudRoot/DeveloperPanel").Visible, "tilde developer overlay can be toggled visible");
         ExpectEqual(0, HudController.WrapDeveloperPageIndex(4), "developer overlay page index wraps forward");
@@ -137,6 +145,11 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(1f, AuthoritativeWorldServer.CalculateLocalChatVolume(AuthoritativeWorldServer.LocalChatClearRadiusTiles), "local chat falloff stays full at clear radius");
         ExpectEqual(0f, AuthoritativeWorldServer.CalculateLocalChatVolume(AuthoritativeWorldServer.LocalChatMaxRadiusTiles), "local chat falloff reaches silence at max radius");
         ExpectTrue(HudController.FormatLocalChatSummary(localChatSnapshot.LocalChatMessages).Contains("Stranded Player"), "HUD formats local chat speaker summaries");
+        ExpectTrue(WorldRoot.IsChatBubbleFresh(localChatSnapshot, nearbyChat), "fresh local chat messages can render as world bubbles");
+        ExpectTrue(WorldRoot.FormatChatBubbleText(nearbyChat).Contains("anyone need a hand?"), "world chat bubble formats nearby chat text");
+        chatServer.AdvanceIdleTicks(WorldRoot.LocalChatBubbleVisibleTicks + 1);
+        var staleChatSnapshot = chatServer.CreateInterestSnapshot(GameState.LocalPlayerId);
+        ExpectFalse(WorldRoot.IsChatBubbleFresh(staleChatSnapshot, staleChatSnapshot.LocalChatMessages.First()), "old local chat messages stop rendering as bubbles");
         var server = new AuthoritativeWorldServer(state, "test-world");
         ServerConfig.Prototype4Player.Validate();
         ServerConfig.Large100Player.Validate();
