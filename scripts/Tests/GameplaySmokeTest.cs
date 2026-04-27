@@ -49,6 +49,11 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(hudProbe.GetNodeOrNull<PanelContainer>("HudRoot/EscapeMenuPanel") is not null, "gameplay HUD includes a non-pausing Escape menu overlay");
         ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/ResumeButton") is not null, "Escape menu includes resume action");
         ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/OptionsButton") is not null, "Escape menu includes options action");
+        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearanceButton") is not null, "Escape menu includes appearance action");
+        ExpectTrue(hudProbe.GetNodeOrNull<PanelContainer>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel") is not null, "Escape menu includes appearance selection panel");
+        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/CycleSkinButton") is not null, "appearance panel includes skin cycling action");
+        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/CycleHairButton") is not null, "appearance panel includes hair cycling action");
+        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/CycleOutfitButton") is not null, "appearance panel includes outfit cycling action");
         ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/MainMenuButton") is not null, "Escape menu includes main menu action");
         ExpectTrue(hudProbe.GetNodeOrNull<PanelContainer>("HudRoot/DeveloperPanel") is not null, "gameplay HUD includes tilde developer overlay");
         ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/DeveloperPanel/DeveloperMargin/DeveloperOverlayLabel") is not null, "developer overlay includes detailed character label");
@@ -60,6 +65,10 @@ public partial class GameplaySmokeTest : Node
         hudProbe.CloseLocalChatInput();
         ExpectFalse(hudProbe.GetNode<PanelContainer>("HudRoot/ChatInputPanel").Visible, "local chat input can close without sending");
         ExpectEqual("hello station", HudController.NormalizeLocalChatInput(" hello\nstation  "), "local chat input normalizes whitespace");
+        ExpectTrue(HudController.FormatAppearanceSummary(PlayerAppearanceSelection.Default).Contains("Medium skin"), "appearance summary formats selected layers");
+        ExpectEqual("skin_deep", HudController.BuildAppearanceCyclePayload("skin", PlayerAppearanceSelection.Default)["skinLayerId"], "appearance panel builds skin cycle server payload");
+        ExpectEqual("hair_short_blond", HudController.BuildAppearanceCyclePayload("hair", PlayerAppearanceSelection.Default)["hairLayerId"], "appearance panel builds hair cycle server payload");
+        ExpectEqual("outfit_settler", HudController.BuildAppearanceCyclePayload("outfit", PlayerAppearanceSelection.Default)["outfitLayerId"], "appearance panel builds outfit cycle server payload");
         hudProbe.ToggleDeveloperOverlay();
         ExpectTrue(hudProbe.GetNode<PanelContainer>("HudRoot/DeveloperPanel").Visible, "tilde developer overlay can be toggled visible");
         ExpectEqual(0, HudController.WrapDeveloperPageIndex(4), "developer overlay page index wraps forward");

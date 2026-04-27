@@ -6,6 +6,7 @@ using Karma.Art;
 using Karma.Core;
 using Karma.Data;
 using Karma.Net;
+using Karma.Player;
 
 namespace Karma.UI;
 
@@ -51,9 +52,16 @@ public partial class HudController : CanvasLayer
     private Label _escapeMenuStatusLabel = new();
     private Button _resumeButton = new();
     private Button _escapeOptionsButton = new();
+    private Button _appearanceButton = new();
     private Button _backToMenuButton = new();
     private Button _quitButton = new();
     private Button _closeEscapeOptionsButton = new();
+    private Control _appearancePanel = new();
+    private Label _appearanceSummaryLabel = new();
+    private Button _cycleSkinButton = new();
+    private Button _cycleHairButton = new();
+    private Button _cycleOutfitButton = new();
+    private Button _closeAppearanceButton = new();
     private string _lastCombatText = "Combat: none";
     private IReadOnlyList<string> _lastStatusEffects = System.Array.Empty<string>();
 
@@ -76,6 +84,11 @@ public partial class HudController : CanvasLayer
         _gameState.WorldEventsChanged += OnWorldEventsChanged;
         _resumeButton.Pressed += HideEscapeMenu;
         _escapeOptionsButton.Pressed += ShowEscapeOptions;
+        _appearanceButton.Pressed += ShowAppearancePanel;
+        _cycleSkinButton.Pressed += () => CycleAppearanceLayer("skin");
+        _cycleHairButton.Pressed += () => CycleAppearanceLayer("hair");
+        _cycleOutfitButton.Pressed += () => CycleAppearanceLayer("outfit");
+        _closeAppearanceButton.Pressed += HideAppearancePanel;
         _backToMenuButton.Pressed += ReturnToMainMenu;
         _quitButton.Pressed += () => GetTree().Quit();
         _closeEscapeOptionsButton.Pressed += HideEscapeOptions;
@@ -333,6 +346,7 @@ public partial class HudController : CanvasLayer
 
     private void ShowEscapeOptions()
     {
+        HideAppearancePanel();
         _escapeOptionsPanel.Visible = true;
         _escapeMenuStatusLabel.Text = "Options are live-menu placeholders; gameplay keeps running.";
     }
@@ -340,7 +354,53 @@ public partial class HudController : CanvasLayer
     private void HideEscapeOptions()
     {
         _escapeOptionsPanel.Visible = false;
+        HideAppearancePanel();
         _escapeMenuStatusLabel.Text = "Menu open. Prototype world is still running.";
+    }
+
+    public void ShowAppearancePanel()
+    {
+        _escapeOptionsPanel.Visible = false;
+        _appearancePanel.Visible = true;
+        RefreshAppearancePanel();
+        _escapeMenuStatusLabel.Text = "Appearance changes are routed through the authoritative prototype server.";
+    }
+
+    public void HideAppearancePanel()
+    {
+        _appearancePanel.Visible = false;
+    }
+
+    public bool CycleAppearanceLayer(string slot)
+    {
+        if (_serverSession is null)
+        {
+            _appearanceSummaryLabel.Text = "Appearance unavailable: prototype server is not running.";
+            return false;
+        }
+
+        var current = GetLocalAppearanceSelection(_serverSession.LastLocalSnapshot) ?? PlayerAppearanceSelection.Default;
+        var payload = BuildAppearanceCyclePayload(slot, current);
+        if (payload.Count == 0)
+        {
+            _appearanceSummaryLabel.Text = $"Unknown appearance slot: {slot}";
+            return false;
+        }
+
+        var result = _serverSession.SendLocal(IntentType.SetAppearance, payload);
+        RefreshAppearancePanel();
+        if (!result.WasAccepted)
+        {
+            _appearanceSummaryLabel.Text = $"Appearance change failed: {result.RejectionReason}";
+        }
+
+        return result.WasAccepted;
+    }
+
+    private void RefreshAppearancePanel()
+    {
+        var appearance = GetLocalAppearanceSelection(_serverSession?.LastLocalSnapshot) ?? PlayerAppearanceSelection.Default;
+        _appearanceSummaryLabel.Text = FormatAppearanceSummary(appearance);
     }
 
     private void ReturnToMainMenu()
@@ -701,10 +761,12 @@ public partial class HudController : CanvasLayer
 
         _resumeButton = new Button { Name = "ResumeButton", Text = "Resume" };
         _escapeOptionsButton = new Button { Name = "OptionsButton", Text = "Options" };
+        _appearanceButton = new Button { Name = "AppearanceButton", Text = "Appearance" };
         _backToMenuButton = new Button { Name = "MainMenuButton", Text = "Main Menu" };
         _quitButton = new Button { Name = "QuitButton", Text = "Quit" };
         content.AddChild(_resumeButton);
         content.AddChild(_escapeOptionsButton);
+        content.AddChild(_appearanceButton);
         content.AddChild(_backToMenuButton);
         content.AddChild(_quitButton);
 
@@ -741,6 +803,44 @@ public partial class HudController : CanvasLayer
             Text = "Back"
         };
         optionsContent.AddChild(_closeEscapeOptionsButton);
+
+        _appearancePanel = new PanelContainer
+        {
+            Name = "AppearancePanel",
+            Visible = false
+        };
+        content.AddChild(_appearancePanel);
+
+        var appearanceMargin = new MarginContainer { Name = "AppearanceMargin" };
+        appearanceMargin.AddThemeConstantOverride("margin_left", 16);
+        appearanceMargin.AddThemeConstantOverride("margin_top", 12);
+        appearanceMargin.AddThemeConstantOverride("margin_right", 16);
+        appearanceMargin.AddThemeConstantOverride("margin_bottom", 12);
+        _appearancePanel.AddChild(appearanceMargin);
+
+        var appearanceContent = new VBoxContainer { Name = "AppearanceContent" };
+        appearanceContent.AddThemeConstantOverride("separation", 8);
+        appearanceMargin.AddChild(appearanceContent);
+        appearanceContent.AddChild(new Label
+        {
+            Text = "Prototype appearance",
+            HorizontalAlignment = HorizontalAlignment.Center
+        });
+        _appearanceSummaryLabel = new Label
+        {
+            Name = "AppearanceSummaryLabel",
+            Text = "Appearance: default",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart
+        };
+        appearanceContent.AddChild(_appearanceSummaryLabel);
+        _cycleSkinButton = new Button { Name = "CycleSkinButton", Text = "Cycle skin (V)" };
+        _cycleHairButton = new Button { Name = "CycleHairButton", Text = "Cycle hair (B)" };
+        _cycleOutfitButton = new Button { Name = "CycleOutfitButton", Text = "Cycle outfit (N)" };
+        _closeAppearanceButton = new Button { Name = "CloseAppearanceButton", Text = "Back" };
+        appearanceContent.AddChild(_cycleSkinButton);
+        appearanceContent.AddChild(_cycleHairButton);
+        appearanceContent.AddChild(_cycleOutfitButton);
+        appearanceContent.AddChild(_closeAppearanceButton);
     }
 
     private void OnKarmaChanged(int score, string tierName, string pathName)
@@ -828,6 +928,10 @@ public partial class HudController : CanvasLayer
 
             _eventLabel.Text = FormatLatestServerEvent(snapshot.ServerEvents);
             _chatLabel.Text = FormatLocalChatSummary(snapshot.LocalChatMessages);
+            if (_appearancePanel.Visible)
+            {
+                RefreshAppearancePanel();
+            }
         }
 
         _syncLabel.Text = $"Sync: {snapshotSummary}";
@@ -1202,6 +1306,27 @@ public partial class HudController : CanvasLayer
             .Split('_', StringSplitOptions.RemoveEmptyEntries)
             .Where(part => part != "skin" && part != "hair" && part != "outfit" && part != "tool")
             .Select(part => char.ToUpperInvariant(part[0]) + part[1..]));
+    }
+
+    public static string FormatAppearanceSummary(PlayerAppearanceSelection appearance)
+    {
+        return $"Appearance: {FormatAppearanceLayerName(appearance.SkinLayerId)} skin | {FormatAppearanceLayerName(appearance.HairLayerId)} hair | {FormatAppearanceLayerName(appearance.OutfitLayerId)} outfit | {FormatAppearanceLayerName(appearance.HeldToolLayerId)} tool";
+    }
+
+    public static IReadOnlyDictionary<string, string> BuildAppearanceCyclePayload(string slot, PlayerAppearanceSelection current)
+    {
+        return slot switch
+        {
+            "skin" => new Dictionary<string, string> { ["skinLayerId"] = PlayerController.CycleSkinLayerId(current.SkinLayerId) },
+            "hair" => new Dictionary<string, string> { ["hairLayerId"] = PlayerController.CycleHairLayerId(current.HairLayerId) },
+            "outfit" => new Dictionary<string, string> { ["outfitLayerId"] = PlayerController.CycleOutfitLayerId(current.OutfitLayerId) },
+            _ => new Dictionary<string, string>()
+        };
+    }
+
+    private static PlayerAppearanceSelection GetLocalAppearanceSelection(ClientInterestSnapshot snapshot)
+    {
+        return snapshot?.Players.FirstOrDefault(player => player.Id == snapshot.PlayerId)?.Appearance;
     }
 
     private static string FormatQuestName(string questId)
