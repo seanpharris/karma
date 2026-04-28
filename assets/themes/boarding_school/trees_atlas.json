@@ -1,0 +1,278 @@
+{
+  "layout": "variable",
+  "columns": 4,
+  "sprites": [
+    {
+      "name": "courtyard_oak",
+      "source_file": "courtyard_oak.png",
+      "sheet_x": 0,
+      "sheet_y": 0,
+      "width": 256,
+      "height": 320,
+      "anchor": [
+        128,
+        312
+      ],
+      "footprint_tiles": [
+        16,
+        20
+      ],
+      "category": "plant"
+    },
+    {
+      "name": "ivy_tree",
+      "source_file": "ivy_tree.png",
+      "sheet_x": 256,
+      "sheet_y": 0,
+      "width": 192,
+      "height": 224,
+      "anchor": [
+        96,
+        216
+      ],
+      "footprint_tiles": [
+        12,
+        14
+      ],
+      "category": "plant"
+    },
+    {
+      "name": "narrow_cypress",
+      "source_file": "narrow_cypress.png",
+      "sheet_x": 448,
+      "sheet_y": 0,
+      "width": 128,
+      "height": 224,
+      "anchor": [
+        64,
+        216
+      ],
+      "footprint_tiles": [
+        8,
+        14
+      ],
+      "category": "plant"
+    },
+    {
+      "name": "small_maple",
+      "source_file": "small_maple.png",
+      "sheet_x": 608,
+      "sheet_y": 0,
+      "width": 160,
+      "height": 192,
+      "anchor": [
+        80,
+        184
+      ],
+      "footprint_tiles": [
+        10,
+        12
+      ],
+      "category": "plant"
+    },
+    {
+      "name": "hedge_straight",
+      "source_file": "hedge_straight.png",
+      "sheet_x": 0,
+      "sheet_y": 320,
+      "width": 160,
+      "height": 96,
+      "anchor": [
+        80,
+        88
+      ],
+      "footprint_tiles": [
+        10,
+        6
+      ],
+      "category": "plant"
+    },
+    {
+      "name": "hedge_corner",
+      "source_file": "hedge_corner.png",
+      "sheet_x": 256,
+      "sheet_y": 320,
+      "width": 128,
+      "height": 128,
+      "anchor": [
+        64,
+        120
+      ],
+      "footprint_tiles": [
+        8,
+        8
+      ],
+      "category": "plant"
+    },
+    {
+      "name": "hedge_gate_gap",
+      "source_file": "hedge_gate_gap.png",
+      "sheet_x": 448,
+      "sheet_y": 320,
+      "width": 160,
+      "height": 96,
+      "anchor": [
+        80,
+        88
+      ],
+      "footprint_tiles": [
+        10,
+        6
+      ],
+      "category": "plant"
+    },
+    {
+      "name": "ivy_wall_strip",
+      "source_file": "ivy_wall_strip.png",
+      "sheet_x": 608,
+      "sheet_y": 320,
+      "width": 96,
+      "height": 160,
+      "anchor": [
+        48,
+        152
+      ],
+      "footprint_tiles": [
+        6,
+        10
+      ],
+      "category": "plant"
+    },
+    {
+      "name": "stone_planter",
+      "source_file": "stone_planter.png",
+      "sheet_x": 0,
+      "sheet_y": 480,
+      "width": 128,
+      "height": 64,
+      "anchor": [
+        64,
+        60
+      ],
+      "footprint_tiles": [
+        8,
+        4
+      ],
+      "category": "plant"
+    },
+    {
+      "name": "flower_bed",
+      "source_file": "flower_bed.png",
+      "sheet_x": 256,
+      "sheet_y": 480,
+      "width": 128,
+      "height": 64,
+      "anchor": [
+        64,
+        60
+      ],
+      "footprint_tiles": [
+        8,
+        4
+      ],
+      "category": "plant"
+    },
+    {
+      "name": "potted_plant",
+      "source_file": "potted_plant.png",
+      "sheet_x": 448,
+      "sheet_y": 480,
+      "width": 48,
+      "height": 64,
+      "anchor": [
+        24,
+        60
+      ],
+      "footprint_tiles": [
+        3,
+        4
+      ],
+      "category": "plant"
+    },
+    {
+      "name": "brass_urn_plant",
+      "source_file": "brass_urn_plant.png",
+      "sheet_x": 608,
+      "sheet_y": 480,
+      "width": 64,
+      "height": 96,
+      "anchor": [
+        32,
+        88
+      ],
+      "footprint_tiles": [
+        4,
+        6
+      ],
+      "category": "plant"
+    },
+    {
+      "name": "mossy_stump",
+      "source_file": "mossy_stump.png",
+      "sheet_x": 0,
+      "sheet_y": 576,
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        32,
+        60
+      ],
+      "footprint_tiles": [
+        4,
+        4
+      ],
+      "category": "plant"
+    },
+    {
+      "name": "ivy_clump",
+      "source_file": "ivy_clump.png",
+      "sheet_x": 256,
+      "sheet_y": 576,
+      "width": 64,
+      "height": 48,
+      "anchor": [
+        32,
+        44
+      ],
+      "footprint_tiles": [
+        4,
+        3
+      ],
+      "category": "plant"
+    },
+    {
+      "name": "tall_grass_clump",
+      "source_file": "tall_grass_clump.png",
+      "sheet_x": 448,
+      "sheet_y": 576,
+      "width": 48,
+      "height": 48,
+      "anchor": [
+        24,
+        44
+      ],
+      "footprint_tiles": [
+        3,
+        3
+      ],
+      "category": "plant"
+    },
+    {
+      "name": "fallen_leaves_pile",
+      "source_file": "fallen_leaves_pile.png",
+      "sheet_x": 608,
+      "sheet_y": 576,
+      "width": 48,
+      "height": 48,
+      "anchor": [
+        24,
+        44
+      ],
+      "footprint_tiles": [
+        3,
+        3
+      ],
+      "category": "plant"
+    }
+  ]
+}

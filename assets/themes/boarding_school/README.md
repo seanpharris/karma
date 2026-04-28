@@ -6,6 +6,11 @@ A cozy, whimsical, socially tense boarding school setting with themes of secrets
 
 - **tileset.png**: 16×16 tileset sheet for boarding school-themed environments
   - Includes: stone buildings, classrooms, dormitory rooms, courtyard, library, notice boards, furniture, school gardens
+- **grass_tiles_1_32.png**: 32x32 manually authored grass tile variants.
+  - Preview: `grass_tiles_1_blend_preview.png`
+- **grass_tiles_1_32_dark.png**: darker filtered variant of `grass_tiles_1_32.png`.
+  - Preview: `grass_tiles_1_dark_blend_preview.png`
+  - Building preview: `grass_tiles_1_dark_buildings_preview.png`
 
 ## Generation Schema
 

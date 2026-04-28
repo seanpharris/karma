@@ -24,6 +24,44 @@ The upstream license permits use, copy, modification, merge, publishing,
 distribution, sublicensing, and sale, provided the copyright and permission
 notice are included in substantial copies of the software.
 
+## Mixel Top-Down RPG 32x32 v1.7
+
+- Source folder: `assets/art/third_party/mixel_top_down_rpg_32x32_v1_7`
+- Creator: Mixel
+- Contact listed by upstream: `mixelslime@gmail.com`
+- Included upstream files: `LICENSE.txt`, `README.txt`
+
+The upstream license permits use in personal and commercial video game projects
+and allows including the unmodified assets as part of a compiled game. It does
+not permit redistributing or reselling the assets as an asset pack or template,
+publishing modified assets under a different name, NFT use, or AI dataset
+training use. Keep the upstream license/readme with the copied assets and do not
+publish the folder as a standalone asset collection.
+
+## Nature Free
+
+- Source folder: `assets/art/third_party/nature_free_noncommercial`
+- Original local archive: `C:\Users\jasme\Downloads\nature free.zip`
+- Included upstream files: `license.txt`, `list.txt`
+
+The included license states this asset pack can be used in non-commercial
+projects and modified, but cannot be used commercially, resold, or redistributed,
+even if modified. Treat these assets as local reference or non-commercial
+prototype material only.
+
+## Cainos Pixel Art Top Down - Basic v1.2.3
+
+- Source folder: `assets/art/third_party/cainos_pixel_art_top_down_basic_v1_2_3`
+- Original local folder: `C:\Users\jasme\Downloads\Pixel Art Top Down - Basic v1.2.3`
+- Asset page: `https://cainos.itch.io/pixel-art-top-down-basic`
+- Documentation: `https://docs.cainos.net/pixel-art-top-down-basic`
+
+The asset page states the pack can be used in free and commercial projects and
+modified for project use. Credit is appreciated but not required. The asset pack
+itself may not be redistributed or resold, modified or unmodified. Keep this
+folder under `third_party` and do not publish it as a standalone asset
+collection or template.
+
 ## Procedural Generation Research
 
 Karma's procedural-generation direction is informed by permissively licensed

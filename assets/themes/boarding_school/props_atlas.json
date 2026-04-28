@@ -1,0 +1,278 @@
+{
+  "layout": "variable",
+  "columns": 4,
+  "sprites": [
+    {
+      "name": "courtyard_tree",
+      "source_file": "courtyard_tree.png",
+      "sheet_x": 0,
+      "sheet_y": 0,
+      "width": 256,
+      "height": 320,
+      "anchor": [
+        128,
+        312
+      ],
+      "footprint_tiles": [
+        16,
+        20
+      ],
+      "category": "prop"
+    },
+    {
+      "name": "stone_bench",
+      "source_file": "stone_bench.png",
+      "sheet_x": 256,
+      "sheet_y": 0,
+      "width": 112,
+      "height": 64,
+      "anchor": [
+        56,
+        60
+      ],
+      "footprint_tiles": [
+        7,
+        4
+      ],
+      "category": "prop"
+    },
+    {
+      "name": "hedgerow_segment",
+      "source_file": "hedgerow_segment.png",
+      "sheet_x": 384,
+      "sheet_y": 0,
+      "width": 160,
+      "height": 96,
+      "anchor": [
+        80,
+        88
+      ],
+      "footprint_tiles": [
+        10,
+        6
+      ],
+      "category": "prop"
+    },
+    {
+      "name": "statue_plinth",
+      "source_file": "statue_plinth.png",
+      "sheet_x": 544,
+      "sheet_y": 0,
+      "width": 128,
+      "height": 160,
+      "anchor": [
+        64,
+        152
+      ],
+      "footprint_tiles": [
+        8,
+        10
+      ],
+      "category": "prop"
+    },
+    {
+      "name": "boulder_cluster",
+      "source_file": "boulder_cluster.png",
+      "sheet_x": 0,
+      "sheet_y": 320,
+      "width": 128,
+      "height": 128,
+      "anchor": [
+        64,
+        120
+      ],
+      "footprint_tiles": [
+        8,
+        8
+      ],
+      "category": "prop"
+    },
+    {
+      "name": "old_lantern_post",
+      "source_file": "old_lantern_post.png",
+      "sheet_x": 256,
+      "sheet_y": 320,
+      "width": 128,
+      "height": 192,
+      "anchor": [
+        64,
+        184
+      ],
+      "footprint_tiles": [
+        8,
+        12
+      ],
+      "category": "prop"
+    },
+    {
+      "name": "iron_fence_straight",
+      "source_file": "iron_fence_straight.png",
+      "sheet_x": 384,
+      "sheet_y": 320,
+      "width": 160,
+      "height": 96,
+      "anchor": [
+        80,
+        88
+      ],
+      "footprint_tiles": [
+        10,
+        6
+      ],
+      "category": "prop"
+    },
+    {
+      "name": "iron_fence_gate",
+      "source_file": "iron_fence_gate.png",
+      "sheet_x": 544,
+      "sheet_y": 320,
+      "width": 160,
+      "height": 128,
+      "anchor": [
+        80,
+        120
+      ],
+      "footprint_tiles": [
+        10,
+        8
+      ],
+      "category": "prop"
+    },
+    {
+      "name": "book_stack",
+      "source_file": "book_stack.png",
+      "sheet_x": 0,
+      "sheet_y": 512,
+      "width": 40,
+      "height": 40,
+      "anchor": [
+        20,
+        36
+      ],
+      "footprint_tiles": [
+        3,
+        3
+      ],
+      "category": "prop"
+    },
+    {
+      "name": "parchment_pile",
+      "source_file": "parchment_pile.png",
+      "sheet_x": 256,
+      "sheet_y": 512,
+      "width": 40,
+      "height": 40,
+      "anchor": [
+        20,
+        36
+      ],
+      "footprint_tiles": [
+        3,
+        3
+      ],
+      "category": "prop"
+    },
+    {
+      "name": "school_bag",
+      "source_file": "school_bag.png",
+      "sheet_x": 384,
+      "sheet_y": 512,
+      "width": 40,
+      "height": 40,
+      "anchor": [
+        20,
+        36
+      ],
+      "footprint_tiles": [
+        3,
+        3
+      ],
+      "category": "prop"
+    },
+    {
+      "name": "broom_bucket",
+      "source_file": "broom_bucket.png",
+      "sheet_x": 544,
+      "sheet_y": 512,
+      "width": 56,
+      "height": 72,
+      "anchor": [
+        28,
+        68
+      ],
+      "footprint_tiles": [
+        4,
+        5
+      ],
+      "category": "prop"
+    },
+    {
+      "name": "wooden_chair",
+      "source_file": "wooden_chair.png",
+      "sheet_x": 0,
+      "sheet_y": 584,
+      "width": 56,
+      "height": 64,
+      "anchor": [
+        28,
+        60
+      ],
+      "footprint_tiles": [
+        4,
+        4
+      ],
+      "category": "prop"
+    },
+    {
+      "name": "study_table",
+      "source_file": "study_table.png",
+      "sheet_x": 256,
+      "sheet_y": 584,
+      "width": 80,
+      "height": 56,
+      "anchor": [
+        40,
+        52
+      ],
+      "footprint_tiles": [
+        5,
+        4
+      ],
+      "category": "prop"
+    },
+    {
+      "name": "notice_stand",
+      "source_file": "notice_stand.png",
+      "sheet_x": 384,
+      "sheet_y": 584,
+      "width": 128,
+      "height": 160,
+      "anchor": [
+        64,
+        152
+      ],
+      "footprint_tiles": [
+        8,
+        10
+      ],
+      "category": "prop"
+    },
+    {
+      "name": "prank_box",
+      "source_file": "prank_box.png",
+      "sheet_x": 544,
+      "sheet_y": 584,
+      "width": 40,
+      "height": 40,
+      "anchor": [
+        20,
+        36
+      ],
+      "footprint_tiles": [
+        3,
+        3
+      ],
+      "category": "prop"
+    }
+  ]
+}
