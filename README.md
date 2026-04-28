@@ -46,3 +46,102 @@ and perks reset.
 
 See [`docs/testing-launch-paths.md`](docs/testing-launch-paths.md) for direct Godot commands.
 See [`docs/sprite-modeling-status.md`](docs/sprite-modeling-status.md) for why the current sprite-modeling difference is mostly pipeline/animation support rather than a dramatic visual upgrade.
+
+## Building Sprite Pipeline
+
+This repository now includes a Python sprite pipeline for converting raw building artwork into clean, consistent 96x96 transparent PNG sprites for a top-down pixel game.
+
+The pipeline:
+- removes a keyed background color from a configured flat background
+- supports any strong color such as magenta, green, cyan, red, blue, or user-specified hex
+- uses edge-connected masking so only border-connected background pixels are removed
+- optionally detects the background color from the image border with `--auto-bg`
+- optionally cleans up edge anti-aliasing with `--edge-cleanup`
+- optionally decontaminates visible sprite edge pixels with `--decontaminate-bg`
+- crops to the visible object
+- resizes proportionally with nearest-neighbor scaling
+- centers sprites on a transparent `96x96` canvas by default
+- supports per-sprite canvas, fit, anchor, and footprint metadata from a manifest
+- quantizes palette colors while preserving alpha
+- optionally adds a 1px dark outline
+- generates fixed-grid sprite sheets or variable-size atlases with JSON metadata
+
+Best practice for generated building sprites:
+- generate the building on a flat, high-contrast background color
+- choose a background color that does not appear in the building
+- keep `#ff00ff` as the default key color, or use `--bg "#00ff00"` for green, `#00ffff` for cyan, etc.
+- if the background varies slightly, use `--auto-bg`
+- if halos remain, use `--edge-cleanup`
+- if the sprite has background contamination on edge pixels, use `--decontaminate-bg`
+- if parts disappear, lower `--tolerance` and keep `--use-hsv-bg-detection` disabled
+- if the background still remains, increase `--tolerance` slightly or enable `--auto-bg`
+- for 96x96 output, simpler chunky buildings work best with strong silhouettes and fewer tiny details
+
+Example commands:
+
+```bash
+python -m src.pipeline process --input input_raw --output output_sprites --size 96 --colors 32 --bg "#00ff00" --tolerance 25
+python -m src.pipeline process --input input_raw --output output_sprites --size 96 --colors 32 --auto-bg --tolerance 30 --edge-cleanup
+python -m src.pipeline all --input input_raw --sprites output_sprites --sheet output_sheets/buildings_sheet.png --metadata output_sheets/buildings_sheet.json --size 96 --colors 32 --cols 8 --auto-bg --edge-cleanup
+```
+
+If the art generator returns one 3x3 sheet or a screenshot of one, split it into named raw inputs first:
+
+```bash
+python -m src.pipeline split-grid --input input_raw/western_screenshot.png --output input_raw/western_buildings --rows 3 --cols 3 --names saloon,sheriff_office,general_store,doctor_office,mine_entrance,ore_storage,farmhouse,barn,animal_pen --bg "#ff00ff" --manifest-output western_buildings_manifest.json --canvas 96x96 --fit 92x92 --footprint-tiles 6x6 --category building
+```
+
+If the generated art drifts across the implied grid boundary, add `--component-split`. This detects each foreground sprite on the keyed background and assigns it to a grid slot by center point instead of blindly cutting equal rectangles:
+
+```bash
+python -m src.pipeline split-grid --input input_raw/western_screenshot.png --output input_raw/western_buildings --rows 3 --cols 3 --names saloon,sheriff_office,general_store,doctor_office,mine_entrance,ore_storage,farmhouse,barn,animal_pen --bg "#ff00ff" --manifest-output western_buildings_manifest.json --canvas 96x96 --fit 92x92 --footprint-tiles 6x6 --category building --component-split
+```
+
+Then process and build the final atlas:
+
+```bash
+python -m src.pipeline all --input input_raw/western_buildings --sprites output_sprites/western_buildings --sheet output_sheets/western_buildings_atlas.png --metadata output_sheets/western_buildings_atlas.json --manifest western_buildings_manifest.json --size 96 --colors 32 --cols 3 --auto-bg --edge-cleanup --variable-atlas
+```
+
+For mixed-size sprites, create a manifest keyed by raw file name without extension:
+
+```json
+{
+  "main_hall": {
+    "canvas": [96, 96],
+    "fit": [92, 92],
+    "anchor": [48, 88],
+    "footprint_tiles": [6, 6],
+    "category": "building"
+  },
+  "fountain": {
+    "canvas": [48, 48],
+    "fit": [40, 40],
+    "anchor": [24, 42],
+    "footprint_tiles": [2, 2],
+    "category": "prop"
+  },
+  "notice_board": {
+    "canvas": [32, 32],
+    "fit": [28, 28],
+    "anchor": [16, 30],
+    "footprint_tiles": [1, 1],
+    "category": "prop"
+  }
+}
+```
+
+Then run the full mixed-size pipeline:
+
+```bash
+python -m src.pipeline all --input input_raw --sprites output_sprites --sheet output_sheets/boarding_school_atlas.png --metadata output_sheets/boarding_school_atlas.json --manifest sprite_manifest.json --size 96 --colors 32 --cols 8 --auto-bg --edge-cleanup --variable-atlas
+```
+
+`canvas` controls the output PNG size for that sprite. `fit` controls how large the cropped artwork is allowed to become inside the canvas. `anchor` is the pixel point the game can use for placement, usually near the bottom center of the sprite. `footprint_tiles` records how many `16px` world tiles the object occupies.
+
+The new folders are:
+- `input_raw/`
+- `output_sprites/`
+- `output_sheets/`
+
+Generated files in those folders are ignored by git.

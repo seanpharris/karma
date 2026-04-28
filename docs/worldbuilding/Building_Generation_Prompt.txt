@@ -1,0 +1,221 @@
+You are creating art-production files for a top-down pixel-art game world.
+
+Input:
+I will provide a `world_generation.json`.
+
+Your task:
+Read the JSON and generate two outputs:
+
+1. `artwork_prompt`
+2. `artifact.json`
+
+Do not generate images. Only generate the text prompt and JSON artifact.
+
+---
+
+REQUIREMENTS:
+
+1. `artwork_prompt`
+
+Create a reusable image-generation prompt that produces a **sprite sheet of buildings**, not individual sprites.
+
+The prompt must:
+
+- Preserve the theme, tone, and setting from `world_generation.json`
+- Generate ALL required building types in a **single sprite sheet**
+- Use **3/4 top-down RPG perspective** (front + slight roof visible)
+- Be optimized so EACH building remains readable when cropped/resized for gameplay
+- Require a **flat high-contrast removable background (#ff00ff)**
+
+---
+
+The prompt MUST follow this structure:
+
+TITLE LINE:
+- "Create a pixel-art sprite sheet of multiple buildings for a top-down 2D RPG [THEME] game."
+
+SECTIONS, in this exact order:
+
+STYLE:
+- Perspective: 3/4 top-down RPG perspective
+- Pixel art constraints: crisp edges, NO anti-aliasing
+- Palette based on theme
+- Lighting direction
+- Shape language: chunky, readable, stylized
+- Surface detail rules: controlled wear, not noisy
+
+TONE:
+- Derived from `world_generation.json` tone
+- Describe emotional and narrative feel of buildings
+- Include imperfections and storytelling through shape
+
+CRITICAL READABILITY:
+- Each sprite must remain readable at its target atlas size
+- Large shapes only
+- Avoid details smaller than 3–4 pixels at final gameplay size
+- Bold silhouettes
+- No text labels, only icon signage
+
+DETAIL CONTROL:
+- Explicitly limit micro-detail
+- Emphasize large forms over texture
+- Require exaggerated shapes for clarity
+
+COMPOSITION:
+- Generate a clean grid layout
+- Grid size must match number of buildings:
+  - 1–4 buildings → 2x2
+  - 5–9 buildings → 3x3
+  - 10–16 buildings → 4x4
+- Each building:
+  - centered in its own cell
+  - sized according to importance and physical footprint
+  - no overlap or boundary crossing
+
+BACKGROUND:
+- solid #ff00ff
+- no gradients
+- no shadows
+
+STRICT RULES:
+- no people, animals, or vehicles
+- no terrain, sky, or environment
+- no floating props
+- no lighting effects such as bloom, fog, or blur
+- no perspective distortion
+- no text
+
+---
+
+BUILDINGS TO INCLUDE:
+
+- List ALL required buildings from the JSON
+- Group them logically by location if applicable
+- For EACH building include:
+  - name in snake_case
+  - 2–4 visual traits
+  - 1 simple icon concept for signage readability
+
+Example format:
+
+TOWN CENTER:
+1. main_hall
+   - large central academy building
+   - wide entrance, symmetrical shape
+   - icon: crest
+
+---
+
+OUTPUT:
+- one clean sprite sheet
+- evenly spaced grid
+- each building readable and distinct at small size
+
+---
+
+PIPELINE REQUIREMENTS:
+
+- The sheet MUST be an exact grid based on building count
+- Grid order MUST be left-to-right, top-to-bottom
+- Order must MATCH the building list exactly
+- Each sprite must be centered inside its cell
+- Maintain visible #ff00ff spacing between cells and around the outer border
+- Do NOT include labels, captions, numbering, or text in the image
+
+---
+
+2. `artifact.json`
+
+Create an atlas JSON file for slicing/placing the generated building sprite sheet.
+
+The artifact.json MUST use this structure:
+
+{
+  "layout": "variable",
+  "columns": <grid_columns>,
+  "sprites": []
+}
+
+Each sprite object must include:
+
+- name
+- source_file
+- sheet_x
+- sheet_y
+- width
+- height
+- anchor
+- footprint_tiles
+- category
+
+Artifact sizing rules:
+
+- Use the same building order as the artwork prompt grid.
+- sheet_x and sheet_y are pixel coordinates on the final sprite sheet.
+- Do NOT force every sprite to 96x96.
+- Choose width and height based on the intended visual/gameplay footprint of the sprite.
+- Small structures may use 64x64.
+- Standard buildings usually use 96x96.
+- Large, tall, wide, or landmark buildings may use 128x128 or mixed dimensions such as 128x96 or 96x128.
+- category is always "building".
+
+Recommended size mappings:
+
+Small structure:
+- width: 64
+- height: 64
+- anchor: [32, 56]
+- footprint_tiles: [4, 4]
+
+Standard building:
+- width: 96
+- height: 96
+- anchor: [48, 88]
+- footprint_tiles: [6, 6]
+
+Wide building:
+- width: 128
+- height: 96
+- anchor: [64, 88]
+- footprint_tiles: [8, 6]
+
+Tall building:
+- width: 96
+- height: 128
+- anchor: [48, 120]
+- footprint_tiles: [6, 8]
+
+Large landmark:
+- width: 128
+- height: 128
+- anchor: [64, 120]
+- footprint_tiles: [8, 8]
+
+Placement rules:
+
+- For variable atlases, sheet_x and sheet_y must account for each sprite’s actual width and height.
+- Do not place sprites on a fixed 96px grid if their sizes vary.
+- Each row’s y position must account for the tallest sprite in the previous row.
+- Empty grid slots should not be included in the sprites array.
+- Do not include world_name, theme, prompt text, visual notes, status, or building descriptions in artifact.json.
+- Output valid JSON only.
+
+---
+
+Rules:
+
+- Use ONLY building types required or clearly implied by the JSON.
+- If duplicates exist, create variants with numbered IDs.
+- Keep visual notes concise and generator-friendly.
+- No standalone props — only attached building features.
+- No characters, terrain, interiors, enemies, vehicles, or loose items.
+- Do NOT generate images.
+- Output valid JSON only.
+
+---
+
+Return your answer in this exact structure:
+
+ARTWORK_PROMPT:
+```text
+<sprite sheet prompt here>

@@ -1,0 +1,173 @@
+{
+  "saloon": {
+    "canvas": [
+      96,
+      96
+    ],
+    "fit": [
+      92,
+      92
+    ],
+    "anchor": [
+      48,
+      88
+    ],
+    "footprint_tiles": [
+      6,
+      6
+    ],
+    "category": "building"
+  },
+  "sheriff_office": {
+    "canvas": [
+      96,
+      96
+    ],
+    "fit": [
+      92,
+      92
+    ],
+    "anchor": [
+      48,
+      88
+    ],
+    "footprint_tiles": [
+      6,
+      6
+    ],
+    "category": "building"
+  },
+  "general_store": {
+    "canvas": [
+      96,
+      96
+    ],
+    "fit": [
+      92,
+      92
+    ],
+    "anchor": [
+      48,
+      88
+    ],
+    "footprint_tiles": [
+      6,
+      6
+    ],
+    "category": "building"
+  },
+  "doctor_office": {
+    "canvas": [
+      96,
+      96
+    ],
+    "fit": [
+      92,
+      92
+    ],
+    "anchor": [
+      48,
+      88
+    ],
+    "footprint_tiles": [
+      6,
+      6
+    ],
+    "category": "building"
+  },
+  "mine_entrance": {
+    "canvas": [
+      128,
+      128
+    ],
+    "fit": [
+      124,
+      124
+    ],
+    "anchor": [
+      64,
+      120
+    ],
+    "footprint_tiles": [
+      8,
+      8
+    ],
+    "category": "building"
+  },
+  "ore_storage": {
+    "canvas": [
+      96,
+      96
+    ],
+    "fit": [
+      92,
+      92
+    ],
+    "anchor": [
+      48,
+      88
+    ],
+    "footprint_tiles": [
+      6,
+      6
+    ],
+    "category": "building"
+  },
+  "farmhouse": {
+    "canvas": [
+      96,
+      96
+    ],
+    "fit": [
+      92,
+      92
+    ],
+    "anchor": [
+      48,
+      88
+    ],
+    "footprint_tiles": [
+      6,
+      6
+    ],
+    "category": "building"
+  },
+  "barn": {
+    "canvas": [
+      96,
+      96
+    ],
+    "fit": [
+      92,
+      92
+    ],
+    "anchor": [
+      48,
+      88
+    ],
+    "footprint_tiles": [
+      6,
+      6
+    ],
+    "category": "building"
+  },
+  "animal_pen": {
+    "canvas": [
+      96,
+      96
+    ],
+    "fit": [
+      92,
+      92
+    ],
+    "anchor": [
+      48,
+      88
+    ],
+    "footprint_tiles": [
+      6,
+      6
+    ],
+    "category": "building"
+  }
+}

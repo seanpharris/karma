@@ -1,0 +1,224 @@
+{
+  "source": "assets/themes/boarding_school/grass_tiles_1_32.png",
+  "tile_size": 32,
+  "columns": 8,
+  "sprites": [
+    {
+      "name": "grass_tile_00",
+      "source_file": "grass_tile_00.png",
+      "source_bbox": [
+        6,
+        7,
+        32,
+        32
+      ],
+      "sheet_x": 0,
+      "sheet_y": 0,
+      "width": 32,
+      "height": 32,
+      "source_area": 1024,
+      "normalized": false
+    },
+    {
+      "name": "grass_tile_01",
+      "source_file": "grass_tile_01.png",
+      "source_bbox": [
+        6,
+        42,
+        32,
+        32
+      ],
+      "sheet_x": 32,
+      "sheet_y": 0,
+      "width": 32,
+      "height": 32,
+      "source_area": 1024,
+      "normalized": false
+    },
+    {
+      "name": "grass_tile_02",
+      "source_file": "grass_tile_02.png",
+      "source_bbox": [
+        43,
+        42,
+        32,
+        32
+      ],
+      "sheet_x": 64,
+      "sheet_y": 0,
+      "width": 32,
+      "height": 32,
+      "source_area": 1024,
+      "normalized": false
+    },
+    {
+      "name": "grass_tile_03",
+      "source_file": "grass_tile_03.png",
+      "source_bbox": [
+        6,
+        77,
+        33,
+        32
+      ],
+      "sheet_x": 96,
+      "sheet_y": 0,
+      "width": 32,
+      "height": 32,
+      "source_area": 1056,
+      "normalized": true
+    },
+    {
+      "name": "grass_tile_04",
+      "source_file": "grass_tile_04.png",
+      "source_bbox": [
+        43,
+        77,
+        32,
+        32
+      ],
+      "sheet_x": 128,
+      "sheet_y": 0,
+      "width": 32,
+      "height": 32,
+      "source_area": 1024,
+      "normalized": false
+    },
+    {
+      "name": "grass_tile_05",
+      "source_file": "grass_tile_05.png",
+      "source_bbox": [
+        6,
+        111,
+        32,
+        32
+      ],
+      "sheet_x": 160,
+      "sheet_y": 0,
+      "width": 32,
+      "height": 32,
+      "source_area": 1024,
+      "normalized": false
+    },
+    {
+      "name": "grass_tile_06",
+      "source_file": "grass_tile_06.png",
+      "source_bbox": [
+        43,
+        112,
+        32,
+        32
+      ],
+      "sheet_x": 192,
+      "sheet_y": 0,
+      "width": 32,
+      "height": 32,
+      "source_area": 1024,
+      "normalized": false
+    },
+    {
+      "name": "grass_tile_07",
+      "source_file": "grass_tile_07.png",
+      "source_bbox": [
+        6,
+        146,
+        32,
+        32
+      ],
+      "sheet_x": 224,
+      "sheet_y": 0,
+      "width": 32,
+      "height": 32,
+      "source_area": 1024,
+      "normalized": false
+    },
+    {
+      "name": "grass_tile_08",
+      "source_file": "grass_tile_08.png",
+      "source_bbox": [
+        44,
+        147,
+        32,
+        32
+      ],
+      "sheet_x": 0,
+      "sheet_y": 32,
+      "width": 32,
+      "height": 32,
+      "source_area": 1024,
+      "normalized": false
+    },
+    {
+      "name": "grass_tile_09",
+      "source_file": "grass_tile_09.png",
+      "source_bbox": [
+        44,
+        182,
+        32,
+        32
+      ],
+      "sheet_x": 32,
+      "sheet_y": 32,
+      "width": 32,
+      "height": 32,
+      "source_area": 1024,
+      "normalized": false
+    },
+    {
+      "name": "grass_tile_10",
+      "source_file": "grass_tile_10.png",
+      "source_bbox": [
+        6,
+        183,
+        32,
+        32
+      ],
+      "sheet_x": 64,
+      "sheet_y": 32,
+      "width": 32,
+      "height": 32,
+      "source_area": 1024,
+      "normalized": false
+    },
+    {
+      "name": "grass_tile_11",
+      "source_file": "grass_tile_11.png",
+      "source_bbox": [
+        44,
+        219,
+        32,
+        32
+      ],
+      "sheet_x": 96,
+      "sheet_y": 32,
+      "width": 32,
+      "height": 32,
+      "source_area": 1024,
+      "normalized": false
+    },
+    {
+      "name": "grass_tile_12",
+      "source_file": "grass_tile_12.png",
+      "source_bbox": [
+        5,
+        220,
+        32,
+        32
+      ],
+      "sheet_x": 128,
+      "sheet_y": 32,
+      "width": 32,
+      "height": 32,
+      "source_area": 1024,
+      "normalized": false
+    }
+  ],
+  "preview": "assets/themes/boarding_school/grass_tiles_1_dark_blend_preview.png",
+  "arranged_preview": "assets/themes/boarding_school/grass_tiles_1_dark_arranged_preview.png",
+  "derived_from": "assets/themes/boarding_school/grass_tiles_1_32.png",
+  "filter": {
+    "brightness": 0.82,
+    "saturation": 0.96,
+    "contrast": 1.02,
+    "alpha": "preserved"
+  }
+}

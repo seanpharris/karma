@@ -1,0 +1,142 @@
+{
+  "layout": "variable",
+  "columns": 3,
+  "sprites": [
+    {
+      "name": "main_hall",
+      "source_file": "main_hall.png",
+      "sheet_x": 0,
+      "sheet_y": 0,
+      "width": 768,
+      "height": 576,
+      "anchor": [
+        384,
+        568
+      ],
+      "footprint_tiles": [
+        48,
+        36
+      ],
+      "category": "building"
+    },
+    {
+      "name": "notice_board",
+      "source_file": "notice_board.png",
+      "sheet_x": 768,
+      "sheet_y": 0,
+      "width": 128,
+      "height": 128,
+      "anchor": [
+        64,
+        120
+      ],
+      "footprint_tiles": [
+        8,
+        8
+      ],
+      "category": "building"
+    },
+    {
+      "name": "fountain",
+      "source_file": "fountain.png",
+      "sheet_x": 1408,
+      "sheet_y": 0,
+      "width": 256,
+      "height": 256,
+      "anchor": [
+        128,
+        248
+      ],
+      "footprint_tiles": [
+        16,
+        16
+      ],
+      "category": "building"
+    },
+    {
+      "name": "student_rooms",
+      "source_file": "student_rooms.png",
+      "sheet_x": 0,
+      "sheet_y": 576,
+      "width": 768,
+      "height": 432,
+      "anchor": [
+        384,
+        424
+      ],
+      "footprint_tiles": [
+        48,
+        27
+      ],
+      "category": "building"
+    },
+    {
+      "name": "common_room",
+      "source_file": "common_room.png",
+      "sheet_x": 768,
+      "sheet_y": 576,
+      "width": 512,
+      "height": 384,
+      "anchor": [
+        256,
+        376
+      ],
+      "footprint_tiles": [
+        32,
+        24
+      ],
+      "category": "building"
+    },
+    {
+      "name": "classroom",
+      "source_file": "classroom.png",
+      "sheet_x": 1408,
+      "sheet_y": 576,
+      "width": 512,
+      "height": 384,
+      "anchor": [
+        256,
+        376
+      ],
+      "footprint_tiles": [
+        32,
+        24
+      ],
+      "category": "building"
+    },
+    {
+      "name": "faculty_office",
+      "source_file": "faculty_office.png",
+      "sheet_x": 0,
+      "sheet_y": 1008,
+      "width": 512,
+      "height": 384,
+      "anchor": [
+        256,
+        376
+      ],
+      "footprint_tiles": [
+        32,
+        24
+      ],
+      "category": "building"
+    },
+    {
+      "name": "library",
+      "source_file": "library.png",
+      "sheet_x": 768,
+      "sheet_y": 1008,
+      "width": 640,
+      "height": 640,
+      "anchor": [
+        320,
+        632
+      ],
+      "footprint_tiles": [
+        40,
+        40
+      ],
+      "category": "building"
+    }
+  ]
+}
