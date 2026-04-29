@@ -376,20 +376,13 @@ public partial class GameState : Node
         EnsurePrototypePlayers();
         var target = _players[targetId];
         var before = target.Health;
-        var died = target.ApplyDamage(amount);
+        var wentDown = target.ApplyDamage(amount);
         var actualDamage = before - target.Health;
         WorldEvents.Add(WorldEventType.Combat, $"{target.DisplayName} took {actualDamage} damage: {reason}", attackerId, targetId);
         EmitSignal(SignalName.KarmaEvent, $"{target.DisplayName} took {actualDamage} damage: {reason}");
-
-        if (died)
-        {
-            Duels.EndForPlayer(targetId);
-            TriggerKarmaBreak(targetId);
-        }
-
         EmitCombatChanged();
         EmitWorldEventsChanged();
-        return died;
+        return wentDown;
     }
 
     public bool HealPlayer(string healerId, string targetId, int amount, string reason)

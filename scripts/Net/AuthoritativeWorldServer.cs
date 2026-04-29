@@ -21,6 +21,8 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, TilePosition> _initialSpawnByPlayer = new();
     private readonly HashSet<string> _connectedPlayerIds = new();
     private readonly Dictionary<string, string> _pendingPosseInviteByInvitee = new();
+    private readonly Dictionary<string, long> _downedUntilTickByPlayer = new();
+    private readonly Dictionary<string, TilePosition> _downedDeathPositionByPlayer = new();
     private readonly Dictionary<string, WorldItemEntity> _worldItems = new();
     private readonly Dictionary<(int ChunkX, int ChunkY), int> _combatHeatByChunk = new();
     private readonly Dictionary<string, WorldStructureEntity> _worldStructures = new();
@@ -33,6 +35,7 @@ public sealed class AuthoritativeWorldServer
     private bool _matchRewardsPaid;
     private const long AttackCooldownTicks = 3;
     private const long KarmaBreakGraceTicks = 5;
+    public const long DownedCountdownTicks = 120;
     public const int CombatHeatPerAttack = 100;
     public const int CombatHeatDecayPerTick = 1;
     public const int CombatHeatHotThreshold = 0;
@@ -106,6 +109,7 @@ public sealed class AuthoritativeWorldServer
         _tick += ticks;
         PruneLocalChatLog();
         DecayHeatMap(ticks);
+        FinalizeExpiredDownedPlayers();
     }
 
     public void AdvanceMatchTime(int seconds)
@@ -363,6 +367,12 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, $"Match is finished; {intent.Type} is no longer accepted.");
         }
 
+        if (_downedUntilTickByPlayer.ContainsKey(intent.PlayerId) && !IsDownedIntentAllowed(intent.Type))
+        {
+            var remaining = _downedUntilTickByPlayer[intent.PlayerId] - _tick;
+            return Reject(intent, $"Player is downed ({remaining} ticks remaining); only chat is allowed.");
+        }
+
         _lastSequenceByPlayer[intent.PlayerId] = intent.Sequence;
 
         return intent.Type switch
@@ -400,6 +410,11 @@ public sealed class AuthoritativeWorldServer
     {
         return type is IntentType.Move or IntentType.StartDialogue or IntentType.SetAppearance
             or IntentType.SendLocalChat or IntentType.SendPosseChat or IntentType.LeavePosse;
+    }
+
+    private static bool IsDownedIntentAllowed(IntentType type)
+    {
+        return type is IntentType.SendLocalChat or IntentType.SendPosseChat;
     }
 
     public PlayerInterest GetInterestFor(string playerId)
@@ -727,6 +742,40 @@ public sealed class AuthoritativeWorldServer
         if (_localChatLog.Count > LocalChatMaxRetainedMessages)
         {
             _localChatLog.RemoveRange(0, _localChatLog.Count - LocalChatMaxRetainedMessages);
+        }
+    }
+
+    private void FinalizeExpiredDownedPlayers()
+    {
+        if (_downedUntilTickByPlayer.Count == 0)
+        {
+            return;
+        }
+
+        var expired = _downedUntilTickByPlayer
+            .Where(pair => _tick >= pair.Value)
+            .Select(pair => pair.Key)
+            .ToArray();
+
+        foreach (var playerId in expired)
+        {
+            _downedUntilTickByPlayer.Remove(playerId);
+            _downedDeathPositionByPlayer.TryGetValue(playerId, out var deathPosition);
+            _downedDeathPositionByPlayer.Remove(playerId);
+            var droppedItemCount = DropInventory(playerId).Count;
+            _state.TriggerKarmaBreak(playerId);
+            RespawnPlayer(playerId, deathPosition);
+            StartKarmaBreakGrace(playerId);
+            AppendEvent(
+                "player_respawned",
+                $"{_state.Players[playerId].DisplayName} respawned after being downed.",
+                new Dictionary<string, string>
+                {
+                    ["playerId"] = playerId,
+                    ["droppedItemCount"] = droppedItemCount.ToString(),
+                    ["respawnX"] = _state.Players[playerId].Position.X.ToString(),
+                    ["respawnY"] = _state.Players[playerId].Position.Y.ToString()
+                });
         }
     }
 
@@ -1303,34 +1352,32 @@ public sealed class AuthoritativeWorldServer
                     new[] { "violent", "harmful", "chaotic" },
                     $"{attacker.DisplayName} attacked {target.DisplayName} outside a duel."));
         var damage = 30 + attacker.AttackPower;
-        var died = _state.DamagePlayer(intent.PlayerId, targetId, damage, isDuelAttack ? "accepted duel strike" : "server-authorized attack");
+        var wentDown = _state.DamagePlayer(intent.PlayerId, targetId, damage, isDuelAttack ? "accepted duel strike" : "server-authorized attack");
         _lastAttackTickByPlayer[intent.PlayerId] = _tick;
         AddCombatHeat(attacker.Position);
-        var droppedItemCount = died ? DropInventory(targetId).Count : 0;
-        if (died)
+        if (wentDown)
         {
-            RespawnPlayer(targetId, target.Position, attacker.Position);
-            StartKarmaBreakGrace(targetId);
+            _downedUntilTickByPlayer[targetId] = _tick + DownedCountdownTicks;
+            _downedDeathPositionByPlayer[targetId] = target.Position;
         }
 
         var serverEvent = AppendEvent(
-            "player_attacked",
-            $"{intent.PlayerId} attacked {targetId} for {damage} raw damage",
-            WithRespawnData(
-                new Dictionary<string, string>
-                {
-                    ["playerId"] = intent.PlayerId,
-                    ["targetId"] = targetId,
-                    ["rawDamage"] = damage.ToString(),
-                    ["died"] = died.ToString(),
-                    ["duel"] = isDuelAttack.ToString(),
-                    ["droppedItemCount"] = droppedItemCount.ToString(),
-                    ["karmaAmount"] = shift.Amount.ToString(),
-                    ["targetHealth"] = _state.Players[targetId].Health.ToString(),
-                    ["targetMaxHealth"] = _state.Players[targetId].MaxHealth.ToString()
-                },
-                died,
-                _state.Players[targetId].Position));
+            wentDown ? "player_downed" : "player_attacked",
+            wentDown
+                ? $"{target.DisplayName} was downed by {attacker.DisplayName} ({DownedCountdownTicks} tick countdown)."
+                : $"{intent.PlayerId} attacked {targetId} for {damage} raw damage",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["targetId"] = targetId,
+                ["rawDamage"] = damage.ToString(),
+                ["downed"] = wentDown.ToString(),
+                ["duel"] = isDuelAttack.ToString(),
+                ["karmaAmount"] = shift.Amount.ToString(),
+                ["targetHealth"] = _state.Players[targetId].Health.ToString(),
+                ["targetMaxHealth"] = _state.Players[targetId].MaxHealth.ToString(),
+                ["downedUntilTick"] = wentDown ? _downedUntilTickByPlayer[targetId].ToString() : "0"
+            });
 
         return ServerProcessResult.Accepted(serverEvent);
     }
@@ -2139,6 +2186,12 @@ public sealed class AuthoritativeWorldServer
     private IReadOnlyList<string> GetStatusEffectsFor(PlayerState player)
     {
         var statuses = new List<string>();
+        if (_downedUntilTickByPlayer.TryGetValue(player.Id, out var downedUntilTick) &&
+            _tick <= downedUntilTick)
+        {
+            statuses.Add($"Downed ({downedUntilTick - _tick})");
+        }
+
         if (_karmaBreakGraceUntilTickByPlayer.TryGetValue(player.Id, out var graceUntilTick) &&
             _tick <= graceUntilTick)
         {

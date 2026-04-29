@@ -1149,6 +1149,23 @@ public partial class HudController : CanvasLayer
             return $"{player} chose {action}: {direction} {amount} karma toward {target}.";
         }
 
+        if (latest.EventId.Contains("player_downed"))
+        {
+            var attacker = ReadEventData(latest, "playerId", "Someone");
+            var target = ReadEventData(latest, "targetId", "someone");
+            var damage = ReadEventData(latest, "rawDamage", "?");
+            return $"{attacker} downed {target} for {damage}. Countdown started.";
+        }
+
+        if (latest.EventId.Contains("player_respawned"))
+        {
+            var target = ReadEventData(latest, "playerId", "Someone");
+            var drops = ReadEventData(latest, "droppedItemCount", "0");
+            var x = ReadEventData(latest, "respawnX", "?");
+            var y = ReadEventData(latest, "respawnY", "?");
+            return $"{target} broke, dropped {drops}, and respawned at {x},{y}.";
+        }
+
         if (latest.EventId.Contains("player_attacked"))
         {
             var attacker = ReadEventData(latest, "playerId", "Someone");
@@ -1156,14 +1173,6 @@ public partial class HudController : CanvasLayer
             var damage = ReadEventData(latest, "rawDamage", "?");
             var health = ReadEventData(latest, "targetHealth", "?");
             var maxHealth = ReadEventData(latest, "targetMaxHealth", "?");
-            if (ReadEventData(latest, "died", "False") == "True")
-            {
-                var drops = ReadEventData(latest, "droppedItemCount", "0");
-                var x = ReadEventData(latest, "respawnX", "?");
-                var y = ReadEventData(latest, "respawnY", "?");
-                return $"{attacker} hit {target} for {damage}. {target} broke, dropped {drops}, and respawned at {x},{y}.";
-            }
-
             return $"{attacker} hit {target} for {damage}. {target} HP: {health}/{maxHealth}.";
         }
 

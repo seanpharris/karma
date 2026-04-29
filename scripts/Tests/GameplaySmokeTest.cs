@@ -894,13 +894,14 @@ public partial class GameplaySmokeTest : Node
                 ["targetId"] = "grace_target"
             }));
         ExpectTrue(lethalGraceAttack.WasAccepted, "server accepts lethal attack before Karma Break grace starts");
-        var graceRespawnPosition = graceState.Players["grace_target"].Position;
-        ExpectTrue(graceRespawnPosition.DistanceSquaredTo(TilePosition.Origin) >= 144, "lethal Karma Break respawns away from the death pile");
-        ExpectEqual(graceRespawnPosition.X.ToString(), lethalGraceAttack.Event.Data["respawnX"], "lethal attack event reports respawn x");
-        ExpectEqual(graceRespawnPosition.Y.ToString(), lethalGraceAttack.Event.Data["respawnY"], "lethal attack event reports respawn y");
+        ExpectTrue(graceState.Players["grace_target"].IsDown, "lethal attack downs the target");
+        ExpectEqual("True", lethalGraceAttack.Event.Data["downed"], "player_downed event carries downed flag");
         ExpectTrue(
-            HudController.FormatLatestServerEvent(new[] { lethalGraceAttack.Event }).Contains($"respawned at {graceRespawnPosition.X},{graceRespawnPosition.Y}"),
-            "HUD formats lethal attack outcome from server event data");
+            HudController.FormatLatestServerEvent(new[] { lethalGraceAttack.Event }).Contains("downed"),
+            "HUD formats lethal attack as downed event");
+        graceServer.AdvanceIdleTicks(AuthoritativeWorldServer.DownedCountdownTicks);
+        var graceRespawnPosition = graceState.Players["grace_target"].Position;
+        ExpectTrue(graceRespawnPosition.DistanceSquaredTo(TilePosition.Origin) >= 144, "downed player respawns away from the death pile after countdown");
         ExpectTrue(
             graceServer.CreateInterestSnapshot("grace_target")
                 .Players.First(player => player.Id == "grace_target")
@@ -1607,8 +1608,10 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(state.DamagePlayer(GameState.LocalPlayerId, "peer_stand_in", 35, "test strike"), "non-lethal damage does not trigger Karma Break");
         ExpectTrue(state.WorldEvents.Events.Any(worldEvent => worldEvent.Type == WorldEventType.Combat), "combat damage records world event");
         ExpectEqual(75, state.Players["peer_stand_in"].Health, "armor reduces incoming damage");
-        ExpectTrue(state.DamagePlayer(GameState.LocalPlayerId, "peer_stand_in", 100, "test lethal strike"), "lethal damage triggers Karma Break");
-        ExpectEqual(100, state.Players["peer_stand_in"].Health, "Karma Break restores dead player's health");
+        ExpectTrue(state.DamagePlayer(GameState.LocalPlayerId, "peer_stand_in", 100, "test lethal strike"), "lethal damage downs the player");
+        ExpectTrue(state.Players["peer_stand_in"].IsDown, "lethal damage marks player as downed");
+        state.TriggerKarmaBreak("peer_stand_in");
+        ExpectEqual(100, state.Players["peer_stand_in"].Health, "Karma Break restores downed player's health");
         state.AddItem(StarterItems.PracticeStick);
         ExpectTrue(state.HasItem(GameState.LocalPlayerId, StarterItems.PracticeStickId), "local player inventory stores picked up weapon");
         ExpectTrue(state.EquipPlayer(GameState.LocalPlayerId, StarterItems.PracticeStickId), "players can equip weapons");
@@ -3056,18 +3059,68 @@ public partial class GameplaySmokeTest : Node
 
         var hotChunk = respawnServer.GetChunkForTile(TilePosition.Origin);
         ExpectTrue(respawnServer.IsChunkHot(hotChunk.ChunkX, hotChunk.ChunkY),
-            "origin chunk remains hot when victim is killed there");
+            "origin chunk remains hot when victim is downed there");
+
+        // Advance past downed countdown so victim is auto-respawned
+        respawnServer.AdvanceIdleTicks(AuthoritativeWorldServer.DownedCountdownTicks);
 
         var victimRespawnPos = respawnState.Players["aa_victim"].Position;
         var victimRespawnChunk = respawnServer.GetChunkForTile(victimRespawnPos);
         var respawnedInHotChunk = victimRespawnChunk.ChunkX == hotChunk.ChunkX &&
                                   victimRespawnChunk.ChunkY == hotChunk.ChunkY;
         ExpectFalse(respawnedInHotChunk,
-            "killed player respawns outside the hot combat chunk when a cool chunk is available");
+            "downed player auto-respawns outside the hot combat chunk when a cool chunk is available");
 
         var coolFarChunk = respawnServer.GetChunkForTile(new TilePosition(40, 40));
         ExpectFalse(respawnServer.IsChunkHot(coolFarChunk.ChunkX, coolFarChunk.ChunkY),
             "undisturbed far chunk stays cool for respawn preference");
+
+        // ── Step 14: Downed state ─────────────────────────────────────────────────
+        var downedState = new GameState();
+        downedState.RegisterPlayer("ab_attacker", "Striker");
+        downedState.RegisterPlayer("ab_victim", "Target");
+        downedState.SetPlayerPosition("ab_attacker", TilePosition.Origin);
+        downedState.SetPlayerPosition("ab_victim", TilePosition.Origin);
+        var downedServer = new AuthoritativeWorldServer(downedState, "downed-test");
+
+        // Three attacks to reduce victim to 0 HP (35 dmg × 3 = 105 > 100 HP)
+        downedServer.ProcessIntent(new ServerIntent(
+            "ab_attacker", 1, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ab_victim" }));
+        downedServer.AdvanceIdleTicks(AuthoritativeWorldServer.CombatHeatPerAttack / 4);
+        downedServer.ProcessIntent(new ServerIntent(
+            "ab_attacker", 2, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ab_victim" }));
+        downedServer.AdvanceIdleTicks(AuthoritativeWorldServer.CombatHeatPerAttack / 4);
+        var downKill = downedServer.ProcessIntent(new ServerIntent(
+            "ab_attacker", 3, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ab_victim" }));
+
+        ExpectTrue(downKill.WasAccepted, "lethal attack is accepted");
+        ExpectTrue(downKill.Event.EventId.Contains("player_downed"), "lethal attack emits player_downed event");
+        ExpectTrue(downedState.Players["ab_victim"].IsDown, "victim is marked as downed after lethal hit");
+        ExpectEqual(0, downedState.Players["ab_victim"].Health, "downed victim has 0 HP");
+        ExpectTrue(downedState.Players["ab_victim"].IsAlive, "downed victim is still alive (not yet respawned)");
+
+        var victimSnapshot = downedServer.CreateInterestSnapshot("ab_victim");
+        ExpectTrue(victimSnapshot.Players.Any(p => p.Id == "ab_victim" && p.StatusEffects.Any(s => s.StartsWith("Downed"))),
+            "downed player shows Downed status in snapshot");
+
+        var downedChat = downedServer.ProcessIntent(new ServerIntent(
+            "ab_victim", 1, IntentType.SendLocalChat,
+            new System.Collections.Generic.Dictionary<string, string> { ["text"] = "help me" }));
+        ExpectTrue(downedChat.WasAccepted, "downed player can still send local chat");
+
+        var downedMove = downedServer.ProcessIntent(new ServerIntent(
+            "ab_victim", 2, IntentType.Move,
+            new System.Collections.Generic.Dictionary<string, string> { ["x"] = "5", ["y"] = "5" }));
+        ExpectFalse(downedMove.WasAccepted, "downed player cannot move");
+
+        // Advance past countdown; victim should auto-respawn
+        downedServer.AdvanceIdleTicks(AuthoritativeWorldServer.DownedCountdownTicks + 1);
+        ExpectFalse(downedState.Players["ab_victim"].IsDown, "victim is no longer downed after countdown");
+        ExpectEqual(downedState.Players["ab_victim"].MaxHealth, downedState.Players["ab_victim"].Health,
+            "auto-respawned victim has full health");
 
         // ── Step 10: Chat tabs — Local / Posse / System ──────────────────────────
         var chatTabState = new GameState();

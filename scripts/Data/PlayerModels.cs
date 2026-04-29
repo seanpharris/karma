@@ -22,6 +22,7 @@ public sealed class PlayerState
     public string DisplayName { get; }
     public PlayerKarma Karma { get; } = new();
     public bool IsAlive { get; private set; } = true;
+    public bool IsDown { get; private set; } = false;
     public int MaxHealth { get; } = 100;
     public int Health { get; private set; } = 100;
     public int Scrip { get; private set; }
@@ -44,6 +45,7 @@ public sealed class PlayerState
     {
         Karma.Reset();
         IsAlive = true;
+        IsDown = false;
         Health = MaxHealth;
         ClearTeamStatus();
     }
@@ -137,7 +139,7 @@ public sealed class PlayerState
 
     public bool ApplyDamage(int amount)
     {
-        if (!IsAlive)
+        if (!IsAlive || IsDown)
         {
             return false;
         }
@@ -149,7 +151,7 @@ public sealed class PlayerState
             return false;
         }
 
-        IsAlive = false;
+        IsDown = true;
         return true;
     }
 
