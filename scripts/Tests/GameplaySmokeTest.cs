@@ -3122,6 +3122,93 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(downedState.Players["ab_victim"].MaxHealth, downedState.Players["ab_victim"].Health,
             "auto-respawned victim has full health");
 
+        // ── Step 15: Rescue intent ────────────────────────────────────────────────
+        var rescueState = new GameState();
+        rescueState.RegisterPlayer("ac_rescuer", "Hero");
+        rescueState.RegisterPlayer("ac_victim", "Victim");
+        rescueState.SetPlayerPosition("ac_rescuer", TilePosition.Origin);
+        rescueState.SetPlayerPosition("ac_victim", TilePosition.Origin);
+        var rescueServer = new AuthoritativeWorldServer(rescueState, "rescue-test");
+
+        // Down the victim (three attacks from rescuer)
+        rescueServer.ProcessIntent(new ServerIntent(
+            "ac_rescuer", 1, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ac_victim" }));
+        rescueServer.AdvanceIdleTicks(5);
+        rescueServer.ProcessIntent(new ServerIntent(
+            "ac_rescuer", 2, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ac_victim" }));
+        rescueServer.AdvanceIdleTicks(5);
+        rescueServer.ProcessIntent(new ServerIntent(
+            "ac_rescuer", 3, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ac_victim" }));
+        ExpectTrue(rescueState.Players["ac_victim"].IsDown, "rescue test: victim is downed before rescue");
+
+        // Rescue rejects self-rescue
+        var selfRescue = rescueServer.ProcessIntent(new ServerIntent(
+            "ac_rescuer", 4, IntentType.Rescue,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ac_rescuer" }));
+        ExpectFalse(selfRescue.WasAccepted, "rescue rejected for self-rescue");
+
+        // Rescue rejects non-downed target (local_player is connected but not downed)
+        var notDownedRescue = rescueServer.ProcessIntent(new ServerIntent(
+            "ac_rescuer", 5, IntentType.Rescue,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = GameState.LocalPlayerId }));
+        ExpectFalse(notDownedRescue.WasAccepted, "rescue rejected when target is not downed");
+
+        // Rescue rejects out-of-range
+        var farRescueState = new GameState();
+        farRescueState.RegisterPlayer("ac_far_rescuer", "Far Hero");
+        farRescueState.RegisterPlayer("ac_far_victim", "Far Victim");
+        farRescueState.SetPlayerPosition("ac_far_rescuer", TilePosition.Origin);
+        farRescueState.SetPlayerPosition("ac_far_victim", TilePosition.Origin);
+        var farRescueServer = new AuthoritativeWorldServer(farRescueState, "far-rescue-test");
+        farRescueServer.ProcessIntent(new ServerIntent(
+            "ac_far_rescuer", 1, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ac_far_victim" }));
+        farRescueServer.AdvanceIdleTicks(5);
+        farRescueServer.ProcessIntent(new ServerIntent(
+            "ac_far_rescuer", 2, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ac_far_victim" }));
+        farRescueServer.AdvanceIdleTicks(5);
+        farRescueServer.ProcessIntent(new ServerIntent(
+            "ac_far_rescuer", 3, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ac_far_victim" }));
+        farRescueState.SetPlayerPosition("ac_far_rescuer", new TilePosition(999, 999));
+        var outOfRangeRescue = farRescueServer.ProcessIntent(new ServerIntent(
+            "ac_far_rescuer", 4, IntentType.Rescue,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ac_far_victim" }));
+        ExpectFalse(outOfRangeRescue.WasAccepted, "rescue rejected when rescuer is out of range");
+
+        // Successful rescue
+        var rescuerKarmaBefore = rescueState.Players["ac_rescuer"].Karma.Score;
+        var rescueResult = rescueServer.ProcessIntent(new ServerIntent(
+            "ac_rescuer", 6, IntentType.Rescue,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ac_victim" }));
+        ExpectTrue(rescueResult.WasAccepted, "rescue intent accepted when rescuer is near downed player");
+        ExpectFalse(rescueState.Players["ac_victim"].IsDown, "rescue clears downed state");
+        ExpectEqual(AuthoritativeWorldServer.RescueHealAmount, rescueState.Players["ac_victim"].Health,
+            "rescue heals victim to RescueHealAmount");
+        ExpectTrue(rescueState.Players["ac_rescuer"].Karma.Score > rescuerKarmaBefore,
+            "rescue ascends rescuer karma");
+        ExpectTrue(rescueResult.Event.EventId.Contains("player_rescued"),
+            "rescue emits player_rescued event");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { rescueResult.Event }).Contains("rescued"),
+            "HUD formats rescue event");
+
+        // Rescued player can move again
+        var rescuedMove = rescueServer.ProcessIntent(new ServerIntent(
+            "ac_victim", 1, IntentType.Move,
+            new System.Collections.Generic.Dictionary<string, string> { ["x"] = "3", ["y"] = "3" }));
+        ExpectTrue(rescuedMove.WasAccepted, "rescued player can move after rescue");
+
+        // Second rescue rejected (not downed anymore)
+        var doubleRescue = rescueServer.ProcessIntent(new ServerIntent(
+            "ac_rescuer", 7, IntentType.Rescue,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ac_victim" }));
+        ExpectFalse(doubleRescue.WasAccepted, "rescue rejected when target is no longer downed");
+
         // ── Step 10: Chat tabs — Local / Posse / System ──────────────────────────
         var chatTabState = new GameState();
         chatTabState.RegisterPlayer("ct_alpha", "Alpha");

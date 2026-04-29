@@ -36,6 +36,7 @@ public sealed class AuthoritativeWorldServer
     private const long AttackCooldownTicks = 3;
     private const long KarmaBreakGraceTicks = 5;
     public const long DownedCountdownTicks = 120;
+    public const int RescueHealAmount = 25;
     public const int CombatHeatPerAttack = 100;
     public const int CombatHeatDecayPerTick = 1;
     public const int CombatHeatHotThreshold = 0;
@@ -402,6 +403,7 @@ public sealed class AuthoritativeWorldServer
             IntentType.AcceptPosse => ProcessAcceptPosse(intent),
             IntentType.LeavePosse => ProcessLeavePosse(intent),
             IntentType.SendPosseChat => ProcessSendPosseChat(intent),
+            IntentType.Rescue => ProcessRescue(intent),
             _ => Reject(intent, $"Unsupported intent type: {intent.Type}")
         };
     }
@@ -1377,6 +1379,60 @@ public sealed class AuthoritativeWorldServer
                 ["targetHealth"] = _state.Players[targetId].Health.ToString(),
                 ["targetMaxHealth"] = _state.Players[targetId].MaxHealth.ToString(),
                 ["downedUntilTick"] = wentDown ? _downedUntilTickByPlayer[targetId].ToString() : "0"
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessRescue(ServerIntent intent)
+    {
+        if (!intent.Payload.TryGetValue("targetId", out var targetId))
+        {
+            return Reject(intent, "Rescue intent requires targetId.");
+        }
+
+        if (targetId == intent.PlayerId)
+        {
+            return Reject(intent, "Players cannot rescue themselves.");
+        }
+
+        if (!_connectedPlayerIds.Contains(targetId) ||
+            !_state.Players.TryGetValue(intent.PlayerId, out var rescuer) ||
+            !_state.Players.TryGetValue(targetId, out var target))
+        {
+            return Reject(intent, $"Unknown rescue target: {targetId}.");
+        }
+
+        if (!_downedUntilTickByPlayer.ContainsKey(targetId))
+        {
+            return Reject(intent, $"{target.DisplayName} is not downed.");
+        }
+
+        var radiusSquared = Config.InterestRadiusTiles * Config.InterestRadiusTiles;
+        if (rescuer.Position.DistanceSquaredTo(target.Position) > radiusSquared)
+        {
+            return Reject(intent, $"Rescue target is out of range: {targetId}.");
+        }
+
+        _downedUntilTickByPlayer.Remove(targetId);
+        _downedDeathPositionByPlayer.Remove(targetId);
+        target.Rescue(RescueHealAmount);
+
+        var shift = _state.ApplyShift(intent.PlayerId, new KarmaAction(
+            intent.PlayerId,
+            targetId,
+            new[] { "heroic", "protective", "generous" },
+            $"{rescuer.DisplayName} revived {target.DisplayName} from a downed state."));
+
+        var serverEvent = AppendEvent(
+            "player_rescued",
+            $"{rescuer.DisplayName} rescued {target.DisplayName}.",
+            new Dictionary<string, string>
+            {
+                ["rescuerId"] = intent.PlayerId,
+                ["targetId"] = targetId,
+                ["healAmount"] = RescueHealAmount.ToString(),
+                ["karmaAmount"] = shift.Amount.ToString()
             });
 
         return ServerProcessResult.Accepted(serverEvent);

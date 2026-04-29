@@ -164,6 +164,18 @@ public sealed class PlayerState
 
         Health = System.Math.Min(MaxHealth, Health + amount);
     }
+
+    public bool Rescue(int healAmount)
+    {
+        if (!IsDown)
+        {
+            return false;
+        }
+
+        IsDown = false;
+        Health = System.Math.Min(MaxHealth, healAmount);
+        return true;
+    }
 }
 
 public sealed record PlayerAppearanceSelection(

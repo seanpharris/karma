@@ -1157,6 +1157,14 @@ public partial class HudController : CanvasLayer
             return $"{attacker} downed {target} for {damage}. Countdown started.";
         }
 
+        if (latest.EventId.Contains("player_rescued"))
+        {
+            var rescuer = ReadEventData(latest, "rescuerId", "Someone");
+            var target = ReadEventData(latest, "targetId", "someone");
+            var heal = ReadEventData(latest, "healAmount", "?");
+            return $"{rescuer} rescued {target} (+{heal} HP).";
+        }
+
         if (latest.EventId.Contains("player_respawned"))
         {
             var target = ReadEventData(latest, "playerId", "Someone");

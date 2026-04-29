@@ -29,7 +29,8 @@ public enum IntentType
     InvitePosse,
     AcceptPosse,
     LeavePosse,
-    SendPosseChat
+    SendPosseChat,
+    Rescue
 }
 
 public sealed record ServerIntent(
