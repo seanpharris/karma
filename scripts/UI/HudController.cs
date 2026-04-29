@@ -67,6 +67,8 @@ public partial class HudController : CanvasLayer
     private Button _cycleHairButton = new();
     private Button _cycleOutfitButton = new();
     private Button _closeAppearanceButton = new();
+    private Label _posseLabel = new();
+    private PanelContainer _possePanel = new();
     private string _lastCombatText = "Combat: none";
     private IReadOnlyList<string> _lastStatusEffects = System.Array.Empty<string>();
 
@@ -218,6 +220,13 @@ public partial class HudController : CanvasLayer
         {
             ToggleInventoryOverlay();
             GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        if (key.Keycode == Key.P)
+        {
+            TogglePossePanel();
+            GetViewport().SetInputAsHandled();
         }
     }
 
@@ -244,6 +253,31 @@ public partial class HudController : CanvasLayer
         {
             RefreshInventoryOverlay();
         }
+    }
+
+    public void TogglePossePanel()
+    {
+        SetPossePanelVisible(!_possePanel.Visible);
+    }
+
+    public void SetPossePanelVisible(bool visible)
+    {
+        _possePanel.Visible = visible;
+        if (visible)
+        {
+            RefreshPossePanel();
+        }
+    }
+
+    private void RefreshPossePanel()
+    {
+        if (_lastSnapshot is null)
+        {
+            _posseLabel.Text = "Posse: no snapshot";
+            return;
+        }
+
+        _posseLabel.Text = FormatPossePanel(_lastSnapshot.Players, _lastSnapshot.PlayerId);
     }
 
     public void ShowStamina(string staminaText)
@@ -690,8 +724,38 @@ public partial class HudController : CanvasLayer
         };
         _inventoryPanel.AddChild(_inventoryOverlayLabel);
 
+        BuildPossePanel(root);
         BuildDeveloperOverlay(root);
         BuildEscapeMenu(root);
+    }
+
+    private void BuildPossePanel(Control root)
+    {
+        _possePanel = new PanelContainer
+        {
+            Name = "PossePanel",
+            OffsetLeft = 530,
+            OffsetTop = 16,
+            OffsetRight = 780,
+            OffsetBottom = 168,
+            Visible = false
+        };
+        root.AddChild(_possePanel);
+
+        var margin = new MarginContainer { Name = "PossePanelMargin" };
+        margin.AddThemeConstantOverride("margin_left", 12);
+        margin.AddThemeConstantOverride("margin_top", 8);
+        margin.AddThemeConstantOverride("margin_right", 12);
+        margin.AddThemeConstantOverride("margin_bottom", 8);
+        _possePanel.AddChild(margin);
+
+        _posseLabel = new Label
+        {
+            Name = "PossePanelLabel",
+            Text = "Posse: not in a posse",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart
+        };
+        margin.AddChild(_posseLabel);
     }
 
     private void BuildDeveloperOverlay(Control root)
@@ -956,6 +1020,11 @@ public partial class HudController : CanvasLayer
             if (_appearancePanel.Visible)
             {
                 RefreshAppearancePanel();
+            }
+
+            if (_possePanel.Visible)
+            {
+                RefreshPossePanel();
             }
         }
 
@@ -1296,6 +1365,32 @@ public partial class HudController : CanvasLayer
             return $"{intentType} rejected: {reason}";
         }
 
+        if (latest.EventId.Contains("posse_invite_sent"))
+        {
+            var inviterId = ReadEventData(latest, "inviterId", "Someone");
+            var targetId = ReadEventData(latest, "targetId", "someone");
+            return $"{inviterId} invited {targetId} to a posse. (P to open panel)";
+        }
+
+        if (latest.EventId.Contains("posse_accepted"))
+        {
+            var playerId = ReadEventData(latest, "playerId", "Someone");
+            var count = ReadEventData(latest, "memberCount", "?");
+            return $"{playerId} joined the posse. Members: {count}.";
+        }
+
+        if (latest.EventId.Contains("posse_member_left"))
+        {
+            var playerId = ReadEventData(latest, "playerId", "Someone");
+            var remaining = ReadEventData(latest, "remainingMembers", "?");
+            return $"{playerId} left the posse. Remaining: {remaining}.";
+        }
+
+        if (latest.EventId.Contains("posse_disbanded"))
+        {
+            return "Posse disbanded — last member left.";
+        }
+
         return $"Events: {latest.Description}";
     }
 
@@ -1481,6 +1576,30 @@ public partial class HudController : CanvasLayer
 
         lines.Add(string.Empty);
         lines.Add("I - Close | Z/X equip basics | C place loose item");
+        return string.Join("\n", lines);
+    }
+
+    public static string FormatPossePanel(IReadOnlyList<PlayerSnapshot> players, string localPlayerId)
+    {
+        var localPlayer = players?.FirstOrDefault(player => player.Id == localPlayerId);
+        if (localPlayer is null || string.IsNullOrEmpty(localPlayer.PosseId))
+        {
+            return "Posse: not in a posse\nP — close";
+        }
+
+        var posseId = localPlayer.PosseId;
+        var members = players.Where(player => player.PosseId == posseId).OrderBy(player => player.DisplayName).ToArray();
+        var label = posseId.StartsWith("posse_") ? posseId[6..] : posseId;
+
+        var lines = new List<string> { $"Posse [{label}] — {members.Length} member{(members.Length == 1 ? "" : "s")}" };
+        foreach (var member in members)
+        {
+            var self = member.Id == localPlayerId ? " (you)" : string.Empty;
+            var karmaSign = member.Karma >= 0 ? "+" : string.Empty;
+            lines.Add($"{member.DisplayName}{self}: {karmaSign}{member.Karma} | HP {member.Health}/{member.MaxHealth}");
+        }
+
+        lines.Add("P — close");
         return string.Join("\n", lines);
     }
 

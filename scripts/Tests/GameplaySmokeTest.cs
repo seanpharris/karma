@@ -2920,6 +2920,55 @@ public partial class GameplaySmokeTest : Node
             new System.Collections.Generic.Dictionary<string, string>()));
         ExpectFalse(notInPosse.WasAccepted, "LeavePosse when not in a posse is rejected");
 
+        // ── Step 8: Posse HUD panel ───────────────────────────────────────────────
+        var hudProbePosse = new HudController();
+        AddChild(hudProbePosse);
+        ExpectTrue(hudProbePosse.GetNodeOrNull<PanelContainer>("HudRoot/PossePanel") is not null,
+            "gameplay HUD includes a Posse panel node");
+
+        var noPosse = new PlayerSnapshot("p1", "Alice", 25, "Trusted", 1, "prog",
+            LeaderboardRole.None, 0, 0, 100, 100, 50,
+            PlayerAppearanceSelection.Default,
+            System.Array.Empty<string>(),
+            new System.Collections.Generic.Dictionary<EquipmentSlot, string>(),
+            System.Array.Empty<string>(),
+            "");
+        ExpectTrue(HudController.FormatPossePanel(new[] { noPosse }, "p1").Contains("not in a posse"),
+            "FormatPossePanel shows not-in-posse message when PosseId is empty");
+
+        var posseP1 = new PlayerSnapshot("p1", "Alice", 40, "Helpful", 1, "prog",
+            LeaderboardRole.None, 0, 0, 90, 100, 60,
+            PlayerAppearanceSelection.Default,
+            System.Array.Empty<string>(),
+            new System.Collections.Generic.Dictionary<EquipmentSlot, string>(),
+            System.Array.Empty<string>(),
+            "posse_p1");
+        var posseP2 = new PlayerSnapshot("p2", "Bob", -12, "Outlaw", 1, "prog",
+            LeaderboardRole.None, 0, 0, 75, 100, 20,
+            PlayerAppearanceSelection.Default,
+            System.Array.Empty<string>(),
+            new System.Collections.Generic.Dictionary<EquipmentSlot, string>(),
+            System.Array.Empty<string>(),
+            "posse_p1");
+        var possePanel = HudController.FormatPossePanel(new[] { posseP1, posseP2 }, "p1");
+        ExpectTrue(possePanel.Contains("Alice"), "FormatPossePanel lists member Alice");
+        ExpectTrue(possePanel.Contains("Bob"), "FormatPossePanel lists member Bob");
+        ExpectTrue(possePanel.Contains("90/100"), "FormatPossePanel shows member health");
+        ExpectTrue(possePanel.Contains("(you)"), "FormatPossePanel marks local player");
+        ExpectTrue(possePanel.Contains("+40"), "FormatPossePanel shows member karma");
+
+        var posseInviteEvent = new ServerEvent("world:1:posse_invite_sent", "world", 1,
+            "Alpha invited Beta.", new System.Collections.Generic.Dictionary<string, string>
+            { ["inviterId"] = "alpha", ["targetId"] = "beta" });
+        ExpectTrue(HudController.FormatLatestServerEvent(new[] { posseInviteEvent }).Contains("invited"),
+            "HUD formats posse_invite_sent event");
+
+        var posseDisbandedEvent = new ServerEvent("world:2:posse_disbanded", "world", 2,
+            "Posse dissolved.", new System.Collections.Generic.Dictionary<string, string>());
+        ExpectTrue(HudController.FormatLatestServerEvent(new[] { posseDisbandedEvent }).Contains("disbanded"),
+            "HUD formats posse_disbanded event");
+        hudProbePosse.QueueFree();
+
         if (_failures == 0)
         {
             GD.Print("Gameplay smoke tests passed.");
