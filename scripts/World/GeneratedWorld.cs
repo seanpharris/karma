@@ -15,10 +15,11 @@ public sealed record GeneratedWorld(
     IReadOnlyList<GeneratedStructurePlacement> StructurePlacements,
     IReadOnlyList<GameItem> Oddities,
     IReadOnlyList<GeneratedOddityPlacement> OddityPlacements,
-    IReadOnlyList<FactionProfile> Factions)
+    IReadOnlyList<FactionProfile> Factions,
+    IReadOnlyList<GeneratedPathEdge> PathEdges)
 {
     public string Summary =>
-        $"{Config.Seed.Name} ({Theme}) - {Locations.Count} locations, {Npcs.Count} NPCs, {Oddities.Count} oddities, {Factions.Count} factions";
+        $"{Config.Seed.Name} ({Theme}) - {Locations.Count} locations, {Npcs.Count} NPCs, {Oddities.Count} oddities, {Factions.Count} factions, {PathEdges.Count} path edges";
 
     public GeneratedWorldAdapter ToAdapter()
     {
@@ -63,6 +64,14 @@ public sealed record GeneratedOddityPlacement(
     string PlacementReason,
     int X,
     int Y);
+
+public sealed record GeneratedPathEdge(
+    string FromLocationId,
+    string ToLocationId,
+    int FromX,
+    int FromY,
+    int ToX,
+    int ToY);
 
 public sealed record GeneratedTileMap(
     int Width,

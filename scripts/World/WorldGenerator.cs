@@ -173,6 +173,7 @@ public static class WorldGenerator
         var structurePlacements = GenerateStructurePlacements(config, locations);
         var oddities = GenerateOddities(config);
         var oddityPlacements = GenerateOddityPlacements(random, config, locations, oddities);
+        var pathEdges = GeneratePathEdges(locations);
 
         return new GeneratedWorld(
             config,
@@ -185,7 +186,8 @@ public static class WorldGenerator
             structurePlacements,
             oddities,
             oddityPlacements,
-            StarterFactions.All);
+            StarterFactions.All,
+            pathEdges);
     }
 
     private static GeneratedTileMap GenerateTileMap(Random random, WorldConfig config)
@@ -660,6 +662,58 @@ public static class WorldGenerator
         }
 
         return oddities;
+    }
+
+    private static IReadOnlyList<GeneratedPathEdge> GeneratePathEdges(IReadOnlyList<GeneratedLocation> locations)
+    {
+        if (locations.Count < 2)
+        {
+            return Array.Empty<GeneratedPathEdge>();
+        }
+
+        // Prim's MST: greedily add the closest unconnected location each step.
+        var edges = new List<GeneratedPathEdge>(locations.Count - 1);
+        var inTree = new HashSet<string> { locations[0].Id };
+        var locationById = locations.ToDictionary(l => l.Id);
+
+        while (inTree.Count < locations.Count)
+        {
+            GeneratedLocation bestFrom = null;
+            GeneratedLocation bestTo = null;
+            var bestDistSquared = int.MaxValue;
+
+            foreach (var loc in locations.Where(l => inTree.Contains(l.Id)))
+            {
+                foreach (var candidate in locations.Where(l => !inTree.Contains(l.Id)))
+                {
+                    var dx = loc.X - candidate.X;
+                    var dy = loc.Y - candidate.Y;
+                    var distSquared = dx * dx + dy * dy;
+                    if (distSquared < bestDistSquared)
+                    {
+                        bestDistSquared = distSquared;
+                        bestFrom = loc;
+                        bestTo = candidate;
+                    }
+                }
+            }
+
+            if (bestFrom is null)
+            {
+                break;
+            }
+
+            edges.Add(new GeneratedPathEdge(
+                bestFrom.Id,
+                bestTo.Id,
+                bestFrom.X,
+                bestFrom.Y,
+                bestTo.X,
+                bestTo.Y));
+            inTree.Add(bestTo.Id);
+        }
+
+        return edges;
     }
 
     private static readonly string[] GeneratedNames =

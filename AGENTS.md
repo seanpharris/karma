@@ -252,7 +252,7 @@ Active implementation plan (as of 2026-04-29). Steps complete on `develop`.
 | 13 | Smarter respawn placement (avoid heat, prefer stabilized stations) | ✅ done |
 | 14 | Downed state (0 HP countdown, can still chat) | ✅ done |
 | 15 | Rescue intent (rescuer carries downed player, Ascend reward) | ✅ done |
-| 16 | Clinic recovery hook (extend countdown, NPC auto-revive for scrip) | pending |
+| 16 | Clinic recovery hook (extend countdown, NPC auto-revive for scrip) | ✅ done |
 | 17 | Road/path generation (spanning path graph at world-gen) | pending |
 | 18 | Path-aware world rendering (road tiles between station pairs) | pending |
 | 19 | Mount/vehicle entity model (speed modifier, parking, occupancy) | pending |

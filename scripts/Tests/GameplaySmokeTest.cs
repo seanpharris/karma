@@ -954,6 +954,36 @@ public partial class GameplaySmokeTest : Node
         var generatedA = WorldGenerator.Generate(WorldConfig.CreatePrototype());
         var generatedB = WorldGenerator.Generate(WorldConfig.CreatePrototype());
         ExpectEqual(generatedA.Summary, generatedB.Summary, "world generation is deterministic for the same seed");
+
+        // ── Step 17: Road/path generation ────────────────────────────────────────
+        // Spanning path graph connecting all station locations (Prim's MST).
+        var locationIds = new System.Collections.Generic.HashSet<string>(generatedA.Locations.Select(l => l.Id));
+        ExpectEqual(generatedA.Locations.Count - 1, generatedA.PathEdges.Count,
+            "path graph has exactly N-1 edges for N locations (spanning tree)");
+        ExpectTrue(generatedA.PathEdges.All(edge => locationIds.Contains(edge.FromLocationId) && locationIds.Contains(edge.ToLocationId)),
+            "all path edge endpoints reference known locations");
+        ExpectTrue(generatedA.PathEdges.All(edge => edge.FromLocationId != edge.ToLocationId),
+            "path edges do not self-loop");
+        // Verify every location is reachable (spanning tree covers all nodes)
+        var reachable = new System.Collections.Generic.HashSet<string> { generatedA.PathEdges[0].FromLocationId };
+        var changed = true;
+        while (changed)
+        {
+            changed = false;
+            foreach (var edge in generatedA.PathEdges)
+            {
+                if (reachable.Contains(edge.FromLocationId) && reachable.Add(edge.ToLocationId)) changed = true;
+                if (reachable.Contains(edge.ToLocationId) && reachable.Add(edge.FromLocationId)) changed = true;
+            }
+        }
+        ExpectEqual(generatedA.Locations.Count, reachable.Count, "path graph connects all locations");
+        ExpectTrue(generatedA.PathEdges.All(edge =>
+            generatedA.Locations.Any(l => l.Id == edge.FromLocationId && l.X == edge.FromX && l.Y == edge.FromY) &&
+            generatedA.Locations.Any(l => l.Id == edge.ToLocationId && l.X == edge.ToX && l.Y == edge.ToY)),
+            "path edge coordinates match location positions");
+        ExpectEqual(generatedA.PathEdges.Count, generatedB.PathEdges.Count,
+            "path graph generation is deterministic");
+
         ExpectEqual(
             generatedA.Config.WidthTiles * generatedA.Config.HeightTiles,
             generatedA.TileMap.Tiles.Count,
