@@ -1,7 +1,7 @@
 extends SceneTree
 
-const INPUT_IDLE := "res://assets/art/2D Character Knight/1Knight/Idle_Shadowless.png"
-const INPUT_WALK := "res://assets/art/2D Character Knight/1Knight/Walk_Shadowless.png"
+const INPUT_IDLE := "res://assets/art/third_party/2D Character Knight/1Knight/Idle_Shadowless.png"
+const INPUT_WALK := "res://assets/art/third_party/2D Character Knight/1Knight/Walk_Shadowless.png"
 const OUTPUT := "res://assets/art/sprites/generated/player_v2_knight_8dir_4row_reference.png"
 const FRAME_SIZE := 64
 const DIRECTIONS := 8

@@ -82,7 +82,7 @@ generation literature and demos.
 
 ## 2D Character Knight Prototype Asset
 
-- Location: `assets/art/2D Character Knight/`
+- Location: `assets/art/third_party/2D Character Knight/`
 - Status: user-provided local prototype asset; upstream source/license still needs
   confirmation before production use or redistribution outside this prototype.
 - Runtime use: `tools/extract_knight_preview.gd` derives
