@@ -231,9 +231,11 @@ Godot 2D top-down template:
 - Do not revert user changes.
 - Avoid unrelated refactors.
 
-## 20-Step Gameplay Plan
+## Gameplay Plan
 
-Active implementation plan (as of 2026-04-29). Steps complete on `develop`.
+Steps complete on `develop`. Add new slices to the table as they are planned.
+
+### Steps 1–20 (complete as of 2026-04-29)
 
 | # | Feature | Status |
 |---|---------|--------|
@@ -257,6 +259,36 @@ Active implementation plan (as of 2026-04-29). Steps complete on `develop`.
 | 18 | Path-aware world rendering (road tiles between station pairs) | ✅ done |
 | 19 | Mount/vehicle entity model (speed modifier, parking, occupancy) | ✅ done |
 | 20 | Mount/dismount intents + karma hooks | ✅ done |
+
+### Steps 21–40 (active plan as of 2026-04-29)
+
+Theme groups: **match lifecycle** → **karma depth** → **player state** → **world events**
+→ **economy/factions** → **crafting/social** → **map and UI**.
+Each step is independent enough to land as a focused slice; earlier steps within a
+group are prerequisites for later ones in the same group.
+
+| # | Feature | Status |
+|---|---------|--------|
+| 21 | Karma watermark tracking — record per-player karma peak and floor across the match; store on `GameState` player | pending |
+| 22 | Karma title-change broadcast — server event when a player first takes or loses Saint/Scourge status mid-match | pending |
+| 23 | Match end summary snapshot — `MatchSummarySnapshot` record with final standings, per-player karma peak/floor, quests completed, and kills; surfaced in HUD at match end | pending |
+| 24 | Warden perk (karma ≥ +150) — new `IssueWanted` intent marks one player Wanted; others earn karma for downing the Wanted player | pending |
+| 25 | Wraith perk (karma ≤ -150) — server applies a speed modifier to players at ≤ 30% HP who hold this perk; modifier reflected in snapshot | pending |
+| 26 | Bounty system — players whose karma falls below −50 automatically accrue a scrip bounty; downing them (Karma Break) transfers the bounty to the scorer | pending |
+| 27 | Player status effects model — server-owned `PlayerStatus` set (Wanted, Wraith-buffed, Poisoned, etc.); status list included in `PlayerSnapshot`; cleared on Karma Break | pending |
+| 28 | Contraband item tag — items flagged as contraband decay karma once per tick while held by a player near a law-aligned NPC; `GameItem` gets an `IsContraband` flag | pending |
+| 29 | Lobby / ready-up flow — `ReadyUp` intent; `MatchStatus.Lobby` state before `InProgress`; timer only starts once a quorum of connected players has sent `ReadyUp` | pending |
+| 30 | Supply drop world event — server schedules a rare item spawn at a broadcast location; first player to reach it claims the cache; event expires after a timeout | pending |
+| 31 | NPC patrol routes — NPCs step between 2–3 tile waypoints on a per-tick cadence; position updated in `NpcEntity`; snapshot reflects current position | pending |
+| 32 | Reputation decay — NPC opinions and faction standings drift toward 0 each tick cycle proportional to inactivity; decay rate configured in `ServerConfig` | pending |
+| 33 | Faction store gating — `PurchaseItem` intent rejected when player's faction reputation is below the offer's minimum threshold; `ShopOfferSnapshot` includes `MinReputation` field | pending |
+| 34 | Station claim intent — `ClaimStation` intent lets a posse flag an unclaimed station as theirs; station owners receive passive scrip per server tick; `WorldStructureEntity` gains `ClaimingPosseId` | pending |
+| 35 | Death trophy drop — when a player triggers a Karma Break on another, the scorer receives a named unique item (e.g., "Ace's Dog Tag") seeded from the victim's display name | pending |
+| 36 | Crafting intent — `CraftItem` intent validated at a workshop structure; server holds a recipe table (`CraftingRecipe[]`); consumes ingredients and produces the output item | pending |
+| 37 | Posse shared quest module — `PosseQuestModule` subclass assigns the same multi-step objective to all posse members; shared completion triggers a group scrip bonus via `QuestModuleRegistry` | pending |
+| 38 | World tier zones — tile-level `IsLawless` flag set at world-gen for fringe areas; attacks in lawless zones skip the karma-descent penalty; shown on HUD when player enters/exits | pending |
+| 39 | Fog of war — `AuthoritativeWorldServer` tracks which chunks each player has visited; `CreateInterestSnapshot` excludes unvisited chunks beyond a minimum reveal radius | pending |
+| 40 | HUD minimap — small radar panel rendering nearby player, NPC, and structure positions as dots relative to the local player; updates from the interest snapshot each tick | pending |
 
 Art requirements for each step are tracked in `ART_NEEDED.md`.
 
@@ -297,24 +329,26 @@ Stations not matched by any module get a flat `QuestDefinition` (stabilize fallb
 
 ## Current Prototype Features
 
-_Last updated 2026-04-29. This list drifts — verify against the code before
-assuming a feature is or isn't present._
+_Last updated 2026-04-29 (steps 1–20 complete). This list drifts — verify against
+the code before assuming a feature is or isn't present._
 
-- Top-down local movement.
-- Mouse wheel camera zoom with clamps.
-- Left Shift sprint with stamina.
+- Top-down local movement, mouse-wheel camera zoom, and Left Shift sprint with stamina.
 - `I` toggles an inventory overlay with scrip, equipment, and grouped items.
 - Server-owned 30-minute match timer and Saint/Scourge winner lock.
-- Uncapped karma ranks in both Ascension and Descension.
+- Uncapped karma ranks in both Ascension and Descension; Paragon Favor (+50) and Abyssal Mark (−100) perks.
 - Scrip currency, player transfers, shop offers, and server-side pricing perks.
-- NPC dialogue and quest choices.
+- NPC dialogue and quest choices; Saint/Scourge-aware NPC greetings, prices, and reactions.
 - Multi-step quests with `AdvanceQuestStep` intent and per-step karma/scrip rewards.
-- Repair mission quests (3-step: locate fixture → equip tool → repair).
-- Delivery quests (3-step: go to source → hold item → deliver to destination).
-- Rumor quests (2-step: read notice-board → find subject → expose or bury choice with karma consequence).
-- Generated station quests seeded by world generator based on station role.
-- Plugin-modular quest system: `scripts/Quests/QuestModule.cs` + `QuestModuleRegistry`. New quest types self-register by subclassing `QuestModule`.
-- PvP, duels, attacks, armor, weapons, and Karma Break death drops.
+- Repair, Delivery, and Rumor quest types; plugin-modular quest system (`QuestModule` + `QuestModuleRegistry`).
+- Generated station quests seeded by role at world-gen.
+- PvP duels, attacks, armor, weapons, and Karma Break death drops.
+- Downed state (0-HP countdown, chat still active); Rescue intent (ascends rescuer karma).
+- Clinic recovery hook: auto-revive near Mara/Dallen if player has enough scrip.
+- Posse formation (Invite/Accept/Leave), Posse HUD panel, and Posse chat channel.
+- Chat tabs — Local / Posse / System — with interior audibility filtering and volume attenuation.
+- Combat heat map (tile-chunk heat with decay); heat-aware respawn placement.
+- Road/path generation (MST spanning all stations) with Bresenham road-tile overlay.
+- Mount/vehicle entity model (speed modifier, parking, occupancy) and Mount/Dismount intents with karma hooks.
 - Server-owned world items and structures rendered from interest snapshots.
 - Greenhouse structure set with basic interaction prompts/events.
 - Sci-fi item, weapon, tool, utility, tile, and greenhouse atlases placed in the expected paths.
