@@ -2860,6 +2860,66 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(maraOpinionBeforeAbyssal - 1, maraOpinionAfterAbyssal,
             "Abyssal Mark reduces fear reaction to 10% of base damage");
 
+        // ── Step 7: Posse formation ───────────────────────────────────────────────
+        var posseState = new GameState();
+        var posseServer = new AuthoritativeWorldServer(posseState, "posse-test");
+        posseServer.JoinPlayer("alpha", "Alpha");
+        posseServer.JoinPlayer("beta", "Beta");
+
+        // InvitePosse: alpha → beta
+        var inviteResult = posseServer.ProcessIntent(new ServerIntent(
+            "alpha", 1, IntentType.InvitePosse,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetPlayerId"] = "beta" }));
+        ExpectTrue(inviteResult.WasAccepted, "InvitePosse is accepted");
+        ExpectTrue(inviteResult.Event.EventId.Contains("posse_invite_sent"), "InvitePosse emits invite event");
+        ExpectTrue(posseState.Players["alpha"].HasTeam, "inviter joins their own posse on invite");
+        ExpectFalse(posseState.Players["beta"].HasTeam, "invitee is not yet in the posse before accepting");
+
+        // Self-invite rejected
+        var selfInvite = posseServer.ProcessIntent(new ServerIntent(
+            "alpha", 2, IntentType.InvitePosse,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetPlayerId"] = "alpha" }));
+        ExpectFalse(selfInvite.WasAccepted, "InvitePosse targeting self is rejected");
+
+        // AcceptPosse: beta accepts
+        var acceptResult = posseServer.ProcessIntent(new ServerIntent(
+            "beta", 1, IntentType.AcceptPosse,
+            new System.Collections.Generic.Dictionary<string, string>()));
+        ExpectTrue(acceptResult.WasAccepted, "AcceptPosse is accepted");
+        ExpectTrue(acceptResult.Event.EventId.Contains("posse_accepted"), "AcceptPosse emits accepted event");
+        ExpectTrue(posseState.Players["beta"].HasTeam, "beta is in a posse after accepting");
+        ExpectEqual(posseState.Players["alpha"].TeamId, posseState.Players["beta"].TeamId,
+            "both players share the same posse after acceptance");
+
+        // AcceptPosse with no pending invite rejected
+        var noInviteAccept = posseServer.ProcessIntent(new ServerIntent(
+            "beta", 2, IntentType.AcceptPosse,
+            new System.Collections.Generic.Dictionary<string, string>()));
+        ExpectFalse(noInviteAccept.WasAccepted, "AcceptPosse without pending invite is rejected");
+
+        // LeavePosse: beta leaves (alpha stays)
+        var leaveResult = posseServer.ProcessIntent(new ServerIntent(
+            "beta", 3, IntentType.LeavePosse,
+            new System.Collections.Generic.Dictionary<string, string>()));
+        ExpectTrue(leaveResult.WasAccepted, "LeavePosse is accepted");
+        ExpectTrue(leaveResult.Event.EventId.Contains("posse_member_left"), "LeavePosse with remaining members emits member-left event");
+        ExpectFalse(posseState.Players["beta"].HasTeam, "beta has no posse after leaving");
+        ExpectTrue(posseState.Players["alpha"].HasTeam, "alpha still has a posse after beta leaves");
+
+        // LeavePosse: alpha leaves (posse dissolves)
+        var dissolveResult = posseServer.ProcessIntent(new ServerIntent(
+            "alpha", 3, IntentType.LeavePosse,
+            new System.Collections.Generic.Dictionary<string, string>()));
+        ExpectTrue(dissolveResult.WasAccepted, "LeavePosse by last member is accepted");
+        ExpectTrue(dissolveResult.Event.EventId.Contains("posse_disbanded"), "last member leaving emits disbanded event");
+        ExpectFalse(posseState.Players["alpha"].HasTeam, "alpha has no posse after dissolving");
+
+        // LeavePosse when not in a posse rejected
+        var notInPosse = posseServer.ProcessIntent(new ServerIntent(
+            "alpha", 4, IntentType.LeavePosse,
+            new System.Collections.Generic.Dictionary<string, string>()));
+        ExpectFalse(notInPosse.WasAccepted, "LeavePosse when not in a posse is rejected");
+
         if (_failures == 0)
         {
             GD.Print("Gameplay smoke tests passed.");

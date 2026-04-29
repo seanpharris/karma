@@ -36,7 +36,8 @@ public sealed record PlayerSnapshot(
     PlayerAppearanceSelection Appearance,
     IReadOnlyList<string> InventoryItemIds,
     IReadOnlyDictionary<EquipmentSlot, string> EquipmentItemIds,
-    IReadOnlyList<string> StatusEffects);
+    IReadOnlyList<string> StatusEffects,
+    string PosseId = "");
 
 public sealed record LeaderboardSnapshot(
     string SaintPlayerId,
@@ -98,7 +99,8 @@ public static class SnapshotBuilder
                 player.Appearance,
                 player.Inventory.Select(item => item.Id).ToArray(),
                 player.Equipment.ToDictionary(pair => pair.Key, pair => pair.Value.Id),
-                statusEffectsFor(player)))
+                statusEffectsFor(player),
+                player.TeamId))
             .ToArray();
     }
 

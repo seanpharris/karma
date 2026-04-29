@@ -25,7 +25,10 @@ public enum IntentType
     SetAppearance,
     SendLocalChat,
     KarmaAction,
-    KarmaBreak
+    KarmaBreak,
+    InvitePosse,
+    AcceptPosse,
+    LeavePosse
 }
 
 public sealed record ServerIntent(

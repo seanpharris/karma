@@ -20,6 +20,7 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, Queue<DropClaim>> _dropClaimsByHolderItem = new();
     private readonly Dictionary<string, TilePosition> _initialSpawnByPlayer = new();
     private readonly HashSet<string> _connectedPlayerIds = new();
+    private readonly Dictionary<string, string> _pendingPosseInviteByInvitee = new();
     private readonly Dictionary<string, WorldItemEntity> _worldItems = new();
     private readonly Dictionary<string, WorldStructureEntity> _worldStructures = new();
     private readonly Dictionary<string, NpcEntity> _npcs = new();
@@ -370,13 +371,17 @@ public sealed class AuthoritativeWorldServer
             IntentType.SendLocalChat => ProcessSendLocalChat(intent),
             IntentType.KarmaAction => ProcessKarmaAction(intent),
             IntentType.KarmaBreak => ProcessKarmaBreak(intent),
+            IntentType.InvitePosse => ProcessInvitePosse(intent),
+            IntentType.AcceptPosse => ProcessAcceptPosse(intent),
+            IntentType.LeavePosse => ProcessLeavePosse(intent),
             _ => Reject(intent, $"Unsupported intent type: {intent.Type}")
         };
     }
 
     private static bool IsPostMatchIntentAllowed(IntentType type)
     {
-        return type is IntentType.Move or IntentType.StartDialogue or IntentType.SetAppearance or IntentType.SendLocalChat;
+        return type is IntentType.Move or IntentType.StartDialogue or IntentType.SetAppearance
+            or IntentType.SendLocalChat or IntentType.LeavePosse;
     }
 
     public PlayerInterest GetInterestFor(string playerId)
@@ -2109,6 +2114,119 @@ public sealed class AuthoritativeWorldServer
         }
 
         return droppedEntityIds;
+    }
+
+    private ServerProcessResult ProcessInvitePosse(ServerIntent intent)
+    {
+        intent.Payload.TryGetValue("targetPlayerId", out var targetId);
+        if (string.IsNullOrWhiteSpace(targetId))
+        {
+            return Reject(intent, "InvitePosse requires targetPlayerId payload.");
+        }
+
+        if (targetId == intent.PlayerId)
+        {
+            return Reject(intent, "Cannot invite yourself to a posse.");
+        }
+
+        if (!_connectedPlayerIds.Contains(targetId))
+        {
+            return Reject(intent, $"Target player {targetId} is not connected.");
+        }
+
+        if (!_state.Players.TryGetValue(targetId, out var target))
+        {
+            return Reject(intent, $"Unknown target player: {targetId}.");
+        }
+
+        if (target.HasTeam)
+        {
+            return Reject(intent, $"Target player {targetId} is already in a posse.");
+        }
+
+        if (_pendingPosseInviteByInvitee.ContainsKey(targetId))
+        {
+            return Reject(intent, $"Target player {targetId} already has a pending posse invite.");
+        }
+
+        var inviter = _state.Players[intent.PlayerId];
+        var posseId = inviter.HasTeam ? inviter.TeamId : $"posse_{intent.PlayerId}";
+        if (!inviter.HasTeam)
+        {
+            _state.SetPlayerTeam(intent.PlayerId, posseId);
+        }
+
+        _pendingPosseInviteByInvitee[targetId] = posseId;
+
+        var serverEvent = AppendEvent(
+            "posse_invite_sent",
+            $"{inviter.DisplayName} invited {target.DisplayName} to a posse.",
+            new Dictionary<string, string>
+            {
+                ["posseId"] = posseId,
+                ["inviterId"] = intent.PlayerId,
+                ["targetId"] = targetId
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessAcceptPosse(ServerIntent intent)
+    {
+        if (!_pendingPosseInviteByInvitee.TryGetValue(intent.PlayerId, out var posseId))
+        {
+            return Reject(intent, "No pending posse invite to accept.");
+        }
+
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var player))
+        {
+            return Reject(intent, $"Unknown player: {intent.PlayerId}.");
+        }
+
+        _pendingPosseInviteByInvitee.Remove(intent.PlayerId);
+        _state.SetPlayerTeam(intent.PlayerId, posseId);
+
+        var memberCount = _state.Players.Values.Count(p => p.HasTeam && p.TeamId == posseId);
+
+        var serverEvent = AppendEvent(
+            "posse_accepted",
+            $"{player.DisplayName} joined posse.",
+            new Dictionary<string, string>
+            {
+                ["posseId"] = posseId,
+                ["playerId"] = intent.PlayerId,
+                ["memberCount"] = memberCount.ToString()
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessLeavePosse(ServerIntent intent)
+    {
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var player) || !player.HasTeam)
+        {
+            return Reject(intent, "Not currently in a posse.");
+        }
+
+        var posseId = player.TeamId;
+        _state.ClearPlayerTeamStatus(intent.PlayerId);
+
+        var remainingCount = _state.Players.Values.Count(p => p.HasTeam && p.TeamId == posseId);
+        var eventType = remainingCount == 0 ? "posse_disbanded" : "posse_member_left";
+
+        var serverEvent = AppendEvent(
+            eventType,
+            remainingCount == 0
+                ? $"Posse dissolved after last member left."
+                : $"{player.DisplayName} left the posse.",
+            new Dictionary<string, string>
+            {
+                ["posseId"] = posseId,
+                ["playerId"] = intent.PlayerId,
+                ["remainingMembers"] = remainingCount.ToString()
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
     }
 
     private ServerProcessResult Reject(ServerIntent intent, string reason)
