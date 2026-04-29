@@ -27,6 +27,7 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<(int ChunkX, int ChunkY), int> _combatHeatByChunk = new();
     private readonly Dictionary<string, WorldStructureEntity> _worldStructures = new();
     private readonly Dictionary<string, NpcEntity> _npcs = new();
+    private readonly Dictionary<string, MountEntity> _mounts = new();
     private readonly List<ServerEvent> _eventLog = new();
     private readonly List<LocalChatMessage> _localChatLog = new();
     private readonly MatchState _match;
@@ -72,6 +73,7 @@ public sealed class AuthoritativeWorldServer
         SeedConnectedPlayers();
         SeedStarterNpcs();
         SeedStarterStructures();
+        SeedStarterMounts();
     }
 
     public string WorldId { get; }
@@ -82,6 +84,7 @@ public sealed class AuthoritativeWorldServer
     public IReadOnlyDictionary<string, WorldItemEntity> WorldItems => _worldItems;
     public IReadOnlyDictionary<string, WorldStructureEntity> WorldStructures => _worldStructures;
     public IReadOnlyDictionary<string, NpcEntity> Npcs => _npcs;
+    public IReadOnlyDictionary<string, MountEntity> Mounts => _mounts;
     public IReadOnlyList<LocalChatMessageSnapshot> LocalChatLog => _localChatLog
         .Select(message => ToLocalChatSnapshot(message, message.SpeakerPosition))
         .ToArray();
@@ -513,6 +516,15 @@ public sealed class AuthoritativeWorldServer
         var worldEvents = _state.WorldEvents.Events
             .Where(worldEvent => IsWorldEventVisibleTo(worldEvent, visiblePlayerIds))
             .ToArray();
+        var mountRadiusSquared = Config.InterestRadiusTiles * Config.InterestRadiusTiles;
+        _state.Players.TryGetValue(playerId, out var mountViewer);
+        var visibleMounts = _mounts.Count == 0 || mountViewer is null
+            ? Array.Empty<MountSnapshot>()
+            : _mounts.Values
+                .Where(mount => mountViewer.Position.DistanceSquaredTo(mount.Position) <= mountRadiusSquared)
+                .OrderBy(mount => mount.EntityId)
+                .Select(ToMountSnapshot)
+                .ToArray();
 
         return new ClientInterestSnapshot(
             WorldId,
@@ -534,7 +546,8 @@ public sealed class AuthoritativeWorldServer
             visibleDuels,
             CreateSyncHint(afterTick, visibleMapChunks, events, worldEvents),
             events,
-            worldEvents);
+            worldEvents,
+            visibleMounts);
     }
 
     private static InterestSnapshotSyncHint CreateSyncHint(
@@ -3226,6 +3239,26 @@ public sealed class AuthoritativeWorldServer
         _npcs[StarterNpcs.Mara.Id] = new NpcEntity(StarterNpcs.Mara, new TilePosition(3, 4));
         _npcs[StarterNpcs.Dallen.Id] = new NpcEntity(StarterNpcs.Dallen, new TilePosition(6, 4));
     }
+
+    private void SeedStarterMounts()
+    {
+        _mounts["mount_hover_1"] = new MountEntity(
+            "mount_hover_1",
+            "Hover Scooter",
+            new TilePosition(12, 8),
+            SpeedModifier: 2.0f,
+            IsParked: true);
+        _mounts["mount_cargo_1"] = new MountEntity(
+            "mount_cargo_1",
+            "Cargo Crawler",
+            new TilePosition(15, 12),
+            SpeedModifier: 1.5f,
+            IsParked: true);
+    }
+
+    private static MountSnapshot ToMountSnapshot(MountEntity mount) =>
+        new(mount.EntityId, mount.Name, mount.Position.X, mount.Position.Y,
+            mount.SpeedModifier, mount.IsParked, mount.OccupantPlayerId);
 
     private void SeedStarterStructures()
     {

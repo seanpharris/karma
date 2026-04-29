@@ -254,7 +254,7 @@ Active implementation plan (as of 2026-04-29). Steps complete on `develop`.
 | 15 | Rescue intent (rescuer carries downed player, Ascend reward) | ✅ done |
 | 16 | Clinic recovery hook (extend countdown, NPC auto-revive for scrip) | ✅ done |
 | 17 | Road/path generation (spanning path graph at world-gen) | ✅ done |
-| 18 | Path-aware world rendering (road tiles between station pairs) | pending |
+| 18 | Path-aware world rendering (road tiles between station pairs) | ✅ done |
 | 19 | Mount/vehicle entity model (speed modifier, parking, occupancy) | pending |
 | 20 | Mount/dismount intents + karma hooks | pending |
 

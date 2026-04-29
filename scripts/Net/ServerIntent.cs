@@ -143,6 +143,23 @@ public sealed record NpcEntity(
     TilePosition Position,
     string LocationId = "");
 
+public sealed record MountEntity(
+    string EntityId,
+    string Name,
+    TilePosition Position,
+    float SpeedModifier,
+    bool IsParked,
+    string OccupantPlayerId = "");
+
+public sealed record MountSnapshot(
+    string EntityId,
+    string Name,
+    int TileX,
+    int TileY,
+    float SpeedModifier,
+    bool IsParked,
+    string OccupantPlayerId);
+
 public sealed record NpcSnapshot(
     string Id,
     string Name,
@@ -191,8 +208,9 @@ public sealed record ClientInterestSnapshot(
     IReadOnlyList<Duel> Duels,
     InterestSnapshotSyncHint SyncHint,
     IReadOnlyList<ServerEvent> ServerEvents,
-    IReadOnlyList<WorldEvent> WorldEvents)
+    IReadOnlyList<WorldEvent> WorldEvents,
+    IReadOnlyList<MountSnapshot> Mounts)
 {
     public string Summary =>
-        $"{Players.Count} visible players, {Npcs.Count} visible NPCs, {Dialogues.Count} dialogues, {Quests.Count} quests, {MapChunks.Count} map chunks, {WorldItems.Count} visible items, {Structures.Count} visible structures, {ShopOffers.Count} shop offers, {LocalChatMessages.Count} local chat messages, {Duels.Count} duels, {Match.Summary}, {SyncHint.ServerEventCount} server events, {SyncHint.WorldEventCount} world events";
+        $"{Players.Count} visible players, {Npcs.Count} visible NPCs, {Dialogues.Count} dialogues, {Quests.Count} quests, {MapChunks.Count} map chunks, {WorldItems.Count} visible items, {Structures.Count} visible structures, {ShopOffers.Count} shop offers, {LocalChatMessages.Count} local chat messages, {Duels.Count} duels, {Match.Summary}, {SyncHint.ServerEventCount} server events, {SyncHint.WorldEventCount} world events, {Mounts.Count} mounts";
 }

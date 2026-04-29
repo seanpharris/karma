@@ -3251,6 +3251,42 @@ public partial class GameplaySmokeTest : Node
             new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ac_victim" }));
         ExpectFalse(doubleRescue.WasAccepted, "rescue rejected when target is no longer downed");
 
+        // ── Step 19: Mount/vehicle entity model ───────────────────────────────────
+        // Starter mounts are seeded at known positions; interest snapshot exposes
+        // nearby mounts with speed modifier, parked state, and occupancy.
+        var mountState = new GameState();
+        mountState.RegisterPlayer("ah_rider", "Rider");
+        mountState.SetPlayerPosition("ah_rider", TilePosition.Origin);
+        var mountServer = new AuthoritativeWorldServer(mountState, "mount-test");
+
+        // Server seeds starter mounts
+        ExpectTrue(mountServer.Mounts.Count >= 2, "server seeds at least two starter mounts");
+        ExpectTrue(mountServer.Mounts.ContainsKey("mount_hover_1"), "server seeds Hover Scooter mount");
+        ExpectTrue(mountServer.Mounts.ContainsKey("mount_cargo_1"), "server seeds Cargo Crawler mount");
+
+        // Mounts have correct model fields
+        var hoverScooter = mountServer.Mounts["mount_hover_1"];
+        ExpectTrue(hoverScooter.SpeedModifier > 1.0f, "hover scooter has speed bonus");
+        ExpectTrue(hoverScooter.IsParked, "hover scooter starts parked");
+        ExpectTrue(string.IsNullOrWhiteSpace(hoverScooter.OccupantPlayerId), "hover scooter starts unoccupied");
+
+        // Interest snapshot includes mounts within radius (both starter mounts are at (12,8) and (15,12),
+        // within 24-tile interest radius from Origin)
+        mountState.SetPlayerPosition("ah_rider", TilePosition.Origin);
+        var mountSnapshot = mountServer.CreateInterestSnapshot("ah_rider");
+        ExpectTrue(mountSnapshot.Mounts.Count >= 2, "interest snapshot exposes nearby mounts");
+        var snapHover = mountSnapshot.Mounts.FirstOrDefault(m => m.EntityId == "mount_hover_1");
+        ExpectTrue(snapHover is not null, "interest snapshot includes hover scooter");
+        ExpectEqual(12, snapHover?.TileX ?? -1, "hover scooter snapshot has correct X");
+        ExpectEqual(8, snapHover?.TileY ?? -1, "hover scooter snapshot has correct Y");
+        ExpectTrue(snapHover?.IsParked == true, "hover scooter snapshot reports parked");
+        ExpectTrue(string.IsNullOrWhiteSpace(snapHover?.OccupantPlayerId), "hover scooter snapshot reports no occupant");
+
+        // Mount out of interest radius is not included
+        mountState.SetPlayerPosition("ah_rider", new TilePosition(50, 50));
+        var farMountSnapshot = mountServer.CreateInterestSnapshot("ah_rider");
+        ExpectEqual(0, farMountSnapshot.Mounts.Count, "mounts beyond interest radius are not included in snapshot");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.
