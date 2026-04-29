@@ -19,6 +19,7 @@ public enum IntentType
     SelectDialogueChoice,
     StartQuest,
     CompleteQuest,
+    AdvanceQuestStep,
     StartEntanglement,
     ExposeEntanglement,
     SetAppearance,

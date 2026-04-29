@@ -2474,6 +2474,137 @@ public partial class GameplaySmokeTest : Node
             new NetworkClientMessage("msg_bad", GameState.LocalPlayerId, NetworkClientMessageType.Intent, string.Empty, 0, null));
         ExpectEqual(NetworkServerMessageType.Error, malformedResponse.Type, "network protocol rejects malformed intent messages");
 
+        var multiStepQuestState = new GameState();
+        multiStepQuestState.RegisterPlayer(GameState.LocalPlayerId, "Quest Tester");
+        multiStepQuestState.SetPlayerPosition(GameState.LocalPlayerId, TilePosition.Origin);
+        var stepA = new QuestStep(
+            "find_tool",
+            "Pick up a repair kit.",
+            new QuestStepCondition(QuestStepConditionKind.HoldItem, StarterItems.RepairKitId),
+            new[] { "helpful" },
+            ScripReward: 2);
+        var stepB = new QuestStep(
+            "report_to_mara",
+            "Report back to Mara.",
+            new QuestStepCondition(QuestStepConditionKind.NearNpc, StarterNpcs.Mara.Id),
+            new[] { "generous" },
+            ScripReward: 0);
+        var multiStepDef = new QuestDefinition(
+            "multi_step_smoke_test",
+            "Two-Step Test",
+            StarterNpcs.Mara.Id,
+            "A two-step smoke test quest.",
+            System.Array.Empty<string>(),
+            PrototypeActions.HelpMaraId,
+            ScripReward: 10,
+            Steps: new[] { stepA, stepB });
+        multiStepQuestState.Quests.AddDefinition(multiStepDef);
+        var multiStepServer = new AuthoritativeWorldServer(multiStepQuestState, "multi-step-quest-test");
+        ExpectEqual(2, multiStepQuestState.Quests.Get("multi_step_smoke_test").Definition.Steps.Count, "multi-step quest definition exposes step list");
+        ExpectTrue(multiStepQuestState.Quests.Get("multi_step_smoke_test").IsMultiStep, "multi-step quest reports IsMultiStep");
+        ExpectFalse(multiStepQuestState.Quests.Get("multi_step_smoke_test").AllStepsDone, "incomplete multi-step quest reports steps remaining");
+        var multiStepSnapshot = multiStepServer.CreateInterestSnapshot(GameState.LocalPlayerId);
+        var multiStepQuestSnap = multiStepSnapshot.Quests.FirstOrDefault(q => q.Id == "multi_step_smoke_test");
+        ExpectTrue(multiStepQuestSnap is not null, "multi-step quest appears in interest snapshot");
+        ExpectEqual(2, multiStepQuestSnap?.TotalSteps ?? -1, "interest snapshot exposes total step count");
+        ExpectEqual(0, multiStepQuestSnap?.CurrentStep ?? -1, "interest snapshot exposes current step index");
+        ExpectTrue(multiStepQuestSnap?.CurrentStepDescription.Contains("repair kit") == true, "interest snapshot exposes current step description");
+        var startMultiStepQuest = multiStepServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            100,
+            IntentType.StartQuest,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "multi_step_smoke_test" }));
+        ExpectTrue(startMultiStepQuest.WasAccepted, "server accepts multi-step quest start near giver");
+        var earlyComplete = multiStepServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            101,
+            IntentType.CompleteQuest,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "multi_step_smoke_test" }));
+        ExpectFalse(earlyComplete.WasAccepted, "server rejects CompleteQuest when multi-step quest has unfinished steps");
+        var advanceWithoutItem = multiStepServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            102,
+            IntentType.AdvanceQuestStep,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "multi_step_smoke_test" }));
+        ExpectFalse(advanceWithoutItem.WasAccepted, "server rejects AdvanceQuestStep when HoldItem condition is not met");
+        multiStepQuestState.AddItem(GameState.LocalPlayerId, StarterItems.RepairKit);
+        var advanceStepA = multiStepServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            103,
+            IntentType.AdvanceQuestStep,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "multi_step_smoke_test" }));
+        ExpectTrue(advanceStepA.WasAccepted, "server accepts AdvanceQuestStep when HoldItem condition is met");
+        ExpectEqual("find_tool", advanceStepA.Event.Data["stepId"], "step advance event records the completed step id");
+        ExpectEqual(1, multiStepQuestState.Quests.Get("multi_step_smoke_test").CurrentStepIndex, "step index advances after accepted step");
+        ExpectFalse(multiStepQuestState.Quests.Get("multi_step_smoke_test").AllStepsDone, "quest still has remaining steps after step A");
+        var advanceStepB = multiStepServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            104,
+            IntentType.AdvanceQuestStep,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "multi_step_smoke_test" }));
+        ExpectTrue(advanceStepB.WasAccepted, "server accepts AdvanceQuestStep for NearNpc condition when player is at origin near Mara");
+        ExpectEqual("True", advanceStepB.Event.Data["allStepsDone"], "step advance event signals when all steps are complete");
+        ExpectTrue(multiStepQuestState.Quests.Get("multi_step_smoke_test").AllStepsDone, "quest reports AllStepsDone after final step");
+        var completeMultiStepQuest = multiStepServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId,
+            105,
+            IntentType.CompleteQuest,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "multi_step_smoke_test" }));
+        ExpectTrue(completeMultiStepQuest.WasAccepted, "server accepts CompleteQuest after all multi-step quest steps are done");
+        ExpectEqual(QuestStatus.Completed, multiStepQuestState.Quests.Get("multi_step_smoke_test").Status, "multi-step quest marks Completed after successful turn-in");
+
+        var repairMissionDef = RepairMissionQuests.Create(
+            "repair_smoke_test",
+            "Fix the Workshop",
+            StarterNpcs.Mara.Id,
+            "workshop_smoke_location",
+            "workshop",
+            20);
+        ExpectEqual(3, repairMissionDef.Steps.Count, "repair mission quest has three steps");
+        ExpectEqual(QuestStepConditionKind.NearStructureCategory, repairMissionDef.Steps[0].Condition.Kind, "repair mission step 1 requires nearness to structure category");
+        ExpectEqual("workshop", repairMissionDef.Steps[0].Condition.TargetId, "repair mission step 1 targets the correct structure role");
+        ExpectEqual(QuestStepConditionKind.HoldRepairTool, repairMissionDef.Steps[1].Condition.Kind, "repair mission step 2 requires holding a repair tool");
+        ExpectEqual(QuestStepConditionKind.NearStructureCategory, repairMissionDef.Steps[2].Condition.Kind, "repair mission step 3 requires returning to structure");
+        var repairState = new GameState();
+        repairState.RegisterPlayer(GameState.LocalPlayerId, "Repair Tester");
+        repairState.SetPlayerPosition(GameState.LocalPlayerId, TilePosition.Origin);
+        repairState.Quests.AddDefinition(repairMissionDef);
+        var repairServer = new AuthoritativeWorldServer(repairState, "repair-mission-test");
+        repairServer.SeedWorldStructure(
+            "workshop_smoke_fixture",
+            "Smoke Workshop",
+            "workshop",
+            TilePosition.Origin,
+            integrity: 60);
+        var startRepairMission = repairServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 1, IntentType.StartQuest,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "repair_smoke_test" }));
+        ExpectTrue(startRepairMission.WasAccepted, "server accepts repair mission quest start");
+        var repairStep1 = repairServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 2, IntentType.AdvanceQuestStep,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "repair_smoke_test" }));
+        ExpectTrue(repairStep1.WasAccepted, "repair mission step 1 passes when player is near the workshop structure");
+        var repairStep2NoTool = repairServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 3, IntentType.AdvanceQuestStep,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "repair_smoke_test" }));
+        ExpectFalse(repairStep2NoTool.WasAccepted, "repair mission step 2 is rejected without a repair tool");
+        repairState.AddItem(GameState.LocalPlayerId, StarterItems.MultiTool);
+        var repairStep2 = repairServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 4, IntentType.AdvanceQuestStep,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "repair_smoke_test" }));
+        ExpectTrue(repairStep2.WasAccepted, "repair mission step 2 passes when player holds a repair tool");
+        var repairStep3 = repairServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 5, IntentType.AdvanceQuestStep,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "repair_smoke_test" }));
+        ExpectTrue(repairStep3.WasAccepted, "repair mission step 3 passes when player returns to workshop structure");
+        var completeRepairMission = repairServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 6, IntentType.CompleteQuest,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "repair_smoke_test" }));
+        ExpectTrue(completeRepairMission.WasAccepted, "server accepts repair mission completion after all steps done");
+        ExpectTrue(
+            generatedA.Quests.Any(quest => quest.Steps is { Count: 3 } && quest.Steps[1].Condition.Kind == QuestStepConditionKind.HoldRepairTool),
+            "world generator produces repair mission quests for workshop/clinic stations");
+
         if (_failures == 0)
         {
             GD.Print("Gameplay smoke tests passed.");

@@ -244,11 +244,46 @@ public partial class GameState : Node
         return true;
     }
 
+    public bool AdvanceQuestStep(string playerId, string questId)
+    {
+        var quest = Quests.Get(questId);
+        if (quest.Status != QuestStatus.Active || !quest.IsMultiStep)
+            return false;
+
+        var step = quest.CurrentStep;
+        if (step == null || !quest.AdvanceStep())
+            return false;
+
+        if (step.KarmaTags.Count > 0)
+        {
+            var stepAction = new KarmaAction(playerId, quest.Definition.GiverNpcId, step.KarmaTags, $"Quest step: {step.Description}");
+            ApplyShift(playerId, stepAction);
+        }
+
+        if (step.ScripReward > 0)
+        {
+            AddScrip(playerId, step.ScripReward);
+        }
+
+        var nextDesc = quest.CurrentStep?.Description ?? "all steps done";
+        WorldEvents.Add(WorldEventType.Quest, $"Quest step advanced: {quest.Definition.Title} — next: {nextDesc}", playerId, quest.Definition.GiverNpcId);
+        EmitSignal(SignalName.KarmaEvent, $"Quest step: {step.Description}");
+        EmitQuestsChanged();
+        EmitWorldEventsChanged();
+        return true;
+    }
+
     public bool CompleteQuest(string playerId, string questId)
     {
         var quest = Quests.Get(questId);
         if (quest.Status == QuestStatus.Completed)
         {
+            return false;
+        }
+
+        if (!quest.AllStepsDone)
+        {
+            EmitSignal(SignalName.KarmaEvent, $"Quest has unfinished steps: {quest.Definition.Title}");
             return false;
         }
 

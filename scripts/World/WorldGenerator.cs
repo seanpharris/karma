@@ -478,14 +478,19 @@ public static class WorldGenerator
                 continue;
             }
 
-            quests.Add(new QuestDefinition(
-                $"generated_station_help_{SanitizeQuestId(location.Id)}_{SanitizeQuestId(npc.Id)}",
-                $"Stabilize {location.Name}",
-                npc.Id,
-                $"{npc.Name} needs help at {location.Name}: {npc.Need}. The local karma hook is to {location.KarmaHook}.",
-                Array.Empty<string>(),
-                $"generated_station_help:{location.Id}",
-                ScripReward: GetStationQuestReward(location)));
+            var questId = $"generated_station_help_{SanitizeQuestId(location.Id)}_{SanitizeQuestId(npc.Id)}";
+            var scripReward = GetStationQuestReward(location);
+            var quest = location.Role is "workshop" or "clinic"
+                ? RepairMissionQuests.Create(questId, $"Repair {location.Name}", npc.Id, location.Id, location.Role, scripReward)
+                : new QuestDefinition(
+                    questId,
+                    $"Stabilize {location.Name}",
+                    npc.Id,
+                    $"{npc.Name} needs help at {location.Name}: {npc.Need}. The local karma hook is to {location.KarmaHook}.",
+                    Array.Empty<string>(),
+                    $"generated_station_help:{location.Id}",
+                    ScripReward: scripReward);
+            quests.Add(quest);
         }
 
         return quests;

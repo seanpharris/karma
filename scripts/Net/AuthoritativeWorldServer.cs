@@ -267,6 +267,22 @@ public sealed class AuthoritativeWorldServer
             Integrity: 75);
     }
 
+    public void SeedWorldStructure(string entityId, string displayName, string category, TilePosition position, int integrity = 75)
+    {
+        var fallback = StructureArtCatalog.Get(StructureSpriteKind.GreenhouseGlassPanel);
+        _worldStructures[entityId] = new WorldStructureEntity(
+            entityId,
+            fallback.Id,
+            displayName,
+            category,
+            position,
+            IsVisible: true,
+            IsInteractable: true,
+            InteractionPrompt: FormatStructurePrompt(displayName, integrity),
+            InteractionResult: string.Empty,
+            Integrity: integrity);
+    }
+
     public ServerJoinResult JoinPlayer(string playerId, string displayName)
     {
         if (_connectedPlayerIds.Contains(playerId))
@@ -339,6 +355,7 @@ public sealed class AuthoritativeWorldServer
             IntentType.SelectDialogueChoice => ProcessSelectDialogueChoice(intent),
             IntentType.StartQuest => ProcessStartQuest(intent),
             IntentType.CompleteQuest => ProcessCompleteQuest(intent),
+            IntentType.AdvanceQuestStep => ProcessAdvanceQuestStep(intent),
             IntentType.StartEntanglement => ProcessStartEntanglement(intent),
             IntentType.ExposeEntanglement => ProcessExposeEntanglement(intent),
             IntentType.SetAppearance => ProcessSetAppearance(intent),
@@ -413,7 +430,13 @@ public sealed class AuthoritativeWorldServer
         var visibleQuests = _state.Quests.Quests.Values
             .Where(quest => interest.VisibleNpcIds.Contains(quest.Definition.GiverNpcId))
             .OrderBy(quest => quest.Definition.Id)
-            .Select(quest => new QuestSnapshot(quest.Definition.Id, quest.Status, GetQuestScripRewardForCurrentStationState(quest.Definition)))
+            .Select(quest => new QuestSnapshot(
+                quest.Definition.Id,
+                quest.Status,
+                GetQuestScripRewardForCurrentStationState(quest.Definition),
+                quest.CurrentStepIndex,
+                quest.Definition.Steps?.Count ?? 0,
+                quest.CurrentStep?.Description ?? ""))
             .ToArray();
         var visibleMapChunks = CreateVisibleMapChunks(playerId);
         var visibleWorldItems = _worldItems.Values
@@ -1392,6 +1415,113 @@ public sealed class AuthoritativeWorldServer
             });
 
         return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessAdvanceQuestStep(ServerIntent intent)
+    {
+        if (!intent.Payload.TryGetValue("questId", out var questId))
+            return Reject(intent, "AdvanceQuestStep intent requires questId.");
+
+        if (!_state.Quests.Quests.TryGetValue(questId, out var quest))
+            return Reject(intent, $"Unknown quest: {questId}.");
+
+        if (quest.Status != QuestStatus.Active)
+            return Reject(intent, $"Quest is not active: {questId}.");
+
+        if (!quest.IsMultiStep)
+            return Reject(intent, $"Quest does not have steps: {questId}.");
+
+        var step = quest.CurrentStep;
+        if (step == null)
+            return Reject(intent, $"Quest has no remaining steps: {questId}.");
+
+        if (!IsStepConditionMet(intent.PlayerId, step.Condition, out var conditionRejection))
+            return Reject(intent, conditionRejection);
+
+        var stepId = step.Id;
+        var previousStepIndex = quest.CurrentStepIndex;
+        if (!_state.AdvanceQuestStep(intent.PlayerId, questId))
+            return Reject(intent, $"Quest step could not be advanced: {questId}.");
+
+        var serverEvent = AppendEvent(
+            "quest_step_advanced",
+            $"{intent.PlayerId} advanced step '{stepId}' in quest {questId}",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["questId"] = questId,
+                ["stepId"] = stepId,
+                ["stepIndex"] = previousStepIndex.ToString(),
+                ["allStepsDone"] = quest.AllStepsDone.ToString()
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private bool IsStepConditionMet(string playerId, QuestStepCondition condition, out string rejection)
+    {
+        rejection = null;
+        switch (condition.Kind)
+        {
+            case QuestStepConditionKind.None:
+                return true;
+
+            case QuestStepConditionKind.HoldItem:
+                if (!_state.HasItem(playerId, condition.TargetId))
+                {
+                    var item = StarterItems.GetById(condition.TargetId);
+                    rejection = $"You need to be holding: {item.Name}.";
+                    return false;
+                }
+                return true;
+
+            case QuestStepConditionKind.HoldRepairTool:
+                if (!HasStructureRepairTool(playerId))
+                {
+                    rejection = "You need a repair tool (multi-tool or welding torch).";
+                    return false;
+                }
+                return true;
+
+            case QuestStepConditionKind.NearNpc:
+                if (!_npcs.TryGetValue(condition.TargetId, out var npcEntity))
+                {
+                    rejection = $"NPC not found: {condition.TargetId}.";
+                    return false;
+                }
+                if (!_state.Players.TryGetValue(playerId, out var playerForNpc))
+                {
+                    rejection = "Player not found.";
+                    return false;
+                }
+                if (playerForNpc.Position.DistanceSquaredTo(npcEntity.Position) > Config.InterestRadiusTiles * Config.InterestRadiusTiles)
+                {
+                    rejection = $"You need to be closer to {npcEntity.Profile.Name}.";
+                    return false;
+                }
+                return true;
+
+            case QuestStepConditionKind.NearStructureCategory:
+                if (!_state.Players.TryGetValue(playerId, out var playerForStructure))
+                {
+                    rejection = "Player not found.";
+                    return false;
+                }
+                var radiusSquared = Config.InterestRadiusTiles * Config.InterestRadiusTiles;
+                var nearMatch = _worldStructures.Values.Any(s =>
+                    s.Category == condition.TargetId &&
+                    playerForStructure.Position.DistanceSquaredTo(s.Position) <= radiusSquared);
+                if (!nearMatch)
+                {
+                    rejection = $"You need to be near a {condition.TargetId}.";
+                    return false;
+                }
+                return true;
+
+            default:
+                rejection = $"Unknown step condition: {condition.Kind}.";
+                return false;
+        }
     }
 
     private ServerProcessResult ProcessStartEntanglement(ServerIntent intent)

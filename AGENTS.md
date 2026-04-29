@@ -30,10 +30,18 @@ Core ideas:
 
 ## Verification
 
-Before finishing code changes, run:
+Before finishing code changes, run the full verification chain. Run each step only if the previous exits `0`.
 
+**From PowerShell:**
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\tools\test.ps1; if ($LASTEXITCODE -eq 0) { powershell -ExecutionPolicy Bypass -File .\tools\snapshot.ps1 }; if ($LASTEXITCODE -eq 0) { powershell -ExecutionPolicy Bypass -File .\tools\check.ps1 } else { exit $LASTEXITCODE }
+```
+
+**From bash (e.g. Claude Code on Windows):**
+```bash
+powershell.exe -ExecutionPolicy Bypass -File tools/test.ps1 && \
+powershell.exe -ExecutionPolicy Bypass -File tools/snapshot.ps1 && \
+powershell.exe -ExecutionPolicy Bypass -File tools/check.ps1
 ```
 
 Known note: `tools\check.ps1` may print Godot cleanup/leaked RID warnings. Treat them as non-failing when the command exits with code `0`.
@@ -51,6 +59,9 @@ At the start of a work turn:
 - If the existing work is coherent, continue from it instead of redoing it.
 - If the existing work is large, run verification before making extra changes so
   failures can be attributed cleanly.
+- If uncommitted changes are contradictory, incoherent, or leave the project
+  non-building, stop and report the situation to the user rather than silently
+  resolving it yourself.
 
 When continuing another agent's work:
 
@@ -214,11 +225,16 @@ Godot 2D top-down template:
 - Prefer existing patterns over new abstractions.
 - Keep edits scoped to the requested gameplay slice.
 - Use server-owned DTOs/snapshots for anything that will matter in multiplayer.
-- Add focused smoke tests for new mechanics, especially server intent validation and snapshot data.
+- Add focused smoke tests for new mechanics, especially server intent validation
+  and snapshot data. Add cases to `scripts/Tests/GameplaySmokeTest.cs`. Every
+  new server intent should have at least one smoke test case.
 - Do not revert user changes.
 - Avoid unrelated refactors.
 
 ## Current Prototype Features
+
+_Last updated 2026-04-29. This list drifts — verify against the code before
+assuming a feature is or isn't present._
 
 - Top-down local movement.
 - Mouse wheel camera zoom with clamps.

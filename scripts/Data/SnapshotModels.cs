@@ -49,7 +49,10 @@ public sealed record LeaderboardSnapshot(
 public sealed record QuestSnapshot(
     string Id,
     QuestStatus Status,
-    int ScripReward = 0);
+    int ScripReward = 0,
+    int CurrentStep = 0,
+    int TotalSteps = 0,
+    string CurrentStepDescription = "");
 
 public sealed record RelationshipSnapshot(
     string NpcId,
