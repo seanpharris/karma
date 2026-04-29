@@ -3352,6 +3352,58 @@ public partial class GameplaySmokeTest : Node
             new Dictionary<string, string> { ["mountId"] = "mount_hover_1" });
         ExpectFalse(rideServer.ProcessIntent(farMountIntent).WasAccepted, "mount rejected when mount is out of interest radius");
 
+        // ── Step 21: Karma watermark tracking ────────────────────────────────────
+        // KarmaPeak and KarmaFloor track the highest and lowest karma scores
+        // reached during the match. They survive Karma Break (match-scoped, not
+        // life-scoped). Surfaced in PlayerSnapshot.
+        var wmState = new GameState();
+        wmState.RegisterPlayer("aj_hero", "Hero");
+        wmState.RegisterPlayer("aj_villain", "Villain");
+
+        // Watermarks start at 0
+        ExpectEqual(0, wmState.Players["aj_hero"].Karma.KarmaPeak, "karma peak starts at 0");
+        ExpectEqual(0, wmState.Players["aj_hero"].Karma.KarmaFloor, "karma floor starts at 0");
+
+        // Positive shifts update peak
+        wmState.ApplyShift("aj_hero", new KarmaAction("aj_hero", "aj_hero", new[] { "helpful" }, "good deed"));
+        var peakAfterGood = wmState.Players["aj_hero"].Karma.KarmaPeak;
+        ExpectTrue(peakAfterGood > 0, "karma peak updates after positive shift");
+        ExpectEqual(0, wmState.Players["aj_hero"].Karma.KarmaFloor, "karma floor unchanged after positive shift");
+
+        // Negative shifts update floor
+        wmState.ApplyShift("aj_villain", new KarmaAction("aj_villain", "aj_hero", new[] { "harmful" }, "bad deed"));
+        ExpectTrue(wmState.Players["aj_villain"].Karma.KarmaFloor < 0, "karma floor updates after negative shift");
+        ExpectEqual(0, wmState.Players["aj_villain"].Karma.KarmaPeak, "karma peak unchanged after negative shift");
+
+        // Peak tracks maximum reached
+        wmState.ApplyShift("aj_hero", new KarmaAction("aj_hero", "aj_hero", new[] { "helpful", "generous" }, "great deed"));
+        var peakAfterGreat = wmState.Players["aj_hero"].Karma.KarmaPeak;
+        ExpectTrue(peakAfterGreat > peakAfterGood, "karma peak advances when new high is reached");
+
+        // Going back down does not lower the peak
+        wmState.ApplyShift("aj_hero", new KarmaAction("aj_hero", "aj_hero", new[] { "harmful" }, "slip up"));
+        ExpectEqual(peakAfterGreat, wmState.Players["aj_hero"].Karma.KarmaPeak, "karma peak does not decrease when score drops");
+
+        // Going below zero tracks floor
+        wmState.ApplyShift("aj_hero", new KarmaAction("aj_hero", "aj_hero", new[] { "violent", "harmful", "betrayal" }, "betrayal"));
+        var floorAfterBetrayal = wmState.Players["aj_hero"].Karma.KarmaFloor;
+        ExpectTrue(floorAfterBetrayal < 0, "karma floor tracks negative minimum");
+
+        // Karma Break resets score but preserves watermarks
+        var scoreBeforeBreak = wmState.Players["aj_hero"].Karma.Score;
+        wmState.Players["aj_hero"].KarmaBreak();
+        ExpectEqual(0, wmState.Players["aj_hero"].Karma.Score, "karma score resets to 0 on Karma Break");
+        ExpectEqual(peakAfterGreat, wmState.Players["aj_hero"].Karma.KarmaPeak, "karma peak survives Karma Break");
+        ExpectEqual(floorAfterBetrayal, wmState.Players["aj_hero"].Karma.KarmaFloor, "karma floor survives Karma Break");
+
+        // Snapshot surfaces watermarks
+        var wmServer = new AuthoritativeWorldServer(wmState, "watermark-test");
+        var wmSnap = wmServer.CreateInterestSnapshot("aj_hero");
+        var heroSnap = wmSnap.Players.FirstOrDefault(p => p.Id == "aj_hero");
+        ExpectTrue(heroSnap is not null, "watermark snapshot includes player");
+        ExpectEqual(peakAfterGreat, heroSnap?.KarmaPeak ?? -1, "snapshot KarmaPeak matches tracked peak");
+        ExpectEqual(floorAfterBetrayal, heroSnap?.KarmaFloor ?? 1, "snapshot KarmaFloor matches tracked floor");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.

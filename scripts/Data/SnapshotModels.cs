@@ -37,7 +37,9 @@ public sealed record PlayerSnapshot(
     IReadOnlyList<string> InventoryItemIds,
     IReadOnlyDictionary<EquipmentSlot, string> EquipmentItemIds,
     IReadOnlyList<string> StatusEffects,
-    string PosseId = "");
+    string PosseId = "",
+    int KarmaPeak = 0,
+    int KarmaFloor = 0);
 
 public sealed record LeaderboardSnapshot(
     string SaintPlayerId,
@@ -100,7 +102,9 @@ public static class SnapshotBuilder
                 player.Inventory.Select(item => item.Id).ToArray(),
                 player.Equipment.ToDictionary(pair => pair.Key, pair => pair.Value.Id),
                 statusEffectsFor(player),
-                player.TeamId))
+                player.TeamId,
+                player.Karma.KarmaPeak,
+                player.Karma.KarmaFloor))
             .ToArray();
     }
 

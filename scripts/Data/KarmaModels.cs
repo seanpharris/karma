@@ -14,6 +14,8 @@ public enum KarmaDirection
 public sealed class PlayerKarma
 {
     public int Score { get; private set; }
+    public int KarmaPeak { get; private set; }
+    public int KarmaFloor { get; private set; }
 
     public KarmaDirection Path => Score switch
     {
@@ -29,11 +31,14 @@ public sealed class PlayerKarma
     public void Apply(int amount)
     {
         Score += amount;
+        if (Score > KarmaPeak) KarmaPeak = Score;
+        if (Score < KarmaFloor) KarmaFloor = Score;
     }
 
     public void Reset()
     {
         Score = 0;
+        // KarmaPeak and KarmaFloor are match-scoped — they survive Karma Break
     }
 }
 
