@@ -984,6 +984,18 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(generatedA.PathEdges.Count, generatedB.PathEdges.Count,
             "path graph generation is deterministic");
 
+        // ── Step 18: Path-aware world rendering ───────────────────────────────────
+        // Path edges are stamped onto the tile map as PathDust road tiles.
+        var roadTiles = generatedA.TileMap.Tiles.Where(t => t.ZoneId == "road_path").ToArray();
+        ExpectTrue(roadTiles.Length > 0, "tile map contains road_path tiles from path edges");
+        ExpectTrue(roadTiles.All(t => t.FloorId == WorldTileIds.PathDust),
+            "road_path tiles use PathDust floor");
+        var roadTilesB = generatedB.TileMap.Tiles.Where(t => t.ZoneId == "road_path").ToArray();
+        ExpectEqual(roadTiles.Length, roadTilesB.Length, "road tile placement is deterministic");
+        // Every road_path tile must be on a ground tile type (not a station floor)
+        ExpectTrue(roadTiles.All(t => t.ZoneId == "road_path"),
+            "road tiles are tagged with road_path zone");
+
         ExpectEqual(
             generatedA.Config.WidthTiles * generatedA.Config.HeightTiles,
             generatedA.TileMap.Tiles.Count,
@@ -1047,7 +1059,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(generatedA.TileMap.Tiles.All(tile => boardingSchoolGrassTileIds.Contains(tile.FloorId)), "boarding school prototype covers the map in grass tile variants");
         ExpectTrue(generatedA.TileMap.Tiles.Select(tile => tile.FloorId).Distinct().Count() > 1, "boarding school prototype varies the grass tiles across the map");
         ExpectTrue(generatedA.TileMap.Tiles.All(tile => string.IsNullOrWhiteSpace(tile.StructureId)), "boarding school prototype keeps tile structures out of the grass showcase map");
-        ExpectTrue(generatedA.TileMap.Tiles.All(tile => tile.ZoneId == "boarding_school_grass"), "boarding school prototype labels the grass showcase zone");
+        ExpectTrue(generatedA.TileMap.Tiles.All(tile => tile.ZoneId == "boarding_school_grass" || tile.ZoneId == "road_path"), "boarding school prototype labels tiles as grass or road zone");
         ExpectTrue(
             generatedA.Locations.Any(location => location.KarmaHook.Contains("repair") || location.KarmaHook.Contains("sabotage")),
             "world generation creates locations with karma gameplay hooks");

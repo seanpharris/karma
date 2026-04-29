@@ -165,7 +165,7 @@ public static class WorldGenerator
             WorldScale.Large => 24,
             _ => 5
         };
-        var tileMap = GenerateTileMap(random, config);
+        var rawTileMap = GenerateTileMap(random, config);
         var locations = GenerateLocations(random, config, theme, locationCount);
         var npcs = GenerateNpcs(random, config, locations);
         var placements = GenerateNpcPlacements(locations, npcs);
@@ -174,6 +174,7 @@ public static class WorldGenerator
         var oddities = GenerateOddities(config);
         var oddityPlacements = GenerateOddityPlacements(random, config, locations, oddities);
         var pathEdges = GeneratePathEdges(locations);
+        var tileMap = ApplyPathEdges(rawTileMap, pathEdges);
 
         return new GeneratedWorld(
             config,
@@ -714,6 +715,46 @@ public static class WorldGenerator
         }
 
         return edges;
+    }
+
+    private static GeneratedTileMap ApplyPathEdges(GeneratedTileMap tileMap, IReadOnlyList<GeneratedPathEdge> pathEdges)
+    {
+        if (pathEdges.Count == 0)
+        {
+            return tileMap;
+        }
+
+        var tiles = tileMap.Tiles.ToArray();
+
+        foreach (var edge in pathEdges)
+        {
+            var dx = edge.ToX - edge.FromX;
+            var dy = edge.ToY - edge.FromY;
+            var steps = Math.Max(Math.Abs(dx), Math.Abs(dy));
+            if (steps == 0)
+            {
+                continue;
+            }
+
+            for (var i = 0; i <= steps; i++)
+            {
+                var x = (int)Math.Round(edge.FromX + dx * (double)i / steps);
+                var y = (int)Math.Round(edge.FromY + dy * (double)i / steps);
+                if (x < 0 || y < 0 || x >= tileMap.Width || y >= tileMap.Height)
+                {
+                    continue;
+                }
+
+                var idx = y * tileMap.Width + x;
+                var tile = tiles[idx];
+                if (tile.FloorId is WorldTileIds.GroundScrub or WorldTileIds.GroundDust)
+                {
+                    tiles[idx] = tile with { FloorId = WorldTileIds.PathDust, ZoneId = "road_path" };
+                }
+            }
+        }
+
+        return tileMap with { Tiles = tiles };
     }
 
     private static readonly string[] GeneratedNames =
