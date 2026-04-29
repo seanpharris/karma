@@ -255,8 +255,8 @@ Active implementation plan (as of 2026-04-29). Steps complete on `develop`.
 | 16 | Clinic recovery hook (extend countdown, NPC auto-revive for scrip) | ✅ done |
 | 17 | Road/path generation (spanning path graph at world-gen) | ✅ done |
 | 18 | Path-aware world rendering (road tiles between station pairs) | ✅ done |
-| 19 | Mount/vehicle entity model (speed modifier, parking, occupancy) | pending |
-| 20 | Mount/dismount intents + karma hooks | pending |
+| 19 | Mount/vehicle entity model (speed modifier, parking, occupancy) | ✅ done |
+| 20 | Mount/dismount intents + karma hooks | ✅ done |
 
 Art requirements for each step are tracked in `ART_NEEDED.md`.
 

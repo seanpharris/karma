@@ -1173,6 +1173,23 @@ public partial class HudController : CanvasLayer
             return $"{target} was revived by the clinic (+{heal} HP, -{cost} scrip).";
         }
 
+        if (latest.EventId.Contains("player_mounted"))
+        {
+            var rider = ReadEventData(latest, "playerName", "Someone");
+            var mountName = ReadEventData(latest, "mountName", "a mount");
+            var speed = ReadEventData(latest, "speedModifier", "?");
+            return $"{rider} mounted {mountName} ({speed}x speed).";
+        }
+
+        if (latest.EventId.Contains("player_dismounted"))
+        {
+            var rider = ReadEventData(latest, "playerName", "Someone");
+            var mountName = ReadEventData(latest, "mountName", "a mount");
+            var nearStation = ReadEventData(latest, "nearStation", "False");
+            var suffix = nearStation == "True" ? " Parked near a station." : string.Empty;
+            return $"{rider} dismounted {mountName}.{suffix}";
+        }
+
         if (latest.EventId.Contains("player_respawned"))
         {
             var target = ReadEventData(latest, "playerId", "Someone");

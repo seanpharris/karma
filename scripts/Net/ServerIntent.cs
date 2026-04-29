@@ -30,7 +30,9 @@ public enum IntentType
     AcceptPosse,
     LeavePosse,
     SendPosseChat,
-    Rescue
+    Rescue,
+    Mount,
+    Dismount
 }
 
 public sealed record ServerIntent(

@@ -28,6 +28,7 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, WorldStructureEntity> _worldStructures = new();
     private readonly Dictionary<string, NpcEntity> _npcs = new();
     private readonly Dictionary<string, MountEntity> _mounts = new();
+    private readonly Dictionary<string, string> _mountedPlayerToMountId = new();
     private readonly List<ServerEvent> _eventLog = new();
     private readonly List<LocalChatMessage> _localChatLog = new();
     private readonly MatchState _match;
@@ -409,6 +410,8 @@ public sealed class AuthoritativeWorldServer
             IntentType.LeavePosse => ProcessLeavePosse(intent),
             IntentType.SendPosseChat => ProcessSendPosseChat(intent),
             IntentType.Rescue => ProcessRescue(intent),
+            IntentType.Mount => ProcessMount(intent),
+            IntentType.Dismount => ProcessDismount(intent),
             _ => Reject(intent, $"Unsupported intent type: {intent.Type}")
         };
     }
@@ -1474,6 +1477,108 @@ public sealed class AuthoritativeWorldServer
                 ["rescuerId"] = intent.PlayerId,
                 ["targetId"] = targetId,
                 ["healAmount"] = RescueHealAmount.ToString(),
+                ["karmaAmount"] = shift.Amount.ToString()
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessMount(ServerIntent intent)
+    {
+        if (!intent.Payload.TryGetValue("mountId", out var mountId))
+            return Reject(intent, "Mount intent requires mountId.");
+
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var player))
+            return Reject(intent, "Unknown player.");
+
+        if (!_mounts.TryGetValue(mountId, out var mount))
+            return Reject(intent, $"Unknown mount: {mountId}.");
+
+        if (!string.IsNullOrWhiteSpace(mount.OccupantPlayerId))
+            return Reject(intent, $"{mount.Name} is already occupied.");
+
+        if (_mountedPlayerToMountId.ContainsKey(intent.PlayerId))
+            return Reject(intent, "Player is already mounted.");
+
+        var radiusSquared = Config.InterestRadiusTiles * Config.InterestRadiusTiles;
+        if (player.Position.DistanceSquaredTo(mount.Position) > radiusSquared)
+            return Reject(intent, $"{mount.Name} is out of range.");
+
+        _mounts[mountId] = mount with
+        {
+            IsParked = false,
+            OccupantPlayerId = intent.PlayerId,
+            Position = player.Position
+        };
+        _mountedPlayerToMountId[intent.PlayerId] = mountId;
+
+        var shift = _state.ApplyShift(intent.PlayerId, new KarmaAction(
+            intent.PlayerId,
+            intent.PlayerId,
+            new[] { "helpful", "mobile" },
+            $"{player.DisplayName} mounted {mount.Name}."));
+
+        var serverEvent = AppendEvent(
+            "player_mounted",
+            $"{player.DisplayName} mounted {mount.Name}.",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["playerName"] = player.DisplayName,
+                ["mountId"] = mountId,
+                ["mountName"] = mount.Name,
+                ["speedModifier"] = mount.SpeedModifier.ToString("F1"),
+                ["karmaAmount"] = shift.Amount.ToString()
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessDismount(ServerIntent intent)
+    {
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var player))
+            return Reject(intent, "Unknown player.");
+
+        if (!_mountedPlayerToMountId.TryGetValue(intent.PlayerId, out var mountId))
+            return Reject(intent, "Player is not currently mounted.");
+
+        if (!_mounts.TryGetValue(mountId, out var mount))
+            return Reject(intent, $"Mount entity missing: {mountId}.");
+
+        _mounts[mountId] = mount with
+        {
+            IsParked = true,
+            OccupantPlayerId = string.Empty,
+            Position = player.Position
+        };
+        _mountedPlayerToMountId.Remove(intent.PlayerId);
+
+        var nearStation = _worldStructures.Values.Any(s =>
+            !string.IsNullOrWhiteSpace(s.LocationId) &&
+            player.Position.DistanceSquaredTo(s.Position) <= Config.InterestRadiusTiles * Config.InterestRadiusTiles);
+
+        var shift = nearStation
+            ? _state.ApplyShift(intent.PlayerId, new KarmaAction(
+                intent.PlayerId,
+                intent.PlayerId,
+                new[] { "helpful", "civic" },
+                $"{player.DisplayName} parked {mount.Name} near a station."))
+            : _state.ApplyShift(intent.PlayerId, new KarmaAction(
+                intent.PlayerId,
+                intent.PlayerId,
+                new[] { "neutral" },
+                $"{player.DisplayName} dismounted {mount.Name}."));
+
+        var serverEvent = AppendEvent(
+            "player_dismounted",
+            $"{player.DisplayName} dismounted {mount.Name}.",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["playerName"] = player.DisplayName,
+                ["mountId"] = mountId,
+                ["mountName"] = mount.Name,
+                ["nearStation"] = nearStation.ToString(),
                 ["karmaAmount"] = shift.Amount.ToString()
             });
 

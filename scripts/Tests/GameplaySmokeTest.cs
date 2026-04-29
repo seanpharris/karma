@@ -3287,6 +3287,71 @@ public partial class GameplaySmokeTest : Node
         var farMountSnapshot = mountServer.CreateInterestSnapshot("ah_rider");
         ExpectEqual(0, farMountSnapshot.Mounts.Count, "mounts beyond interest radius are not included in snapshot");
 
+        // ── Step 20: Mount/dismount intents + karma hooks ─────────────────────────
+        // Players can mount parked unoccupied vehicles within interest radius.
+        // Karma nudges on both mount and dismount (bonus near a station).
+        var rideState = new GameState();
+        rideState.RegisterPlayer("ai_rider", "Ace");
+        rideState.RegisterPlayer("ai_rider2", "Bee");
+        rideState.SetPlayerPosition("ai_rider", TilePosition.Origin);
+        rideState.SetPlayerPosition("ai_rider2", TilePosition.Origin);
+        var rideServer = new AuthoritativeWorldServer(rideState, "ride-test");
+
+        // Hover Scooter at (12,8) is within 24-tile radius from Origin
+        var mountIntent = new ServerIntent("ai_rider", 1, IntentType.Mount,
+            new Dictionary<string, string> { ["mountId"] = "mount_hover_1" });
+        var mountResult = rideServer.ProcessIntent(mountIntent);
+        ExpectTrue(mountResult.WasAccepted, "Mount intent accepted when player is near a parked mount");
+        ExpectFalse(rideServer.Mounts["mount_hover_1"].IsParked, "mount is no longer parked after mount intent");
+        ExpectEqual("ai_rider", rideServer.Mounts["mount_hover_1"].OccupantPlayerId, "mount records occupant after mount intent");
+
+        // Snap after mount shows occupant
+        var afterMountSnap = rideServer.CreateInterestSnapshot("ai_rider");
+        var snapAfterMount = afterMountSnap.Mounts.FirstOrDefault(m => m.EntityId == "mount_hover_1");
+        ExpectTrue(snapAfterMount is not null, "interest snapshot includes mount after mount intent");
+        ExpectEqual("ai_rider", snapAfterMount?.OccupantPlayerId ?? "", "snapshot reports occupant after mount");
+
+        // HUD formats player_mounted event
+        var mountedHud = HudController.FormatLatestServerEvent(new[] { mountResult.Event });
+        ExpectTrue(mountedHud.Contains("Ace") && mountedHud.Contains("Hover Scooter"), "HUD formats player_mounted event with rider name and mount name");
+
+        // Karma ascends on mount
+        var karmaAfterMount = rideState.Players["ai_rider"].Karma.Score;
+        ExpectTrue(karmaAfterMount > 0, "mounting ascends rider karma");
+
+        // Double mount is rejected
+        var doubleMountIntent = new ServerIntent("ai_rider", 2, IntentType.Mount,
+            new Dictionary<string, string> { ["mountId"] = "mount_hover_1" });
+        ExpectFalse(rideServer.ProcessIntent(doubleMountIntent).WasAccepted, "mount rejected when player is already mounted");
+
+        // Occupied mount rejected for a second rider
+        var occupiedMountIntent = new ServerIntent("ai_rider2", 1, IntentType.Mount,
+            new Dictionary<string, string> { ["mountId"] = "mount_hover_1" });
+        ExpectFalse(rideServer.ProcessIntent(occupiedMountIntent).WasAccepted, "mount rejected when vehicle is already occupied");
+
+        // Dismount
+        var dismountIntent = new ServerIntent("ai_rider", 3, IntentType.Dismount,
+            new Dictionary<string, string>());
+        var dismountResult = rideServer.ProcessIntent(dismountIntent);
+        ExpectTrue(dismountResult.WasAccepted, "Dismount intent accepted when player is mounted");
+        ExpectTrue(rideServer.Mounts["mount_hover_1"].IsParked, "mount is parked again after dismount");
+        ExpectTrue(string.IsNullOrWhiteSpace(rideServer.Mounts["mount_hover_1"].OccupantPlayerId), "mount has no occupant after dismount");
+
+        // HUD formats player_dismounted event
+        var dismountedHud = HudController.FormatLatestServerEvent(new[] { dismountResult.Event });
+        ExpectTrue(dismountedHud.Contains("Ace") && dismountedHud.Contains("Hover Scooter"), "HUD formats player_dismounted event with rider name and mount name");
+
+        // Dismount while not mounted is rejected
+        var badDismountIntent = new ServerIntent("ai_rider", 4, IntentType.Dismount,
+            new Dictionary<string, string>());
+        ExpectFalse(rideServer.ProcessIntent(badDismountIntent).WasAccepted, "dismount rejected when player is not mounted");
+
+        // Mount out of range is rejected
+        rideState.SetPlayerPosition("ai_rider", new TilePosition(50, 50));
+        var farMountIntent = new ServerIntent("ai_rider", 5, IntentType.Mount,
+            new Dictionary<string, string> { ["mountId"] = "mount_hover_1" });
+        ExpectFalse(rideServer.ProcessIntent(farMountIntent).WasAccepted, "mount rejected when mount is out of interest radius");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.
