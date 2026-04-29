@@ -4,6 +4,7 @@ using System.Linq;
 using Karma.Art;
 using Karma.Core;
 using Karma.Data;
+using Karma.Quests;
 using Karma.World;
 
 namespace Karma.Net;
@@ -175,6 +176,7 @@ public sealed class AuthoritativeWorldServer
             _state.Quests.AddDefinition(quest);
         }
 
+        var locationRoleById = generatedWorld.Locations.ToDictionary(loc => loc.Id, loc => loc.Role);
         foreach (var placement in generatedWorld.StructurePlacements.OrderBy(placement => placement.StructureId))
         {
             var entityId = placement.StructureId;
@@ -183,7 +185,8 @@ public sealed class AuthoritativeWorldServer
                 continue;
             }
 
-            SeedGeneratedStructure(placement);
+            var stationRole = locationRoleById.TryGetValue(placement.LocationId, out var role) ? role : "generated-structure";
+            SeedGeneratedStructure(placement, stationRole);
         }
 
         var npcsById = generatedWorld.Npcs.ToDictionary(npc => npc.Id);
@@ -233,14 +236,14 @@ public sealed class AuthoritativeWorldServer
             LocationId: location.Id);
     }
 
-    private void SeedGeneratedStructure(GeneratedStructurePlacement placement)
+    private void SeedGeneratedStructure(GeneratedStructurePlacement placement, string category = "generated-structure")
     {
         var markerDefinition = StructureArtCatalog.Get(StructureSpriteKind.GreenhouseGlassPanel);
         _worldStructures[placement.StructureId] = new WorldStructureEntity(
             placement.StructureId,
             markerDefinition.Id,
             placement.Name,
-            "generated-structure",
+            category,
             new TilePosition(placement.X, placement.Y),
             IsVisible: true,
             IsInteractable: true,
@@ -265,6 +268,11 @@ public sealed class AuthoritativeWorldServer
             InteractionPrompt: FormatStructurePrompt(definition.DisplayName, 75),
             InteractionResult: $"{definition.DisplayName} climate controls hum with suspicious optimism.",
             Integrity: 75);
+    }
+
+    public TilePosition GetNpcPosition(string npcId)
+    {
+        return _npcs.TryGetValue(npcId, out var npc) ? npc.Position : TilePosition.Origin;
     }
 
     public void SeedWorldStructure(string entityId, string displayName, string category, TilePosition position, int integrity = 75)
@@ -1385,7 +1393,13 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, rejectionReason);
         }
 
-        if (!_state.CompleteQuest(intent.PlayerId, questId))
+        var questDef = _state.Quests.Get(questId)?.Definition;
+        var questModule = questDef != null
+            ? QuestModuleRegistry.GetForCompletion(questDef.CompletionActionId)
+            : null;
+        var overrideAction = questModule?.ResolveCompletion(intent.PlayerId, questDef, intent.Payload);
+
+        if (!_state.CompleteQuest(intent.PlayerId, questId, overrideAction))
         {
             return Reject(intent, $"Quest cannot be completed: {questId}.");
         }
@@ -1402,17 +1416,23 @@ public sealed class AuthoritativeWorldServer
             _state.SpendScrip(intent.PlayerId, Math.Abs(stationStateBonus));
         }
 
+        var extraEventData = questModule?.GetCompletionEventData(questDef, intent.Payload)
+            ?? new Dictionary<string, string>();
+        var eventData = new Dictionary<string, string>
+        {
+            ["playerId"] = intent.PlayerId,
+            ["questId"] = questId,
+            ["targetId"] = quest.Definition.GiverNpcId,
+            ["scripReward"] = adjustedScripReward.ToString(),
+            ["stationStateBonus"] = stationStateBonus.ToString()
+        };
+        foreach (var kv in extraEventData)
+            eventData[kv.Key] = kv.Value;
+
         var serverEvent = AppendEvent(
             "quest_completed",
             $"{intent.PlayerId} completed quest {questId}",
-            new Dictionary<string, string>
-            {
-                ["playerId"] = intent.PlayerId,
-                ["questId"] = questId,
-                ["targetId"] = quest.Definition.GiverNpcId,
-                ["scripReward"] = adjustedScripReward.ToString(),
-                ["stationStateBonus"] = stationStateBonus.ToString()
-            });
+            eventData);
 
         return ServerProcessResult.Accepted(serverEvent);
     }

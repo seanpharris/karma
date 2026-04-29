@@ -10,6 +10,7 @@ using Karma.Generation;
 using Karma.Net;
 using Karma.Npc;
 using Karma.Player;
+using Karma.Quests;
 using Karma.UI;
 using Karma.Util;
 using Karma.World;
@@ -2557,13 +2558,9 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(completeMultiStepQuest.WasAccepted, "server accepts CompleteQuest after all multi-step quest steps are done");
         ExpectEqual(QuestStatus.Completed, multiStepQuestState.Quests.Get("multi_step_smoke_test").Status, "multi-step quest marks Completed after successful turn-in");
 
-        var repairMissionDef = RepairMissionQuests.Create(
-            "repair_smoke_test",
-            "Fix the Workshop",
-            StarterNpcs.Mara.Id,
-            "workshop_smoke_location",
-            "workshop",
-            20);
+        var repairMissionDef = QuestModuleRegistry.Repair.CreateQuest(new QuestCreationContext(
+            "repair_smoke_test", "workshop_smoke_location", "Fix the Workshop",
+            "workshop", StarterNpcs.Mara.Id, 20, Array.Empty<QuestPlacementInfo>()));
         ExpectEqual(3, repairMissionDef.Steps.Count, "repair mission quest has three steps");
         ExpectEqual(QuestStepConditionKind.NearStructureCategory, repairMissionDef.Steps[0].Condition.Kind, "repair mission step 1 requires nearness to structure category");
         ExpectEqual("workshop", repairMissionDef.Steps[0].Condition.TargetId, "repair mission step 1 targets the correct structure role");
@@ -2609,15 +2606,9 @@ public partial class GameplaySmokeTest : Node
             generatedA.Quests.Any(quest => quest.Steps is { Count: 3 } && quest.Steps[1].Condition.Kind == QuestStepConditionKind.HoldRepairTool),
             "world generator produces repair mission quests for workshop/clinic stations");
 
-        var deliveryDef = DeliveryQuests.Create(
-            "delivery_smoke_test",
-            "Supply Run",
-            StarterNpcs.Mara.Id,
-            "market_smoke_location",
-            sourceRole: "market",
-            destinationRole: "clinic",
-            deliveryItemId: StarterItems.FilterCoreId,
-            scripReward: 18);
+        var deliveryDef = QuestModuleRegistry.Delivery.CreateQuest(new QuestCreationContext(
+            "delivery_smoke_test", "market_smoke_location", "Supply Run",
+            "market", StarterNpcs.Mara.Id, 18, Array.Empty<QuestPlacementInfo>()));
         ExpectEqual(3, deliveryDef.Steps.Count, "delivery quest has three steps");
         ExpectEqual(QuestStepConditionKind.NearStructureCategory, deliveryDef.Steps[0].Condition.Kind, "delivery step 1 requires nearness to source station");
         ExpectEqual("market", deliveryDef.Steps[0].Condition.TargetId, "delivery step 1 targets source role");
@@ -2662,6 +2653,96 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             generatedA.Quests.Any(quest => quest.Steps is { Count: 3 } && quest.Steps[2].Condition.TargetId == "clinic"),
             "world generator produces delivery quests for market stations targeting clinic");
+
+        // ── Step 4: Rumor Quest ──────────────────────────────────────────────
+        var rumorDef = QuestModuleRegistry.Rumor.CreateQuest(new QuestCreationContext(
+            "rumor_smoke_test", "notice_board_smoke", "The Hidden Ledger",
+            "notice-board", StarterNpcs.Mara.Id, 16,
+            new[] { new QuestPlacementInfo(StarterNpcs.Dallen.Id, "dallen_location") }));
+        ExpectEqual(2, rumorDef.Steps.Count, "rumor quest has two steps");
+        ExpectEqual(QuestStepConditionKind.NearStructureCategory, rumorDef.Steps[0].Condition.Kind, "rumor quest step 1 requires nearness to notice-board structure");
+        ExpectEqual("notice-board", rumorDef.Steps[0].Condition.TargetId, "rumor quest step 1 targets notice-board category");
+        ExpectEqual(QuestStepConditionKind.NearNpc, rumorDef.Steps[1].Condition.Kind, "rumor quest step 2 requires finding the target NPC");
+        ExpectEqual(StarterNpcs.Dallen.Id, rumorDef.Steps[1].Condition.TargetId, "rumor quest step 2 targets the named subject");
+        ExpectTrue(rumorDef.CompletionActionId.StartsWith("rumor_resolve:"), "rumor quest uses rumor_resolve completion action");
+
+        var rumorState = new GameState();
+        rumorState.RegisterPlayer(GameState.LocalPlayerId, "Rumor Tester");
+        rumorState.SetPlayerPosition(GameState.LocalPlayerId, TilePosition.Origin);
+        rumorState.Quests.AddDefinition(rumorDef);
+        var rumorServer = new AuthoritativeWorldServer(rumorState, "rumor-quest-test");
+        rumorServer.SeedWorldStructure("noticeboard_smoke_fixture", "Smoke Notice Board", "notice-board", TilePosition.Origin);
+
+        var startRumorQuest = rumorServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 1, IntentType.StartQuest,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "rumor_smoke_test" }));
+        ExpectTrue(startRumorQuest.WasAccepted, "server accepts rumor quest start near giver");
+
+        var rumorStep1 = rumorServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 2, IntentType.AdvanceQuestStep,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "rumor_smoke_test" }));
+        ExpectTrue(rumorStep1.WasAccepted, "rumor quest step 1 passes when player is near notice-board structure");
+
+        rumorState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(50, 50));
+        var rumorStep2NoNpc = rumorServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 3, IntentType.AdvanceQuestStep,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "rumor_smoke_test" }));
+        ExpectFalse(rumorStep2NoNpc.WasAccepted, "rumor quest step 2 is rejected when target NPC is not nearby");
+
+        rumorState.SetPlayerPosition(GameState.LocalPlayerId, rumorServer.GetNpcPosition(StarterNpcs.Dallen.Id));
+        var rumorStep2 = rumorServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 4, IntentType.AdvanceQuestStep,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "rumor_smoke_test" }));
+        ExpectTrue(rumorStep2.WasAccepted, "rumor quest step 2 passes when player is near the target NPC");
+
+        rumorState.SetPlayerPosition(GameState.LocalPlayerId, TilePosition.Origin);
+        var karmaBeforeExpose = rumorState.Players[GameState.LocalPlayerId].Karma.Score;
+        var exposeRumor = rumorServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 5, IntentType.CompleteQuest,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["questId"] = "rumor_smoke_test",
+                ["choice"] = "expose"
+            }));
+        ExpectTrue(exposeRumor.WasAccepted, "server accepts rumor quest completion with expose choice");
+        ExpectEqual("expose", exposeRumor.Event.Data["rumorChoice"], "quest completed event records expose choice");
+        ExpectTrue(rumorState.Players[GameState.LocalPlayerId].Karma.Score > karmaBeforeExpose, "expose choice ascends player karma");
+
+        var rumorState2 = new GameState();
+        rumorState2.RegisterPlayer(GameState.LocalPlayerId, "Rumor Tester 2");
+        rumorState2.SetPlayerPosition(GameState.LocalPlayerId, TilePosition.Origin);
+        var rumorDef2 = QuestModuleRegistry.Rumor.CreateQuest(new QuestCreationContext(
+            "rumor_bury_test", "notice_board_smoke2", "Hidden Ledger Bury",
+            "notice-board", StarterNpcs.Mara.Id, 16,
+            new[] { new QuestPlacementInfo(StarterNpcs.Dallen.Id, "dallen_location2") }));
+        rumorState2.Quests.AddDefinition(rumorDef2);
+        var rumorServer2 = new AuthoritativeWorldServer(rumorState2, "rumor-bury-test");
+        rumorServer2.SeedWorldStructure("noticeboard_smoke_fixture2", "Smoke Notice Board 2", "notice-board", TilePosition.Origin);
+        rumorServer2.ProcessIntent(new ServerIntent(GameState.LocalPlayerId, 1, IntentType.StartQuest,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "rumor_bury_test" }));
+        rumorServer2.ProcessIntent(new ServerIntent(GameState.LocalPlayerId, 2, IntentType.AdvanceQuestStep,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "rumor_bury_test" }));
+        rumorState2.SetPlayerPosition(GameState.LocalPlayerId, rumorServer2.GetNpcPosition(StarterNpcs.Dallen.Id));
+        rumorServer2.ProcessIntent(new ServerIntent(GameState.LocalPlayerId, 3, IntentType.AdvanceQuestStep,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "rumor_bury_test" }));
+        rumorState2.SetPlayerPosition(GameState.LocalPlayerId, TilePosition.Origin);
+        var karmaBeforeBury = rumorState2.Players[GameState.LocalPlayerId].Karma.Score;
+        var buryRumor = rumorServer2.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 4, IntentType.CompleteQuest,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["questId"] = "rumor_bury_test",
+                ["choice"] = "bury"
+            }));
+        ExpectTrue(buryRumor.WasAccepted, "server accepts rumor quest completion with bury choice");
+        ExpectEqual("bury", buryRumor.Event.Data["rumorChoice"], "quest completed event records bury choice");
+        ExpectTrue(rumorState2.Players[GameState.LocalPlayerId].Karma.Score > karmaBeforeBury, "bury choice ascends player karma");
+        ExpectTrue(rumorState2.Players[GameState.LocalPlayerId].Karma.Score >= rumorState.Players[GameState.LocalPlayerId].Karma.Score,
+            "bury choice grants at least as much karma as expose (mercy > boldness)");
+
+        ExpectTrue(
+            generatedA.Quests.Any(quest => quest.CompletionActionId.StartsWith("rumor_resolve:") && quest.Steps?.Count == 2),
+            "world generator produces rumor quests for notice-board stations");
 
         if (_failures == 0)
         {

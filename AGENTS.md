@@ -231,6 +231,70 @@ Godot 2D top-down template:
 - Do not revert user changes.
 - Avoid unrelated refactors.
 
+## 20-Step Gameplay Plan
+
+Active implementation plan (as of 2026-04-29). Steps complete on `develop`.
+
+| # | Feature | Status |
+|---|---------|--------|
+| 1 | Multi-step quest server state (step conditions, per-step karma/scrip) | ✅ done |
+| 2 | Repair mission quest (locate fixture → get tool → repair) | ✅ done |
+| 3 | Delivery quest (collect item at source → bring to destination) | ✅ done |
+| 4 | Rumor quest (discover secret → expose or bury → consequence) | ✅ done |
+| 5 | Paragon Favor perk (+50 karma threshold) | pending |
+| 6 | Abyssal Mark perk (-100 karma threshold) | pending |
+| 7 | Posse formation (InvitePosse/AcceptPosse/LeavePosse intents) | pending |
+| 8 | Posse HUD panel (member list, karma, health) | pending |
+| 9 | Saint/Scourge NPC behavior (greetings, prices, reactions) | pending |
+| 10 | Chat tabs — Local / Posse / System | pending |
+| 11 | Interior audibility filtering | pending |
+| 12 | Combat heat tracking (tile-chunk heat map with decay) | pending |
+| 13 | Smarter respawn placement (avoid heat, prefer stabilized stations) | pending |
+| 14 | Downed state (0 HP countdown, can still chat) | pending |
+| 15 | Rescue intent (rescuer carries downed player, Ascend reward) | pending |
+| 16 | Clinic recovery hook (extend countdown, NPC auto-revive for scrip) | pending |
+| 17 | Road/path generation (spanning path graph at world-gen) | pending |
+| 18 | Path-aware world rendering (road tiles between station pairs) | pending |
+| 19 | Mount/vehicle entity model (speed modifier, parking, occupancy) | pending |
+| 20 | Mount/dismount intents + karma hooks | pending |
+
+Art requirements for each step are tracked in `ART_NEEDED.md`.
+
+## Quest System Overview
+
+Multi-step quests are implemented via `QuestStep`/`QuestStepCondition` in
+`scripts/Data/QuestModels.cs`. Step condition kinds:
+
+- `None` — always satisfied
+- `HoldItem(targetId)` — player must have the item in inventory
+- `HoldRepairTool` — player must hold MultiTool or WeldingTorch
+- `NearNpc(npcId)` — player within interest radius of the named NPC
+- `NearStructureCategory(role)` — any structure with matching `Category`
+  within interest radius
+
+`CompleteQuest` intent is rejected if the quest is multi-step and not
+all steps are finished (`AllStepsDone == false`).
+
+### Plugin-Modular Quest Modules
+
+Quest types live in `scripts/Quests/` as `QuestModule` subclasses. Each module is
+self-contained: it owns quest creation (factory) and completion resolution (karma).
+Add a new quest type by subclassing `QuestModule`, declaring `StationRoles`, and
+registering in `QuestModuleRegistry` — the world generator and server pick it up
+automatically.
+
+Registered modules:
+| Module | Station roles | Completion prefix | Karma (expose/resolve) |
+|--------|--------------|-------------------|------------------------|
+| `RepairMissionModule` | `workshop`, `clinic` | `generated_station_help:` | default action lookup |
+| `DeliveryQuestModule` | `market` | `generated_station_help:` | default action lookup |
+| `RumorQuestModule` | `notice-board` | `rumor_resolve:` | expose=+5, bury=+8 |
+
+Stations not matched by any module get a flat `QuestDefinition` (stabilize fallback).
+
+`QuestCreationContext` carries: `QuestId`, `LocationId`, `LocationName`, `LocationRole`,
+`GiverNpcId`, `ScripReward`, `OtherPlacements` (list of `QuestPlacementInfo`).
+
 ## Current Prototype Features
 
 _Last updated 2026-04-29. This list drifts — verify against the code before
@@ -244,6 +308,12 @@ assuming a feature is or isn't present._
 - Uncapped karma ranks in both Ascension and Descension.
 - Scrip currency, player transfers, shop offers, and server-side pricing perks.
 - NPC dialogue and quest choices.
+- Multi-step quests with `AdvanceQuestStep` intent and per-step karma/scrip rewards.
+- Repair mission quests (3-step: locate fixture → equip tool → repair).
+- Delivery quests (3-step: go to source → hold item → deliver to destination).
+- Rumor quests (2-step: read notice-board → find subject → expose or bury choice with karma consequence).
+- Generated station quests seeded by world generator based on station role.
+- Plugin-modular quest system: `scripts/Quests/QuestModule.cs` + `QuestModuleRegistry`. New quest types self-register by subclassing `QuestModule`.
 - PvP, duels, attacks, armor, weapons, and Karma Break death drops.
 - Server-owned world items and structures rendered from interest snapshots.
 - Greenhouse structure set with basic interaction prompts/events.

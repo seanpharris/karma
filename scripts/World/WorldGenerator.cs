@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Karma.Data;
 using Karma.Net;
+using Karma.Quests;
 
 namespace Karma.World;
 
@@ -480,22 +481,25 @@ public static class WorldGenerator
 
             var questId = $"generated_station_help_{SanitizeQuestId(location.Id)}_{SanitizeQuestId(npc.Id)}";
             var scripReward = GetStationQuestReward(location);
+            var module = QuestModuleRegistry.GetForStation(location.Role);
             QuestDefinition quest;
-            if (location.Role is "workshop" or "clinic")
+            if (module != null)
             {
-                quest = RepairMissionQuests.Create(questId, $"Repair {location.Name}", npc.Id, location.Id, location.Role, scripReward);
-            }
-            else if (location.Role == "market")
-            {
-                quest = DeliveryQuests.Create(questId, $"Market Delivery from {location.Name}", npc.Id, location.Id,
-                    sourceRole: "market", destinationRole: "clinic",
-                    deliveryItemId: StarterItems.FilterCoreId, scripReward);
-            }
-            else if (location.Role == "notice-board")
-            {
-                quest = DeliveryQuests.Create(questId, $"Plans Delivery from {location.Name}", npc.Id, location.Id,
-                    sourceRole: "notice-board", destinationRole: "workshop",
-                    deliveryItemId: StarterItems.DataChipId, scripReward);
+                var otherPlacements = placements
+                    .Where(p => p.NpcId != placement.NpcId &&
+                                p.NpcId != StarterNpcs.Mara.Id &&
+                                p.NpcId != StarterNpcs.Dallen.Id)
+                    .Select(p => new QuestPlacementInfo(p.NpcId, p.LocationId))
+                    .ToList();
+                var ctx = new QuestCreationContext(
+                    questId,
+                    location.Id,
+                    location.Name,
+                    location.Role,
+                    npc.Id,
+                    scripReward,
+                    otherPlacements);
+                quest = module.CreateQuest(ctx);
             }
             else
             {

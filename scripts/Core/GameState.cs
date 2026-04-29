@@ -273,7 +273,7 @@ public partial class GameState : Node
         return true;
     }
 
-    public bool CompleteQuest(string playerId, string questId)
+    public bool CompleteQuest(string playerId, string questId, KarmaAction overrideKarmaAction = null)
     {
         var quest = Quests.Get(questId);
         if (quest.Status == QuestStatus.Completed)
@@ -296,7 +296,12 @@ public partial class GameState : Node
             }
         }
 
-        if (!TryResolveQuestCompletionAction(playerId, quest.Definition, out var action))
+        KarmaAction action;
+        if (overrideKarmaAction != null)
+        {
+            action = overrideKarmaAction;
+        }
+        else if (!TryResolveQuestCompletionAction(playerId, quest.Definition, out action))
         {
             return false;
         }
@@ -329,6 +334,16 @@ public partial class GameState : Node
                 quest.GiverNpcId,
                 new[] { "helpful", "generous", "lawful" },
                 $"You followed through on {quest.Title}.");
+            return true;
+        }
+
+        if (quest.CompletionActionId.StartsWith("rumor_resolve:"))
+        {
+            action = new KarmaAction(
+                playerId,
+                quest.GiverNpcId,
+                new[] { "curious", "honest" },
+                $"You resolved the rumor: {quest.Title}.");
             return true;
         }
 
