@@ -200,6 +200,53 @@ public static class RepairMissionQuests
     }
 }
 
+public static class DeliveryQuests
+{
+    public static QuestDefinition Create(
+        string id,
+        string title,
+        string giverNpcId,
+        string locationId,
+        string sourceRole,
+        string destinationRole,
+        string deliveryItemId,
+        int scripReward)
+    {
+        var itemName = StarterItems.GetById(deliveryItemId).Name;
+        var steps = new[]
+        {
+            new QuestStep(
+                $"{id}_collect",
+                $"Go to the {sourceRole} to pick up the {itemName}.",
+                new QuestStepCondition(QuestStepConditionKind.NearStructureCategory, sourceRole),
+                new[] { "helpful" },
+                ScripReward: 0),
+            new QuestStep(
+                $"{id}_hold",
+                $"Acquire the {itemName}.",
+                new QuestStepCondition(QuestStepConditionKind.HoldItem, deliveryItemId),
+                new[] { "helpful" },
+                ScripReward: 1),
+            new QuestStep(
+                $"{id}_deliver",
+                $"Deliver the {itemName} to the {destinationRole}.",
+                new QuestStepCondition(QuestStepConditionKind.NearStructureCategory, destinationRole),
+                new[] { "helpful", "generous" },
+                ScripReward: 3)
+        };
+
+        return new QuestDefinition(
+            id,
+            title,
+            giverNpcId,
+            $"Collect {itemName} from the {sourceRole} and deliver it to the {destinationRole}.",
+            new[] { deliveryItemId },
+            $"generated_station_help:{locationId}",
+            scripReward,
+            steps);
+    }
+}
+
 public static class StarterQuests
 {
     public const string MaraClinicFiltersId = "mara_clinic_filters";

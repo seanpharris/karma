@@ -480,9 +480,26 @@ public static class WorldGenerator
 
             var questId = $"generated_station_help_{SanitizeQuestId(location.Id)}_{SanitizeQuestId(npc.Id)}";
             var scripReward = GetStationQuestReward(location);
-            var quest = location.Role is "workshop" or "clinic"
-                ? RepairMissionQuests.Create(questId, $"Repair {location.Name}", npc.Id, location.Id, location.Role, scripReward)
-                : new QuestDefinition(
+            QuestDefinition quest;
+            if (location.Role is "workshop" or "clinic")
+            {
+                quest = RepairMissionQuests.Create(questId, $"Repair {location.Name}", npc.Id, location.Id, location.Role, scripReward);
+            }
+            else if (location.Role == "market")
+            {
+                quest = DeliveryQuests.Create(questId, $"Market Delivery from {location.Name}", npc.Id, location.Id,
+                    sourceRole: "market", destinationRole: "clinic",
+                    deliveryItemId: StarterItems.FilterCoreId, scripReward);
+            }
+            else if (location.Role == "notice-board")
+            {
+                quest = DeliveryQuests.Create(questId, $"Plans Delivery from {location.Name}", npc.Id, location.Id,
+                    sourceRole: "notice-board", destinationRole: "workshop",
+                    deliveryItemId: StarterItems.DataChipId, scripReward);
+            }
+            else
+            {
+                quest = new QuestDefinition(
                     questId,
                     $"Stabilize {location.Name}",
                     npc.Id,
@@ -490,6 +507,7 @@ public static class WorldGenerator
                     Array.Empty<string>(),
                     $"generated_station_help:{location.Id}",
                     ScripReward: scripReward);
+            }
             quests.Add(quest);
         }
 

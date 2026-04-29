@@ -1122,7 +1122,11 @@ public partial class GameplaySmokeTest : Node
             "generated structure sabotage compromises the linked station marker state");
         var seededGeneratedNpcCount = generatedA.Npcs.Count(npc => npc.Id != StarterNpcs.Mara.Id && npc.Id != StarterNpcs.Dallen.Id);
         ExpectEqual(2 + seededGeneratedNpcCount, generatedContentServer.Npcs.Count, "server seeds generated NPC placements without duplicating starter NPCs");
-        var firstGeneratedNpcPlacement = generatedA.NpcPlacements.First(placement => placement.NpcId != StarterNpcs.Mara.Id && placement.NpcId != StarterNpcs.Dallen.Id);
+        var firstGeneratedNpcPlacement = generatedA.NpcPlacements.First(placement =>
+            placement.NpcId != StarterNpcs.Mara.Id &&
+            placement.NpcId != StarterNpcs.Dallen.Id &&
+            generatedA.Locations.Any(loc => loc.Id == placement.LocationId &&
+                loc.Role is not "workshop" and not "clinic" and not "market" and not "notice-board"));
         var npcLinkedStructure = generatedA.StructurePlacements.First(placement => placement.LocationId == firstGeneratedNpcPlacement.LocationId);
         generatedContentState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(npcLinkedStructure.X, npcLinkedStructure.Y));
         var compromiseNpcStation = generatedContentServer.ProcessIntent(new ServerIntent(
@@ -2604,6 +2608,60 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             generatedA.Quests.Any(quest => quest.Steps is { Count: 3 } && quest.Steps[1].Condition.Kind == QuestStepConditionKind.HoldRepairTool),
             "world generator produces repair mission quests for workshop/clinic stations");
+
+        var deliveryDef = DeliveryQuests.Create(
+            "delivery_smoke_test",
+            "Supply Run",
+            StarterNpcs.Mara.Id,
+            "market_smoke_location",
+            sourceRole: "market",
+            destinationRole: "clinic",
+            deliveryItemId: StarterItems.FilterCoreId,
+            scripReward: 18);
+        ExpectEqual(3, deliveryDef.Steps.Count, "delivery quest has three steps");
+        ExpectEqual(QuestStepConditionKind.NearStructureCategory, deliveryDef.Steps[0].Condition.Kind, "delivery step 1 requires nearness to source station");
+        ExpectEqual("market", deliveryDef.Steps[0].Condition.TargetId, "delivery step 1 targets source role");
+        ExpectEqual(QuestStepConditionKind.HoldItem, deliveryDef.Steps[1].Condition.Kind, "delivery step 2 requires holding the delivery item");
+        ExpectEqual(StarterItems.FilterCoreId, deliveryDef.Steps[1].Condition.TargetId, "delivery step 2 checks for the correct item");
+        ExpectEqual(QuestStepConditionKind.NearStructureCategory, deliveryDef.Steps[2].Condition.Kind, "delivery step 3 requires nearness to destination station");
+        ExpectEqual("clinic", deliveryDef.Steps[2].Condition.TargetId, "delivery step 3 targets destination role");
+        ExpectTrue(deliveryDef.RequiredItemIds.Contains(StarterItems.FilterCoreId), "delivery quest consumes the delivery item on completion");
+        var deliveryState = new GameState();
+        deliveryState.RegisterPlayer(GameState.LocalPlayerId, "Delivery Tester");
+        deliveryState.SetPlayerPosition(GameState.LocalPlayerId, TilePosition.Origin);
+        deliveryState.Quests.AddDefinition(deliveryDef);
+        var deliveryServer = new AuthoritativeWorldServer(deliveryState, "delivery-quest-test");
+        deliveryServer.SeedWorldStructure("market_smoke", "Smoke Market", "market", TilePosition.Origin);
+        deliveryServer.SeedWorldStructure("clinic_smoke", "Smoke Clinic", "clinic", TilePosition.Origin);
+        var startDelivery = deliveryServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 1, IntentType.StartQuest,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "delivery_smoke_test" }));
+        ExpectTrue(startDelivery.WasAccepted, "server accepts delivery quest start near giver");
+        var deliveryStep1 = deliveryServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 2, IntentType.AdvanceQuestStep,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "delivery_smoke_test" }));
+        ExpectTrue(deliveryStep1.WasAccepted, "delivery step 1 passes when player is near source station");
+        var deliveryStep2NoItem = deliveryServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 3, IntentType.AdvanceQuestStep,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "delivery_smoke_test" }));
+        ExpectFalse(deliveryStep2NoItem.WasAccepted, "delivery step 2 is rejected without the delivery item");
+        deliveryState.AddItem(GameState.LocalPlayerId, StarterItems.FilterCore);
+        var deliveryStep2 = deliveryServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 4, IntentType.AdvanceQuestStep,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "delivery_smoke_test" }));
+        ExpectTrue(deliveryStep2.WasAccepted, "delivery step 2 passes when player holds the delivery item");
+        var deliveryStep3 = deliveryServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 5, IntentType.AdvanceQuestStep,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "delivery_smoke_test" }));
+        ExpectTrue(deliveryStep3.WasAccepted, "delivery step 3 passes when player is near destination station");
+        var completeDelivery = deliveryServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 6, IntentType.CompleteQuest,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "delivery_smoke_test" }));
+        ExpectTrue(completeDelivery.WasAccepted, "server accepts delivery quest completion after all steps done and item consumed");
+        ExpectFalse(deliveryState.HasItem(GameState.LocalPlayerId, StarterItems.FilterCoreId), "delivery quest completion consumes the delivery item");
+        ExpectTrue(
+            generatedA.Quests.Any(quest => quest.Steps is { Count: 3 } && quest.Steps[2].Condition.TargetId == "clinic"),
+            "world generator produces delivery quests for market stations targeting clinic");
 
         if (_failures == 0)
         {
