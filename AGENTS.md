@@ -242,7 +242,7 @@ Active implementation plan (as of 2026-04-29). Steps complete on `develop`.
 | 3 | Delivery quest (collect item at source → bring to destination) | ✅ done |
 | 4 | Rumor quest (discover secret → expose or bury → consequence) | ✅ done |
 | 5 | Paragon Favor perk (+50 karma threshold) | ✅ done |
-| 6 | Abyssal Mark perk (-100 karma threshold) | pending |
+| 6 | Abyssal Mark perk (-100 karma threshold) | ✅ done |
 | 7 | Posse formation (InvitePosse/AcceptPosse/LeavePosse intents) | pending |
 | 8 | Posse HUD panel (member list, karma, health) | pending |
 | 9 | Saint/Scourge NPC behavior (greetings, prices, reactions) | pending |

@@ -55,6 +55,7 @@ public static class ShopPricing
     public const int TrustedDiscountPercent = 10;
     public const int ParagonFavorDiscountPercent = 25;
     public const int ShiftyPricesDiscountPercent = 15;
+    public const int AbyssalMarkDiscountPercent = 50;
 
     public static int CalculatePrice(ShopOffer offer, PlayerState player, LeaderboardStanding standing)
     {
@@ -90,6 +91,11 @@ public static class ShopPricing
         if (perks.Any(perk => perk.Id == PerkCatalog.ShiftyPricesId))
         {
             discountPercent = System.Math.Max(discountPercent, ShiftyPricesDiscountPercent);
+        }
+
+        if (perks.Any(perk => perk.Id == PerkCatalog.AbyssalMarkId))
+        {
+            discountPercent = System.Math.Max(discountPercent, AbyssalMarkDiscountPercent);
         }
 
         return discountPercent;

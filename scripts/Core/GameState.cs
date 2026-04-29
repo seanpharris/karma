@@ -745,6 +745,11 @@ public partial class GameState : Node
             return Math.Min(0, (int)Math.Ceiling(delta * 0.5f));
         }
 
+        if (perks.Any(perk => perk.Id == PerkCatalog.AbyssalMarkId))
+        {
+            return Math.Min(0, (int)Math.Ceiling(delta * 0.1f));
+        }
+
         if (perks.Any(perk => perk.Id == PerkCatalog.DreadReputationId) && IsDreadReactionAction(action))
         {
             return Math.Min(0, (int)Math.Ceiling(delta * 0.75f));

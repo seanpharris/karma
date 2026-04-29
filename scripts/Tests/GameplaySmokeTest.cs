@@ -2816,6 +2816,50 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(paragonState.Players[GameState.LocalPlayerId].Scrip > scripBeforeParagonDialogue,
             "Paragon player's scrip increases from NPC cooperation gift");
 
+        // ── Step 6: Abyssal Mark perk ────────────────────────────────────────────
+        var abyssalState = new GameState();
+        abyssalState.RegisterPlayer(GameState.LocalPlayerId, "Abyssal Tester");
+        abyssalState.SetPlayerPosition(GameState.LocalPlayerId, TilePosition.Origin);
+
+        // betrayal(-8 karma) * BaseMagnitude 4 → Clamp(-32, -20, 20) = -20 per action; 5 × -20 = -100
+        for (var ai = 0; ai < 5; ai++)
+        {
+            abyssalState.ApplyShift(GameState.LocalPlayerId,
+                new KarmaAction(GameState.LocalPlayerId, "peer_stand_in", new[] { "betrayal" }, "abyssal build", 4));
+        }
+
+        var abyssalKarma = abyssalState.Players[GameState.LocalPlayerId].Karma.Score;
+        ExpectTrue(abyssalKarma <= -100, $"abyssal test state reaches karma <= -100 (got {abyssalKarma})");
+
+        var abyssalPerks = PerkCatalog.GetForPlayer(
+            abyssalState.Players[GameState.LocalPlayerId],
+            abyssalState.GetLeaderboardStanding());
+        ExpectTrue(abyssalPerks.Any(p => p.Id == PerkCatalog.AbyssalMarkId),
+            "Abyssal Mark perk activates at karma <= -100");
+
+        var abyssalDiscountPct = ShopPricing.CalculateDiscountPercent(
+            abyssalState.Players[GameState.LocalPlayerId],
+            abyssalState.GetLeaderboardStanding());
+        ExpectEqual(ShopPricing.AbyssalMarkDiscountPercent, abyssalDiscountPct,
+            "Abyssal Mark grants 50% shop discount");
+
+        var abyssalTestOffer = StarterShopCatalog.Offers.First(o => o.VendorNpcId == StarterNpcs.Dallen.Id);
+        var abyssalShopPrice = ShopPricing.CalculatePrice(
+            abyssalTestOffer,
+            abyssalState.Players[GameState.LocalPlayerId],
+            abyssalState.GetLeaderboardStanding());
+        ExpectTrue(abyssalShopPrice < abyssalTestOffer.Price, "Abyssal Mark reduces shop purchase price");
+
+        // MockMaraWithBalloon: harmful(-6) + humiliating(-5) + selfish(-4) = -15 base relationship delta
+        // AbyssalMark 10%: ceil(-15 * 0.1) = ceil(-1.5) = -1
+        var maraOpinionBeforeAbyssal = abyssalState.Relationships.GetOpinion(StarterNpcs.Mara.Id, GameState.LocalPlayerId);
+        abyssalState.ApplyShift(GameState.LocalPlayerId, PrototypeActions.MockMaraWithBalloon());
+        var maraOpinionAfterAbyssal = abyssalState.Relationships.GetOpinion(StarterNpcs.Mara.Id, GameState.LocalPlayerId);
+        ExpectTrue(maraOpinionAfterAbyssal > maraOpinionBeforeAbyssal - 15,
+            "Abyssal Mark reduces NPC fear reaction damage (well below raw -15)");
+        ExpectEqual(maraOpinionBeforeAbyssal - 1, maraOpinionAfterAbyssal,
+            "Abyssal Mark reduces fear reaction to 10% of base damage");
+
         if (_failures == 0)
         {
             GD.Print("Gameplay smoke tests passed.");
