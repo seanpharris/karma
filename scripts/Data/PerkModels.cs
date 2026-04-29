@@ -23,9 +23,11 @@ public static class PerkCatalog
     public const string ShiftyPricesId = "shifty_prices";
     public const string CalmingPresenceId = "calming_presence";
     public const string BeaconAuraId = "beacon_aura";
+    public const string ParagonFavorId = "paragon_favor";
     public const string RumorcraftId = "rumorcraft";
     public const string RenegadeNerveId = "renegade_nerve";
     public const string DreadReputationId = "dread_reputation";
+    public const string AbyssalMarkId = "abyssal_mark";
 
     private static readonly KarmaPerk[] AscensionPerks =
     {

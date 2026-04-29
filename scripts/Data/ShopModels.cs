@@ -53,6 +53,7 @@ public static class StarterShopCatalog
 public static class ShopPricing
 {
     public const int TrustedDiscountPercent = 10;
+    public const int ParagonFavorDiscountPercent = 25;
     public const int ShiftyPricesDiscountPercent = 15;
 
     public static int CalculatePrice(ShopOffer offer, PlayerState player, LeaderboardStanding standing)
@@ -79,6 +80,11 @@ public static class ShopPricing
         if (perks.Any(perk => perk.Id == PerkCatalog.TrustedDiscountId))
         {
             discountPercent = System.Math.Max(discountPercent, TrustedDiscountPercent);
+        }
+
+        if (perks.Any(perk => perk.Id == PerkCatalog.ParagonFavorId))
+        {
+            discountPercent = System.Math.Max(discountPercent, ParagonFavorDiscountPercent);
         }
 
         if (perks.Any(perk => perk.Id == PerkCatalog.ShiftyPricesId))

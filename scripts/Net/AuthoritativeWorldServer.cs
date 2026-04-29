@@ -1078,6 +1078,12 @@ public sealed class AuthoritativeWorldServer
                _state.HasItem(playerId, StarterItems.WeldingTorchId);
     }
 
+    private bool PlayerHasPerk(string playerId, string perkId)
+    {
+        return _state.Players.TryGetValue(playerId, out var player) &&
+               PerkCatalog.GetForPlayer(player, _state.GetLeaderboardStanding()).Any(p => p.Id == perkId);
+    }
+
     private static string FormatStructurePrompt(string structureName, int integrity)
     {
         return $"Press E to inspect {structureName}. J repair / K sabotage. Integrity: {integrity}% ({FormatStructureCondition(integrity)}).";
@@ -1334,6 +1340,15 @@ public sealed class AuthoritativeWorldServer
         }
 
         var shift = _state.ApplyShift(intent.PlayerId, action);
+
+        var paragonGift = 0;
+        if (PlayerHasPerk(intent.PlayerId, PerkCatalog.ParagonFavorId) &&
+            action.Tags.Contains("helpful"))
+        {
+            paragonGift = 1;
+            _state.AddScrip(intent.PlayerId, paragonGift);
+        }
+
         var serverEvent = AppendEvent(
             "dialogue_choice_selected",
             $"{intent.PlayerId} selected {choiceId} with {npcId}",
@@ -1344,7 +1359,8 @@ public sealed class AuthoritativeWorldServer
                 ["choiceId"] = choice.Id,
                 ["action"] = choice.ActionId,
                 ["amount"] = shift.Amount.ToString(),
-                ["targetId"] = action.TargetId
+                ["targetId"] = action.TargetId,
+                ["paragonGift"] = paragonGift.ToString()
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -1416,6 +1432,13 @@ public sealed class AuthoritativeWorldServer
             _state.SpendScrip(intent.PlayerId, Math.Abs(stationStateBonus));
         }
 
+        var paragonQuestBonus = 0;
+        if (PlayerHasPerk(intent.PlayerId, PerkCatalog.ParagonFavorId))
+        {
+            paragonQuestBonus = Math.Max(1, adjustedScripReward / 5);
+            _state.AddScrip(intent.PlayerId, paragonQuestBonus);
+        }
+
         var extraEventData = questModule?.GetCompletionEventData(questDef, intent.Payload)
             ?? new Dictionary<string, string>();
         var eventData = new Dictionary<string, string>
@@ -1424,7 +1447,8 @@ public sealed class AuthoritativeWorldServer
             ["questId"] = questId,
             ["targetId"] = quest.Definition.GiverNpcId,
             ["scripReward"] = adjustedScripReward.ToString(),
-            ["stationStateBonus"] = stationStateBonus.ToString()
+            ["stationStateBonus"] = stationStateBonus.ToString(),
+            ["paragonQuestBonus"] = paragonQuestBonus.ToString()
         };
         foreach (var kv in extraEventData)
             eventData[kv.Key] = kv.Value;

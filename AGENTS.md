@@ -241,7 +241,7 @@ Active implementation plan (as of 2026-04-29). Steps complete on `develop`.
 | 2 | Repair mission quest (locate fixture → get tool → repair) | ✅ done |
 | 3 | Delivery quest (collect item at source → bring to destination) | ✅ done |
 | 4 | Rumor quest (discover secret → expose or bury → consequence) | ✅ done |
-| 5 | Paragon Favor perk (+50 karma threshold) | pending |
+| 5 | Paragon Favor perk (+50 karma threshold) | ✅ done |
 | 6 | Abyssal Mark perk (-100 karma threshold) | pending |
 | 7 | Posse formation (InvitePosse/AcceptPosse/LeavePosse intents) | pending |
 | 8 | Posse HUD panel (member list, karma, health) | pending |

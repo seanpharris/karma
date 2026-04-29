@@ -2744,6 +2744,78 @@ public partial class GameplaySmokeTest : Node
             generatedA.Quests.Any(quest => quest.CompletionActionId.StartsWith("rumor_resolve:") && quest.Steps?.Count == 2),
             "world generator produces rumor quests for notice-board stations");
 
+        // ── Step 5: Paragon Favor perk ────────────────────────────────────────────
+        var paragonState = new GameState();
+        paragonState.RegisterPlayer(GameState.LocalPlayerId, "Paragon Tester");
+        paragonState.SetPlayerPosition(GameState.LocalPlayerId, TilePosition.Origin);
+
+        for (var pi = 0; pi < 3; pi++)
+        {
+            paragonState.ApplyShift(GameState.LocalPlayerId,
+                new KarmaAction(GameState.LocalPlayerId, "none", new[] { "protective" }, "perk build", 4));
+        }
+
+        var paragonKarma = paragonState.Players[GameState.LocalPlayerId].Karma.Score;
+        ExpectTrue(paragonKarma >= 50, $"paragon test state reaches karma >= 50 (got {paragonKarma})");
+
+        var paragonPerks = PerkCatalog.GetForPlayer(
+            paragonState.Players[GameState.LocalPlayerId],
+            paragonState.GetLeaderboardStanding());
+        ExpectTrue(paragonPerks.Any(p => p.Id == PerkCatalog.ParagonFavorId),
+            "Paragon Favor perk activates at karma >= 50");
+
+        var paragonDiscountPct = ShopPricing.CalculateDiscountPercent(
+            paragonState.Players[GameState.LocalPlayerId],
+            paragonState.GetLeaderboardStanding());
+        ExpectEqual(ShopPricing.ParagonFavorDiscountPercent, paragonDiscountPct,
+            "Paragon Favor grants 25% shop discount");
+
+        var testOffer = StarterShopCatalog.Offers.First(o => o.VendorNpcId == StarterNpcs.Dallen.Id);
+        var paragonShopPrice = ShopPricing.CalculatePrice(
+            testOffer,
+            paragonState.Players[GameState.LocalPlayerId],
+            paragonState.GetLeaderboardStanding());
+        ExpectTrue(paragonShopPrice < testOffer.Price, "Paragon Favor reduces shop purchase price");
+
+        var paragonFlatQuestDef = new QuestDefinition(
+            "paragon_bonus_test",
+            "Paragon Test Quest",
+            StarterNpcs.Mara.Id,
+            "A simple quest to verify Paragon bonus scrip.",
+            System.Array.Empty<string>(),
+            Core.PrototypeActions.HelpMaraId,
+            ScripReward: 10);
+        paragonState.Quests.AddDefinition(paragonFlatQuestDef);
+        var paragonServer = new AuthoritativeWorldServer(paragonState, "paragon-favor-test");
+        paragonServer.ProcessIntent(new ServerIntent(GameState.LocalPlayerId, 1, IntentType.StartQuest,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "paragon_bonus_test" }));
+
+        var scripBeforeParagonQuest = paragonState.Players[GameState.LocalPlayerId].Scrip;
+        var completeParagonQuest = paragonServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 2, IntentType.CompleteQuest,
+            new System.Collections.Generic.Dictionary<string, string> { ["questId"] = "paragon_bonus_test" }));
+        ExpectTrue(completeParagonQuest.WasAccepted, "Paragon player can complete a quest");
+        var paragonQuestBonus = int.Parse(completeParagonQuest.Event.Data["paragonQuestBonus"]);
+        ExpectTrue(paragonQuestBonus > 0, "quest completion event records a positive Paragon scrip bonus");
+        ExpectEqual(Math.Max(1, 10 / 5), paragonQuestBonus,
+            "Paragon quest bonus is 20% of the base reward (minimum 1)");
+        ExpectTrue(paragonState.Players[GameState.LocalPlayerId].Scrip >= scripBeforeParagonQuest + 10 + paragonQuestBonus,
+            "Paragon player's scrip includes both base reward and Paragon bonus");
+
+        var scripBeforeParagonDialogue = paragonState.Players[GameState.LocalPlayerId].Scrip;
+        var paragonDialogue = paragonServer.ProcessIntent(new ServerIntent(
+            GameState.LocalPlayerId, 3, IntentType.SelectDialogueChoice,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["npcId"] = StarterNpcs.Mara.Id,
+                ["choiceId"] = "help_filters"
+            }));
+        ExpectTrue(paragonDialogue.WasAccepted, "Paragon player can select a helpful NPC dialogue choice");
+        ExpectEqual("1", paragonDialogue.Event.Data["paragonGift"],
+            "helpful NPC dialogue choice grants +1 scrip gift to Paragon player");
+        ExpectTrue(paragonState.Players[GameState.LocalPlayerId].Scrip > scripBeforeParagonDialogue,
+            "Paragon player's scrip increases from NPC cooperation gift");
+
         if (_failures == 0)
         {
             GD.Print("Gameplay smoke tests passed.");
