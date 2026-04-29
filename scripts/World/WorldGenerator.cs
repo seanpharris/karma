@@ -11,6 +11,7 @@ public static class WorldGenerator
     private static readonly string[] Themes =
     {
         "western-sci-fi",
+        "boarding_school",
         "farming",
         "haunted-coastal",
         "junkyard-fantasy",
@@ -188,6 +189,11 @@ public static class WorldGenerator
 
     private static GeneratedTileMap GenerateTileMap(Random random, WorldConfig config)
     {
+        if (config.Seed.Theme is "boarding_school" or "boarding-school")
+        {
+            return GenerateBoardingSchoolTileMap(config);
+        }
+
         var tiles = new List<GeneratedTile>(config.WidthTiles * config.HeightTiles);
         var centerX = config.WidthTiles / 2;
         var centerY = config.HeightTiles / 2;
@@ -252,6 +258,31 @@ public static class WorldGenerator
         return new GeneratedTileMap(config.WidthTiles, config.HeightTiles, config.Server.ChunkSizeTiles, tiles);
     }
 
+    private static GeneratedTileMap GenerateBoardingSchoolTileMap(WorldConfig config)
+    {
+        var grassTileIds = new[]
+        {
+            WorldTileIds.GroundScrub,
+            WorldTileIds.GroundDust,
+            WorldTileIds.PathDust,
+            WorldTileIds.ClinicFloor,
+            WorldTileIds.MarketFloor,
+            WorldTileIds.WorkshopFloor,
+            WorldTileIds.DuelRingFloor
+        };
+        var tiles = new List<GeneratedTile>(config.WidthTiles * config.HeightTiles);
+        for (var y = 0; y < config.HeightTiles; y++)
+        {
+            for (var x = 0; x < config.WidthTiles; x++)
+            {
+                var grassTileId = grassTileIds[Math.Abs((x * 31) + (y * 17) + ((x / 4) * 7) + (y / 3)) % grassTileIds.Length];
+                tiles.Add(new GeneratedTile(x, y, grassTileId, ZoneId: "boarding_school_grass"));
+            }
+        }
+
+        return new GeneratedTileMap(config.WidthTiles, config.HeightTiles, config.Server.ChunkSizeTiles, tiles);
+    }
+
     private static bool IsInRect(int x, int y, int left, int top, int width, int height)
     {
         return x >= left && x < left + width && y >= top && y < top + height;
@@ -297,11 +328,34 @@ public static class WorldGenerator
                 station.ThemeTag,
                 station.KarmaHook,
                 station.Faction,
+                $"interior_{station.Role.Replace('-', '_')}_{i}",
+                GetStationInteriorKind(station.Role, station.ThemeTag),
                 point.X,
                 point.Y));
         }
 
         return locations;
+    }
+
+    private static string GetStationInteriorKind(string role, string themeTag)
+    {
+        return role switch
+        {
+            "clinic" => "clinic",
+            "market" or "black-market" => "market",
+            "workshop" or "restricted-storage" => "workshop",
+            "notice-board" => "notice-board",
+            "social-hub" => "saloon",
+            "oddity-yard" => "oddity-yard",
+            "duel-ring" => "duel-ring",
+            "farm-plot" => "farmstead",
+            "memory-shrine" or "witness-court" => "shrine",
+            "broadcast-tower" => "broadcast-room",
+            _ when themeTag.Contains("care", StringComparison.OrdinalIgnoreCase) => "clinic",
+            _ when themeTag.Contains("trade", StringComparison.OrdinalIgnoreCase) => "market",
+            _ when themeTag.Contains("repair", StringComparison.OrdinalIgnoreCase) => "workshop",
+            _ => "common-room"
+        };
     }
 
     private static IReadOnlyList<NpcProfile> GenerateNpcs(
@@ -508,6 +562,7 @@ public static class WorldGenerator
         {
             "farming" => new[] { "Sun-Baked", "Irrigated", "Compost-Sacred" },
             "western-sci-fi" => new[] { "Dust-Lit", "Railgun", "Frontier" },
+            "boarding_school" => new[] { "Courtyard", "Ivy-Halled", "Headmaster's" },
             "haunted-coastal" => new[] { "Fogbound", "Salt-Ghost", "Tideworn" },
             "corporate-moon-colony" => new[] { "Compliance", "Low-G", "Shareholder" },
             "dieselpunk-warfront" => new[] { "Armistice", "Trenchside", "Signal-Flare" },

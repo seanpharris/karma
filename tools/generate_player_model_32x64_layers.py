@@ -50,12 +50,20 @@ SKIN_DEEP_D = (59, 38, 31)
 HAIR_DARK = HAIR
 HAIR_BLOND = (164, 118, 55)
 HAIR_BLOND_D = (96, 64, 32)
+HAIR_COPPER = (175, 72, 34)
+HAIR_WHITE = (212, 213, 202)
 
 ENGINEER = SUIT
 ENGINEER_D = SUIT_D
 SETTLER = (116, 78, 46)
 SETTLER_D = (58, 42, 30)
 SETTLER_PLATE = (154, 111, 63)
+MEDIC = (210, 224, 218)
+MEDIC_D = (93, 130, 119)
+MEDIC_ACCENT = (204, 50, 50)
+RANGER = (53, 102, 71)
+RANGER_D = (31, 61, 45)
+RANGER_PLATE = (117, 138, 85)
 
 SLOTS = {
     "base": {OUTLINE, VISOR},
@@ -190,6 +198,8 @@ def main() -> int:
         "skin_deep_32x64": remap(skin, {SKIN: SKIN_DEEP, SKIN_D: SKIN_DEEP_D}),
         "hair_short_dark_32x64": remap(hair, {HAIR: HAIR_DARK}),
         "hair_short_blond_32x64": remap(hair, {HAIR: HAIR_BLOND}),
+        "hair_short_copper_32x64": remap(hair, {HAIR: HAIR_COPPER}),
+        "hair_short_white_32x64": remap(hair, {HAIR: HAIR_WHITE}),
         "outfit_engineer_32x64": outfit,
         "outfit_settler_32x64": remap(outfit, {
             SUIT: SETTLER,
@@ -197,6 +207,20 @@ def main() -> int:
             PLATE: SETTLER_D,
             PLATE_L: SETTLER_PLATE,
             PACK: SETTLER_D,
+        }),
+        "outfit_medic_32x64": remap(outfit, {
+            SUIT: MEDIC,
+            SUIT_D: MEDIC_D,
+            PLATE: MEDIC_D,
+            PLATE_L: MEDIC_ACCENT,
+            PACK: MEDIC_D,
+        }),
+        "outfit_ranger_32x64": remap(outfit, {
+            SUIT: RANGER,
+            SUIT_D: RANGER_D,
+            PLATE: RANGER_D,
+            PLATE_L: RANGER_PLATE,
+            PACK: RANGER_D,
         }),
         "backpack_daypack_32x64": make_backpack_overlay(),
         "tool_multitool_32x64": make_tool_overlay(),
@@ -239,8 +263,12 @@ def main() -> int:
             {"id": "skin_deep_32x64", "slot": "skin", "path": "layers_32x64/skin_deep_32x64.png"},
             {"id": "hair_short_dark_32x64", "slot": "hair", "path": "layers_32x64/hair_short_dark_32x64.png", "default": True},
             {"id": "hair_short_blond_32x64", "slot": "hair", "path": "layers_32x64/hair_short_blond_32x64.png"},
+            {"id": "hair_short_copper_32x64", "slot": "hair", "path": "layers_32x64/hair_short_copper_32x64.png"},
+            {"id": "hair_short_white_32x64", "slot": "hair", "path": "layers_32x64/hair_short_white_32x64.png"},
             {"id": "outfit_engineer_32x64", "slot": "outfit", "path": "layers_32x64/outfit_engineer_32x64.png", "default": True},
             {"id": "outfit_settler_32x64", "slot": "outfit", "path": "layers_32x64/outfit_settler_32x64.png"},
+            {"id": "outfit_medic_32x64", "slot": "outfit", "path": "layers_32x64/outfit_medic_32x64.png"},
+            {"id": "outfit_ranger_32x64", "slot": "outfit", "path": "layers_32x64/outfit_ranger_32x64.png"},
             {"id": "backpack_daypack_32x64", "slot": "backpack", "path": "layers_32x64/backpack_daypack_32x64.png"},
             {"id": "tool_multitool_32x64", "slot": "held_tool", "path": "layers_32x64/tool_multitool_32x64.png"},
             {"id": "weapon_practice_baton_32x64", "slot": "weapon", "path": "layers_32x64/weapon_practice_baton_32x64.png"},

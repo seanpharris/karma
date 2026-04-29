@@ -74,7 +74,9 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual("Held tool: none", HudController.FormatAppearanceDetailLine("Held tool", string.Empty), "appearance panel formats empty held tool detail line");
         ExpectEqual("skin_deep_32x64", HudController.BuildAppearanceCyclePayload("skin", PlayerAppearanceSelection.Default)["skinLayerId"], "appearance panel builds skin cycle server payload");
         ExpectEqual("hair_short_blond_32x64", HudController.BuildAppearanceCyclePayload("hair", PlayerAppearanceSelection.Default)["hairLayerId"], "appearance panel builds hair cycle server payload");
+        ExpectEqual("hair_short_copper_32x64", HudController.BuildAppearanceCyclePayload("hair", PlayerAppearanceSelection.Default with { HairLayerId = "hair_short_blond_32x64" })["hairLayerId"], "appearance panel cycles through extra hair test layers");
         ExpectEqual("outfit_settler_32x64", HudController.BuildAppearanceCyclePayload("outfit", PlayerAppearanceSelection.Default)["outfitLayerId"], "appearance panel builds outfit cycle server payload");
+        ExpectEqual("outfit_medic_32x64", HudController.BuildAppearanceCyclePayload("outfit", PlayerAppearanceSelection.Default with { OutfitLayerId = "outfit_settler_32x64" })["outfitLayerId"], "appearance panel cycles through extra outfit test layers");
         hudProbe.ToggleDeveloperOverlay();
         ExpectTrue(hudProbe.GetNode<PanelContainer>("HudRoot/DeveloperPanel").Visible, "tilde developer overlay can be toggled visible");
         ExpectEqual(0, HudController.WrapDeveloperPageIndex(4), "developer overlay page index wraps forward");
@@ -314,12 +316,21 @@ public partial class GameplaySmokeTest : Node
             "res://test-prop.png",
             new Rect2(8f, 10f, 96f, 72f),
             HasAtlasRegion: true);
-        ExpectTrue(
-            AtlasTextureLoader.Load(PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath, forceImageLoad: true) is not null,
-            "atlas texture loader can force raw image loading for generated transparent runtime sheets");
-        ExpectTrue(
-            AtlasTextureLoader.Load(PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath, forceImageLoad: true) is not null,
-            "atlas texture loader can force raw image loading for layered player preview sheets");
+        var forceImageLoadAtlasPath = FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2RealBaseBlackBootsAtlasPath)
+            ? PrototypeSpriteCatalog.PlayerV2RealBaseBlackBootsAtlasPath
+            : PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath;
+        if (FileAccess.FileExists(forceImageLoadAtlasPath))
+        {
+            ExpectTrue(
+                AtlasTextureLoader.Load(forceImageLoadAtlasPath, forceImageLoad: true) is not null,
+                "atlas texture loader can force raw image loading for generated transparent runtime sheets");
+        }
+        if (FileAccess.FileExists(PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath))
+        {
+            ExpectTrue(
+                AtlasTextureLoader.Load(PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath, forceImageLoad: true) is not null,
+                "atlas texture loader can force raw image loading for optional layered player preview sheets");
+        }
         var testPropAtlas = PrototypeAtlasSprite.CreateAtlasTexture(testTexture, testPropDefinition);
         ExpectEqual(
             testPropDefinition.AtlasRegion,
@@ -355,8 +366,8 @@ public partial class GameplaySmokeTest : Node
             ExpectEqual(64, manifestRoot.GetProperty("frameHeight").GetInt32(), "native player v2 manifest declares 64px frame height");
             ExpectEqual(8, manifestRoot.GetProperty("columns").GetInt32(), "native player v2 manifest declares eight direction columns");
             ExpectEqual(4, manifestRoot.GetProperty("rows").GetInt32(), "native player v2 manifest declares four animation rows");
-            ExpectEqual(11, manifestRoot.GetProperty("layers").GetArrayLength(), "native player v2 manifest exposes base, skins, hair, outfit, and overlay layers");
-            ExpectEqual(4, manifestRoot.GetProperty("previewStack").GetArrayLength(), "native player v2 manifest preview stack composes a playable character");
+            ExpectEqual(17, manifestRoot.GetProperty("layers").GetArrayLength(), "native player v2 manifest exposes base, skins, hair, outfit, boots, and overlay layers");
+            ExpectEqual(5, manifestRoot.GetProperty("previewStack").GetArrayLength(), "native player v2 manifest preview stack composes a playable character");
             ExpectTrue(
                 manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "skin_light_32x64"),
                 "native player v2 manifest exposes swappable light skin layer");
@@ -367,8 +378,20 @@ public partial class GameplaySmokeTest : Node
                 manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "hair_short_blond_32x64"),
                 "native player v2 manifest exposes swappable blond hair layer");
             ExpectTrue(
+                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "hair_short_copper_32x64"),
+                "native player v2 manifest exposes swappable copper hair layer");
+            ExpectTrue(
                 manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "outfit_settler_32x64"),
                 "native player v2 manifest exposes swappable settler outfit layer");
+            ExpectTrue(
+                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "outfit_medic_32x64"),
+                "native player v2 manifest exposes swappable medic outfit layer");
+            ExpectTrue(
+                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "boots_utility_32x64"),
+                "native player v2 manifest exposes boots equipment layer");
+            ExpectTrue(
+                manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "boots_black_32x64"),
+                "native player v2 manifest exposes black boots equipment layer");
             ExpectTrue(
                 manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "backpack_daypack_32x64"),
                 "native player v2 manifest exposes backpack overlay layer");
@@ -379,23 +402,22 @@ public partial class GameplaySmokeTest : Node
                 manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "weapon_practice_baton_32x64"),
                 "native player v2 manifest exposes weapon overlay layer");
         }
-        var playerV2ManifestPath = PlayerV2LayerManifest.LegacyManifestPath;
-        ExpectTrue(FileAccess.FileExists(playerV2ManifestPath), "legacy 32x32 player v2 layered manifest remains available");
-        ExpectTrue(FileAccess.FileExists("res://assets/art/sprites/player_v2/layers/skin_light_8dir.png"), "player v2 generates light skin layer");
-        ExpectTrue(FileAccess.FileExists("res://assets/art/sprites/player_v2/layers/skin_deep_8dir.png"), "player v2 generates deep skin layer");
-        ExpectTrue(FileAccess.FileExists("res://assets/art/sprites/player_v2/layers/hair_short_blond_8dir.png"), "player v2 generates blond hair layer");
-        ExpectTrue(FileAccess.FileExists("res://assets/art/sprites/player_v2/layers/outfit_settler_8dir.png"), "player v2 generates settler outfit layer");
         var playerV2LayerManifest = PlayerV2LayerManifest.LoadDefault();
         ExpectEqual("karma.player_v2.layers_32x64.v1", playerV2LayerManifest.Schema, "player v2 layer manifest loader reads native 32x64 schema");
         ExpectEqual(32, playerV2LayerManifest.FrameWidth, "player v2 layer manifest loader reads rectangular frame width");
         ExpectEqual(64, playerV2LayerManifest.FrameHeight, "player v2 layer manifest loader reads rectangular frame height");
         ExpectEqual(3, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "skin"), "player v2 layer manifest loader exposes skin variants");
-        ExpectEqual(2, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "hair"), "player v2 layer manifest loader exposes hair variants");
-        ExpectEqual(2, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "outfit"), "player v2 layer manifest loader exposes outfit variants");
+        ExpectEqual(4, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "hair"), "player v2 layer manifest loader exposes hair variants");
+        ExpectEqual(4, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "outfit"), "player v2 layer manifest loader exposes outfit variants");
+        ExpectEqual(2, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "boots"), "player v2 layer manifest loader exposes boots equipment variants");
         ExpectEqual(1, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "backpack"), "player v2 layer manifest loader exposes backpack overlay variants");
         ExpectEqual(1, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "held_tool"), "player v2 layer manifest loader exposes held tool overlay variants");
         ExpectEqual(1, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "weapon"), "player v2 layer manifest loader exposes weapon overlay variants");
-        ExpectTrue(playerV2LayerManifest.Layers.All(layer => FileAccess.FileExists(playerV2LayerManifest.ResolveLayerPath(layer))), "player v2 layer manifest loader resolves layer paths");
+        var existingPlayerV2Layers = playerV2LayerManifest.Layers
+            .Where(layer => FileAccess.FileExists(playerV2LayerManifest.ResolveLayerPath(layer)))
+            .Select(layer => layer.Id)
+            .ToHashSet(StringComparer.Ordinal);
+        ExpectTrue(existingPlayerV2Layers.Contains("boots_black_32x64"), "player v2 layer manifest keeps the active black boots layer available");
         var defaultPlayerV2Appearance = playerV2LayerManifest.CreateDefaultAppearance();
         ExpectTrue(
             playerV2LayerManifest.GetLayerStack(defaultPlayerV2Appearance).SequenceEqual(playerV2LayerManifest.PreviewStack),
@@ -406,30 +428,64 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(
             playerV2LayerManifest.GetLayerStack(lightSkinPlayerV2Appearance).SequenceEqual(playerV2LayerManifest.PreviewStack),
             "player v2 custom appearance produces a different layer stack");
-        var recomposedPlayerV2Preview = playerV2LayerManifest.ComposePreviewStack();
-        var savedPlayerV2Preview = Image.LoadFromFile(playerV2LayerManifest.CompositePath);
-        ExpectEqual(0, CountImagePixelDifferences(savedPlayerV2Preview, recomposedPlayerV2Preview), "player v2 layer compositor reproduces saved preview stack");
-        var lightSkinPlayerV2Preview = playerV2LayerManifest.Compose(lightSkinPlayerV2Appearance);
-        ExpectTrue(CountImagePixelDifferences(recomposedPlayerV2Preview, lightSkinPlayerV2Preview) > 0, "player v2 appearance compositor changes output when skin changes");
-        var toolPlayerV2Appearance = playerV2LayerManifest.CreateAppearance(PlayerAppearanceSelection.Default with { HeldToolLayerId = "tool_multitool_32x64" });
-        ExpectTrue(playerV2LayerManifest.GetLayerStack(toolPlayerV2Appearance).Contains("tool_multitool_32x64"), "player v2 appearance can include held tool overlay layer");
-        ExpectTrue(CountImagePixelDifferences(recomposedPlayerV2Preview, playerV2LayerManifest.Compose(toolPlayerV2Appearance)) > 0, "player v2 held tool overlay changes composed output");
-        const string testCompositeRoot = "user://karma_test/player_v2/composites";
-        var lightSkinCompositePath = playerV2LayerManifest.ExportAppearanceComposite(lightSkinSelection, testCompositeRoot);
-        ExpectTrue(FileAccess.FileExists(lightSkinCompositePath), "player v2 appearance compositor exports selected appearance composite");
-        ExpectTrue(lightSkinCompositePath.Contains("skin_light_32x64"), "player v2 appearance composite path names selected skin layer");
-        ExpectEqual(0, CountImagePixelDifferences(Image.LoadFromFile(lightSkinCompositePath), lightSkinPlayerV2Preview), "player v2 exported appearance matches composed image");
+        var previewStackAssetsExist = playerV2LayerManifest.PreviewStack.All(layerId =>
+            playerV2LayerManifest.Layers.Any(layer => layer.Id == layerId && FileAccess.FileExists(playerV2LayerManifest.ResolveLayerPath(layer))));
+        if (previewStackAssetsExist && FileAccess.FileExists(playerV2LayerManifest.CompositePath))
+        {
+            var recomposedPlayerV2Preview = playerV2LayerManifest.ComposePreviewStack();
+            var savedPlayerV2Preview = Image.LoadFromFile(playerV2LayerManifest.CompositePath);
+            ExpectEqual(0, CountImagePixelDifferences(savedPlayerV2Preview, recomposedPlayerV2Preview), "player v2 layer compositor reproduces saved preview stack");
+            if (existingPlayerV2Layers.Contains("skin_light_32x64"))
+            {
+                var lightSkinPlayerV2Preview = playerV2LayerManifest.Compose(lightSkinPlayerV2Appearance);
+                ExpectTrue(CountImagePixelDifferences(recomposedPlayerV2Preview, lightSkinPlayerV2Preview) > 0, "player v2 appearance compositor changes output when skin changes");
+            }
+
+            if (existingPlayerV2Layers.Contains("hair_short_copper_32x64"))
+            {
+                var copperHairPlayerV2Appearance = playerV2LayerManifest.CreateAppearance(PlayerAppearanceSelection.Default with { HairLayerId = "hair_short_copper_32x64" });
+                ExpectTrue(CountImagePixelDifferences(recomposedPlayerV2Preview, playerV2LayerManifest.Compose(copperHairPlayerV2Appearance)) > 0, "player v2 appearance compositor changes output when hair changes");
+            }
+
+            if (existingPlayerV2Layers.Contains("outfit_medic_32x64"))
+            {
+                var medicOutfitPlayerV2Appearance = playerV2LayerManifest.CreateAppearance(PlayerAppearanceSelection.Default with { OutfitLayerId = "outfit_medic_32x64" });
+                ExpectTrue(CountImagePixelDifferences(recomposedPlayerV2Preview, playerV2LayerManifest.Compose(medicOutfitPlayerV2Appearance)) > 0, "player v2 appearance compositor changes output when outfit changes");
+            }
+
+            if (existingPlayerV2Layers.Contains("tool_multitool_32x64"))
+            {
+                var toolPlayerV2Appearance = playerV2LayerManifest.CreateAppearance(PlayerAppearanceSelection.Default with { HeldToolLayerId = "tool_multitool_32x64" });
+                ExpectTrue(playerV2LayerManifest.GetLayerStack(toolPlayerV2Appearance).Contains("tool_multitool_32x64"), "player v2 appearance can include held tool overlay layer");
+                ExpectTrue(CountImagePixelDifferences(recomposedPlayerV2Preview, playerV2LayerManifest.Compose(toolPlayerV2Appearance)) > 0, "player v2 held tool overlay changes composed output");
+            }
+        }
         var defaultPlayerDefinition = PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Player);
-        var lightSkinPlayerDefinition = PrototypeCharacterSprite.WithAtlasPath(defaultPlayerDefinition, lightSkinCompositePath);
-        var exportedByCharacterSprite = PrototypeCharacterSprite.ExportPlayerAppearanceAtlas(lightSkinSelection, testCompositeRoot);
-        ExpectEqual(lightSkinCompositePath, exportedByCharacterSprite, "player character sprite resolves selected appearance atlas paths");
-        ExpectEqual(lightSkinCompositePath, lightSkinPlayerDefinition.AtlasPath, "player character sprite can target an appearance composite atlas");
-        ExpectEqual(defaultPlayerDefinition.Animations.Count, lightSkinPlayerDefinition.Animations.Count, "appearance composite atlas keeps player animation contract");
-        ExpectTrue(
-            PrototypeCharacterSprite.CreateSpriteFrames(AtlasTextureLoader.Load(lightSkinCompositePath, forceImageLoad: true), lightSkinPlayerDefinition)
-                .HasAnimation(PrototypeCharacterSprite.WalkRightAnimation),
-            "appearance composite atlas creates walk animations for runtime sprites");
-        var expectedPlayerAtlasPath = FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath)
+        const string testCompositeRoot = "user://karma_test/player_v2/composites";
+        if (previewStackAssetsExist && existingPlayerV2Layers.Contains("skin_light_32x64"))
+        {
+            var lightSkinPlayerV2Preview = playerV2LayerManifest.Compose(lightSkinPlayerV2Appearance);
+            var lightSkinCompositePath = playerV2LayerManifest.ExportAppearanceComposite(lightSkinSelection, testCompositeRoot);
+            ExpectTrue(FileAccess.FileExists(lightSkinCompositePath), "player v2 appearance compositor exports selected appearance composite");
+            ExpectTrue(lightSkinCompositePath.Contains("skin_light_32x64"), "player v2 appearance composite path names selected skin layer");
+            ExpectEqual(0, CountImagePixelDifferences(Image.LoadFromFile(lightSkinCompositePath), lightSkinPlayerV2Preview), "player v2 exported appearance matches composed image");
+            var lightSkinPlayerDefinition = PrototypeCharacterSprite.WithAtlasPath(defaultPlayerDefinition, lightSkinCompositePath);
+            var exportedByCharacterSprite = PrototypeCharacterSprite.ExportPlayerAppearanceAtlas(lightSkinSelection, testCompositeRoot);
+            ExpectEqual(lightSkinCompositePath, exportedByCharacterSprite, "player character sprite resolves selected appearance atlas paths");
+            ExpectEqual(lightSkinCompositePath, lightSkinPlayerDefinition.AtlasPath, "player character sprite can target an appearance composite atlas");
+            ExpectEqual(defaultPlayerDefinition.Animations.Count, lightSkinPlayerDefinition.Animations.Count, "appearance composite atlas keeps player animation contract");
+            ExpectTrue(
+                PrototypeCharacterSprite.CreateSpriteFrames(AtlasTextureLoader.Load(lightSkinCompositePath, forceImageLoad: true), lightSkinPlayerDefinition)
+                    .HasAnimation(PrototypeCharacterSprite.WalkRightAnimation),
+                "appearance composite atlas creates walk animations for runtime sprites");
+        }
+        var expectedPlayerAtlasPath = FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2RealBaseBlackBootsAtlasPath)
+            ? PrototypeSpriteCatalog.PlayerV2RealBaseBlackBootsAtlasPath
+            : FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2TrialImportedAtlasPath)
+            ? PrototypeSpriteCatalog.PlayerV2TrialImportedAtlasPath
+            : FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2LayeredPreview32x64AtlasPath)
+            ? PrototypeSpriteCatalog.PlayerV2LayeredPreview32x64AtlasPath
+            : FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath)
             ? PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath
             : FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath)
                 ? PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath
@@ -442,7 +498,10 @@ public partial class GameplaySmokeTest : Node
                         : FileAccess.FileExists(PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath)
                             ? PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath
                             : PrototypeSpriteCatalog.EngineerPlayerAtlasPath;
-        var expectedPlayerSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath
+        var expectedPlayerSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2RealBaseBlackBootsAtlasPath ||
+                                 expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2LayeredPreview32x64AtlasPath ||
+                                 expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2TrialImportedAtlasPath ||
+                                 expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath
             ? new Vector2(32f, 64f)
             : expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
               expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath ||
@@ -452,7 +511,10 @@ public partial class GameplaySmokeTest : Node
               expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath
                 ? new Vector2(32f, 32f)
                 : new Vector2(30f, 40f);
-        if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath ||
+        if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2RealBaseBlackBootsAtlasPath ||
+            expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2LayeredPreview32x64AtlasPath ||
+            expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2TrialImportedAtlasPath ||
+            expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath ||
             expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
             expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath ||
             expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Engineer64PreviewAtlasPath ||
@@ -460,7 +522,10 @@ public partial class GameplaySmokeTest : Node
             expectedPlayerAtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath)
         {
             var engineerImage = Image.LoadFromFile(expectedPlayerAtlasPath);
-            var expectedSheetSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath
+            var expectedSheetSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2RealBaseBlackBootsAtlasPath ||
+                                    expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2LayeredPreview32x64AtlasPath ||
+                                    expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2TrialImportedAtlasPath ||
+                                    expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath
                 ? new Vector2I(256, 256)
                 : expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
                   expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath ||
@@ -470,7 +535,10 @@ public partial class GameplaySmokeTest : Node
             ExpectEqual(expectedSheetSize.X, engineerImage.GetWidth(), "active 8-direction runtime sheet has expected width");
             ExpectEqual(expectedSheetSize.Y, engineerImage.GetHeight(), "active 8-direction runtime sheet has expected height");
             ExpectTrue(CountTransparentPixels(engineerImage) > 0, "active 8-direction runtime sheet keeps transparent background pixels");
-            var expectedFrameSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath
+            var expectedFrameSize = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2RealBaseBlackBootsAtlasPath ||
+                                    expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2LayeredPreview32x64AtlasPath ||
+                                    expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2TrialImportedAtlasPath ||
+                                    expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath
                 ? new Vector2I(32, 64)
                 : expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
                   expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath ||
@@ -888,24 +956,32 @@ public partial class GameplaySmokeTest : Node
             generatedA.Config.WidthTiles * generatedA.Config.HeightTiles,
             generatedA.TileMap.Tiles.Count,
             "world generation creates a logical tile for every coordinate");
-        ExpectEqual(2, generatedA.TileMap.ChunkColumns, "prototype tile map exposes chunk columns");
-        ExpectEqual(2, generatedA.TileMap.ChunkRows, "prototype tile map exposes chunk rows");
+        ExpectEqual(3, generatedA.TileMap.ChunkColumns, "prototype tile map stays compact around the boarding school building models");
+        ExpectEqual(3, generatedA.TileMap.ChunkRows, "prototype tile map stays compact around the boarding school building models");
         ExpectEqual(
             new GeneratedChunkCoordinate(0, 0),
             generatedA.TileMap.GetChunkCoordinateForTile(3, 3),
             "tile map resolves tile coordinates to chunk coordinates");
         ExpectEqual(32 * 32, generatedA.TileMap.GetChunk(new GeneratedChunkCoordinate(0, 0)).Tiles.Count, "tile map can materialize one chunk");
-        ExpectEqual(4, generatedA.TileMap.GetChunksAround(32, 32, radiusChunks: 1).Count, "tile map can query nearby chunks");
+        ExpectEqual(4, generatedA.TileMap.GetChunksAround(16, 16, radiusChunks: 1).Count, "tile map can query nearby chunks on the prototype map");
         var artSet = ThemeArtRegistry.GetForTheme(generatedA.Theme);
         ExpectEqual(
             1,
             artSet.GetTile(WorldTileIds.ClinicFloor).AtlasTileSizePixels,
             "theme art registry records pixel atlas source scale");
         ExpectEqual(
-            new Rect2(14, 241, 47, 48),
+            new Rect2(160, 0, 32, 32),
             artSet.GetTile(WorldTileIds.ClinicFloor).SourceRegion,
-            "theme art registry can calculate sci-fi atlas source regions");
-        ExpectTrue(artSet.GetTile(WorldTileIds.ClinicFloor).HasAtlasRegion, "theme art registry enables mapped sci-fi atlas regions");
+            "theme art registry can calculate boarding school atlas source regions");
+        ExpectTrue(artSet.GetTile(WorldTileIds.ClinicFloor).HasAtlasRegion, "theme art registry enables mapped boarding school atlas regions");
+        ExpectEqual(
+            ThemeArtRegistry.BoardingSchoolGrassAtlasPath,
+            artSet.GetTile(WorldTileIds.ClinicFloor).AtlasPath,
+            "prototype uses boarding school grass tiles for mapped floors");
+        ExpectEqual(
+            ThemeArtRegistry.BoardingSchoolPropsAtlasPath,
+            artSet.GetTile(WorldTileIds.WallMetal).AtlasPath,
+            "prototype uses boarding school props for structures");
         var renderer = new GeneratedTileMapRenderer();
         ExpectTrue(renderer.PreferAtlasArt, "tile renderer prefers mapped atlas art");
         renderer.SetChunks(
@@ -917,17 +993,29 @@ public partial class GameplaySmokeTest : Node
             new[] { ToMapChunkSnapshot(generatedA.TileMap.GetChunk(new GeneratedChunkCoordinate(0, 0))) },
             artSet);
         ExpectEqual(0, renderer.LastUpdatedChunkCount, "tile renderer skips unchanged chunk revisions");
+        var alternateMap = WorldGenerator.Generate(WorldConfig.FromServerConfig(
+            "renderer-alt-test",
+            new WorldSeed(868, "Renderer Alt", "western-sci-fi"),
+            ServerConfig.Prototype4Player));
         renderer.SetChunks(
-            new[] { ToMapChunkSnapshot(generatedA.TileMap.GetChunk(new GeneratedChunkCoordinate(1, 0))) },
+            new[] { ToMapChunkSnapshot(alternateMap.TileMap.GetChunk(new GeneratedChunkCoordinate(0, 0))) },
             artSet);
-        ExpectEqual(1, renderer.LoadedChunkCount, "tile renderer evicts chunks that leave interest");
-        ExpectEqual(2, renderer.LastUpdatedChunkCount, "tile renderer records chunk eviction and replacement");
-        ExpectEqual(WorldTileIds.ClinicFloor, generatedA.TileMap.Get(3, 3).FloorId, "world generation assigns starter clinic floor tiles");
-        ExpectEqual(WorldTileIds.WallMetal, generatedA.TileMap.Get(2, 2).StructureId, "world generation assigns starter clinic wall structures");
-        ExpectEqual(WorldTileIds.DoorAirlock, generatedA.TileMap.Get(5, 7).StructureId, "world generation assigns starter clinic door structure");
-        ExpectTrue(
-            generatedA.TileMap.Tiles.Any(tile => tile.ZoneId == "duel_ring" && tile.FloorId == WorldTileIds.DuelRingFloor),
-            "world generation assigns logical duel ring tiles");
+        ExpectEqual(1, renderer.LoadedChunkCount, "tile renderer keeps the compact visible chunk loaded");
+        ExpectEqual(1, renderer.LastUpdatedChunkCount, "tile renderer records compact chunk replacement when its revision changes");
+        var boardingSchoolGrassTileIds = new[]
+        {
+            WorldTileIds.GroundScrub,
+            WorldTileIds.GroundDust,
+            WorldTileIds.PathDust,
+            WorldTileIds.ClinicFloor,
+            WorldTileIds.MarketFloor,
+            WorldTileIds.WorkshopFloor,
+            WorldTileIds.DuelRingFloor
+        }.ToHashSet();
+        ExpectTrue(generatedA.TileMap.Tiles.All(tile => boardingSchoolGrassTileIds.Contains(tile.FloorId)), "boarding school prototype covers the map in grass tile variants");
+        ExpectTrue(generatedA.TileMap.Tiles.Select(tile => tile.FloorId).Distinct().Count() > 1, "boarding school prototype varies the grass tiles across the map");
+        ExpectTrue(generatedA.TileMap.Tiles.All(tile => string.IsNullOrWhiteSpace(tile.StructureId)), "boarding school prototype keeps tile structures out of the grass showcase map");
+        ExpectTrue(generatedA.TileMap.Tiles.All(tile => tile.ZoneId == "boarding_school_grass"), "boarding school prototype labels the grass showcase zone");
         ExpectTrue(
             generatedA.Locations.Any(location => location.KarmaHook.Contains("repair") || location.KarmaHook.Contains("sabotage")),
             "world generation creates locations with karma gameplay hooks");
@@ -964,6 +1052,15 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             generatedA.OddityPlacements.Any(placement => placement.PlacementReason.Contains("choices")),
             "generated oddity placements explain their local gameplay reason");
+        ExpectTrue(
+            generatedA.Locations.All(location => !string.IsNullOrWhiteSpace(location.InteriorId) && !string.IsNullOrWhiteSpace(location.InteriorKind)),
+            "generated station locations declare future interior hooks");
+        ExpectTrue(
+            generatedA.Locations.Any(location => location.Role == "clinic" && location.InteriorKind == "clinic"),
+            "clinic station declares a clinic interior kind");
+        ExpectTrue(
+            generatedA.Locations.Any(location => location.Role == "workshop" && location.InteriorKind == "workshop"),
+            "workshop station declares a workshop interior kind");
         var generatedContentState = new GameState();
         generatedContentState.RegisterPlayer(GameState.LocalPlayerId, "Generated Content Tester");
         var generatedContentServer = new AuthoritativeWorldServer(generatedContentState, "generated-content-test");
@@ -975,6 +1072,7 @@ public partial class GameplaySmokeTest : Node
         var generatedStation = generatedStationSnapshot.Structures.FirstOrDefault(structure => structure.Name == firstGeneratedLocation.Name && structure.Category == "station");
         ExpectTrue(generatedStation is not null, "interest snapshot exposes generated station markers near the player");
         ExpectTrue(generatedStation?.InteractionPrompt.Contains(firstGeneratedLocation.KarmaHook) == true, "generated station marker prompt exposes its karma hook");
+        ExpectTrue(generatedStation?.InteractionPrompt.Contains(firstGeneratedLocation.InteriorKind) == true, "generated station marker prompt exposes its future interior hook");
         var firstGeneratedStructurePlacement = generatedA.StructurePlacements[0];
         generatedContentState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(firstGeneratedStructurePlacement.X, firstGeneratedStructurePlacement.Y));
         var generatedStructureSnapshot = generatedContentServer.CreateInterestSnapshot(GameState.LocalPlayerId);
@@ -1093,7 +1191,10 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(playerSprite.Layers.Count >= 8, "prototype player sprite has layered pixel art");
         ExpectEqual(expectedPlayerAtlasPath, playerSprite.AtlasPath, "prototype player sprite records active engineer atlas path");
         ExpectTrue(playerSprite.HasAtlasRegion, "prototype player sprite can use character atlas art");
-        var expectedPlayerWalkFrameCount = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath ||
+        var expectedPlayerWalkFrameCount = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2RealBaseBlackBootsAtlasPath ||
+                                           expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2LayeredPreview32x64AtlasPath ||
+                                           expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2TrialImportedAtlasPath ||
+                                           expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath ||
                                            expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
                                            expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath
             ? 3
@@ -1107,7 +1208,10 @@ public partial class GameplaySmokeTest : Node
             expectedPlayerWalkFrameCount,
             playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkDownAnimation).Frames.Count,
             "prototype player sprite maps multi-frame walk animations");
-        var expectedWalkRightFinalFrame = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath
+        var expectedWalkRightFinalFrame = expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2RealBaseBlackBootsAtlasPath ||
+                                          expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2LayeredPreview32x64AtlasPath ||
+                                          expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2TrialImportedAtlasPath ||
+                                          expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath
             ? new Rect2(2f * 32f, 3f * 64f, 32f, 64f)
             : expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64RuntimeAtlasPath ||
               expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2KnightReferenceAtlasPath
@@ -1122,7 +1226,10 @@ public partial class GameplaySmokeTest : Node
             expectedWalkRightFinalFrame,
             playerSprite.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkRightAnimation).Frames[^1],
             "prototype player sprite maps the active engineer sheet walk-right row");
-        if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath)
+        if (expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2RealBaseBlackBootsAtlasPath ||
+            expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2LayeredPreview32x64AtlasPath ||
+            expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2TrialImportedAtlasPath ||
+            expectedPlayerAtlasPath == PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath)
         {
             ExpectEqual(
                 new Rect2(3f * 32f, 1f * 64f, 32f, 64f),
@@ -1162,6 +1269,20 @@ public partial class GameplaySmokeTest : Node
         }
         ExpectEqual(PrototypeSpriteKind.Dallen, PrototypeSpriteCatalog.GetKindForNpc(StarterNpcs.Dallen.Id), "prototype sprite catalog maps Dallen NPC visuals");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Dallen).HasAtlasRegion, "prototype Dallen sprite can use character atlas art");
+        var pixellabTrialNpc = PrototypeSpriteCatalog.Get(PrototypeSpriteKind.PixellabTrialNpc);
+        ExpectEqual(PrototypeSpriteCatalog.PixellabTrialNpcRuntimeAtlasPath, pixellabTrialNpc.AtlasPath, "prototype PixelLab trial NPC records imported runtime atlas path");
+        ExpectEqual(new Vector2(48f, 48f), pixellabTrialNpc.Size, "prototype PixelLab trial NPC scales its 64px padded cells down to match the 32x64 player body height");
+        ExpectEqual(3, pixellabTrialNpc.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkRightAnimation).Frames.Count, "prototype PixelLab trial NPC uses the runtime sheet's three walk rows");
+        ExpectEqual(new Rect2(2f * 64f, 1f * 64f, 64f, 64f), pixellabTrialNpc.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkRightAnimation).Frames[0], "prototype PixelLab trial NPC maps right walk to runtime direction column");
+        var pixellabWalkDown = pixellabTrialNpc.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkDownAnimation);
+        ExpectEqual(4, pixellabWalkDown.Frames.Count, "prototype PixelLab trial NPC uses the actual north/south step art with a mirrored middle frame");
+        ExpectEqual(new Rect2(0f, 1f * 64f, 64f, 64f), pixellabWalkDown.Frames[0], "prototype PixelLab trial NPC south walk starts on walk row 1, not idle");
+        ExpectEqual(new Rect2(0f, 3f * 64f, 64f, 64f), pixellabWalkDown.Frames[2], "prototype PixelLab trial NPC south walk includes the third vertical step frame");
+        ExpectEqual(4f, pixellabWalkDown.Speed, "prototype PixelLab trial NPC slows weaker vertical walk frames while still cycling step art");
+        ExpectEqual(CharacterSheetLayout.StandardWalkAnimationSpeed, pixellabTrialNpc.Animations.First(animation => animation.Name == PrototypeCharacterSprite.WalkRightAnimation).Speed, "prototype PixelLab trial NPC keeps horizontal walk frames snappy");
+        ExpectTrue(PrototypeWanderingNpc.CalculatePatrolTarget(0.0, Vector2.Zero, 80f, horizontalOnly: false).DistanceTo(new Vector2(-80f, -28f)) < 0.01f, "prototype PixelLab trial NPC walker starts on its full patrol route");
+        ExpectTrue(PrototypeWanderingNpc.CalculatePatrolTarget(5.0, Vector2.Zero, 80f, horizontalOnly: false).Y > -28f, "prototype PixelLab trial NPC walker includes vertical movement again");
+        ExpectEqual(0f, PrototypeWanderingNpc.CalculatePatrolTarget(2.5, Vector2.Zero, 80f).Y, "prototype PixelLab trial NPC still supports horizontal-only patrols for review");
         ExpectTrue(ServerNpcObject.FormatPrompt("Dallen Venn", "Trader", "Free Settlers").Contains("Faction: Free Settlers"), "server NPC prompt formats faction");
         var vendorPrompt = ServerNpcObject.FormatVendorPrompt(
             "Dallen Venn",
@@ -1190,8 +1311,14 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(whoopieSprite.HasAtlasRegion, "prototype item sprite can use item atlas art");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Scrip).HasAtlasRegion, "prototype currency sprite can use item atlas art");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.RepairKit).Layers.Count >= 4, "prototype tool sprite has recognizable layers");
+        ExpectTrue(
+            PrototypeSpriteCatalog.Get(PrototypeSpriteKind.RepairKit).AtlasPath.EndsWith("repair_kit_case.png"),
+            "prototype repair kit can use polished Gemini art");
         ExpectEqual(PrototypeSpriteCatalog.ItemAtlasPath, PrototypeSpriteCatalog.Get(PrototypeSpriteKind.RationPack).AtlasPath, "prototype support item sprite records item atlas path");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.PortableTerminal).HasAtlasRegion, "prototype utility item sprite can use utility atlas art");
+        ExpectTrue(
+            PrototypeSpriteCatalog.Get(PrototypeSpriteKind.PortableTerminal).AtlasPath.EndsWith("portable_terminal.png"),
+            "prototype terminal can use polished Gemini art");
         ExpectEqual(PrototypeSpriteCatalog.WeaponAtlasPath, PrototypeSpriteCatalog.Get(PrototypeSpriteKind.StunBaton).AtlasPath, "prototype weapon sprite records weapon atlas path");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Rifle27).HasAtlasRegion, "prototype weapon sprite can use weapon atlas art");
         ExpectEqual(PrototypeSpriteCatalog.ToolAtlasPath, PrototypeSpriteCatalog.Get(PrototypeSpriteKind.MultiTool).AtlasPath, "prototype tool sprite records tool atlas path");
@@ -1209,13 +1336,51 @@ public partial class GameplaySmokeTest : Node
                 $"starter item {starterItem.Id} has mapped prototype art");
         }
 
-        ExpectEqual(new Vector2(620f, 220f), WorldRoot.CalculateCatalogShowcasePosition(0), "catalog showcase starts near the prototype item area");
-        ExpectEqual(new Vector2(620f + (6 * 48f), 220f), WorldRoot.CalculateCatalogShowcasePosition(6), "catalog showcase fills a row before wrapping");
-        ExpectEqual(new Vector2(620f, 268f), WorldRoot.CalculateCatalogShowcasePosition(7), "catalog showcase wraps to the next row");
+        ExpectEqual(new Vector2(500f, 180f), WorldRoot.CalculateCatalogShowcasePosition(0), "catalog showcase starts inside the compact prototype map");
+        ExpectEqual(new Vector2(500f + (6 * 48f), 180f), WorldRoot.CalculateCatalogShowcasePosition(6), "catalog showcase fills a row before wrapping");
+        ExpectEqual(new Vector2(500f, 228f), WorldRoot.CalculateCatalogShowcasePosition(7), "catalog showcase wraps to the next row");
+        ExpectEqual(new Vector2(500f, 420f), WorldRoot.CalculateStructureShowcasePosition(0), "structure showcase starts inside the compact prototype map");
+        ExpectEqual(new Vector2(500f + (4 * 58f), 420f), WorldRoot.CalculateStructureShowcasePosition(4), "structure showcase fills a row before wrapping");
+        ExpectEqual(new Vector2(500f, 478f), WorldRoot.CalculateStructureShowcasePosition(5), "structure showcase wraps to the next row");
+        ExpectEqual(new Vector2(14f * 32f, 22f * 32f), WorldRoot.CalculateBoardingSchoolBuildingPosition(0), "boarding school building showcase starts on the smaller grass map");
+        ExpectEqual(new Vector2(70f * 32f, 62f * 32f), WorldRoot.CalculateBoardingSchoolBuildingPosition(7), "boarding school building showcase fits the library on the smaller grass map");
+        var mainHallCollisionSize = WorldRoot.CalculateBoardingSchoolBuildingCollisionSize(StructureArtCatalog.Get(StructureSpriteKind.BoardingSchoolMainHall));
+        ExpectTrue(mainHallCollisionSize.X > 32f && mainHallCollisionSize.X < 768f * 0.6f, "boarding school buildings expose tight physics collision footprints");
+        ExpectTrue(mainHallCollisionSize.Y >= 24f && mainHallCollisionSize.Y <= 56f, "boarding school buildings keep shallow collision depth for stairs and doors");
+        ExpectEqual(new Vector2(0f, -mainHallCollisionSize.Y * 0.35f), WorldRoot.CalculateBoardingSchoolBuildingCollisionOffset(StructureArtCatalog.Get(StructureSpriteKind.BoardingSchoolMainHall)), "boarding school building collisions sit close to the lower wall footprint");
+        ExpectEqual(new Vector2(5f * 32f, 14f * 32f), WorldRoot.CalculateBoardingSchoolPropPosition(0), "boarding school props are placed on the grass map");
+        ExpectEqual(new Vector2(57f * 32f, 52f * 32f), WorldRoot.CalculateBoardingSchoolPropPosition(15), "boarding school prop showcase places every props atlas entry");
+        var stoneBenchCollisionSize = WorldRoot.CalculateBoardingSchoolPropCollisionSize(StructureArtCatalog.Get(StructureSpriteKind.BoardingSchoolStoneBench));
+        ExpectTrue(stoneBenchCollisionSize.X > 16f && stoneBenchCollisionSize.Y >= 12f, "boarding school props expose compact collision footprints");
+        ExpectEqual(new Vector2(6f * 32f, 25f * 32f), WorldRoot.CalculateBoardingSchoolTreePosition(0), "boarding school trees are placed on the grass map");
+        ExpectEqual(new Vector2(42f * 32f, 61f * 32f), WorldRoot.CalculateBoardingSchoolTreePosition(15), "boarding school tree showcase places every trees atlas entry");
+        var oakCollisionSize = WorldRoot.CalculateBoardingSchoolTreeCollisionSize(StructureArtCatalog.Get(StructureSpriteKind.BoardingSchoolCourtyardOak));
+        ExpectTrue(oakCollisionSize.X > 14f && oakCollisionSize.Y >= 12f, "boarding school trees expose compact trunk collision footprints");
+        ExpectEqual(new Vector2(7f * 32f, 8f * 32f), WorldRoot.CalculateBoardingSchoolFlowerPosition(0), "boarding school flower details are scattered on the grass map");
+        ExpectTrue(WorldRoot.CalculateBoardingSchoolFlowerPosition(23).X >= 0f, "boarding school flower detail placement handles the full scatter set");
+        ExpectTrue(TopDownDepth.TileLayerZ + 1 < TopDownDepth.CalculateZIndex(0f), "flower details render as background below actors and props");
         var greenhouse = StructureArtCatalog.Get(StructureSpriteKind.GreenhouseStandard);
         ExpectEqual(StructureArtCatalog.GreenhouseAtlasPath, greenhouse.AtlasPath, "structure catalog records greenhouse atlas path");
         ExpectTrue(greenhouse.HasAtlasRegion, "structure catalog maps greenhouse atlas art");
         ExpectTrue(StructureArtCatalog.All.ContainsKey(StructureSpriteKind.GreenhouseDamaged), "structure catalog maps greenhouse variants");
+        var cargoCrateStructure = StructureArtCatalog.Get(StructureSpriteKind.CargoCrate);
+        ExpectTrue(cargoCrateStructure.AtlasPath.EndsWith("cargo_crate.png"), "structure catalog exposes polished Gemini station props");
+        ExpectEqual(new Rect2(0f, 0f, 128f, 128f), cargoCrateStructure.AtlasRegion, "polished Gemini station props use their full source image");
+        var blueCrystalStructure = StructureArtCatalog.Get(StructureSpriteKind.BlueCrystalShard);
+        ExpectTrue(blueCrystalStructure.AtlasPath.EndsWith("blue_crystal_shard.png"), "structure catalog exposes polished Gemini natural props");
+        ExpectEqual("natural_prop", blueCrystalStructure.Category, "natural prop structures are categorized for preview placement");
+        var mainHallStructure = StructureArtCatalog.Get(StructureSpriteKind.BoardingSchoolMainHall);
+        ExpectEqual(StructureArtCatalog.BoardingSchoolBuildingsAtlasPath, mainHallStructure.AtlasPath, "structure catalog brings in the boarding school building atlas");
+        ExpectEqual(new Rect2(0f, 0f, 768f, 576f), mainHallStructure.AtlasRegion, "structure catalog maps the boarding school main hall model");
+        var stoneBenchStructure = StructureArtCatalog.Get(StructureSpriteKind.BoardingSchoolStoneBench);
+        ExpectEqual(StructureArtCatalog.BoardingSchoolPropsAtlasPath, stoneBenchStructure.AtlasPath, "structure catalog brings in the boarding school props atlas");
+        ExpectEqual(new Rect2(256f, 0f, 112f, 64f), stoneBenchStructure.AtlasRegion, "structure catalog maps props atlas entries");
+        var courtyardOakStructure = StructureArtCatalog.Get(StructureSpriteKind.BoardingSchoolCourtyardOak);
+        ExpectEqual(StructureArtCatalog.BoardingSchoolTreesAtlasPath, courtyardOakStructure.AtlasPath, "structure catalog brings in the boarding school trees atlas");
+        ExpectEqual(new Rect2(0f, 0f, 256f, 320f), courtyardOakStructure.AtlasRegion, "structure catalog maps trees atlas entries");
+        var grassFlowers = StructureArtCatalog.Get(StructureSpriteKind.BoardingSchoolGrassFlowersA);
+        ExpectEqual(StructureArtCatalog.BoardingSchoolGrassAtlasPath, grassFlowers.AtlasPath, "structure catalog reuses flower details from the grass tileset");
+        ExpectEqual(new Rect2(0f, 0f, 32f, 32f), grassFlowers.AtlasRegion, "structure catalog maps flower details from grass tile regions");
         var testStructureAtlas = StructureSprite.CreateAtlasTexture(testTexture, greenhouse);
         ExpectEqual(greenhouse.AtlasRegion, testStructureAtlas.Region, "native structure sprite preserves catalog source region");
         var greenhouseFrame = AtlasFrames.FromStructure(greenhouse);

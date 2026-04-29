@@ -22,4 +22,6 @@ This is the next gameplay task set after the native player-v2 art pipeline and l
 
 ## Current recommended slice
 
-Start with tasks 1-3. They are small, reusable, testable, and create a foundation for real interiors, shops, clinics, downed-player delivery, and later vehicles/mounts.
+Tasks 1-3 are implemented as the building entry placeholder. Tasks 4-5 now have their first pass: `docs/interior-design-contract.md` defines the interior identity/snapshot/audibility/NPC-shop contract, and generated station locations declare `InteriorId`/`InteriorKind` hooks that station prompts expose.
+
+Next recommended slice: task 6, add simple placeholder door/threshold visuals for enterable structures and station markers so the new interior hooks become visible in the world.

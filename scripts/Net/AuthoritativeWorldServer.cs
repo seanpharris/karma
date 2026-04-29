@@ -228,7 +228,7 @@ public sealed class AuthoritativeWorldServer
             IsVisible: true,
             IsInteractable: true,
             InteractionPrompt: FormatStationPrompt(location),
-            InteractionResult: $"{location.Name} is a {location.ThemeTag} station for {location.Role}: {location.KarmaHook}. Faction interest: {location.SuggestedFaction}.",
+            InteractionResult: $"{location.Name} is a {location.ThemeTag} station for {location.Role}: {location.KarmaHook}. Future interior: {location.InteriorKind} ({location.InteriorId}). Faction interest: {location.SuggestedFaction}.",
             Integrity: 100,
             LocationId: location.Id);
     }
@@ -1054,7 +1054,7 @@ public sealed class AuthoritativeWorldServer
 
     private static string FormatStationPrompt(GeneratedLocation location)
     {
-        return $"Press E to inspect {location.Name} ({location.Role}). Karma hook: {location.KarmaHook}";
+        return $"Press E to inspect {location.Name} ({location.Role}). Interior hook: {location.InteriorKind}. Karma hook: {location.KarmaHook}";
     }
 
     private static string FormatStationStatePrompt(string prompt, string stationState)

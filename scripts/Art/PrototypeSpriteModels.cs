@@ -46,6 +46,7 @@ public enum PrototypeSpriteKind
     PowerCell,
     BoltCutters,
     MagneticGrabber,
+    PixellabTrialNpc,
     Dallen
 }
 
@@ -84,8 +85,12 @@ public static class PrototypeSpriteCatalog
 {
     public const string CharacterAtlasPath = "res://assets/art/character.png";
     public const string EngineerPlayerAtlasPath = "res://assets/art/sprites/scifi_engineer_player_sheet.png";
+    public const string PlayerV2RealBaseBlackBootsAtlasPath = "res://assets/art/sprites/player_v2/player_real_base_black_boots_32x64_8dir_4row.png";
+    public const string PlayerV2LayeredPreview32x64AtlasPath = "res://assets/art/sprites/player_v2/player_model_32x64_layered_preview.png";
+    public const string PlayerV2TrialImportedAtlasPath = "res://assets/art/sprites/player_v2/imported/player_base_body_sheet_32x64_8dir_4row.png";
     public const string PlayerV2Model32x64AtlasPath = "res://assets/art/sprites/player_v2/player_model_32x64_8dir_4row.png";
     public const string PlayerV2Model32x64RuntimeAtlasPath = "res://assets/art/sprites/player_v2/player_model_32x64_8dir_runtime.png";
+    public const string PixellabTrialNpcRuntimeAtlasPath = "res://assets/art/sprites/player_v2/imported/pixellab_base_body_trial_32x64_8dir_runtime_walkfix.png";
     public const string PlayerV2KnightReferenceAtlasPath = "res://assets/art/sprites/generated/player_v2_knight_8dir_4row_reference.png";
     public const string PlayerV2Engineer64PreviewAtlasPath = "res://assets/art/sprites/generated/player_v2_engineer_8dir_4row_candidate.png";
     public const string LayeredPlayerPreviewEightDirectionAtlasPath = "res://assets/art/sprites/player_v2/player_v2_layered_preview_8dir.png";
@@ -94,6 +99,7 @@ public static class PrototypeSpriteCatalog
     public const string UtilityItemAtlasPath = "res://assets/art/sprites/scifi_utility_item_atlas.png";
     public const string WeaponAtlasPath = "res://assets/art/sprites/scifi_weapon_atlas.png";
     public const string ToolAtlasPath = "res://assets/art/sprites/scifi_tool_atlas.png";
+    public const string GeminiStaticPropsRoot = "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/";
 
     public static PrototypeSpriteKind GetKindForItem(string itemId)
     {
@@ -170,6 +176,16 @@ public static class PrototypeSpriteCatalog
                 new Color(0.18f, 0.14f, 0.28f),
                 new Color(0.94f, 0.82f, 0.51f),
                 new Rect2(454f, 82f, 42f, 82f)),
+            PrototypeSpriteKind.PixellabTrialNpc => Humanoid(
+                kind,
+                "PixelLab Trial NPC",
+                new Color(0.65f, 0.45f, 0.94f),
+                new Color(0.18f, 0.14f, 0.28f),
+                new Color(0.94f, 0.82f, 0.51f),
+                new Rect2(0f, 0f, 64f, 64f),
+                PixellabTrialNpcRuntimeAtlasPath,
+                new Vector2(48f, 48f),
+                PixellabTrialNpcAnimations()),
             PrototypeSpriteKind.Dallen => Humanoid(
                 kind,
                 "Dallen Venn",
@@ -211,7 +227,12 @@ public static class PrototypeSpriteCatalog
             PrototypeSpriteKind.Scanner => Tool(PrototypeSpriteKind.Scanner, "Scanner", new Vector2(24f, 20f), new Rect2(270f, 712f, 145f, 102f)),
             PrototypeSpriteKind.GrapplingHook => Tool(PrototypeSpriteKind.GrapplingHook, "Grappling Hook", new Vector2(30f, 18f), new Rect2(492f, 717f, 180f, 100f)),
             PrototypeSpriteKind.ChemInjector => Tool(PrototypeSpriteKind.ChemInjector, "Chem Injector", new Vector2(28f, 18f), new Rect2(722f, 716f, 164f, 92f)),
-            PrototypeSpriteKind.PowerCell => Tool(PrototypeSpriteKind.PowerCell, "Power Cell", new Vector2(22f, 20f), new Rect2(978f, 718f, 105f, 95f)),
+            PrototypeSpriteKind.PowerCell => Tool(
+                PrototypeSpriteKind.PowerCell,
+                "Power Cell",
+                new Vector2(24f, 24f),
+                new Rect2(978f, 718f, 105f, 95f),
+                "power_cell_canister.png"),
             PrototypeSpriteKind.BoltCutters => Tool(PrototypeSpriteKind.BoltCutters, "Bolt Cutters", new Vector2(28f, 18f), new Rect2(1165f, 716f, 165f, 90f)),
             PrototypeSpriteKind.MagneticGrabber => Tool(PrototypeSpriteKind.MagneticGrabber, "Magnetic Grabber", new Vector2(30f, 16f), new Rect2(1370f, 720f, 145f, 82f)),
             _ => Humanoid(
@@ -224,8 +245,87 @@ public static class PrototypeSpriteCatalog
         };
     }
 
+    private static IReadOnlyList<PrototypeSpriteAnimation> PixellabTrialNpcAnimations()
+    {
+        var baseAnimations = CharacterSheetLayout.EightDirectionFourRowWalkTemplate(Vector2.Zero);
+        var tuned = new List<PrototypeSpriteAnimation>(baseAnimations.Count);
+        foreach (var animation in baseAnimations)
+        {
+            tuned.Add(animation.Name switch
+            {
+                PrototypeCharacterSprite.WalkDownAnimation => animation with
+                {
+                    Speed = 4f,
+                    Frames = new[]
+                    {
+                        CharacterSheetLayout.DirectionFrame(Vector2.Zero, CharacterSheetDirection.Front, 1, new Vector2(64f, 64f)),
+                        CharacterSheetLayout.DirectionFrame(Vector2.Zero, CharacterSheetDirection.Front, 2, new Vector2(64f, 64f)),
+                        CharacterSheetLayout.DirectionFrame(Vector2.Zero, CharacterSheetDirection.Front, 3, new Vector2(64f, 64f)),
+                        CharacterSheetLayout.DirectionFrame(Vector2.Zero, CharacterSheetDirection.Front, 2, new Vector2(64f, 64f))
+                    }
+                },
+                PrototypeCharacterSprite.WalkUpAnimation => animation with
+                {
+                    Speed = 4f,
+                    Frames = new[]
+                    {
+                        CharacterSheetLayout.DirectionFrame(Vector2.Zero, CharacterSheetDirection.Back, 1, new Vector2(64f, 64f)),
+                        CharacterSheetLayout.DirectionFrame(Vector2.Zero, CharacterSheetDirection.Back, 2, new Vector2(64f, 64f)),
+                        CharacterSheetLayout.DirectionFrame(Vector2.Zero, CharacterSheetDirection.Back, 3, new Vector2(64f, 64f)),
+                        CharacterSheetLayout.DirectionFrame(Vector2.Zero, CharacterSheetDirection.Back, 2, new Vector2(64f, 64f))
+                    }
+                },
+                _ => animation
+            });
+        }
+
+        return tuned;
+    }
+
     private static PrototypeSpriteDefinition Player()
     {
+        if (FileAccess.FileExists(PlayerV2RealBaseBlackBootsAtlasPath))
+        {
+            return Humanoid(
+                PrototypeSpriteKind.Player,
+                "Player",
+                new Color(0.22f, 0.76f, 0.94f),
+                new Color(0.08f, 0.19f, 0.24f),
+                new Color(0.96f, 0.94f, 0.72f),
+                new Rect2(0f, 0f, 32f, 64f),
+                PlayerV2RealBaseBlackBootsAtlasPath,
+                new Vector2(32f, 64f),
+                CharacterSheetLayout.EightDirectionFourRowWalkTemplate(Vector2.Zero, new Vector2(32f, 64f)));
+        }
+
+        if (FileAccess.FileExists(PlayerV2TrialImportedAtlasPath))
+        {
+            return Humanoid(
+                PrototypeSpriteKind.Player,
+                "Player",
+                new Color(0.22f, 0.76f, 0.94f),
+                new Color(0.08f, 0.19f, 0.24f),
+                new Color(0.96f, 0.94f, 0.72f),
+                new Rect2(0f, 0f, 32f, 64f),
+                PlayerV2TrialImportedAtlasPath,
+                new Vector2(32f, 64f),
+                CharacterSheetLayout.EightDirectionFourRowWalkTemplate(Vector2.Zero, new Vector2(32f, 64f)));
+        }
+
+        if (FileAccess.FileExists(PlayerV2LayeredPreview32x64AtlasPath))
+        {
+            return Humanoid(
+                PrototypeSpriteKind.Player,
+                "Player",
+                new Color(0.22f, 0.76f, 0.94f),
+                new Color(0.08f, 0.19f, 0.24f),
+                new Color(0.96f, 0.94f, 0.72f),
+                new Rect2(0f, 0f, 32f, 64f),
+                PlayerV2LayeredPreview32x64AtlasPath,
+                new Vector2(32f, 64f),
+                CharacterSheetLayout.EightDirectionFourRowWalkTemplate(Vector2.Zero, new Vector2(32f, 64f)));
+        }
+
         if (FileAccess.FileExists(PlayerV2Model32x64AtlasPath))
         {
             return Humanoid(
@@ -454,8 +554,8 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.86f, 0.96f, 0.9f), -2f, -6f, 4f, 12f),
                 Rect(new Color(0.86f, 0.96f, 0.9f), -6f, -2f, 12f, 4f)
             },
-            UtilityItemAtlasPath,
-            new Rect2(608f, 250f, 106f, 178f),
+            GeminiStaticPropsRoot + "repair_kit_case.png",
+            new Rect2(0f, 0f, 128f, 128f),
             HasAtlasRegion: true);
     }
 
@@ -614,8 +714,8 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.95f, 0.68f, 0.18f), -6f, 3f, 4f, 2f),
                 Rect(new Color(0.95f, 0.68f, 0.18f), 2f, 3f, 4f, 2f)
             },
-            ItemAtlasPath,
-            new Rect2(1336f, 246f, 155f, 115f),
+            GeminiStaticPropsRoot + "portable_terminal.png",
+            new Rect2(0f, 0f, 128f, 128f),
             HasAtlasRegion: true);
     }
 
@@ -644,8 +744,15 @@ public static class PrototypeSpriteCatalog
         PrototypeSpriteKind kind,
         string displayName,
         Vector2 size,
-        Rect2 atlasRegion)
+        Rect2 atlasRegion,
+        string geminiStaticPropFile = "")
     {
+        var atlasPath = string.IsNullOrWhiteSpace(geminiStaticPropFile)
+            ? ToolAtlasPath
+            : GeminiStaticPropsRoot + geminiStaticPropFile;
+        var region = string.IsNullOrWhiteSpace(geminiStaticPropFile)
+            ? atlasRegion
+            : new Rect2(0f, 0f, 128f, 128f);
         return new PrototypeSpriteDefinition(
             kind,
             displayName,
@@ -656,8 +763,8 @@ public static class PrototypeSpriteCatalog
                 Rect(new Color(0.48f, 0.52f, 0.54f), -8f, -5f, 16f, 10f),
                 Rect(new Color(0.1f, 0.62f, 0.86f), -4f, -3f, 8f, 3f)
             },
-            ToolAtlasPath,
-            atlasRegion,
+            atlasPath,
+            region,
             HasAtlasRegion: true);
     }
 

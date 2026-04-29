@@ -51,9 +51,11 @@ Additional base-model references:
   - Starter manifest for the native 32x64 paper-doll split.
   - Uses rectangular metadata (`frameWidth: 32`, `frameHeight: 64`) and the same 8-direction/4-row contract.
 - `layers_32x64/*.png`
-  - Active split of the canonical skeleton into base, skin, hair, outfit, backpack, held-tool, and weapon overlay layers.
-  - `player_model_32x64_layered_preview.png` is a pixel-perfect recomposite of `player_model_32x64_8dir_4row.png` so we can iterate layers without changing the current runtime silhouette accidentally.
-  - Skin/hair/outfit variants are real composited runtime options; backpack/tool/weapon overlays are review-ready optional layers for future loadout/action states. Old 32x32 IDs are accepted only as migration/fallback cycle inputs.
+  - Active split of the canonical skeleton into base, skin, hair, outfit, boots, backpack, held-tool, and weapon overlay layers.
+  - `player_model_32x64_layered_preview.png` is a pixel-perfect recomposite of the current default layer stack so we can iterate layers without changing runtime selection accidentally.
+  - Current test variants include light/medium/deep skin, dark/blond/copper/white short hair, engineer/settler/medic/ranger outfits, cleaned utility boots, and black boots. Backpack/tool/weapon overlays are review-ready optional layers for future loadout/action states. Old 32x32 IDs are accepted only as migration/fallback cycle inputs.
+  - `boots_utility_32x64.png` came from the manually generated `player_boots_layer.png`, then had baked gray contact/shadow blocks removed and bright sole pixels toned down. It is prototype-ready, but still flagged for hand touch-up: a few tiny bright sole/toe pixels and 1px walk-frame jitter may need cleanup.
+  - `boots_black_32x64.png` is a dark recolor derived from the touched-up utility boots. It reads well on the character, though boots-only previews need a light/checker background because the pixels are intentionally dark.
 - `imported/`
   - Review-only folder for normalized PixelLab/downloaded candidates. Runtime should not load imported candidates until one is explicitly curated and promoted.
 
@@ -63,9 +65,10 @@ The layer order is:
 2. skin
 3. hair
 4. outfit
-5. backpack overlay
-6. held tool overlay
-7. weapon overlay
+5. boots
+6. backpack overlay
+7. held tool overlay
+8. weapon overlay
 
 ## Regenerate
 
@@ -83,9 +86,14 @@ Run from the repo root:
 # Split the canonical 32x64 model into starter paper-doll layers:
 python tools/generate_player_model_32x64_layers.py
 
+# Render static review sheets + an HTML viewer for human/agent sprite review:
+python tools/render_sprite_viewer.py
+
 # Optional PixelLab MCP download import/normalization:
 python tools/import_pixellab_character.py path\to\pixellab-download.png --output-dir assets\art\sprites\player_v2\imported --output-stem pixellab_engineer_v1
 ```
+
+The sprite viewer writes `assets/art/sprites/player_v2/review/index.html`, `player_v2_variant_matrix.png`, and `player_v2_layer_contact_sheet.png`. Use it whenever layer variants change so Sean and the assistant can review the same preview artifacts.
 
 See `docs/pixellab-mcp-workflow.md` for the PixelLab MCP candidate-generation workflow and token-safety notes.
 

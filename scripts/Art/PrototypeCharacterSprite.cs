@@ -37,7 +37,7 @@ public partial class PrototypeCharacterSprite : Node2D
 
     [Export] public PrototypeSpriteKind Kind { get; set; } = PrototypeSpriteKind.Player;
     [Export] public string AtlasPathOverride { get; set; } = string.Empty;
-    [Export] public bool DrawShadow { get; set; } = true;
+    [Export] public bool DrawShadow { get; set; } = false;
     [Export] public bool PreferAtlasArt { get; set; } = true;
 
     private AnimatedSprite2D _sprite;
@@ -82,7 +82,7 @@ public partial class PrototypeCharacterSprite : Node2D
         DrawRect(
             new Rect2(
                 -definition.Size.X * 0.35f,
-                definition.Size.Y * 0.2f,
+                -3f,
                 definition.Size.X * 0.7f,
                 6f),
             new Color(0f, 0f, 0f, 0.28f));
@@ -240,6 +240,24 @@ public partial class PrototypeCharacterSprite : Node2D
         string cacheRoot = "user://player_v2/composites")
     {
         Kind = PrototypeSpriteKind.Player;
+        if (IsDefaultSelection(selection) && FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2RealBaseBlackBootsAtlasPath))
+        {
+            SetAtlasPathOverride(string.Empty);
+            return PrototypeSpriteCatalog.PlayerV2RealBaseBlackBootsAtlasPath;
+        }
+
+        if (IsDefaultSelection(selection) && FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2TrialImportedAtlasPath))
+        {
+            SetAtlasPathOverride(string.Empty);
+            return PrototypeSpriteCatalog.PlayerV2TrialImportedAtlasPath;
+        }
+
+        if (IsDefaultSelection(selection) && FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2LayeredPreview32x64AtlasPath))
+        {
+            SetAtlasPathOverride(string.Empty);
+            return PrototypeSpriteCatalog.PlayerV2LayeredPreview32x64AtlasPath;
+        }
+
         if (IsDefaultSelection(selection) && FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2Model32x64AtlasPath))
         {
             SetAtlasPathOverride(string.Empty);
@@ -344,6 +362,9 @@ public partial class PrototypeCharacterSprite : Node2D
             removeDarkBackground: true,
             forceImageLoad: definition.AtlasPath == PrototypeSpriteCatalog.EngineerPlayerEightDirectionAtlasPath ||
                             definition.AtlasPath == PrototypeSpriteCatalog.LayeredPlayerPreviewEightDirectionAtlasPath ||
+                            definition.AtlasPath == PrototypeSpriteCatalog.PlayerV2LayeredPreview32x64AtlasPath ||
+                            definition.AtlasPath == PrototypeSpriteCatalog.PlayerV2RealBaseBlackBootsAtlasPath ||
+                            definition.AtlasPath == PrototypeSpriteCatalog.PixellabTrialNpcRuntimeAtlasPath ||
                             !string.IsNullOrWhiteSpace(normalizedAtlasOverride));
         if (texture is null)
         {

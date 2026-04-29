@@ -22,9 +22,12 @@ public partial class PrototypeSprite : Node2D
         var definition = PrototypeSpriteCatalog.Get(Kind);
         if (DrawShadow)
         {
+            var shadowY = IsHumanoid(definition.Kind)
+                ? -3f
+                : definition.Size.Y * 0.2f;
             var shadowRect = new Rect2(
                 -definition.Size.X * 0.35f,
-                definition.Size.Y * 0.2f,
+                shadowY,
                 definition.Size.X * 0.7f,
                 6f);
             DrawRect(shadowRect, new Color(0f, 0f, 0f, 0.28f));
@@ -82,6 +85,6 @@ public partial class PrototypeSprite : Node2D
 
     private static bool IsHumanoid(PrototypeSpriteKind kind)
     {
-        return kind is PrototypeSpriteKind.Player or PrototypeSpriteKind.Mara or PrototypeSpriteKind.Peer or PrototypeSpriteKind.Dallen;
+        return kind is PrototypeSpriteKind.Player or PrototypeSpriteKind.Mara or PrototypeSpriteKind.Peer or PrototypeSpriteKind.PixellabTrialNpc or PrototypeSpriteKind.Dallen;
     }
 }

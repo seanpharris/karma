@@ -9,11 +9,13 @@ PixelLab MCP can be used as an external candidate generator for Karma pixel art,
 - The repo tooling here is offline-only: it imports downloaded PixelLab PNG/ZIP files and never calls the PixelLab API.
 - Configure PixelLab MCP in the local AI client that supports MCP, then download generated assets into a local scratch folder.
 
-PixelLab's MCP docs describe tools such as `create_character`, `animate_character`, `get_character`, top-down tilesets, and map objects. For Karma player art, the expected external flow is:
+PixelLab's MCP docs describe tools such as `create_character`, `animate_character`, `get_character`, top-down tilesets, and map objects. The MCP calls are made from an MCP-capable assistant/client; Karma's repo tools only handle downloaded files after PixelLab generates them.
 
-1. Generate an 8-direction humanoid character.
-2. Queue walking/idle animation.
-3. Download the resulting PNG/ZIP.
+For Karma player art, the expected external flow is:
+
+1. Ask the MCP client to call `create_character(description="...", n_directions=8)` for the base 8-direction character.
+2. Ask it to call `animate_character(character_id="...", animation="walk")` on the returned character id.
+3. Use `get_character` or the PixelLab result link to download the resulting PNG/ZIP.
 4. Normalize it into Karma's player-v2 format with `tools/import_pixellab_character.py`.
 5. Review the normalized sheet before copying it into active runtime art.
 
@@ -73,7 +75,23 @@ Outputs:
 
 ## Prompt seed for PixelLab
 
-Use wording like this when creating the character:
+Use wording like this in the MCP-capable client:
+
+```text
+Use PixelLab create_character with n_directions=8. Description:
+Original top-down low-angle pixel art survivor engineer for a cozy sci-fi life-sim RPG. Compact readable 32x64-ish humanoid proportions, no weapons, no held tools, no text, no labels, transparent background, clean black/dark outline, orange work jacket, small backpack, simple boots, readable head/torso rotation. Generate 8 directions: south, south-east, east, north-east, north, north-west, west, south-west. Keep identity, outfit, scale, silhouette, and foot baseline consistent across directions.
+```
+
+If the client exposes raw tool arguments, the call should be shaped like:
+
+```text
+create_character(
+  description="Original top-down low-angle pixel art survivor engineer for a cozy sci-fi life-sim RPG. Compact readable 32x64-ish humanoid proportions, no weapons, no held tools, no text, no labels, transparent background, clean black/dark outline, orange work jacket, small backpack, simple boots, readable head/torso rotation. Generate 8 directions: south, south-east, east, north-east, north, north-west, west, south-west. Keep identity, outfit, scale, silhouette, and foot baseline consistent across directions.",
+  n_directions=8
+)
+```
+
+Shorter fallback wording for clients that prefer natural language:
 
 ```text
 Original top-down low-angle pixel art survivor engineer for a cozy sci-fi life-sim RPG. Compact readable 32x64-ish humanoid proportions, no weapons, no text, no labels, transparent background, clean black/dark outline, orange work jacket, small backpack, simple boots, readable head/torso rotation. Generate 8 directions: south, south-east, east, north-east, north, north-west, west, south-west. Keep identity, outfit, scale, and silhouette consistent across directions.
@@ -82,7 +100,13 @@ Original top-down low-angle pixel art survivor engineer for a cozy sci-fi life-s
 Then animate with a simple walk/idle request:
 
 ```text
-Simple readable walking loop, arms swing opposite legs, no tools or weapons, same character and outfit, consistent scale and foot baseline.
+Use PixelLab animate_character on the generated character id with animation="walk". Simple readable walking loop, arms swing opposite legs, no tools or weapons, same character and outfit, consistent scale and foot baseline.
+```
+
+If raw tool arguments are available:
+
+```text
+animate_character(character_id="<returned character id>", animation="walk")
 ```
 
 ## Curation notes

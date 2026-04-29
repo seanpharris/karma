@@ -11,10 +11,15 @@ public sealed record WorldConfig(
 {
     public static WorldConfig CreatePrototype()
     {
-        return FromServerConfig(
+        var baseConfig = FromServerConfig(
             "local-prototype",
-            new WorldSeed(8675309, "Frontier Clinic", "western-sci-fi"),
+            new WorldSeed(8675309, "Boarding School Prototype", "boarding_school"),
             ServerConfig.Prototype4Player);
+        return baseConfig with
+        {
+            WidthTiles = 80,
+            HeightTiles = 72
+        };
     }
 
     public static WorldConfig FromServerConfig(string worldId, WorldSeed seed, ServerConfig server)

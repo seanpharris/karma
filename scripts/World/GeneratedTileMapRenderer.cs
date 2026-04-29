@@ -11,9 +11,8 @@ public partial class GeneratedTileMapRenderer : Node2D
     private const float TileSize = 32f;
     private readonly Dictionary<GeneratedChunkCoordinate, MapChunkSnapshot> _loadedChunks = new();
     private GeneratedTileMap _tileMap;
-    private ThemeArtSet _artSet = ThemeArtRegistry.GetForTheme("western-sci-fi");
-    private Texture2D _atlasTexture;
-    private string _atlasPath = string.Empty;
+    private ThemeArtSet _artSet = ThemeArtRegistry.GetForTheme("boarding_school");
+    private readonly Dictionary<string, Texture2D> _atlasTextures = new();
 
     public int LoadedChunkCount => _loadedChunks.Count;
     public int LastUpdatedChunkCount { get; private set; }
@@ -90,7 +89,6 @@ public partial class GeneratedTileMapRenderer : Node2D
     {
         var rect = new Rect2(x * TileSize, y * TileSize, TileSize, TileSize);
         DrawTileArt(rect, _artSet.GetTile(floorId));
-        DrawRect(rect, new Color(0f, 0f, 0f, 0.08f), filled: false, width: 1f);
 
         if (!string.IsNullOrWhiteSpace(structureId))
         {
@@ -100,9 +98,9 @@ public partial class GeneratedTileMapRenderer : Node2D
 
     private void DrawTileArt(Rect2 target, TileArtDefinition art)
     {
-        if (PreferAtlasArt && art.HasAtlasRegion && _atlasTexture is not null)
+        if (PreferAtlasArt && art.HasAtlasRegion && TryGetAtlasTexture(art.AtlasPath, out var texture))
         {
-            DrawTextureRectRegion(_atlasTexture, target, art.SourceRegion);
+            DrawTextureRectRegion(texture, target, art.SourceRegion);
             return;
         }
 
@@ -112,14 +110,18 @@ public partial class GeneratedTileMapRenderer : Node2D
     private void SetArtSet(ThemeArtSet artSet)
     {
         _artSet = artSet;
-        var atlasPath = _artSet.GetTile(WorldTileIds.GroundScrub).AtlasPath;
-        if (_atlasPath == atlasPath)
+    }
+
+    private bool TryGetAtlasTexture(string atlasPath, out Texture2D texture)
+    {
+        if (_atlasTextures.TryGetValue(atlasPath, out texture))
         {
-            return;
+            return texture is not null;
         }
 
-        _atlasPath = atlasPath;
-        _atlasTexture = AtlasTextureLoader.Load(atlasPath);
+        texture = AtlasTextureLoader.Load(atlasPath);
+        _atlasTextures[atlasPath] = texture;
+        return texture is not null;
     }
 
     private void DrawStructure(string structureId, Rect2 rect)

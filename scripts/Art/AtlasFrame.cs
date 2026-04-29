@@ -75,6 +75,6 @@ public static class AtlasFrames
 
     private static bool IsHumanoid(PrototypeSpriteKind kind)
     {
-        return kind is PrototypeSpriteKind.Player or PrototypeSpriteKind.Mara or PrototypeSpriteKind.Peer or PrototypeSpriteKind.Dallen;
+        return kind is PrototypeSpriteKind.Player or PrototypeSpriteKind.Mara or PrototypeSpriteKind.Peer or PrototypeSpriteKind.PixellabTrialNpc or PrototypeSpriteKind.Dallen;
     }
 }

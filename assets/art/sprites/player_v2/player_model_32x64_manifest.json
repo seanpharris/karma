@@ -25,6 +25,7 @@
     "skin",
     "hair",
     "outfit",
+    "boots",
     "backpack",
     "held_tool",
     "weapon"
@@ -64,6 +65,16 @@
       "path": "layers_32x64/hair_short_blond_32x64.png"
     },
     {
+      "id": "hair_short_copper_32x64",
+      "slot": "hair",
+      "path": "layers_32x64/hair_short_copper_32x64.png"
+    },
+    {
+      "id": "hair_short_white_32x64",
+      "slot": "hair",
+      "path": "layers_32x64/hair_short_white_32x64.png"
+    },
+    {
       "id": "outfit_engineer_32x64",
       "slot": "outfit",
       "path": "layers_32x64/outfit_engineer_32x64.png",
@@ -73,6 +84,27 @@
       "id": "outfit_settler_32x64",
       "slot": "outfit",
       "path": "layers_32x64/outfit_settler_32x64.png"
+    },
+    {
+      "id": "outfit_medic_32x64",
+      "slot": "outfit",
+      "path": "layers_32x64/outfit_medic_32x64.png"
+    },
+    {
+      "id": "outfit_ranger_32x64",
+      "slot": "outfit",
+      "path": "layers_32x64/outfit_ranger_32x64.png"
+    },
+    {
+      "id": "boots_utility_32x64",
+      "slot": "boots",
+      "path": "layers_32x64/boots_utility_32x64.png"
+    },
+    {
+      "id": "boots_black_32x64",
+      "slot": "boots",
+      "path": "layers_32x64/boots_black_32x64.png",
+      "default": true
     },
     {
       "id": "backpack_daypack_32x64",
@@ -94,7 +126,8 @@
     "base_body_32x64",
     "skin_medium_32x64",
     "hair_short_dark_32x64",
-    "outfit_engineer_32x64"
+    "outfit_engineer_32x64",
+    "boots_black_32x64"
   ],
   "composite": "player_model_32x64_layered_preview.png"
 }

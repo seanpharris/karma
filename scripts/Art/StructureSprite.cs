@@ -7,6 +7,7 @@ public partial class StructureSprite : Node2D
     [Export] public StructureSpriteKind Kind { get; set; } = StructureSpriteKind.GreenhouseStandard;
     [Export] public string StructureId { get; set; } = string.Empty;
     [Export] public bool PreferAtlasArt { get; set; } = true;
+    [Export] public bool DrawShadow { get; set; } = true;
 
     private Sprite2D _sprite;
     private string _atlasPath = string.Empty;
@@ -21,7 +22,10 @@ public partial class StructureSprite : Node2D
     public override void _Draw()
     {
         var definition = GetDefinition();
-        DrawShadow(definition.Size);
+        if (DrawShadow)
+        {
+            DrawShadowRect(definition.Size);
+        }
 
         if (ShouldUseNativeAtlas(definition))
         {
@@ -74,7 +78,12 @@ public partial class StructureSprite : Node2D
 
         ClearNativeSprite();
 
-        var texture = AtlasTextureLoader.Load(definition.AtlasPath, removeDarkBackground: true);
+        var texture = AtlasTextureLoader.Load(
+            definition.AtlasPath,
+            removeDarkBackground: definition.AtlasPath != StructureArtCatalog.BoardingSchoolBuildingsAtlasPath &&
+                definition.AtlasPath != StructureArtCatalog.BoardingSchoolPropsAtlasPath &&
+                definition.AtlasPath != StructureArtCatalog.BoardingSchoolTreesAtlasPath &&
+                definition.AtlasPath != StructureArtCatalog.BoardingSchoolGrassAtlasPath);
         if (texture is null)
         {
             return;
@@ -101,7 +110,7 @@ public partial class StructureSprite : Node2D
         _atlasRegion = new Rect2();
     }
 
-    private void DrawShadow(Vector2 size)
+    private void DrawShadowRect(Vector2 size)
     {
         DrawRect(
             new Rect2(-size.X * 0.48f, -8f, size.X * 0.96f, 12f),

@@ -87,17 +87,20 @@ public static class ArtAssetManifest
 
     private static void AddTileReferences(ICollection<ArtAssetReference> references)
     {
-        foreach (var tile in ThemeArtRegistry.GetForTheme("western-sci-fi").Tiles.Values)
+        foreach (var theme in new[] { "western-sci-fi", "boarding_school" })
         {
-            if (!tile.HasAtlasRegion)
+            foreach (var tile in ThemeArtRegistry.GetForTheme(theme).Tiles.Values)
             {
-                continue;
-            }
+                if (!tile.HasAtlasRegion)
+                {
+                    continue;
+                }
 
-            references.Add(new ArtAssetReference(
-                tile.AtlasPath,
-                "tile",
-                tile.TileId));
+                references.Add(new ArtAssetReference(
+                    tile.AtlasPath,
+                    $"tile:{theme}",
+                    tile.TileId));
+            }
         }
     }
 }

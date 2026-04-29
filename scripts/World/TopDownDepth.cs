@@ -4,7 +4,7 @@ namespace Karma.World;
 
 public static class TopDownDepth
 {
-    public const int TileLayerZ = -1000;
+    public const int TileLayerZ = -150;
     public const int StructureOffsetZ = -5;
     public const int ActorOffsetZ = 0;
     public const int ItemOffsetZ = 2;

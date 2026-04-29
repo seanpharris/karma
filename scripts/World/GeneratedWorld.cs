@@ -33,6 +33,8 @@ public sealed record GeneratedLocation(
     string ThemeTag,
     string KarmaHook,
     string SuggestedFaction,
+    string InteriorId,
+    string InteriorKind,
     int X,
     int Y);
 
