@@ -3004,6 +3004,71 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(scourgeDialogue.Choices.Any(c => c.Id == "scourge_tribute"),
             "Scourge player receives scourge_tribute dialogue choice");
 
+        // ── Step 12: Combat heat tracking ────────────────────────────────────────
+        var heatState = new GameState();
+        heatState.RegisterPlayer("heat_attacker", "Attacker");
+        heatState.RegisterPlayer("heat_victim", "Victim");
+        heatState.SetPlayerPosition("heat_attacker", TilePosition.Origin);
+        heatState.SetPlayerPosition("heat_victim", TilePosition.Origin);
+        var heatServer = new AuthoritativeWorldServer(heatState, "heat-test");
+        var heatChunk = heatServer.GetChunkForTile(TilePosition.Origin);
+        ExpectFalse(heatServer.IsChunkHot(heatChunk.ChunkX, heatChunk.ChunkY),
+            "chunk starts cool before any combat");
+        ExpectEqual(0, heatServer.GetChunkHeat(heatChunk.ChunkX, heatChunk.ChunkY),
+            "chunk heat starts at zero");
+
+        heatServer.ProcessIntent(new ServerIntent(
+            "heat_attacker", 1, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "heat_victim" }));
+        ExpectTrue(heatServer.IsChunkHot(heatChunk.ChunkX, heatChunk.ChunkY),
+            "chunk is hot after an attack");
+        ExpectEqual(AuthoritativeWorldServer.CombatHeatPerAttack,
+            heatServer.GetChunkHeat(heatChunk.ChunkX, heatChunk.ChunkY),
+            "chunk heat equals CombatHeatPerAttack after one attack");
+
+        heatServer.AdvanceIdleTicks(AuthoritativeWorldServer.CombatHeatPerAttack);
+        ExpectFalse(heatServer.IsChunkHot(heatChunk.ChunkX, heatChunk.ChunkY),
+            "chunk cools down after enough ticks pass");
+        ExpectEqual(0, heatServer.GetChunkHeat(heatChunk.ChunkX, heatChunk.ChunkY),
+            "chunk heat decays to zero after full decay period");
+
+        // ── Step 13: Smarter respawn placement ───────────────────────────────────
+        // Use IDs starting with 'a' so they sort before prototype players and are seeded as connected
+        var respawnState = new GameState();
+        respawnState.RegisterPlayer("aa_attacker", "Attacker");
+        respawnState.RegisterPlayer("aa_victim", "Victim");
+        respawnState.SetPlayerPosition("aa_attacker", TilePosition.Origin);
+        respawnState.SetPlayerPosition("aa_victim", TilePosition.Origin);
+        var respawnServer = new AuthoritativeWorldServer(respawnState, "respawn-test");
+
+        // Three attacks (with cooldown intervals) kill the 100-HP victim (35 dmg each)
+        respawnServer.ProcessIntent(new ServerIntent(
+            "aa_attacker", 1, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "aa_victim" }));
+        respawnServer.AdvanceIdleTicks(AuthoritativeWorldServer.CombatHeatPerAttack / 4);
+        respawnServer.ProcessIntent(new ServerIntent(
+            "aa_attacker", 2, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "aa_victim" }));
+        respawnServer.AdvanceIdleTicks(AuthoritativeWorldServer.CombatHeatPerAttack / 4);
+        respawnServer.ProcessIntent(new ServerIntent(
+            "aa_attacker", 3, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "aa_victim" }));
+
+        var hotChunk = respawnServer.GetChunkForTile(TilePosition.Origin);
+        ExpectTrue(respawnServer.IsChunkHot(hotChunk.ChunkX, hotChunk.ChunkY),
+            "origin chunk remains hot when victim is killed there");
+
+        var victimRespawnPos = respawnState.Players["aa_victim"].Position;
+        var victimRespawnChunk = respawnServer.GetChunkForTile(victimRespawnPos);
+        var respawnedInHotChunk = victimRespawnChunk.ChunkX == hotChunk.ChunkX &&
+                                  victimRespawnChunk.ChunkY == hotChunk.ChunkY;
+        ExpectFalse(respawnedInHotChunk,
+            "killed player respawns outside the hot combat chunk when a cool chunk is available");
+
+        var coolFarChunk = respawnServer.GetChunkForTile(new TilePosition(40, 40));
+        ExpectFalse(respawnServer.IsChunkHot(coolFarChunk.ChunkX, coolFarChunk.ChunkY),
+            "undisturbed far chunk stays cool for respawn preference");
+
         // ── Step 10: Chat tabs — Local / Posse / System ──────────────────────────
         var chatTabState = new GameState();
         chatTabState.RegisterPlayer("ct_alpha", "Alpha");

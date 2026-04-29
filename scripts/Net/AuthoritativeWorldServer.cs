@@ -22,6 +22,7 @@ public sealed class AuthoritativeWorldServer
     private readonly HashSet<string> _connectedPlayerIds = new();
     private readonly Dictionary<string, string> _pendingPosseInviteByInvitee = new();
     private readonly Dictionary<string, WorldItemEntity> _worldItems = new();
+    private readonly Dictionary<(int ChunkX, int ChunkY), int> _combatHeatByChunk = new();
     private readonly Dictionary<string, WorldStructureEntity> _worldStructures = new();
     private readonly Dictionary<string, NpcEntity> _npcs = new();
     private readonly List<ServerEvent> _eventLog = new();
@@ -32,6 +33,9 @@ public sealed class AuthoritativeWorldServer
     private bool _matchRewardsPaid;
     private const long AttackCooldownTicks = 3;
     private const long KarmaBreakGraceTicks = 5;
+    public const int CombatHeatPerAttack = 100;
+    public const int CombatHeatDecayPerTick = 1;
+    public const int CombatHeatHotThreshold = 0;
     private const int MinimumInitialSpawnSeparationTiles = 10;
     private const int MinimumRespawnSeparationTiles = 12;
     private const int SpawnEdgePaddingTiles = 4;
@@ -77,6 +81,15 @@ public sealed class AuthoritativeWorldServer
         .ToArray();
     public MatchSnapshot Match => _match.Snapshot(_state.GetLeaderboardStanding());
 
+    public int GetChunkHeat(int chunkX, int chunkY) =>
+        _combatHeatByChunk.TryGetValue((chunkX, chunkY), out var heat) ? heat : 0;
+
+    public bool IsChunkHot(int chunkX, int chunkY) =>
+        GetChunkHeat(chunkX, chunkY) > CombatHeatHotThreshold;
+
+    public (int ChunkX, int ChunkY) GetChunkForTile(TilePosition position) =>
+        (position.X / Config.ChunkSizeTiles, position.Y / Config.ChunkSizeTiles);
+
     public void SetTileMap(GeneratedTileMap tileMap)
     {
         _tileMap = tileMap;
@@ -92,6 +105,7 @@ public sealed class AuthoritativeWorldServer
 
         _tick += ticks;
         PruneLocalChatLog();
+        DecayHeatMap(ticks);
     }
 
     public void AdvanceMatchTime(int seconds)
@@ -716,6 +730,32 @@ public sealed class AuthoritativeWorldServer
         }
     }
 
+    private void AddCombatHeat(TilePosition position)
+    {
+        var key = GetChunkForTile(position);
+        _combatHeatByChunk.TryGetValue(key, out var existing);
+        _combatHeatByChunk[key] = existing + CombatHeatPerAttack;
+    }
+
+    private void DecayHeatMap(long ticks)
+    {
+        var decay = (int)(ticks * CombatHeatDecayPerTick);
+        if (decay <= 0 || _combatHeatByChunk.Count == 0)
+        {
+            return;
+        }
+
+        var keys = _combatHeatByChunk.Keys.ToArray();
+        foreach (var key in keys)
+        {
+            var remaining = _combatHeatByChunk[key] - decay;
+            if (remaining <= 0)
+                _combatHeatByChunk.Remove(key);
+            else
+                _combatHeatByChunk[key] = remaining;
+        }
+    }
+
     private ServerProcessResult ProcessKarmaAction(ServerIntent intent)
     {
         if (!intent.Payload.TryGetValue("action", out var actionId))
@@ -1265,6 +1305,7 @@ public sealed class AuthoritativeWorldServer
         var damage = 30 + attacker.AttackPower;
         var died = _state.DamagePlayer(intent.PlayerId, targetId, damage, isDuelAttack ? "accepted duel strike" : "server-authorized attack");
         _lastAttackTickByPlayer[intent.PlayerId] = _tick;
+        AddCombatHeat(attacker.Position);
         var droppedItemCount = died ? DropInventory(targetId).Count : 0;
         if (died)
         {
@@ -2511,8 +2552,21 @@ public sealed class AuthoritativeWorldServer
             edgePadding: SpawnEdgePaddingTiles,
             candidateAttemptsPerPoint: 32,
             reserved);
-        var safeCandidate = candidates
+        var safeCandidates = candidates
             .Where(candidate => reserved.All(reservedPoint => candidate.DistanceSquaredTo(reservedPoint) >= minimumDistanceSquared))
+            .ToArray();
+
+        var coolSafeCandidate = safeCandidates
+            .Where(candidate => !IsChunkHot(GetChunkForTile(candidate).ChunkX, GetChunkForTile(candidate).ChunkY))
+            .OrderByDescending(candidate => ProceduralPlacementSampler.GetNearestDistanceSquared(candidate, reserved))
+            .FirstOrDefault();
+
+        if (coolSafeCandidate != default)
+        {
+            return coolSafeCandidate;
+        }
+
+        var safeCandidate = safeCandidates
             .OrderByDescending(candidate => ProceduralPlacementSampler.GetNearestDistanceSquared(candidate, reserved))
             .FirstOrDefault();
 
@@ -2535,6 +2589,7 @@ public sealed class AuthoritativeWorldServer
             .Where(structure => structure.Category == "station" &&
                                 structure.InteractionPrompt.Contains("Station state: stabilized", StringComparison.Ordinal))
             .Where(structure => reserved.All(reservedPoint => structure.Position.DistanceSquaredTo(reservedPoint) >= minimumDistanceSquared))
+            .Where(structure => !IsChunkHot(GetChunkForTile(structure.Position).ChunkX, GetChunkForTile(structure.Position).ChunkY))
             .OrderByDescending(structure => ProceduralPlacementSampler.GetNearestDistanceSquared(structure.Position, reserved))
             .ThenBy(structure => structure.EntityId)
             .ToArray();
