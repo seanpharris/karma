@@ -53,6 +53,7 @@ public static class StarterShopCatalog
 public static class ShopPricing
 {
     public const int TrustedDiscountPercent = 10;
+    public const int SaintCommunityDiscountPercent = 5;
     public const int ParagonFavorDiscountPercent = 25;
     public const int ShiftyPricesDiscountPercent = 15;
     public const int AbyssalMarkDiscountPercent = 50;
@@ -78,6 +79,11 @@ public static class ShopPricing
 
         var perks = PerkCatalog.GetForPlayer(player, standing);
         var discountPercent = 0;
+        if (standing.SaintPlayerId == player.Id && player.Karma.Score > 0)
+        {
+            discountPercent = System.Math.Max(discountPercent, SaintCommunityDiscountPercent);
+        }
+
         if (perks.Any(perk => perk.Id == PerkCatalog.TrustedDiscountId))
         {
             discountPercent = System.Math.Max(discountPercent, TrustedDiscountPercent);

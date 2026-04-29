@@ -1611,6 +1611,11 @@ public partial class HudController : CanvasLayer
         }
 
         var latest = messages[^1];
+        if (latest.Channel == "posse")
+        {
+            return $"[Posse] {latest.SpeakerName}: {latest.Text}";
+        }
+
         var volumePercent = Mathf.RoundToInt(latest.Volume * 100f);
         return $"Local chat: {latest.SpeakerName} ({latest.DistanceTiles} tiles, {volumePercent}%): {latest.Text}";
     }

@@ -2969,6 +2969,127 @@ public partial class GameplaySmokeTest : Node
             "HUD formats posse_disbanded event");
         hudProbePosse.QueueFree();
 
+        // ── Step 9: Saint/Scourge NPC behavior ───────────────────────────────────
+        var saintState = new GameState();
+        saintState.RegisterPlayer(GameState.LocalPlayerId, "Saint Tester");
+        saintState.SetPlayerPosition(GameState.LocalPlayerId, TilePosition.Origin);
+        // Reach Saint standing: positive karma, sole player
+        saintState.ApplyShift(GameState.LocalPlayerId,
+            new KarmaAction(GameState.LocalPlayerId, "peer_stand_in", new[] { "helpful" }, "saint build", 4));
+        var saintServer = new AuthoritativeWorldServer(saintState, "saint-test");
+        saintState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(3, 4));
+
+        var saintDialogue = saintServer.GetDialogueFor(GameState.LocalPlayerId, StarterNpcs.Mara.Id);
+        ExpectTrue(saintDialogue.Prompt.Contains("Saint"), "Saint player sees a special NPC greeting");
+        ExpectTrue(saintDialogue.Choices.Any(c => c.Id == "saint_bless"),
+            "Saint player receives saint_bless dialogue choice");
+
+        var saintDiscount = ShopPricing.CalculateDiscountPercent(
+            saintState.Players[GameState.LocalPlayerId],
+            saintState.GetLeaderboardStanding());
+        ExpectTrue(saintDiscount >= ShopPricing.SaintCommunityDiscountPercent,
+            "Saint standing grants community discount");
+
+        var scourgeState = new GameState();
+        scourgeState.RegisterPlayer(GameState.LocalPlayerId, "Scourge Tester");
+        scourgeState.SetPlayerPosition(GameState.LocalPlayerId, TilePosition.Origin);
+        // Reach Scourge standing: negative karma, sole player
+        scourgeState.ApplyShift(GameState.LocalPlayerId,
+            new KarmaAction(GameState.LocalPlayerId, "peer_stand_in", new[] { "harmful" }, "scourge build", 4));
+        var scourgeServer = new AuthoritativeWorldServer(scourgeState, "scourge-test");
+        scourgeState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(3, 4));
+
+        var scourgeDialogue = scourgeServer.GetDialogueFor(GameState.LocalPlayerId, StarterNpcs.Mara.Id);
+        ExpectTrue(scourgeDialogue.Prompt.Contains("Scourge"), "Scourge player sees a wary NPC greeting");
+        ExpectTrue(scourgeDialogue.Choices.Any(c => c.Id == "scourge_tribute"),
+            "Scourge player receives scourge_tribute dialogue choice");
+
+        // ── Step 10: Chat tabs — Local / Posse / System ──────────────────────────
+        var chatTabState = new GameState();
+        chatTabState.RegisterPlayer("ct_alpha", "Alpha");
+        chatTabState.RegisterPlayer("ct_beta", "Beta");
+        chatTabState.RegisterPlayer("ct_outsider", "Outsider");
+        chatTabState.SetPlayerPosition("ct_alpha", TilePosition.Origin);
+        chatTabState.SetPlayerPosition("ct_beta", TilePosition.Origin);
+        chatTabState.SetPlayerPosition("ct_outsider", TilePosition.Origin);
+        var chatTabServer = new AuthoritativeWorldServer(chatTabState, "chat-tab-world");
+
+        var ctNoPosse = chatTabServer.ProcessIntent(new ServerIntent(
+            "ct_alpha", 1, IntentType.SendPosseChat,
+            new System.Collections.Generic.Dictionary<string, string> { ["text"] = "hello posse" }));
+        ExpectFalse(ctNoPosse.WasAccepted, "SendPosseChat rejected when not in a posse");
+
+        chatTabServer.ProcessIntent(new ServerIntent(
+            "ct_alpha", 2, IntentType.InvitePosse,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetPlayerId"] = "ct_beta" }));
+        chatTabServer.ProcessIntent(new ServerIntent(
+            "ct_beta", 1, IntentType.AcceptPosse,
+            new System.Collections.Generic.Dictionary<string, string>()));
+
+        var ctPosseChat = chatTabServer.ProcessIntent(new ServerIntent(
+            "ct_alpha", 3, IntentType.SendPosseChat,
+            new System.Collections.Generic.Dictionary<string, string> { ["text"] = "posse only message" }));
+        ExpectTrue(ctPosseChat.WasAccepted, "SendPosseChat accepted when in a posse");
+
+        var ctBetaSnapshot = chatTabServer.CreateInterestSnapshot("ct_beta");
+        ExpectTrue(ctBetaSnapshot.LocalChatMessages.Any(m => m.Text == "posse only message" && m.Channel == "posse"),
+            "posse chat message visible to posse member with posse channel tag");
+
+        var ctOutsiderSnapshot = chatTabServer.CreateInterestSnapshot("ct_outsider");
+        ExpectFalse(ctOutsiderSnapshot.LocalChatMessages.Any(m => m.Text == "posse only message"),
+            "posse chat message not visible to players outside the posse");
+
+        var ctHudPosse = HudController.FormatLocalChatSummary(ctBetaSnapshot.LocalChatMessages);
+        ExpectTrue(ctHudPosse.Contains("[Posse]"), "HUD formats posse channel messages with [Posse] prefix");
+        ExpectTrue(ctHudPosse.Contains("Alpha"), "HUD includes speaker name in posse chat summary");
+
+        // ── Step 11: Interior audibility filtering ───────────────────────────────
+        var interiorState = new GameState();
+        interiorState.RegisterPlayer("interior_speaker", "Speaker");
+        interiorState.RegisterPlayer("interior_nearby", "Nearby");
+        interiorState.RegisterPlayer("interior_far", "FarListener");
+        interiorState.SetPlayerPosition("interior_speaker", TilePosition.Origin);
+        interiorState.SetPlayerPosition("interior_nearby", new TilePosition(2, 0));
+        interiorState.SetPlayerPosition("interior_far", new TilePosition(10, 0));
+        var interiorServer = new AuthoritativeWorldServer(interiorState, "interior-world");
+        interiorServer.SeedWorldStructure("test_structure", "Test Building", "greenhouse", TilePosition.Origin);
+
+        interiorServer.ProcessIntent(new ServerIntent(
+            "interior_speaker", 1, IntentType.Interact,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["entityId"] = "test_structure",
+                ["action"] = "enter"
+            }));
+
+        interiorServer.ProcessIntent(new ServerIntent(
+            "interior_speaker", 2, IntentType.SendLocalChat,
+            new System.Collections.Generic.Dictionary<string, string> { ["text"] = "inside voice" }));
+
+        var nearbyOutsideSnapshot = interiorServer.CreateInterestSnapshot("interior_nearby");
+        var insideChatNearby = nearbyOutsideSnapshot.LocalChatMessages.FirstOrDefault(m => m.Text == "inside voice");
+        ExpectTrue(insideChatNearby is not null, "interior speaker chat still audible to nearby outside listener within halved range");
+        ExpectTrue(insideChatNearby?.Volume < 1.0f, "interior chat volume is attenuated for outside listeners");
+
+        var farOutsideSnapshot = interiorServer.CreateInterestSnapshot("interior_far");
+        ExpectFalse(farOutsideSnapshot.LocalChatMessages.Any(m => m.Text == "inside voice"),
+            "interior speaker chat not audible beyond halved max range from outside");
+
+        interiorServer.ProcessIntent(new ServerIntent(
+            "interior_speaker", 3, IntentType.Interact,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["entityId"] = "test_structure",
+                ["action"] = "exit"
+            }));
+        interiorServer.ProcessIntent(new ServerIntent(
+            "interior_speaker", 4, IntentType.SendLocalChat,
+            new System.Collections.Generic.Dictionary<string, string> { ["text"] = "exited voice" }));
+
+        var exitedSnapshot = interiorServer.CreateInterestSnapshot("interior_far");
+        ExpectTrue(exitedSnapshot.LocalChatMessages.Any(m => m.Text == "exited voice"),
+            "post-exit local chat has full range from outside listener");
+
         if (_failures == 0)
         {
             GD.Print("Gameplay smoke tests passed.");

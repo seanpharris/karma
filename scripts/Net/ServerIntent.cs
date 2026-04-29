@@ -28,7 +28,8 @@ public enum IntentType
     KarmaBreak,
     InvitePosse,
     AcceptPosse,
-    LeavePosse
+    LeavePosse,
+    SendPosseChat
 }
 
 public sealed record ServerIntent(
@@ -53,7 +54,8 @@ public sealed record LocalChatMessageSnapshot(
     int SpeakerTileX,
     int SpeakerTileY,
     int DistanceTiles,
-    float Volume);
+    float Volume,
+    string Channel = "local");
 
 public sealed record PlayerInterest(
     string PlayerId,

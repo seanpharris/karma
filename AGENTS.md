@@ -245,9 +245,9 @@ Active implementation plan (as of 2026-04-29). Steps complete on `develop`.
 | 6 | Abyssal Mark perk (-100 karma threshold) | ✅ done |
 | 7 | Posse formation (InvitePosse/AcceptPosse/LeavePosse intents) | ✅ done |
 | 8 | Posse HUD panel (member list, karma, health) | ✅ done |
-| 9 | Saint/Scourge NPC behavior (greetings, prices, reactions) | pending |
-| 10 | Chat tabs — Local / Posse / System | pending |
-| 11 | Interior audibility filtering | pending |
+| 9 | Saint/Scourge NPC behavior (greetings, prices, reactions) | ✅ done |
+| 10 | Chat tabs — Local / Posse / System | ✅ done |
+| 11 | Interior audibility filtering | ✅ done |
 | 12 | Combat heat tracking (tile-chunk heat map with decay) | pending |
 | 13 | Smarter respawn placement (avoid heat, prefer stabilized stations) | pending |
 | 14 | Downed state (0 HP countdown, can still chat) | pending |

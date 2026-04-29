@@ -47,7 +47,10 @@ public sealed class AuthoritativeWorldServer
         string SpeakerId,
         string SpeakerName,
         string Text,
-        TilePosition SpeakerPosition);
+        TilePosition SpeakerPosition,
+        string Channel = "local",
+        bool SpeakerInsideStructure = false,
+        string SpeakerPosseId = "");
 
     public AuthoritativeWorldServer(GameState state, string worldId, ServerConfig config = null)
     {
@@ -374,6 +377,7 @@ public sealed class AuthoritativeWorldServer
             IntentType.InvitePosse => ProcessInvitePosse(intent),
             IntentType.AcceptPosse => ProcessAcceptPosse(intent),
             IntentType.LeavePosse => ProcessLeavePosse(intent),
+            IntentType.SendPosseChat => ProcessSendPosseChat(intent),
             _ => Reject(intent, $"Unsupported intent type: {intent.Type}")
         };
     }
@@ -381,7 +385,7 @@ public sealed class AuthoritativeWorldServer
     private static bool IsPostMatchIntentAllowed(IntentType type)
     {
         return type is IntentType.Move or IntentType.StartDialogue or IntentType.SetAppearance
-            or IntentType.SendLocalChat or IntentType.LeavePosse;
+            or IntentType.SendLocalChat or IntentType.SendPosseChat or IntentType.LeavePosse;
     }
 
     public PlayerInterest GetInterestFor(string playerId)
@@ -550,12 +554,31 @@ public sealed class AuthoritativeWorldServer
             return Array.Empty<LocalChatMessageSnapshot>();
         }
 
-        var maxDistanceSquared = LocalChatMaxRadiusTiles * LocalChatMaxRadiusTiles;
-        return _localChatLog
-            .Where(message => listener.Position.DistanceSquaredTo(message.SpeakerPosition) <= maxDistanceSquared)
-            .OrderBy(message => message.Tick)
-            .Select(message => ToLocalChatSnapshot(message, listener.Position))
-            .ToArray();
+        var listenerInsideStructure = _enteredStructureByPlayer.ContainsKey(playerId);
+        var result = new List<LocalChatMessageSnapshot>();
+        foreach (var message in _localChatLog.OrderBy(m => m.Tick))
+        {
+            if (message.Channel == "posse")
+            {
+                if (!string.IsNullOrEmpty(message.SpeakerPosseId) &&
+                    listener.HasTeam && listener.TeamId == message.SpeakerPosseId)
+                {
+                    result.Add(ToLocalChatSnapshot(message, listener.Position, listenerInsideStructure));
+                }
+            }
+            else
+            {
+                var crossInterior = message.SpeakerInsideStructure != listenerInsideStructure;
+                var effectiveMaxRadius = crossInterior ? LocalChatMaxRadiusTiles / 2 : LocalChatMaxRadiusTiles;
+                var maxDistanceSquared = effectiveMaxRadius * effectiveMaxRadius;
+                if (listener.Position.DistanceSquaredTo(message.SpeakerPosition) <= maxDistanceSquared)
+                {
+                    result.Add(ToLocalChatSnapshot(message, listener.Position, listenerInsideStructure));
+                }
+            }
+        }
+
+        return result;
     }
 
     private IReadOnlyList<ShopOfferSnapshot> CreateVisibleShopOffers(
@@ -661,7 +684,8 @@ public sealed class AuthoritativeWorldServer
             player.Id,
             player.DisplayName,
             text,
-            player.Position);
+            player.Position,
+            SpeakerInsideStructure: _enteredStructureByPlayer.ContainsKey(intent.PlayerId));
         _localChatLog.Add(message);
         PruneLocalChatLog();
 
@@ -1285,11 +1309,13 @@ public sealed class AuthoritativeWorldServer
         }
 
         var stationState = GetStationStateForLocation(npc.LocationId);
+        var standing = _state.GetLeaderboardStanding();
+        var role = standing.GetRole(playerId, player.Karma.Score);
         return new NpcDialogueSnapshot(
             npc.Profile.Id,
             npc.Profile.Name,
-            FormatNpcPrompt(npc.Profile, stationState),
-            GetChoicesFor(npc.Profile, stationState));
+            FormatNpcPrompt(npc.Profile, stationState, role),
+            GetChoicesFor(npc.Profile, stationState, role));
     }
 
     private ServerProcessResult ProcessStartDialogue(ServerIntent intent)
@@ -2229,6 +2255,56 @@ public sealed class AuthoritativeWorldServer
         return ServerProcessResult.Accepted(serverEvent);
     }
 
+    private ServerProcessResult ProcessSendPosseChat(ServerIntent intent)
+    {
+        if (!intent.Payload.TryGetValue("text", out var rawText))
+        {
+            return Reject(intent, "SendPosseChat intent requires text.");
+        }
+
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var player))
+        {
+            return Reject(intent, $"Unknown player: {intent.PlayerId}.");
+        }
+
+        if (!player.HasTeam)
+        {
+            return Reject(intent, "SendPosseChat requires being in a posse.");
+        }
+
+        var text = SanitizeLocalChatText(rawText);
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return Reject(intent, "Posse chat message cannot be empty.");
+        }
+
+        var message = new LocalChatMessage(
+            $"{WorldId}:{_tick}:posse_chat:{intent.PlayerId}",
+            _tick,
+            player.Id,
+            player.DisplayName,
+            text,
+            player.Position,
+            Channel: "posse",
+            SpeakerInsideStructure: _enteredStructureByPlayer.ContainsKey(intent.PlayerId),
+            SpeakerPosseId: player.TeamId);
+        _localChatLog.Add(message);
+        PruneLocalChatLog();
+
+        var serverEvent = AppendEvent(
+            "posse_chat",
+            $"[Posse] {player.DisplayName}: {text}",
+            new Dictionary<string, string>
+            {
+                ["posseId"] = player.TeamId,
+                ["playerId"] = player.Id,
+                ["displayName"] = player.DisplayName,
+                ["text"] = text
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
     private ServerProcessResult Reject(ServerIntent intent, string reason)
     {
         var serverEvent = AppendEvent(
@@ -2591,9 +2667,18 @@ public sealed class AuthoritativeWorldServer
             : text[..LocalChatMaxMessageLength];
     }
 
-    private static LocalChatMessageSnapshot ToLocalChatSnapshot(LocalChatMessage message, TilePosition listenerPosition)
+    private static LocalChatMessageSnapshot ToLocalChatSnapshot(
+        LocalChatMessage message,
+        TilePosition listenerPosition,
+        bool listenerInsideStructure = false)
     {
         var distanceTiles = (int)MathF.Ceiling(MathF.Sqrt(listenerPosition.DistanceSquaredTo(message.SpeakerPosition)));
+        var volume = CalculateLocalChatVolume(distanceTiles);
+        if (message.SpeakerInsideStructure != listenerInsideStructure)
+        {
+            volume *= 0.5f;
+        }
+
         return new LocalChatMessageSnapshot(
             message.MessageId,
             message.Tick,
@@ -2603,7 +2688,8 @@ public sealed class AuthoritativeWorldServer
             message.SpeakerPosition.X,
             message.SpeakerPosition.Y,
             distanceTiles,
-            CalculateLocalChatVolume(distanceTiles));
+            volume,
+            message.Channel);
     }
 
     private static WorldItemSnapshot ToSnapshot(WorldItemEntity entity)
@@ -2855,21 +2941,37 @@ public sealed class AuthoritativeWorldServer
                 npcId,
                 new[] { "selfish", "harmful", "intimidating" },
                 "You pressured a generated station contact for advantage."),
+            "saint_bless" => new KarmaAction(
+                playerId,
+                npcId,
+                new[] { "helpful", "protective" },
+                "You extended the Saint's blessing to an NPC in need."),
+            "scourge_tribute" => new KarmaAction(
+                playerId,
+                npcId,
+                new[] { "harmful", "selfish" },
+                "The Scourge demanded tribute — the NPC complied out of fear."),
             _ => null
         };
 
         return action is not null;
     }
 
-    private static string FormatNpcPrompt(NpcProfile npc, string stationState)
+    private static string FormatNpcPrompt(NpcProfile npc, string stationState, LeaderboardRole role)
     {
-        var prompt = $"{npc.Name} needs {npc.Need}.";
+        var greeting = role switch
+        {
+            LeaderboardRole.Saint => $"[Saint] {npc.Name} greets you with relief and warmth. ",
+            LeaderboardRole.Scourge => $"[Scourge] {npc.Name} sizes you up warily. ",
+            _ => string.Empty
+        };
+        var prompt = $"{greeting}{npc.Name} needs {npc.Need}.";
         return string.IsNullOrWhiteSpace(stationState)
             ? prompt
             : $"{prompt} Their station is currently {stationState}.";
     }
 
-    private static IReadOnlyList<NpcDialogueChoice> GetChoicesFor(NpcProfile npc, string stationState)
+    private static IReadOnlyList<NpcDialogueChoice> GetChoicesFor(NpcProfile npc, string stationState, LeaderboardRole role = LeaderboardRole.None)
     {
         if (npc.Id != StarterNpcs.Mara.Id)
         {
@@ -2882,22 +2984,40 @@ public sealed class AuthoritativeWorldServer
             var pressureLabel = stationState == "compromised"
                 ? "Exploit the compromised station for leverage"
                 : "Apply pressure for leverage";
-            return new[]
+            var generated = new List<NpcDialogueChoice>
             {
-                new NpcDialogueChoice("assist_need", assistLabel, "generated_assist_need"),
-                new NpcDialogueChoice("spread_rumor", "Turn this need into a rumor", "generated_spread_rumor"),
-                new NpcDialogueChoice("apply_pressure", pressureLabel, "generated_apply_pressure")
+                new("assist_need", assistLabel, "generated_assist_need"),
+                new("spread_rumor", "Turn this need into a rumor", "generated_spread_rumor"),
+                new("apply_pressure", pressureLabel, "generated_apply_pressure")
             };
+            if (role == LeaderboardRole.Saint)
+            {
+                generated.Add(new NpcDialogueChoice("saint_bless", "Offer your community blessing", "saint_bless"));
+            }
+            else if (role == LeaderboardRole.Scourge)
+            {
+                generated.Add(new NpcDialogueChoice("scourge_tribute", "Demand tribute", "scourge_tribute"));
+            }
+            return generated;
         }
 
-        return new[]
+        var maraChoices = new List<NpcDialogueChoice>
         {
-            new NpcDialogueChoice("help_filters", "Repair the filters", PrototypeActions.HelpMaraId),
-            new NpcDialogueChoice("prank_stool", "Plant a whoopie cushion", PrototypeActions.WhoopieCushionMaraId, StarterItems.WhoopieCushionId),
-            new NpcDialogueChoice("steal_parts", "Steal spare parts", PrototypeActions.StealFromMaraId),
-            new NpcDialogueChoice("gift_balloon", "Offer a deflated balloon", PrototypeActions.GiftBalloonToMaraId, StarterItems.DeflatedBalloonId),
-            new NpcDialogueChoice("mock_balloon", "Mock with a deflated balloon", PrototypeActions.MockMaraWithBalloonId, StarterItems.DeflatedBalloonId)
+            new("help_filters", "Repair the filters", PrototypeActions.HelpMaraId),
+            new("prank_stool", "Plant a whoopie cushion", PrototypeActions.WhoopieCushionMaraId, StarterItems.WhoopieCushionId),
+            new("steal_parts", "Steal spare parts", PrototypeActions.StealFromMaraId),
+            new("gift_balloon", "Offer a deflated balloon", PrototypeActions.GiftBalloonToMaraId, StarterItems.DeflatedBalloonId),
+            new("mock_balloon", "Mock with a deflated balloon", PrototypeActions.MockMaraWithBalloonId, StarterItems.DeflatedBalloonId)
         };
+        if (role == LeaderboardRole.Saint)
+        {
+            maraChoices.Add(new NpcDialogueChoice("saint_bless", "Offer your community blessing", "saint_bless"));
+        }
+        else if (role == LeaderboardRole.Scourge)
+        {
+            maraChoices.Add(new NpcDialogueChoice("scourge_tribute", "Demand tribute", "scourge_tribute"));
+        }
+        return maraChoices;
     }
 
     private void SeedConnectedPlayers()
