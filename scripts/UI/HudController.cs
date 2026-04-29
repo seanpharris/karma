@@ -1165,6 +1165,14 @@ public partial class HudController : CanvasLayer
             return $"{rescuer} rescued {target} (+{heal} HP).";
         }
 
+        if (latest.EventId.Contains("clinic_revive"))
+        {
+            var target = ReadEventData(latest, "playerId", "Someone");
+            var heal = ReadEventData(latest, "healAmount", "?");
+            var cost = ReadEventData(latest, "scripCost", "?");
+            return $"{target} was revived by the clinic (+{heal} HP, -{cost} scrip).";
+        }
+
         if (latest.EventId.Contains("player_respawned"))
         {
             var target = ReadEventData(latest, "playerId", "Someone");

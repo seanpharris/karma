@@ -37,6 +37,8 @@ public sealed class AuthoritativeWorldServer
     private const long KarmaBreakGraceTicks = 5;
     public const long DownedCountdownTicks = 120;
     public const int RescueHealAmount = 25;
+    public const int ClinicReviveCost = 10;
+    public const int ClinicReviveHealAmount = 50;
     public const int CombatHeatPerAttack = 100;
     public const int CombatHeatDecayPerTick = 1;
     public const int CombatHeatHotThreshold = 0;
@@ -764,21 +766,49 @@ public sealed class AuthoritativeWorldServer
             _downedUntilTickByPlayer.Remove(playerId);
             _downedDeathPositionByPlayer.TryGetValue(playerId, out var deathPosition);
             _downedDeathPositionByPlayer.Remove(playerId);
-            var droppedItemCount = DropInventory(playerId).Count;
-            _state.TriggerKarmaBreak(playerId);
-            RespawnPlayer(playerId, deathPosition);
-            StartKarmaBreakGrace(playerId);
-            AppendEvent(
-                "player_respawned",
-                $"{_state.Players[playerId].DisplayName} respawned after being downed.",
-                new Dictionary<string, string>
-                {
-                    ["playerId"] = playerId,
-                    ["droppedItemCount"] = droppedItemCount.ToString(),
-                    ["respawnX"] = _state.Players[playerId].Position.X.ToString(),
-                    ["respawnY"] = _state.Players[playerId].Position.Y.ToString()
-                });
+
+            if (!_state.Players.TryGetValue(playerId, out var downedPlayer))
+                continue;
+
+            if (IsNearClinicNpc(downedPlayer.Position) && downedPlayer.SpendScrip(ClinicReviveCost))
+            {
+                downedPlayer.Rescue(ClinicReviveHealAmount);
+                AppendEvent(
+                    "clinic_revive",
+                    $"{downedPlayer.DisplayName} was revived by the clinic.",
+                    new Dictionary<string, string>
+                    {
+                        ["playerId"] = playerId,
+                        ["healAmount"] = ClinicReviveHealAmount.ToString(),
+                        ["scripCost"] = ClinicReviveCost.ToString()
+                    });
+            }
+            else
+            {
+                var droppedItemCount = DropInventory(playerId).Count;
+                _state.TriggerKarmaBreak(playerId);
+                RespawnPlayer(playerId, deathPosition);
+                StartKarmaBreakGrace(playerId);
+                AppendEvent(
+                    "player_respawned",
+                    $"{_state.Players[playerId].DisplayName} respawned after being downed.",
+                    new Dictionary<string, string>
+                    {
+                        ["playerId"] = playerId,
+                        ["droppedItemCount"] = droppedItemCount.ToString(),
+                        ["respawnX"] = _state.Players[playerId].Position.X.ToString(),
+                        ["respawnY"] = _state.Players[playerId].Position.Y.ToString()
+                    });
+            }
         }
+    }
+
+    private bool IsNearClinicNpc(TilePosition position)
+    {
+        var radiusSquared = Config.InterestRadiusTiles * Config.InterestRadiusTiles;
+        return _npcs.Values.Any(npc =>
+            npc.Profile.Role.Contains("clinic", StringComparison.OrdinalIgnoreCase) &&
+            npc.Position.DistanceSquaredTo(position) <= radiusSquared);
     }
 
     private void AddCombatHeat(TilePosition position)
@@ -1125,8 +1155,7 @@ public sealed class AuthoritativeWorldServer
         int previousIntegrity,
         int nextIntegrity)
     {
-        if (structure.Category != "generated-structure" ||
-            string.IsNullOrWhiteSpace(structure.LocationId) ||
+        if (string.IsNullOrWhiteSpace(structure.LocationId) ||
             previousIntegrity == nextIntegrity)
         {
             return;

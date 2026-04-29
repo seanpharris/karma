@@ -1188,9 +1188,9 @@ public partial class GameplaySmokeTest : Node
             "interest snapshot exposes seeded generated oddities near the player");
         ExpectTrue(artSet.Tiles.ContainsKey(WorldTileIds.ClinicFloor), "theme art registry maps clinic floor tile id");
         ExpectEqual(
-            ThemeArtRegistry.PlaceholderAtlasPath,
+            ThemeArtRegistry.BoardingSchoolPropsAtlasPath,
             artSet.GetTile(WorldTileIds.DoorAirlock).AtlasPath,
-            "theme art registry keeps future atlas path for tile ids");
+            "theme art registry maps DoorAirlock to boarding school props atlas");
         var playerSprite = PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Player);
         var whoopieSprite = PrototypeSpriteCatalog.Get(PrototypeSpriteKind.WhoopieCushion);
         ExpectEqual("Player", playerSprite.DisplayName, "prototype sprite catalog names player model");
@@ -3208,6 +3208,112 @@ public partial class GameplaySmokeTest : Node
             "ac_rescuer", 7, IntentType.Rescue,
             new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ac_victim" }));
         ExpectFalse(doubleRescue.WasAccepted, "rescue rejected when target is no longer downed");
+
+        // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
+        // When a downed countdown expires near a clinic NPC and the player has
+        // enough scrip, the server auto-revives them instead of triggering karma break.
+
+        // Setup: patient near Mara (3,4) at Origin (distance²=25 ≤ 24²=576) with scrip
+        var clinicState = new GameState();
+        clinicState.RegisterPlayer("ae_attacker", "Striker");
+        clinicState.RegisterPlayer("ae_patient", "Patient");
+        clinicState.SetPlayerPosition("ae_attacker", TilePosition.Origin);
+        clinicState.SetPlayerPosition("ae_patient", TilePosition.Origin);
+        clinicState.AddScrip("ae_patient", 50);
+        var clinicServer = new AuthoritativeWorldServer(clinicState, "clinic-test");
+
+        clinicServer.ProcessIntent(new ServerIntent(
+            "ae_attacker", 1, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ae_patient" }));
+        clinicServer.AdvanceIdleTicks(5);
+        clinicServer.ProcessIntent(new ServerIntent(
+            "ae_attacker", 2, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ae_patient" }));
+        clinicServer.AdvanceIdleTicks(5);
+        clinicServer.ProcessIntent(new ServerIntent(
+            "ae_attacker", 3, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ae_patient" }));
+        ExpectTrue(clinicState.Players["ae_patient"].IsDown, "clinic test: patient is downed before countdown");
+
+        clinicServer.AdvanceIdleTicks(AuthoritativeWorldServer.DownedCountdownTicks + 1);
+        var clinicReviveEvent = clinicServer.EventLog[^1];
+        ExpectTrue(clinicReviveEvent.EventId.Contains("clinic_revive"), "clinic revive emits clinic_revive event");
+        ExpectFalse(clinicState.Players["ae_patient"].IsDown, "clinic-revived patient is no longer downed");
+        ExpectEqual(AuthoritativeWorldServer.ClinicReviveHealAmount, clinicState.Players["ae_patient"].Health,
+            "clinic revive heals patient to ClinicReviveHealAmount");
+        ExpectEqual(50 - AuthoritativeWorldServer.ClinicReviveCost, clinicState.Players["ae_patient"].Scrip,
+            "clinic revive deducts ClinicReviveCost scrip");
+        ExpectTrue(clinicState.Players["ae_patient"].IsAlive, "clinic-revived patient remains alive");
+
+        // Setup: patient near clinic but no scrip → karma break instead
+        var noscripState = new GameState();
+        noscripState.RegisterPlayer("af_attacker", "Striker");
+        noscripState.RegisterPlayer("af_broke", "Broke");
+        noscripState.SetPlayerPosition("af_attacker", TilePosition.Origin);
+        noscripState.SetPlayerPosition("af_broke", TilePosition.Origin);
+        var noscripServer = new AuthoritativeWorldServer(noscripState, "noscrip-test");
+
+        noscripServer.ProcessIntent(new ServerIntent(
+            "af_attacker", 1, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "af_broke" }));
+        noscripServer.AdvanceIdleTicks(5);
+        noscripServer.ProcessIntent(new ServerIntent(
+            "af_attacker", 2, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "af_broke" }));
+        noscripServer.AdvanceIdleTicks(5);
+        noscripServer.ProcessIntent(new ServerIntent(
+            "af_attacker", 3, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "af_broke" }));
+
+        noscripServer.AdvanceIdleTicks(AuthoritativeWorldServer.DownedCountdownTicks + 1);
+        ExpectTrue(noscripServer.EventLog[^1].EventId.Contains("player_respawned"),
+            "near clinic but no scrip → karma break (player_respawned)");
+        ExpectFalse(noscripState.Players["af_broke"].IsDown,
+            "no-scrip player is no longer downed after karma break");
+
+        // Setup: patient far from clinic (50,50) with scrip → karma break instead
+        var farState = new GameState();
+        farState.RegisterPlayer("ag_attacker", "Striker");
+        farState.RegisterPlayer("ag_far", "Wanderer");
+        farState.SetPlayerPosition("ag_attacker", new TilePosition(50, 50));
+        farState.SetPlayerPosition("ag_far", new TilePosition(50, 50));
+        farState.AddScrip("ag_far", 50);
+        var farServer = new AuthoritativeWorldServer(farState, "far-test");
+
+        farServer.ProcessIntent(new ServerIntent(
+            "ag_attacker", 1, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ag_far" }));
+        farServer.AdvanceIdleTicks(5);
+        farServer.ProcessIntent(new ServerIntent(
+            "ag_attacker", 2, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ag_far" }));
+        farServer.AdvanceIdleTicks(5);
+        farServer.ProcessIntent(new ServerIntent(
+            "ag_attacker", 3, IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetId"] = "ag_far" }));
+
+        farServer.AdvanceIdleTicks(AuthoritativeWorldServer.DownedCountdownTicks + 1);
+        ExpectTrue(farServer.EventLog[^1].EventId.Contains("player_respawned"),
+            "far from clinic with scrip → karma break (player_respawned)");
+
+        // HUD formats clinic_revive event
+        var clinicHudEvent = new ServerEvent(
+            "clinic_revive",
+            "clinic-test",
+            1L,
+            "Patient was revived by the clinic.",
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["playerId"] = "Patient",
+                ["healAmount"] = AuthoritativeWorldServer.ClinicReviveHealAmount.ToString(),
+                ["scripCost"] = AuthoritativeWorldServer.ClinicReviveCost.ToString()
+            });
+        var clinicHudText = HudController.FormatLatestServerEvent(new[] { clinicHudEvent });
+        ExpectTrue(
+            clinicHudText.Contains("clinic") &&
+            clinicHudText.Contains(AuthoritativeWorldServer.ClinicReviveHealAmount.ToString()) &&
+            clinicHudText.Contains(AuthoritativeWorldServer.ClinicReviveCost.ToString()),
+            "HUD formats clinic_revive event with heal amount and scrip cost");
 
         // ── Step 10: Chat tabs — Local / Posse / System ──────────────────────────
         var chatTabState = new GameState();
