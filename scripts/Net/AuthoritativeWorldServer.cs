@@ -3101,9 +3101,11 @@ public sealed class AuthoritativeWorldServer
         if (!_downedByPlayerId.Remove(victimId, out var scorerId)) return;
         if (!_state.Players.TryGetValue(victimId, out var victim)) return;
         if (!_connectedPlayerIds.Contains(scorerId)) return;
-        var safeName = victim.DisplayName.ToLowerInvariant().Replace(" ", "_");
+        // Trophy id includes the victim's player id and the current tick so
+        // two players with the same display name (or repeat Karma Breaks of
+        // the same victim across the match) produce distinct items.
         var trophy = new GameItem(
-            $"trophy_{safeName}",
+            $"trophy_{victimId}_{_tick}",
             $"{victim.DisplayName}'s Dog Tag",
             ItemCategory.InteractibleObject,
             new[] { "trophy", "unique", "memento" },

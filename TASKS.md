@@ -53,9 +53,11 @@ Things the test suite confirms but a player would notice.
   method but no intent or NPC dialogue option triggers it. Wire either an
   `IntentType.StartPosseQuest` or a "posse_outpost"-roled NPC dialogue choice
   that calls it.
-- [ ] **Trophy item identity** — trophies use the victim's display name to
-  derive an item id, but two players with the same display name would collide
-  on the same trophy id. Either include `victimId` or a tick suffix in the id.
+- [x] **Trophy item identity** — *done 2026-04-29*. Trophy id is now
+  `trophy_{victimId}_{tick}`. Duplicate display names can no longer
+  collide, and repeat Karma Breaks of the same victim across the match
+  produce distinct items. Smoke test verifies victim-id and tick suffix
+  presence.
 - [x] **Crafting recipe table is tiny** — *done 2026-04-29*. `StarterRecipes`
   expanded from 2 to 8 entries: ballistic round (BoltCutters + DataChip),
   energy cell (PowerCell + ChemInjector), flashlight (PortableTerminal +

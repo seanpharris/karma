@@ -4187,6 +4187,13 @@ public partial class GameplaySmokeTest : Node
             "scorer receives a trophy item named after the victim");
         ExpectTrue(trState.Players["ab_hunter"].Inventory.Any(item => item.Name.Contains("Dog Tag")),
             "trophy item name includes Dog Tag");
+        // Trophy id encodes victim id + tick so duplicate display names cannot
+        // collide on the same id.
+        var trophyItem = trState.Players["ab_hunter"].Inventory.First(item => item.Name.Contains("Dog Tag"));
+        ExpectTrue(trophyItem.Id.Contains("ab_prey"),
+            "trophy item id includes the victim's player id");
+        ExpectTrue(trophyItem.Id.Length > "trophy_ab_prey_".Length,
+            "trophy item id includes a tick suffix beyond just victim id");
 
         // ── Step 36: Crafting intent ──────────────────────────────────────────────
         // CraftItem consumes ingredients and produces a recipe output, validated
