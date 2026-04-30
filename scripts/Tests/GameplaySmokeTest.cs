@@ -3457,6 +3457,69 @@ public partial class GameplaySmokeTest : Node
             ExpectTrue(scourgeHud.Contains("Gamma") && scourgeHud.Contains("Scourge"), "HUD formats scourge_title_changed event");
         }
 
+        // ── Step 23: Match end summary snapshot ───────────────────────────────────
+        // After the match timer expires, CreateInterestSnapshot includes a
+        // MatchSummarySnapshot with final standings and per-player stats.
+        var msState = new GameState();
+        msState.RegisterPlayer("al_hero", "Hero");
+        msState.RegisterPlayer("al_villain", "Villain");
+        msState.SetPlayerPosition("al_hero", TilePosition.Origin);
+        msState.SetPlayerPosition("al_villain", TilePosition.Origin);
+        var msServer = new AuthoritativeWorldServer(msState, "summary-test",
+            new ServerConfig(MaxPlayers: 4, TargetPlayers: 4, Scale: WorldScale.Small,
+                TickRate: 20, InterestRadiusTiles: 24, CombatRangeTiles: 2,
+                ChunkSizeTiles: 32, MatchDurationSeconds: 10));
+
+        // Build some stats: Hero helps Mara (+7 karma), Villain steals (-10)
+        msServer.ProcessIntent(new ServerIntent("al_hero", 1, IntentType.KarmaAction,
+            new Dictionary<string, string> { ["action"] = PrototypeActions.HelpMaraId }));
+        msServer.ProcessIntent(new ServerIntent("al_villain", 2, IntentType.KarmaAction,
+            new Dictionary<string, string> { ["action"] = PrototypeActions.StealFromMaraId }));
+
+        // Match still running — summary is null
+        var runningSnap = msServer.CreateInterestSnapshot("al_hero");
+        ExpectTrue(runningSnap.MatchSummary is null, "MatchSummary is null while match is running");
+
+        // Advance past match duration to finish
+        msServer.AdvanceMatchTime(15);
+        var summarySnap = msServer.CreateInterestSnapshot("al_hero");
+        ExpectTrue(summarySnap.MatchSummary is not null, "MatchSummary is present after match ends");
+        ExpectEqual(MatchStatus.Finished, summarySnap.Match.Status, "match status is Finished in summary snapshot");
+
+        var msSummary = summarySnap.MatchSummary;
+        ExpectTrue(msSummary.Players.Any(p => p.Id == "al_hero"), "MatchSummary includes connected players");
+        var heroEntry = msSummary.Players.FirstOrDefault(p => p.Id == "al_hero");
+        ExpectEqual(7, heroEntry?.FinalKarma ?? -1, "MatchSummary records final karma");
+        ExpectEqual(7, heroEntry?.KarmaPeak ?? -1, "MatchSummary records karma peak");
+        ExpectTrue((heroEntry?.KarmaFloor ?? 1) <= 7, "MatchSummary records karma floor");
+        var villainEntry = msSummary.Players.FirstOrDefault(p => p.Id == "al_villain");
+        ExpectTrue(villainEntry is not null, "MatchSummary includes villain player");
+        ExpectTrue((villainEntry?.FinalKarma ?? 0) < 0, "MatchSummary records villain negative karma");
+
+        // Kill counter
+        msState.SetPlayerPosition("al_hero", TilePosition.Origin);
+        msState.SetPlayerPosition("al_villain", TilePosition.Origin);
+        var msKillServer = new AuthoritativeWorldServer(msState, "kill-test",
+            new ServerConfig(MaxPlayers: 4, TargetPlayers: 4, Scale: WorldScale.Small,
+                TickRate: 20, InterestRadiusTiles: 24, CombatRangeTiles: 2,
+                ChunkSizeTiles: 32, MatchDurationSeconds: 5));
+        for (var seq = 1; seq <= 5; seq++)
+        {
+            msKillServer.ProcessIntent(new ServerIntent("al_hero", seq, IntentType.Attack,
+                new Dictionary<string, string> { ["targetId"] = "al_villain" }));
+            msKillServer.AdvanceIdleTicks(3);
+        }
+        msKillServer.AdvanceMatchTime(10);
+        var killSummary = msKillServer.CreateInterestSnapshot("al_hero").MatchSummary;
+        var killHeroEntry = killSummary?.Players.FirstOrDefault(p => p.Id == "al_hero");
+        ExpectTrue((killHeroEntry?.Kills ?? 0) >= 1, "MatchSummary counts kills when attacker downs a player");
+
+        // HUD formatter
+        var hudSummary = HudController.FormatMatchSummary(msSummary);
+        ExpectTrue(hudSummary.Contains("Match Over"), "FormatMatchSummary shows match-over header");
+        ExpectTrue(hudSummary.Contains("Hero"), "FormatMatchSummary includes player names");
+        ExpectTrue(HudController.FormatMatchSummary(null).Contains("progress"), "FormatMatchSummary handles null gracefully");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.

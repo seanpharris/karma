@@ -1087,6 +1087,22 @@ public partial class HudController : CanvasLayer
         return $"RESULTS LOCKED — Saint: {match.SaintWinnerName} ({match.SaintWinnerScore:+#;-#;0}) | Scourge: {match.ScourgeWinnerName} ({match.ScourgeWinnerScore:+#;-#;0})\nPost-match free roam: movement/dialogue only. Winners paid +{ServerConfig.DefaultMatchWinnerScripReward} scrip.";
     }
 
+    public static string FormatMatchSummary(MatchSummarySnapshot summary)
+    {
+        if (summary is null)
+        {
+            return "Match in progress.";
+        }
+
+        var saint = string.IsNullOrEmpty(summary.Winners.SaintPlayerId) ? "none" : summary.Winners.SaintName;
+        var scourge = string.IsNullOrEmpty(summary.Winners.ScourgePlayerId) ? "none" : summary.Winners.ScourgeName;
+        var header = $"Match Over — Saint: {saint} | Scourge: {scourge}";
+        var rows = summary.Players
+            .Select(p => $"  {p.DisplayName}: karma {p.FinalKarma:+#;-#;0} (peak {p.KarmaPeak:+#;-#;0} / floor {p.KarmaFloor:+#;-#;0}) quests {p.QuestsCompleted} kills {p.Kills}")
+            .ToArray();
+        return rows.Length == 0 ? header : $"{header}\n{string.Join("\n", rows)}";
+    }
+
     public static string FormatLatestServerEvent(IReadOnlyList<ServerEvent> serverEvents)
     {
         if (serverEvents is null || serverEvents.Count == 0)
@@ -1101,6 +1117,24 @@ public partial class HudController : CanvasLayer
             var connected = ReadEventData(latest, "connectedPlayers", "?");
             var maxPlayers = ReadEventData(latest, "maxPlayers", "?");
             return $"{displayName} joined the world. Players: {connected}/{maxPlayers}.";
+        }
+
+        if (latest.EventId.Contains("saint_title_changed"))
+        {
+            var newHolder = ReadEventData(latest, "newHolderName", "none");
+            var prev = ReadEventData(latest, "previousHolderName", "none");
+            return newHolder == "none"
+                ? $"{prev} is no longer Saint. The title is vacant."
+                : $"{newHolder} is now Saint! (was: {prev})";
+        }
+
+        if (latest.EventId.Contains("scourge_title_changed"))
+        {
+            var newHolder = ReadEventData(latest, "newHolderName", "none");
+            var prev = ReadEventData(latest, "previousHolderName", "none");
+            return newHolder == "none"
+                ? $"{prev} is no longer Scourge. The title is vacant."
+                : $"{newHolder} is now Scourge! (was: {prev})";
         }
 
         if (latest.EventId.Contains("match_finished"))

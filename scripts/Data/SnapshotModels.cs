@@ -62,6 +62,20 @@ public sealed record RelationshipSnapshot(
     string PlayerId,
     int Opinion);
 
+public sealed record PlayerMatchSummary(
+    string Id,
+    string DisplayName,
+    int FinalKarma,
+    string Tier,
+    int KarmaPeak,
+    int KarmaFloor,
+    int QuestsCompleted,
+    int Kills);
+
+public sealed record MatchSummarySnapshot(
+    LeaderboardSnapshot Winners,
+    IReadOnlyList<PlayerMatchSummary> Players);
+
 public static class SnapshotBuilder
 {
     public static IReadOnlyList<PlayerSnapshot> PlayersFrom(

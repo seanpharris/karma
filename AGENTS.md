@@ -270,7 +270,7 @@ group are prerequisites for later ones in the same group.
 | # | Feature | Status |
 |---|---------|--------|
 | 21 | Karma watermark tracking — record per-player karma peak and floor across the match; store on `GameState` player | ✅ done |
-| 22 | Karma title-change broadcast — server event when a player first takes or loses Saint/Scourge status mid-match | pending |
+| 22 | Karma title-change broadcast — server event when a player first takes or loses Saint/Scourge status mid-match | ✅ done |
 | 23 | Match end summary snapshot — `MatchSummarySnapshot` record with final standings, per-player karma peak/floor, quests completed, and kills; surfaced in HUD at match end | pending |
 | 24 | Warden perk (karma ≥ +150) — new `IssueWanted` intent marks one player Wanted; others earn karma for downing the Wanted player | pending |
 | 25 | Wraith perk (karma ≤ -150) — server applies a speed modifier to players at ≤ 30% HP who hold this perk; modifier reflected in snapshot | pending |

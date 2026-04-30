@@ -211,7 +211,8 @@ public sealed record ClientInterestSnapshot(
     InterestSnapshotSyncHint SyncHint,
     IReadOnlyList<ServerEvent> ServerEvents,
     IReadOnlyList<WorldEvent> WorldEvents,
-    IReadOnlyList<MountSnapshot> Mounts)
+    IReadOnlyList<MountSnapshot> Mounts,
+    MatchSummarySnapshot MatchSummary = null)
 {
     public string Summary =>
         $"{Players.Count} visible players, {Npcs.Count} visible NPCs, {Dialogues.Count} dialogues, {Quests.Count} quests, {MapChunks.Count} map chunks, {WorldItems.Count} visible items, {Structures.Count} visible structures, {ShopOffers.Count} shop offers, {LocalChatMessages.Count} local chat messages, {Duels.Count} duels, {Match.Summary}, {SyncHint.ServerEventCount} server events, {SyncHint.WorldEventCount} world events, {Mounts.Count} mounts";

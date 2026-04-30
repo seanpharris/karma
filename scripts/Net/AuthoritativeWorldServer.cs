@@ -52,6 +52,7 @@ public sealed class AuthoritativeWorldServer
     public const int LocalChatMaxMessageLength = 180;
     public const long LocalChatRetainTicks = 240;
     public const int LocalChatMaxRetainedMessages = 80;
+    private readonly Dictionary<string, int> _killsPerPlayer = new();
     private sealed record DropClaim(string OwnerId, string OwnerName);
     private sealed record LocalChatMessage(
         string MessageId,
@@ -169,6 +170,30 @@ public sealed class AuthoritativeWorldServer
     private static int GetWinnerReward(string playerId)
     {
         return string.IsNullOrWhiteSpace(playerId) ? 0 : ServerConfig.DefaultMatchWinnerScripReward;
+    }
+
+    private MatchSummarySnapshot BuildMatchSummary()
+    {
+        var standing = _state.GetLeaderboardStanding();
+        var questsCompleted = _state.Quests.Quests.Values.Count(q => q.Status == QuestStatus.Completed);
+        var players = _connectedPlayerIds
+            .Where(id => _state.Players.ContainsKey(id))
+            .OrderBy(id => id)
+            .Select(id =>
+            {
+                var player = _state.Players[id];
+                return new PlayerMatchSummary(
+                    id,
+                    player.DisplayName,
+                    player.Karma.Score,
+                    player.Karma.TierName,
+                    player.Karma.KarmaPeak,
+                    player.Karma.KarmaFloor,
+                    questsCompleted,
+                    _killsPerPlayer.GetValueOrDefault(id));
+            })
+            .ToArray();
+        return new MatchSummarySnapshot(SnapshotBuilder.LeaderboardFrom(standing), players);
     }
 
     public void SeedWorldItem(
@@ -550,7 +575,8 @@ public sealed class AuthoritativeWorldServer
             CreateSyncHint(afterTick, visibleMapChunks, events, worldEvents),
             events,
             worldEvents,
-            visibleMounts);
+            visibleMounts,
+            _match.Status == MatchStatus.Finished ? BuildMatchSummary() : null);
     }
 
     private static InterestSnapshotSyncHint CreateSyncHint(
@@ -870,7 +896,7 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, rejectionReason);
         }
 
-        var shift = _state.ApplyShift(intent.PlayerId, action);
+        var shift = ApplyShift(intent.PlayerId, action);
         var serverEvent = AppendEvent(
             "karma_shift",
             $"{intent.PlayerId} {shift.Direction} {Math.Abs(shift.Amount)} karma",
@@ -926,7 +952,7 @@ public sealed class AuthoritativeWorldServer
         var karmaAmount = 0;
         if (!string.IsNullOrWhiteSpace(dropOwnerId) && dropOwnerId != intent.PlayerId)
         {
-            var shift = _state.ApplyShift(
+            var shift = ApplyShift(
                 intent.PlayerId,
                 new KarmaAction(
                     intent.PlayerId,
@@ -1011,7 +1037,7 @@ public sealed class AuthoritativeWorldServer
 
             nextIntegrity = Math.Clamp(structure.Integrity + 20, 0, 100);
             var repairAmount = nextIntegrity - structure.Integrity;
-            var shift = _state.ApplyShift(
+            var shift = ApplyShift(
                 intent.PlayerId,
                 new KarmaAction(
                     intent.PlayerId,
@@ -1034,7 +1060,7 @@ public sealed class AuthoritativeWorldServer
         else if (action == "sabotage")
         {
             nextIntegrity = Math.Clamp(structure.Integrity - 25, 0, 100);
-            var shift = _state.ApplyShift(
+            var shift = ApplyShift(
                 intent.PlayerId,
                 new KarmaAction(
                     intent.PlayerId,
@@ -1391,7 +1417,7 @@ public sealed class AuthoritativeWorldServer
 
         var shift = isDuelAttack
             ? new KarmaShift(0, KarmaDirection.Neutral, $"{attacker.DisplayName} struck {target.DisplayName} during an accepted duel.")
-            : _state.ApplyShift(
+            : ApplyShift(
                 intent.PlayerId,
                 new KarmaAction(
                     intent.PlayerId,
@@ -1406,6 +1432,7 @@ public sealed class AuthoritativeWorldServer
         {
             _downedUntilTickByPlayer[targetId] = _tick + DownedCountdownTicks;
             _downedDeathPositionByPlayer[targetId] = target.Position;
+            _killsPerPlayer[intent.PlayerId] = _killsPerPlayer.GetValueOrDefault(intent.PlayerId) + 1;
         }
 
         var serverEvent = AppendEvent(
@@ -1463,7 +1490,7 @@ public sealed class AuthoritativeWorldServer
         _downedDeathPositionByPlayer.Remove(targetId);
         target.Rescue(RescueHealAmount);
 
-        var shift = _state.ApplyShift(intent.PlayerId, new KarmaAction(
+        var shift = ApplyShift(intent.PlayerId, new KarmaAction(
             intent.PlayerId,
             targetId,
             new[] { "heroic", "protective", "generous" },
@@ -1481,6 +1508,54 @@ public sealed class AuthoritativeWorldServer
             });
 
         return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private KarmaShift ApplyShift(string playerId, KarmaAction action)
+    {
+        var before = _state.GetLeaderboardStanding();
+        var shift = _state.ApplyShift(playerId, action);
+        EmitTitleChangeEvents(before);
+        return shift;
+    }
+
+    private void EmitTitleChangeEvents(LeaderboardStanding before)
+    {
+        var after = _state.GetLeaderboardStanding();
+        if (before.SaintPlayerId != after.SaintPlayerId)
+        {
+            var newName = string.IsNullOrWhiteSpace(after.SaintPlayerId) ? "none" : after.SaintName;
+            var oldName = string.IsNullOrWhiteSpace(before.SaintPlayerId) ? "none" : before.SaintName;
+            AppendEvent("saint_title_changed",
+                string.IsNullOrWhiteSpace(after.SaintPlayerId)
+                    ? $"{before.SaintName} is no longer Saint."
+                    : $"{after.SaintName} is now Saint.",
+                new Dictionary<string, string>
+                {
+                    ["newHolderId"] = after.SaintPlayerId,
+                    ["newHolderName"] = newName,
+                    ["previousHolderId"] = before.SaintPlayerId,
+                    ["previousHolderName"] = oldName,
+                    ["score"] = after.ParagonScore.ToString()
+                });
+        }
+
+        if (before.ScourgePlayerId != after.ScourgePlayerId)
+        {
+            var newName = string.IsNullOrWhiteSpace(after.ScourgePlayerId) ? "none" : after.ScourgeName;
+            var oldName = string.IsNullOrWhiteSpace(before.ScourgePlayerId) ? "none" : before.ScourgeName;
+            AppendEvent("scourge_title_changed",
+                string.IsNullOrWhiteSpace(after.ScourgePlayerId)
+                    ? $"{before.ScourgeName} is no longer Scourge."
+                    : $"{after.ScourgeName} is now Scourge.",
+                new Dictionary<string, string>
+                {
+                    ["newHolderId"] = after.ScourgePlayerId,
+                    ["newHolderName"] = newName,
+                    ["previousHolderId"] = before.ScourgePlayerId,
+                    ["previousHolderName"] = oldName,
+                    ["score"] = after.RenegadeScore.ToString()
+                });
+        }
     }
 
     private ServerProcessResult ProcessMount(ServerIntent intent)
@@ -1512,7 +1587,7 @@ public sealed class AuthoritativeWorldServer
         };
         _mountedPlayerToMountId[intent.PlayerId] = mountId;
 
-        var shift = _state.ApplyShift(intent.PlayerId, new KarmaAction(
+        var shift = ApplyShift(intent.PlayerId, new KarmaAction(
             intent.PlayerId,
             intent.PlayerId,
             new[] { "helpful", "mobile" },
@@ -1558,12 +1633,12 @@ public sealed class AuthoritativeWorldServer
             player.Position.DistanceSquaredTo(s.Position) <= Config.InterestRadiusTiles * Config.InterestRadiusTiles);
 
         var shift = nearStation
-            ? _state.ApplyShift(intent.PlayerId, new KarmaAction(
+            ? ApplyShift(intent.PlayerId, new KarmaAction(
                 intent.PlayerId,
                 intent.PlayerId,
                 new[] { "helpful", "civic" },
                 $"{player.DisplayName} parked {mount.Name} near a station."))
-            : _state.ApplyShift(intent.PlayerId, new KarmaAction(
+            : ApplyShift(intent.PlayerId, new KarmaAction(
                 intent.PlayerId,
                 intent.PlayerId,
                 new[] { "neutral" },
@@ -1661,7 +1736,7 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, $"Dialogue choice action is unknown: {choice.ActionId}.");
         }
 
-        var shift = _state.ApplyShift(intent.PlayerId, action);
+        var shift = ApplyShift(intent.PlayerId, action);
 
         var paragonGift = 0;
         if (PlayerHasPerk(intent.PlayerId, PerkCatalog.ParagonFavorId) &&
@@ -2219,7 +2294,7 @@ public sealed class AuthoritativeWorldServer
             MoveDropClaim(fromPlayerId, toPlayerId, itemId);
         }
 
-        var shift = _state.ApplyShift(intent.PlayerId, karmaAction);
+        var shift = ApplyShift(intent.PlayerId, karmaAction);
         var serverEvent = AppendEvent(
             "item_transferred",
             $"{intent.PlayerId} {mode} transferred {item.Id} with {targetId}",
@@ -2284,7 +2359,7 @@ public sealed class AuthoritativeWorldServer
                 targetId,
                 new[] { "helpful", "generous" },
                 $"{_state.Players[intent.PlayerId].DisplayName} gave {amount} scrip to {_state.Players[targetId].DisplayName}.");
-        var shift = _state.ApplyShift(intent.PlayerId, karmaAction);
+        var shift = ApplyShift(intent.PlayerId, karmaAction);
         var serverEvent = AppendEvent(
             "currency_transferred",
             $"{intent.PlayerId} {mode} transferred {amount} scrip with {targetId}",
