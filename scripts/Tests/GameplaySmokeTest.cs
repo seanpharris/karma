@@ -4479,6 +4479,36 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(shSellBubble.Contains("Sell") || shSellBubble.Contains("Nothing"),
             "FormatSellBubble shows a sell or empty header");
 
+        // Attack target feedback: HUD-side helper picks the nearest in-range
+        // player and formats a target line for the local readout.
+        var atfState = new GameState();
+        atfState.RegisterPlayer("aa_observer_atf", "Watcher");
+        atfState.RegisterPlayer("ab_close_atf", "Close");
+        atfState.RegisterPlayer("ac_far_atf", "Far");
+        atfState.SetPlayerPosition("aa_observer_atf", new TilePosition(5, 5));
+        atfState.SetPlayerPosition("ab_close_atf", new TilePosition(6, 5));
+        atfState.SetPlayerPosition("ac_far_atf", new TilePosition(50, 50));
+        var atfServer = new AuthoritativeWorldServer(atfState, "attack-target-test");
+        foreach (var atfPid in atfServer.ConnectedPlayerIds)
+            atfServer.ProcessIntent(new ServerIntent(atfPid, 1, IntentType.ReadyUp, new Dictionary<string, string>()));
+
+        var atfSnap = atfServer.CreateInterestSnapshot("aa_observer_atf");
+        var atfTarget = HudController.FindAttackTarget(atfSnap, "aa_observer_atf", combatRangeTiles: 2);
+        ExpectTrue(atfTarget?.Id == "ab_close_atf",
+            "FindAttackTarget picks the nearest player within combat range");
+
+        var atfFarTarget = HudController.FindAttackTarget(atfSnap, "aa_observer_atf", combatRangeTiles: 0);
+        ExpectTrue(atfFarTarget is null,
+            "FindAttackTarget returns null when no player is within combat range");
+
+        var atfLine = HudController.FormatAttackTargetLine(atfSnap, "aa_observer_atf", combatRangeTiles: 2);
+        ExpectTrue(atfLine.Contains("Close") && atfLine.Contains("HP"),
+            "FormatAttackTargetLine names the target and shows HP");
+
+        var atfNoneLine = HudController.FormatAttackTargetLine(atfSnap, "aa_observer_atf", combatRangeTiles: 0);
+        ExpectTrue(atfNoneLine.Contains("none in range"),
+            "FormatAttackTargetLine reports no target in range");
+
         // Building interior bounds: walking onto a door enters; movement clamps
         // to the building footprint; only door tiles can exit.
         var biState = new GameState();

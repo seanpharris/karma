@@ -29,6 +29,7 @@ public partial class HudController : CanvasLayer
     private Label _factionsLabel = new();
     private Label _questsLabel = new();
     private Label _combatLabel = new();
+    private Label _targetLabel = new();
     private Label _entanglementsLabel = new();
     private Label _duelsLabel = new();
     private Label _worldEventsLabel = new();
@@ -810,6 +811,16 @@ public partial class HudController : CanvasLayer
         };
         root.AddChild(_combatLabel);
 
+        _targetLabel = new Label
+        {
+            OffsetLeft = 16,
+            OffsetTop = 350,
+            OffsetRight = 900,
+            OffsetBottom = 380,
+            Text = "Target: none in range"
+        };
+        root.AddChild(_targetLabel);
+
         _entanglementsLabel = new Label
         {
             OffsetLeft = 16,
@@ -1286,6 +1297,9 @@ public partial class HudController : CanvasLayer
             {
                 RefreshShopOverlay();
             }
+
+            var combatRange = serverSession.Server.Config.CombatRangeTiles;
+            _targetLabel.Text = FormatAttackTargetLine(snapshot, snapshot.PlayerId, combatRange);
         }
 
         _syncLabel.Text = $"Sync: {snapshotSummary}";
@@ -1335,6 +1349,33 @@ public partial class HudController : CanvasLayer
     {
         var safeCombatText = string.IsNullOrWhiteSpace(combatText) ? "Combat: none" : combatText;
         return $"{safeCombatText} | You ATK:{attackPower} DEF:{defense} | {FormatStatusEffects(statusEffects)}";
+    }
+
+    public static PlayerSnapshot FindAttackTarget(ClientInterestSnapshot snapshot, string localPlayerId, int combatRangeTiles)
+    {
+        if (snapshot is null) return null;
+        var local = snapshot.Players.FirstOrDefault(p => p.Id == localPlayerId);
+        if (local is null) return null;
+        var rangeSq = combatRangeTiles * combatRangeTiles;
+        return snapshot.Players
+            .Where(p => p.Id != localPlayerId)
+            .Select(p => (p, dx: p.TileX - local.TileX, dy: p.TileY - local.TileY))
+            .Where(t => t.dx * t.dx + t.dy * t.dy <= rangeSq)
+            .OrderBy(t => t.dx * t.dx + t.dy * t.dy)
+            .Select(t => t.p)
+            .FirstOrDefault();
+    }
+
+    public static string FormatAttackTargetLine(ClientInterestSnapshot snapshot, string localPlayerId, int combatRangeTiles)
+    {
+        var target = FindAttackTarget(snapshot, localPlayerId, combatRangeTiles);
+        if (target is null) return "Target: none in range";
+        var local = snapshot?.Players.FirstOrDefault(p => p.Id == localPlayerId);
+        if (local is null) return "Target: none in range";
+        var dx = target.TileX - local.TileX;
+        var dy = target.TileY - local.TileY;
+        var dist = (int)System.Math.Sqrt(dx * dx + dy * dy);
+        return $"Target: {target.DisplayName} ({target.Health}/{target.MaxHealth} HP, {dist}t)";
     }
 
     public const int HotbarSlots = 9;

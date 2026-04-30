@@ -353,19 +353,8 @@ public partial class PlayerController : CharacterBody2D
         if (_serverSession is null) return;
         var snapshot = _serverSession.LastLocalSnapshot;
         if (snapshot is null) return;
-        var localId = GameState.LocalPlayerId;
-        var local = snapshot.Players.FirstOrDefault(p => p.Id == localId);
-        if (local is null) return;
-
         var combatRange = _serverSession.Server.Config.CombatRangeTiles;
-        var rangeSq = combatRange * combatRange;
-        var target = snapshot.Players
-            .Where(p => p.Id != localId)
-            .Where(p => (p.TileX - local.TileX) * (p.TileX - local.TileX) +
-                        (p.TileY - local.TileY) * (p.TileY - local.TileY) <= rangeSq)
-            .OrderBy(p => (p.TileX - local.TileX) * (p.TileX - local.TileX) +
-                          (p.TileY - local.TileY) * (p.TileY - local.TileY))
-            .FirstOrDefault();
+        var target = HudController.FindAttackTarget(snapshot, GameState.LocalPlayerId, combatRange);
         if (target is null)
         {
             _hud?.ShowPrompt("No target in range.");

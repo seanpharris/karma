@@ -38,10 +38,13 @@ Things the test suite confirms but a player would notice.
   HUD with 9 slots; equipped MainHand item is marked with `*`. Refreshes
   on `InventoryChanged`. See [HudController.cs](scripts/UI/HudController.cs)
   `FormatHotbar` / `FindEquippedHotbarIndex` / `RefreshHotbar`.
-- [ ] **Attack target feedback** — LMB picks the nearest player in combat range
-  and silently shoots. No on-screen indicator of *who* you're targeting before
-  the click, no miss/hit feedback beyond the event log. Consider a reticule or
-  hover outline.
+- [x] **Attack target feedback** — *done 2026-04-29*. HUD now shows a
+  dedicated `_targetLabel` line: "Target: NAME (HP/MAXHP, NT)" or
+  "Target: none in range." Refreshed on every snapshot.
+  `HudController.FindAttackTarget` is the shared helper; `PlayerController`
+  uses it for LMB attacks so client and HUD pick the same target.
+  *Outstanding follow-up*: in-world reticule / outline sprite (deferred to
+  art pass — listed in `ART_NEEDED.md` Step 24/25 area).
 - [ ] **Lawless zone player feedback** — server emits no `zone_changed` event
   when a player crosses a lawless boundary. Status effect appears in the
   snapshot but not as a transient toast. Add a one-shot `entered_lawless` /
