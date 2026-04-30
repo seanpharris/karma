@@ -16,6 +16,7 @@ public partial class HudController : CanvasLayer
     private GameState _gameState = null!;
     private Label _karmaLabel = new();
     private Label _eventLabel = new();
+    private TextureRect _eventIcon = new();
     private Label _chatLabel = new();
     private PanelContainer _chatInputPanel = new();
     private LineEdit _chatInput = new();
@@ -671,9 +672,20 @@ public partial class HudController : CanvasLayer
         };
         statusPanel.AddChild(_karmaLabel);
 
-        _eventLabel = new Label
+        _eventIcon = new TextureRect
         {
             OffsetLeft = 16,
+            OffsetTop = 88,
+            OffsetRight = 48,
+            OffsetBottom = 120,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered
+        };
+        root.AddChild(_eventIcon);
+
+        _eventLabel = new Label
+        {
+            OffsetLeft = 56,
             OffsetTop = 96,
             OffsetRight = 700,
             OffsetBottom = 126,
@@ -1336,6 +1348,7 @@ public partial class HudController : CanvasLayer
             }
 
             _eventLabel.Text = FormatLatestServerEvent(snapshot.ServerEvents);
+            UpdateEventIcon(snapshot.ServerEvents);
             _chatLabel.Text = FormatLocalChatSummary(snapshot.LocalChatMessages);
             if (_appearancePanel.Visible)
             {
@@ -1584,6 +1597,83 @@ public partial class HudController : CanvasLayer
             .Select(p => $"  {p.DisplayName}: karma {p.FinalKarma:+#;-#;0} (peak {p.KarmaPeak:+#;-#;0} / floor {p.KarmaFloor:+#;-#;0}) quests {p.QuestsCompleted} kills {p.Kills}")
             .ToArray();
         return rows.Length == 0 ? header : $"{header}\n{string.Join("\n", rows)}";
+    }
+
+    /// <summary>
+    /// Maps a server event id (e.g. "world1:42:supply_drop_spawned") to the
+    /// resource path of its sliced UI icon, or empty string if no mapping exists.
+    /// The sliced atlas lives at res://assets/art/generated/sliced/prototype_ui_icons/
+    /// and provides 36 icons keyed by event-name fragments.
+    /// </summary>
+    private void UpdateEventIcon(IReadOnlyList<ServerEvent> serverEvents)
+    {
+        if (_eventIcon is null) return;
+        if (serverEvents is null || serverEvents.Count == 0)
+        {
+            _eventIcon.Texture = null;
+            return;
+        }
+        var path = ResolveEventIconPath(serverEvents[^1].EventId);
+        if (string.IsNullOrEmpty(path))
+        {
+            _eventIcon.Texture = null;
+            return;
+        }
+        var texture = ResourceLoader.Load<Texture2D>(path);
+        _eventIcon.Texture = texture;
+    }
+
+    public static string ResolveEventIconPath(string eventId)
+    {
+        if (string.IsNullOrEmpty(eventId)) return string.Empty;
+        var name = ResolveEventIconName(eventId);
+        return string.IsNullOrEmpty(name)
+            ? string.Empty
+            : $"res://assets/art/generated/sliced/prototype_ui_icons/{name}.png";
+    }
+
+    public static string ResolveEventIconName(string eventId)
+    {
+        if (string.IsNullOrEmpty(eventId)) return string.Empty;
+        // Order matters: longer / more specific matches first.
+        if (eventId.Contains("supply_drop_spawned")) return "supply_spawned";
+        if (eventId.Contains("supply_drop_claimed")) return "supply_claimed";
+        if (eventId.Contains("supply_drop_expired")) return "supply_spawned";
+        if (eventId.Contains("clinic_revive")) return "clinic_revive";
+        if (eventId.Contains("player_downed")) return "player_downed";
+        if (eventId.Contains("player_rescued") || eventId.Contains("rescue")) return "player_rescued";
+        if (eventId.Contains("karma_break")) return "karma_break";
+        if (eventId.Contains("bounty_claimed")) return "bounty_claimed";
+        if (eventId.Contains("wanted_bounty_claimed") || eventId.Contains("player_wanted") || eventId.Contains("issue_wanted")) return "wanted";
+        if (eventId.Contains("contraband_detected") || eventId.Contains("contraband")) return "contraband_detected";
+        if (eventId.Contains("ready_up") || eventId.Contains("player_ready")) return "ready_up";
+        if (eventId.Contains("match_started")) return "match_started";
+        if (eventId.Contains("match_finished")) return "match_summary";
+        if (eventId.Contains("duel_requested")) return "duel_requested";
+        if (eventId.Contains("duel_accepted")) return "duel_accepted";
+        if (eventId.Contains("item_purchased")) return "item_purchased";
+        if (eventId.Contains("item_sold")) return "item_purchased";
+        if (eventId.Contains("item_used")) return "item_used";
+        if (eventId.Contains("item_crafted")) return "item_used";
+        if (eventId.Contains("structure_repaired") || eventId.Contains("structure_sabotaged") || eventId.Contains("structure_interacted")) return "structure_interacted";
+        if (eventId.Contains("posse_invited") || eventId.Contains("posse_invite")) return "posse_invite";
+        if (eventId.Contains("posse_accepted") || eventId.Contains("posse_formed")) return "posse_accepted";
+        if (eventId.Contains("local_chat") || eventId.Contains("posse_chat")) return "local_chat";
+        if (eventId.Contains("mounted")) return "mount";
+        if (eventId.Contains("dismounted")) return "dismount";
+        if (eventId.Contains("quest_started") || eventId.Contains("posse_quest_started")) return "quest_started";
+        if (eventId.Contains("quest_completed") || eventId.Contains("posse_quest_completed")) return "quest_completed";
+        if (eventId.Contains("dialogue")) return "dialogue";
+        if (eventId.Contains("entanglement")) return "entanglement";
+        if (eventId.Contains("rumor")) return "rumor";
+        if (eventId.Contains("witness")) return "witness";
+        if (eventId.Contains("evidence")) return "evidence";
+        if (eventId.Contains("entered_lawless") || eventId.Contains("left_lawless")) return "danger_heat";
+        if (eventId.Contains("trophy_drop")) return "evidence";
+        if (eventId.Contains("station_claimed")) return "objective_arrow";
+        if (eventId.Contains("door_opened")) return "interact_key_prompt";
+        if (eventId.Contains("player_started_posse_quest")) return "quest_started";
+        return string.Empty;
     }
 
     public static string FormatLatestServerEvent(IReadOnlyList<ServerEvent> serverEvents)

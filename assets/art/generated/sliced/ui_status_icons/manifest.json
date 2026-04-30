@@ -1,0 +1,398 @@
+[
+  {
+    "name": "positive",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/positive.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      30,
+      20,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "negative",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/negative.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      200,
+      20,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "neutral",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/neutral.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      370,
+      20,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "wanted",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/wanted.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      540,
+      20,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "bounty",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/bounty.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      710,
+      20,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "witness",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/witness.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      880,
+      20,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "trade",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/trade.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      30,
+      185,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "posse",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/posse.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      200,
+      185,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "rumor",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/rumor.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      370,
+      185,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "forward",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/forward.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      540,
+      185,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "contraband",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/contraband.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      710,
+      185,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "rescue",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/rescue.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      880,
+      185,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "duel",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/duel.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      30,
+      330,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "theft",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/theft.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      200,
+      330,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "evidence",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/evidence.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      370,
+      330,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "theft_alt",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/theft_alt.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      540,
+      330,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "law",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/law.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      710,
+      330,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "clinic",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/clinic.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      880,
+      330,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "supply_drop",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/supply_drop.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      30,
+      490,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "structure_repair",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/structure_repair.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      200,
+      490,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "sabotage",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/sabotage.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      370,
+      490,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "chat",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/chat.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      540,
+      490,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "faction",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/faction.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      710,
+      490,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "faction_alt",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/faction_alt.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      880,
+      490,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "mount",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/mount.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      30,
+      695,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "downed_status",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/downed_status.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      200,
+      695,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "karma_break",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/karma_break.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      370,
+      695,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "local_proximity",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/local_proximity.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      540,
+      695,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "shop",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/shop.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      710,
+      695,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "quest",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/quest.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      880,
+      695,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "mount_alt",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/mount_alt.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      30,
+      855,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "return",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/return.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      200,
+      855,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "bribe",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/bribe.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      370,
+      855,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "apology",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/apology.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      540,
+      855,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "trust_vouch",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/trust_vouch.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      710,
+      855,
+      110,
+      100
+    ]
+  },
+  {
+    "name": "danger_heat",
+    "path": "res://assets/art/generated/sliced/ui_status_icons/danger_heat.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_ui_status_icons_atlas.jpg",
+    "source_region": [
+      880,
+      855,
+      110,
+      100
+    ]
+  }
+]

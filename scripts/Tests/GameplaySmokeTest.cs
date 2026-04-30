@@ -4863,6 +4863,35 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(wrMeleeState.Players["aa_brawler"].Stamina > staminaAfterDrain,
             "Stamina regenerates during AdvanceIdleTicks");
 
+        // Event icon resolver: maps server event ids to sliced UI icon paths.
+        ExpectEqual("supply_spawned",
+            HudController.ResolveEventIconName("world1:42:supply_drop_spawned"),
+            "ResolveEventIconName maps supply_drop_spawned to supply_spawned");
+        ExpectEqual("clinic_revive",
+            HudController.ResolveEventIconName("world1:42:clinic_revive"),
+            "ResolveEventIconName maps clinic_revive");
+        ExpectEqual("karma_break",
+            HudController.ResolveEventIconName("world1:42:karma_break"),
+            "ResolveEventIconName maps karma_break");
+        ExpectEqual("bounty_claimed",
+            HudController.ResolveEventIconName("world1:42:bounty_claimed"),
+            "ResolveEventIconName maps bounty_claimed");
+        ExpectEqual("ready_up",
+            HudController.ResolveEventIconName("world1:0:player_ready"),
+            "ResolveEventIconName maps player_ready to ready_up");
+        ExpectEqual("danger_heat",
+            HudController.ResolveEventIconName("world1:5:entered_lawless_zone"),
+            "ResolveEventIconName maps entered_lawless_zone to danger_heat");
+        ExpectEqual("interact_key_prompt",
+            HudController.ResolveEventIconName("world1:9:door_opened"),
+            "ResolveEventIconName maps door_opened to interact_key_prompt");
+        ExpectEqual(string.Empty,
+            HudController.ResolveEventIconName("world1:9:totally_unknown_event"),
+            "ResolveEventIconName returns empty for unmapped events");
+        ExpectTrue(HudController.ResolveEventIconPath("world1:42:supply_drop_spawned")
+                .EndsWith("supply_spawned.png"),
+            "ResolveEventIconPath returns the full sliced-atlas resource path");
+
         // FormatMatchSummary handles the no-summary case before the match ends.
         ExpectTrue(HudController.FormatMatchSummary(null).Contains("Match in progress"),
             "FormatMatchSummary returns 'Match in progress' when no summary is available");
