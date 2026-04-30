@@ -17,7 +17,8 @@ public sealed record ServerConfig(
     int InterestRadiusTiles,
     int CombatRangeTiles,
     int ChunkSizeTiles,
-    int MatchDurationSeconds)
+    int MatchDurationSeconds,
+    int ReputationDecayTickInterval = 10)
 {
     public const int AbsoluteMaxPlayers = 100;
     public const int DefaultMatchDurationSeconds = 30 * 60;

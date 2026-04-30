@@ -4019,6 +4019,49 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(patrolServer.GetNpcPosition(StarterNpcs.Dallen.Id) == ptDallenPos,
             "NPC with no patrol waypoints stays put");
 
+        // ── Step 32: Reputation decay ─────────────────────────────────────────────
+        // Faction standings drift toward 0 by 1 per ReputationDecayTickInterval ticks.
+        // Decay fires for each interval boundary crossed in AdvanceIdleTicks and each
+        // intent tick when _tick % ReputationDecayTickInterval == 0.
+
+        var repState = new GameState();
+        repState.RegisterPlayer("rd_player", "Rep Player");
+        repState.SetPlayerPosition("rd_player", TilePosition.Origin);
+        var repConfig = new ServerConfig(
+            MaxPlayers: 1,
+            TargetPlayers: 1,
+            Scale: WorldScale.Small,
+            TickRate: 20,
+            InterestRadiusTiles: 24,
+            CombatRangeTiles: 2,
+            ChunkSizeTiles: ServerConfig.DefaultChunkSizeTiles,
+            MatchDurationSeconds: 60,
+            ReputationDecayTickInterval: 5);
+        var repServer = new AuthoritativeWorldServer(repState, "rep-decay-test", repConfig);
+        foreach (var repPid in repServer.ConnectedPlayerIds)
+            repServer.ProcessIntent(new ServerIntent(repPid, 1, IntentType.ReadyUp, new Dictionary<string, string>()));
+
+        repState.Factions.Apply(StarterFactions.FreeSettlersId, "rd_player", 10);
+        ExpectEqual(10, repState.Factions.GetReputation(StarterFactions.FreeSettlersId, "rd_player"),
+            "reputation set to 10 before decay");
+
+        repServer.AdvanceIdleTicks(5);
+        ExpectEqual(9, repState.Factions.GetReputation(StarterFactions.FreeSettlersId, "rd_player"),
+            "positive reputation decays by 1 per interval");
+
+        repServer.AdvanceIdleTicks(45);
+        ExpectEqual(0, repState.Factions.GetReputation(StarterFactions.FreeSettlersId, "rd_player"),
+            "reputation decays to 0 after enough intervals");
+
+        repState.Factions.Apply(StarterFactions.FreeSettlersId, "rd_player", -6);
+        repServer.AdvanceIdleTicks(5);
+        ExpectEqual(-5, repState.Factions.GetReputation(StarterFactions.FreeSettlersId, "rd_player"),
+            "negative reputation decays toward 0 by 1 per interval");
+
+        repServer.AdvanceIdleTicks(25);
+        ExpectEqual(0, repState.Factions.GetReputation(StarterFactions.FreeSettlersId, "rd_player"),
+            "negative reputation decays fully to 0");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.

@@ -176,6 +176,7 @@ public sealed class AuthoritativeWorldServer
         }
 
         var patrolSteps = (_tick + ticks) / NpcPatrolTickInterval - _tick / NpcPatrolTickInterval;
+        var repDecaySteps = (_tick + ticks) / Config.ReputationDecayTickInterval - _tick / Config.ReputationDecayTickInterval;
         _tick += ticks;
         PruneLocalChatLog();
         DecayHeatMap(ticks);
@@ -183,6 +184,7 @@ public sealed class AuthoritativeWorldServer
         ApplyContrabandDecay();
         ApplySupplyDropExpiry();
         for (var i = 0; i < patrolSteps; i++) StepNpcPatrols();
+        for (var i = 0; i < repDecaySteps; i++) _state.Factions.Decay();
     }
 
     public void AdvanceMatchTime(int seconds)
@@ -454,6 +456,7 @@ public sealed class AuthoritativeWorldServer
     {
         _tick++;
         if (_tick % NpcPatrolTickInterval == 0) StepNpcPatrols();
+        if (_tick % Config.ReputationDecayTickInterval == 0) _state.Factions.Decay();
 
         if (!_connectedPlayerIds.Contains(intent.PlayerId))
         {

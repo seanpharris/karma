@@ -34,6 +34,19 @@ public sealed class FactionLedger
         return next;
     }
 
+    public void Decay()
+    {
+        foreach (var byPlayer in _reputation.Values)
+        {
+            foreach (var playerId in byPlayer.Keys.ToArray())
+            {
+                var current = byPlayer[playerId];
+                if (current > 0) byPlayer[playerId]--;
+                else if (current < 0) byPlayer[playerId]++;
+            }
+        }
+    }
+
     public IReadOnlyList<FactionSnapshot> Snapshot()
     {
         return _reputation

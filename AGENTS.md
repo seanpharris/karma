@@ -282,7 +282,7 @@ group are prerequisites for later ones in the same group.
 | 29 | Lobby / ready-up flow — `ReadyUp` intent; `MatchStatus.Lobby` state before `InProgress`; timer only starts once a quorum of connected players has sent `ReadyUp` | ✅ done |
 | 30 | Supply drop world event — server schedules a rare item spawn at a broadcast location; first player to reach it claims the cache; event expires after a timeout | ✅ done |
 | 31 | NPC patrol routes — NPCs step between 2–3 tile waypoints on a per-tick cadence; position updated in `NpcEntity`; snapshot reflects current position | ✅ done |
-| 32 | Reputation decay — NPC opinions and faction standings drift toward 0 each tick cycle proportional to inactivity; decay rate configured in `ServerConfig` | pending |
+| 32 | Reputation decay — NPC opinions and faction standings drift toward 0 each tick cycle proportional to inactivity; decay rate configured in `ServerConfig` | ✅ done |
 | 33 | Faction store gating — `PurchaseItem` intent rejected when player's faction reputation is below the offer's minimum threshold; `ShopOfferSnapshot` includes `MinReputation` field | pending |
 | 34 | Station claim intent — `ClaimStation` intent lets a posse flag an unclaimed station as theirs; station owners receive passive scrip per server tick; `WorldStructureEntity` gains `ClaimingPosseId` | pending |
 | 35 | Death trophy drop — when a player triggers a Karma Break on another, the scorer receives a named unique item (e.g., "Ace's Dog Tag") seeded from the victim's display name | pending |
