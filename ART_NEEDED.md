@@ -121,4 +121,52 @@ Both sets must match the base model's current directional frame count.
 
 ---
 
-*Updated: 2026-04-29*
+## Step 22 — Karma Title-Change Broadcast
+
+- **Title-change toast**: brief on-screen banner for "New Saint" / "New Scourge" (no dedicated sprite; HUD text overlay is sufficient, but a 2-frame crown/skull flash near the new holder's name would help)
+
+---
+
+## Step 24 — Warden Perk / Wanted Warrant
+
+- **Wanted poster icon**: small 16×16 badge rendered above or beside a Wanted player's sprite (red border, exclamation mark)
+- **Warden badge**: HUD perk icon indicating the player holds the Warden perk (star/shield, 16×16)
+
+---
+
+## Step 25 — Wraith Surge Perk
+
+- **Speed trail**: ghostly after-image or motion blur frames drawn behind the player when SpeedModifier > 1 (2–3 faded copies at decreasing opacity, same sprite frame)
+- **Wraith badge**: HUD perk icon (skull outline, 16×16)
+
+---
+
+## Step 26 — Bounty System
+
+- **Bounty tag**: floating scrip-coin icon above a bounty player's sprite (16×16 coin, showing amount or just a generic tag)
+
+---
+
+## Step 27 — Player Status Effects
+
+- **Poisoned overlay**: green dot-pulse aura on player sprite (1–2 frames, 16×16 radial)
+- **Burning overlay**: orange flicker above player head (2–3 frames, 16×16)
+- **Status icon panel**: small row of 8×8 status icons in HUD (can reuse perk-badge slot)
+
+---
+
+## Step 28 — Contraband Item Tag
+
+- **Contraband Package sprite**: distinct "suspicious parcel" inventory icon (16×16) — current item uses placeholder; a wrapped box with caution tape reads clearly
+- **Detection flash**: brief red scan effect over the player when contraband is detected by a law NPC (optional, 1-frame tint)
+
+---
+
+## Step 29 — Lobby / Ready-Up Flow
+
+- **Ready-up indicator**: a checkmark or "READY" badge shown above connected players who have sent ReadyUp (16×16, 1–2 frame pulse)
+- **Lobby count panel**: small pre-match overlay showing "X / Y ready" with player names
+
+---
+
+*Updated: 2026-04-29 (steps 22–29)*
