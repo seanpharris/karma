@@ -44,7 +44,8 @@ public enum IntentType
     IssueWanted,
     ReadyUp,
     ClaimStation,
-    CraftItem
+    CraftItem,
+    SellItem
 }
 
 public sealed record ServerIntent(

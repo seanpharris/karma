@@ -1077,6 +1077,29 @@ public partial class HudController : CanvasLayer
         return $"{safeCombatText} | You ATK:{attackPower} DEF:{defense} | {FormatStatusEffects(statusEffects)}";
     }
 
+    public static string FormatShopBubble(IReadOnlyList<ShopOfferSnapshot> offers, string vendorNpcId, int playerScrip)
+    {
+        var vendorOffers = offers.Where(o => o.VendorNpcId == vendorNpcId).ToList();
+        if (vendorOffers.Count == 0) return $"-- No wares available --\nYour scrip: {playerScrip}";
+        var lines = new List<string> { $"-- Wares ({vendorOffers.Count}) | Scrip: {playerScrip} --" };
+        foreach (var offer in vendorOffers)
+        {
+            var canAfford = playerScrip >= offer.Price ? "" : "  [insufficient scrip]";
+            var repNote = offer.MinReputation > 0 ? $"  [req {offer.RequiredFactionId} {offer.MinReputation}]" : "";
+            lines.Add($"  {offer.ItemName,-20} {offer.Price,4} {offer.Currency}{repNote}{canAfford}");
+        }
+        return string.Join('\n', lines);
+    }
+
+    public static string FormatSellBubble(IReadOnlyList<GameItem> inventory, int playerScrip)
+    {
+        if (inventory.Count == 0) return $"-- Nothing to sell --\nYour scrip: {playerScrip}";
+        var lines = new List<string> { $"-- Sell ({inventory.Count}) | Scrip: {playerScrip} --" };
+        foreach (var item in inventory)
+            lines.Add($"  {item.Name}");
+        return string.Join('\n', lines);
+    }
+
     public static string FormatMinimap(ClientInterestSnapshot snapshot, string localPlayerId, int radiusTiles = 8)
     {
         var local = snapshot.Players.FirstOrDefault(p => p.Id == localPlayerId);

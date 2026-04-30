@@ -581,6 +581,7 @@ public sealed class AuthoritativeWorldServer
             IntentType.ReadyUp => ProcessReadyUp(intent),
             IntentType.ClaimStation => ProcessClaimStation(intent),
             IntentType.CraftItem => ProcessCraftItem(intent),
+            IntentType.SellItem => ProcessSellItem(intent),
             _ => Reject(intent, $"Unsupported intent type: {intent.Type}")
         };
     }
@@ -2070,6 +2071,49 @@ public sealed class AuthoritativeWorldServer
                 ["entityId"] = entityId,
                 ["posseId"] = player.TeamId,
                 ["claimerPlayerId"] = intent.PlayerId
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    public const int SellItemFallbackPrice = 5;
+    public const int SellItemPercentOfPrice = 50;
+
+    private ServerProcessResult ProcessSellItem(ServerIntent intent)
+    {
+        if (!intent.Payload.TryGetValue("itemId", out var itemId))
+            return Reject(intent, "SellItem requires itemId.");
+        if (!intent.Payload.TryGetValue("vendorNpcId", out var vendorNpcId))
+            return Reject(intent, "SellItem requires vendorNpcId.");
+
+        if (!CanReachNpc(intent.PlayerId, vendorNpcId, out var rejectionReason))
+            return Reject(intent, rejectionReason);
+
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var player))
+            return Reject(intent, "Player state unavailable.");
+
+        if (!player.Inventory.Any(i => i.Id == itemId))
+            return Reject(intent, $"Player does not hold item: {itemId}.");
+
+        var matchingOffer = StarterShopCatalog.Offers.FirstOrDefault(o =>
+            o.VendorNpcId == vendorNpcId && o.ItemId == itemId);
+        var sellPrice = matchingOffer is not null
+            ? Math.Max(1, matchingOffer.Price * SellItemPercentOfPrice / 100)
+            : SellItemFallbackPrice;
+
+        if (!_state.ConsumeItem(intent.PlayerId, itemId))
+            return Reject(intent, $"Failed to consume item: {itemId}.");
+        _state.AddScrip(intent.PlayerId, sellPrice);
+
+        var serverEvent = AppendEvent(
+            "item_sold",
+            $"{intent.PlayerId} sold {itemId} to {vendorNpcId} for {sellPrice} scrip.",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["vendorNpcId"] = vendorNpcId,
+                ["itemId"] = itemId,
+                ["sellPrice"] = sellPrice.ToString()
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -3891,6 +3935,8 @@ public sealed class AuthoritativeWorldServer
 
     private static IReadOnlyList<NpcDialogueChoice> GetChoicesFor(NpcProfile npc, string stationState, LeaderboardRole role = LeaderboardRole.None)
     {
+        var hasShopOffers = StarterShopCatalog.Offers.Any(o => o.VendorNpcId == npc.Id);
+
         if (npc.Id != StarterNpcs.Mara.Id)
         {
             var assistLabel = stationState switch
@@ -3908,6 +3954,11 @@ public sealed class AuthoritativeWorldServer
                 new("spread_rumor", "Turn this need into a rumor", "generated_spread_rumor"),
                 new("apply_pressure", pressureLabel, "generated_apply_pressure")
             };
+            if (hasShopOffers)
+            {
+                generated.Add(new NpcDialogueChoice("browse_wares", "Browse wares", "open_shop_browse"));
+                generated.Add(new NpcDialogueChoice("sell_items", "Sell items", "open_shop_sell"));
+            }
             if (role == LeaderboardRole.Saint)
             {
                 generated.Add(new NpcDialogueChoice("saint_bless", "Offer your community blessing", "saint_bless"));

@@ -4403,6 +4403,82 @@ public partial class GameplaySmokeTest : Node
         var mmEmpty = HudController.FormatMinimap(mmSnapshot, "nonexistent_player");
         ExpectTrue(mmEmpty.Contains("unavailable"), "minimap returns unavailable when local player is missing");
 
+        // ── Shop UX upgrade: SellItem intent + browse/sell dialogue choices ───────
+        // Vendor NPCs offer "Browse wares" and "Sell items" dialogue choices.
+        // SellItem consumes an inventory item and pays the player back at 50% of
+        // the matching shop offer price (or a flat fallback if not in catalog).
+
+        var shState = new GameState();
+        shState.RegisterPlayer("aa_seller", "Seller");
+        shState.SetPlayerPosition("aa_seller", new TilePosition(6, 4)); // near Dallen
+        shState.AddItem("aa_seller", StarterItems.RepairKit);
+        shState.AddItem("aa_seller", StarterItems.WhoopieCushion);
+        var shServer = new AuthoritativeWorldServer(shState, "shop-ux-test");
+        var shSeq = 1;
+        foreach (var shPid in shServer.ConnectedPlayerIds)
+            shServer.ProcessIntent(new ServerIntent(shPid, shSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+
+        var shScripBefore = shState.Players["aa_seller"].Scrip;
+        var shSell1 = shServer.ProcessIntent(new ServerIntent("aa_seller", shSeq++, IntentType.SellItem,
+            new Dictionary<string, string>
+            {
+                ["itemId"] = StarterItems.RepairKitId,
+                ["vendorNpcId"] = StarterNpcs.Dallen.Id
+            }));
+        ExpectTrue(shSell1.WasAccepted, "SellItem accepted near vendor with matching item");
+        ExpectTrue(!shState.Players["aa_seller"].Inventory.Any(i => i.Id == StarterItems.RepairKitId),
+            "selling consumes the item from inventory");
+        // Repair kit shop price is 18 → sell at 50% = 9
+        ExpectEqual(shScripBefore + 9, shState.Players["aa_seller"].Scrip,
+            "selling pays player 50% of the catalog price");
+        ExpectTrue(shServer.EventLog.Any(e => e.EventId.Contains("item_sold")),
+            "item_sold event fires on successful sale");
+
+        // Sell unlisted item — uses fallback price
+        var shScripBefore2 = shState.Players["aa_seller"].Scrip;
+        var shSell2 = shServer.ProcessIntent(new ServerIntent("aa_seller", shSeq++, IntentType.SellItem,
+            new Dictionary<string, string>
+            {
+                ["itemId"] = StarterItems.WhoopieCushionId,
+                ["vendorNpcId"] = StarterNpcs.Dallen.Id
+            }));
+        ExpectTrue(shSell2.WasAccepted, "SellItem accepted for catalogued item");
+        // Whoopie cushion shop price is 7 → sell at 50% = 3 (max of 1, 7*50/100=3)
+        ExpectEqual(shScripBefore2 + 3, shState.Players["aa_seller"].Scrip,
+            "low-priced sale rounds down to floor of 50%");
+
+        // Sell rejected when player not near vendor
+        shState.SetPlayerPosition("aa_seller", new TilePosition(60, 60));
+        shState.AddItem("aa_seller", StarterItems.RationPack);
+        var shFar = shServer.ProcessIntent(new ServerIntent("aa_seller", shSeq++, IntentType.SellItem,
+            new Dictionary<string, string>
+            {
+                ["itemId"] = StarterItems.RationPackId,
+                ["vendorNpcId"] = StarterNpcs.Dallen.Id
+            }));
+        ExpectTrue(!shFar.WasAccepted, "SellItem rejected when player is out of range");
+
+        // Dialogue choices include browse/sell for vendor NPCs (Dallen has shop offers)
+        var shDallenDialogue = shServer.GetDialogueFor("aa_seller", StarterNpcs.Dallen.Id);
+        // (player is now far so this is just to confirm the choice list shape)
+        var shAnyDallen = shDallenDialogue.Choices.Any(c => c.Id == "browse_wares");
+        // Player is far — no choices may be returned. Test with closer position
+        shState.SetPlayerPosition("aa_seller", new TilePosition(6, 4));
+        var shCloseDialogue = shServer.GetDialogueFor("aa_seller", StarterNpcs.Dallen.Id);
+        ExpectTrue(shCloseDialogue.Choices.Any(c => c.Id == "browse_wares"),
+            "vendor NPC dialogue includes 'browse_wares' choice");
+        ExpectTrue(shCloseDialogue.Choices.Any(c => c.Id == "sell_items"),
+            "vendor NPC dialogue includes 'sell_items' choice");
+
+        // HUD shop bubble formatting
+        var shSnapshot = shServer.CreateInterestSnapshot("aa_seller");
+        var shBubble = HudController.FormatShopBubble(shSnapshot.ShopOffers, StarterNpcs.Dallen.Id, 100);
+        ExpectTrue(shBubble.Contains("Wares"), "FormatShopBubble shows the wares header");
+        ExpectTrue(shBubble.Contains("Scrip:"), "FormatShopBubble shows the player's scrip");
+        var shSellBubble = HudController.FormatSellBubble(shState.Players["aa_seller"].Inventory, 50);
+        ExpectTrue(shSellBubble.Contains("Sell") || shSellBubble.Contains("Nothing"),
+            "FormatSellBubble shows a sell or empty header");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.
