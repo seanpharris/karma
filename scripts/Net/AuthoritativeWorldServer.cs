@@ -65,6 +65,7 @@ public sealed class AuthoritativeWorldServer
     public const long SupplyDropDefaultExpiryTicks = 300;
     public const int NpcPatrolTickInterval = 5;
     public const int ClaimScripPerTick = 1;
+    private readonly Dictionary<string, string> _downedByPlayerId = new();
     private readonly Dictionary<string, ShopOffer> _seededOffers = new();
     private sealed record DropClaim(string OwnerId, string OwnerName);
     private sealed record LocalChatMessage(
@@ -911,6 +912,7 @@ public sealed class AuthoritativeWorldServer
             else
             {
                 var droppedItemCount = DropInventory(playerId).Count;
+                AwardTrophyToScorer(playerId);
                 _state.TriggerKarmaBreak(playerId);
                 _wantedPlayerToIssuerId.Remove(playerId);
                 RespawnPlayer(playerId, deathPosition);
@@ -1607,6 +1609,7 @@ public sealed class AuthoritativeWorldServer
         {
             _downedUntilTickByPlayer[targetId] = _tick + DownedCountdownTicks;
             _downedDeathPositionByPlayer[targetId] = target.Position;
+            _downedByPlayerId[targetId] = intent.PlayerId;
             _killsPerPlayer[intent.PlayerId] = _killsPerPlayer.GetValueOrDefault(intent.PlayerId) + 1;
             if (_bountyByPlayerId.Remove(targetId, out var bountyAmount) && bountyAmount > 0)
             {
@@ -2784,6 +2787,7 @@ public sealed class AuthoritativeWorldServer
     private ServerProcessResult ProcessKarmaBreak(ServerIntent intent)
     {
         var droppedItemCount = DropInventory(intent.PlayerId).Count;
+        AwardTrophyToScorer(intent.PlayerId);
         _state.TriggerKarmaBreak(intent.PlayerId);
         _bountyByPlayerId.Remove(intent.PlayerId);
         _persistentStatusByPlayer.Remove(intent.PlayerId);
@@ -2801,6 +2805,30 @@ public sealed class AuthoritativeWorldServer
             });
 
         return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private void AwardTrophyToScorer(string victimId)
+    {
+        if (!_downedByPlayerId.Remove(victimId, out var scorerId)) return;
+        if (!_state.Players.TryGetValue(victimId, out var victim)) return;
+        if (!_connectedPlayerIds.Contains(scorerId)) return;
+        var safeName = victim.DisplayName.ToLowerInvariant().Replace(" ", "_");
+        var trophy = new GameItem(
+            $"trophy_{safeName}",
+            $"{victim.DisplayName}'s Dog Tag",
+            ItemCategory.InteractibleObject,
+            new[] { "trophy", "unique", "memento" },
+            $"A battered dog tag recovered from {victim.DisplayName}.");
+        _state.AddItem(scorerId, trophy);
+        AppendEvent(
+            "trophy_drop",
+            $"{victim.DisplayName}'s Dog Tag was awarded to {scorerId}.",
+            new Dictionary<string, string>
+            {
+                ["scorerId"] = scorerId,
+                ["victimId"] = victimId,
+                ["trophyId"] = trophy.Id
+            });
     }
 
     private void StartKarmaBreakGrace(string playerId)

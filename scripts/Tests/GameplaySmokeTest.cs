@@ -4156,6 +4156,38 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(scStructureSnap?.ClaimingPosseId == scState.Players["ac_leader"].TeamId,
             "interest snapshot includes ClaimingPosseId on claimed structure");
 
+        // ── Step 35: Death trophy drop ────────────────────────────────────────────
+        // When a player downs another and that player Karma Breaks, the scorer
+        // receives a unique trophy item named after the victim ("X's Dog Tag").
+        // The event "trophy_drop" is emitted at the moment of the Karma Break.
+
+        var trState = new GameState();
+        trState.RegisterPlayer("ab_hunter", "Hunter");
+        trState.RegisterPlayer("ab_prey", "Prey");
+        trState.SetPlayerPosition("ab_hunter", TilePosition.Origin);
+        trState.SetPlayerPosition("ab_prey", TilePosition.Origin);
+        var trServer = new AuthoritativeWorldServer(trState, "trophy-drop-test");
+        var trSeq = 1;
+        foreach (var trPid in trServer.ConnectedPlayerIds)
+            trServer.ProcessIntent(new ServerIntent(trPid, trSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+
+        // Hunter attacks Prey until Prey is downed
+        while (!trState.Players["ab_prey"].IsDown)
+        {
+            trServer.ProcessIntent(new ServerIntent("ab_hunter", trSeq++, IntentType.Attack,
+                new Dictionary<string, string> { ["targetId"] = "ab_prey" }));
+        }
+        ExpectTrue(trState.Players["ab_prey"].IsDown, "trophy test: Prey is downed before Karma Break");
+
+        // Advance countdown to trigger Karma Break (FinalizeExpiredDownedPlayers)
+        trServer.AdvanceIdleTicks(AuthoritativeWorldServer.DownedCountdownTicks + 1);
+        ExpectTrue(trServer.EventLog.Any(e => e.EventId.Contains("trophy_drop")),
+            "trophy_drop event fires when downed player Karma Breaks");
+        ExpectTrue(trState.Players["ab_hunter"].Inventory.Any(item => item.Name.Contains("Prey")),
+            "scorer receives a trophy item named after the victim");
+        ExpectTrue(trState.Players["ab_hunter"].Inventory.Any(item => item.Name.Contains("Dog Tag")),
+            "trophy item name includes Dog Tag");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.
