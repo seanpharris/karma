@@ -521,6 +521,7 @@ public sealed class AuthoritativeWorldServer
             IntentType.IssueWanted => ProcessIssueWanted(intent),
             IntentType.ReadyUp => ProcessReadyUp(intent),
             IntentType.ClaimStation => ProcessClaimStation(intent),
+            IntentType.CraftItem => ProcessCraftItem(intent),
             _ => Reject(intent, $"Unsupported intent type: {intent.Type}")
         };
     }
@@ -1989,6 +1990,51 @@ public sealed class AuthoritativeWorldServer
                 ["entityId"] = entityId,
                 ["posseId"] = player.TeamId,
                 ["claimerPlayerId"] = intent.PlayerId
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessCraftItem(ServerIntent intent)
+    {
+        if (!intent.Payload.TryGetValue("recipeId", out var recipeId))
+            return Reject(intent, "CraftItem requires recipeId.");
+
+        if (!StarterRecipes.TryGet(recipeId, out var recipe))
+            return Reject(intent, $"Unknown recipe: {recipeId}.");
+
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var player))
+            return Reject(intent, "Player state unavailable.");
+
+        var radiusSquared = Config.InterestRadiusTiles * Config.InterestRadiusTiles;
+        var nearWorkshop = _worldStructures.Values.Any(s =>
+            s.Category == recipe.RequiredStructureCategory &&
+            s.Position.DistanceSquaredTo(player.Position) <= radiusSquared);
+        if (!nearWorkshop)
+            return Reject(intent, $"No {recipe.RequiredStructureCategory} structure in range.");
+
+        foreach (var ingredientId in recipe.IngredientItemIds)
+        {
+            if (!player.Inventory.Any(i => i.Id == ingredientId))
+                return Reject(intent, $"Missing ingredient: {ingredientId}.");
+        }
+
+        foreach (var ingredientId in recipe.IngredientItemIds)
+            _state.ConsumeItem(intent.PlayerId, ingredientId);
+
+        if (!StarterItems.TryGetById(recipe.OutputItemId, out var output))
+            return Reject(intent, $"Recipe output item missing: {recipe.OutputItemId}.");
+
+        _state.AddItem(intent.PlayerId, output);
+
+        var serverEvent = AppendEvent(
+            "item_crafted",
+            $"{intent.PlayerId} crafted {output.Name}.",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["recipeId"] = recipe.Id,
+                ["itemId"] = output.Id
             });
 
         return ServerProcessResult.Accepted(serverEvent);

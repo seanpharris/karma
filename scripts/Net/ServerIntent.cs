@@ -43,7 +43,8 @@ public enum IntentType
     Dismount,
     IssueWanted,
     ReadyUp,
-    ClaimStation
+    ClaimStation,
+    CraftItem
 }
 
 public sealed record ServerIntent(

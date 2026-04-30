@@ -4188,6 +4188,51 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(trState.Players["ab_hunter"].Inventory.Any(item => item.Name.Contains("Dog Tag")),
             "trophy item name includes Dog Tag");
 
+        // ── Step 36: Crafting intent ──────────────────────────────────────────────
+        // CraftItem consumes ingredients and produces a recipe output, validated
+        // against a workshop structure in range.
+
+        var crState = new GameState();
+        crState.RegisterPlayer("aa_crafter", "Crafter");
+        crState.SetPlayerPosition("aa_crafter", TilePosition.Origin);
+        crState.AddItem("aa_crafter", StarterItems.MultiTool);
+        crState.AddItem("aa_crafter", StarterItems.DataChip);
+        var crServer = new AuthoritativeWorldServer(crState, "craft-test");
+        var crSeq = 1;
+        foreach (var crPid in crServer.ConnectedPlayerIds)
+            crServer.ProcessIntent(new ServerIntent(crPid, crSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+
+        // Without workshop nearby — rejected
+        var crNoWorkshop = crServer.ProcessIntent(new ServerIntent("aa_crafter", crSeq++, IntentType.CraftItem,
+            new Dictionary<string, string> { ["recipeId"] = StarterRecipes.RepairKitFromPartsId }));
+        ExpectTrue(!crNoWorkshop.WasAccepted, "CraftItem rejected when no workshop is in range");
+
+        // Seed a workshop structure
+        crServer.SeedWorldStructure("cr_workshop", "Workbench", "workshop", TilePosition.Origin);
+
+        // Without ingredients — first eat MultiTool to be missing it
+        var crWithIngredients = crServer.ProcessIntent(new ServerIntent("aa_crafter", crSeq++, IntentType.CraftItem,
+            new Dictionary<string, string> { ["recipeId"] = StarterRecipes.RepairKitFromPartsId }));
+        ExpectTrue(crWithIngredients.WasAccepted, "CraftItem accepted near workshop with all ingredients");
+        ExpectTrue(crState.Players["aa_crafter"].Inventory.Any(i => i.Id == StarterItems.RepairKitId),
+            "crafted output item appears in player inventory");
+        ExpectTrue(!crState.Players["aa_crafter"].Inventory.Any(i => i.Id == StarterItems.MultiToolId),
+            "crafting consumes the MultiTool ingredient");
+        ExpectTrue(!crState.Players["aa_crafter"].Inventory.Any(i => i.Id == StarterItems.DataChipId),
+            "crafting consumes the DataChip ingredient");
+        ExpectTrue(crServer.EventLog.Any(e => e.EventId.Contains("item_crafted")),
+            "item_crafted event fires on successful craft");
+
+        // Missing ingredients now (already consumed)
+        var crNoIngredients = crServer.ProcessIntent(new ServerIntent("aa_crafter", crSeq++, IntentType.CraftItem,
+            new Dictionary<string, string> { ["recipeId"] = StarterRecipes.RepairKitFromPartsId }));
+        ExpectTrue(!crNoIngredients.WasAccepted, "CraftItem rejected when ingredients are missing");
+
+        // Unknown recipe
+        var crBadRecipe = crServer.ProcessIntent(new ServerIntent("aa_crafter", crSeq++, IntentType.CraftItem,
+            new Dictionary<string, string> { ["recipeId"] = "nonexistent_recipe" }));
+        ExpectTrue(!crBadRecipe.WasAccepted, "CraftItem rejected for unknown recipe id");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.

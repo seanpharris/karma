@@ -286,7 +286,7 @@ group are prerequisites for later ones in the same group.
 | 33 | Faction store gating — `PurchaseItem` intent rejected when player's faction reputation is below the offer's minimum threshold; `ShopOfferSnapshot` includes `MinReputation` field | ✅ done |
 | 34 | Station claim intent — `ClaimStation` intent lets a posse flag an unclaimed station as theirs; station owners receive passive scrip per server tick; `WorldStructureEntity` gains `ClaimingPosseId` | ✅ done |
 | 35 | Death trophy drop — when a player triggers a Karma Break on another, the scorer receives a named unique item (e.g., "Ace's Dog Tag") seeded from the victim's display name | ✅ done |
-| 36 | Crafting intent — `CraftItem` intent validated at a workshop structure; server holds a recipe table (`CraftingRecipe[]`); consumes ingredients and produces the output item | pending |
+| 36 | Crafting intent — `CraftItem` intent validated at a workshop structure; server holds a recipe table (`CraftingRecipe[]`); consumes ingredients and produces the output item | ✅ done |
 | 37 | Posse shared quest module — `PosseQuestModule` subclass assigns the same multi-step objective to all posse members; shared completion triggers a group scrip bonus via `QuestModuleRegistry` | pending |
 | 38 | World tier zones — tile-level `IsLawless` flag set at world-gen for fringe areas; attacks in lawless zones skip the karma-descent penalty; shown on HUD when player enters/exits | pending |
 | 39 | Fog of war — `AuthoritativeWorldServer` tracks which chunks each player has visited; `CreateInterestSnapshot` excludes unvisited chunks beyond a minimum reveal radius | pending |
