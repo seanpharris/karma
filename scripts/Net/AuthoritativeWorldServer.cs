@@ -57,6 +57,7 @@ public sealed class AuthoritativeWorldServer
     public const int WantedKarmaReward = 10;
     private readonly Dictionary<string, int> _bountyByPlayerId = new();
     public const int BountyKarmaThreshold = -50;
+    private readonly Dictionary<string, HashSet<PlayerStatusKind>> _persistentStatusByPlayer = new();
     private sealed record DropClaim(string OwnerId, string OwnerName);
     private sealed record LocalChatMessage(
         string MessageId,
@@ -98,6 +99,25 @@ public sealed class AuthoritativeWorldServer
 
     public int GetBounty(string playerId) =>
         _bountyByPlayerId.TryGetValue(playerId, out var bounty) ? bounty : 0;
+
+    public void ApplyStatus(string playerId, PlayerStatusKind kind)
+    {
+        if (!_persistentStatusByPlayer.TryGetValue(playerId, out var set))
+        {
+            set = new HashSet<PlayerStatusKind>();
+            _persistentStatusByPlayer[playerId] = set;
+        }
+        set.Add(kind);
+    }
+
+    public void ClearStatus(string playerId, PlayerStatusKind kind)
+    {
+        if (_persistentStatusByPlayer.TryGetValue(playerId, out var set))
+            set.Remove(kind);
+    }
+
+    public bool HasStatus(string playerId, PlayerStatusKind kind) =>
+        _persistentStatusByPlayer.TryGetValue(playerId, out var set) && set.Contains(kind);
 
     public int GetChunkHeat(int chunkX, int chunkY) =>
         _combatHeatByChunk.TryGetValue((chunkX, chunkY), out var heat) ? heat : 0;
@@ -2521,6 +2541,7 @@ public sealed class AuthoritativeWorldServer
         var droppedItemCount = DropInventory(intent.PlayerId).Count;
         _state.TriggerKarmaBreak(intent.PlayerId);
         _bountyByPlayerId.Remove(intent.PlayerId);
+        _persistentStatusByPlayer.Remove(intent.PlayerId);
         RespawnPlayer(intent.PlayerId, _state.Players[intent.PlayerId].Position);
         StartKarmaBreakGrace(intent.PlayerId);
         var serverEvent = AppendEvent(
@@ -2584,6 +2605,12 @@ public sealed class AuthoritativeWorldServer
         if (_bountyByPlayerId.TryGetValue(player.Id, out var bounty) && bounty > 0)
         {
             statuses.Add($"Bounty: {bounty}");
+        }
+
+        if (_persistentStatusByPlayer.TryGetValue(player.Id, out var persistentSet))
+        {
+            foreach (var kind in persistentSet)
+                statuses.Add(kind.ToString());
         }
 
         return statuses;

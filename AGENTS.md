@@ -275,7 +275,7 @@ group are prerequisites for later ones in the same group.
 | 24 | Warden perk (karma ≥ +150) — new `IssueWanted` intent marks one player Wanted; others earn karma for downing the Wanted player | ✅ done |
 | 25 | Wraith perk (karma ≤ -150) — server applies a speed modifier to players at ≤ 30% HP who hold this perk; modifier reflected in snapshot | ✅ done |
 | 26 | Bounty system — players whose karma falls below −50 automatically accrue a scrip bounty; downing them (Karma Break) transfers the bounty to the scorer | ✅ done |
-| 27 | Player status effects model — server-owned `PlayerStatus` set (Wanted, Wraith-buffed, Poisoned, etc.); status list included in `PlayerSnapshot`; cleared on Karma Break | pending |
+| 27 | Player status effects model — server-owned `PlayerStatus` set (Wanted, Wraith-buffed, Poisoned, etc.); status list included in `PlayerSnapshot`; cleared on Karma Break | ✅ done |
 | 28 | Contraband item tag — items flagged as contraband decay karma once per tick while held by a player near a law-aligned NPC; `GameItem` gets an `IsContraband` flag | pending |
 | 29 | Lobby / ready-up flow — `ReadyUp` intent; `MatchStatus.Lobby` state before `InProgress`; timer only starts once a quorum of connected players has sent `ReadyUp` | pending |
 | 30 | Supply drop world event — server schedules a rare item spawn at a broadcast location; first player to reach it claims the cache; event expires after a timeout | pending |

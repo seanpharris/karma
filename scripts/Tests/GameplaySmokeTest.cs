@@ -3707,6 +3707,49 @@ public partial class GameplaySmokeTest : Node
         var hasBountyStatus = markedSnapshot?.StatusEffects.Any(s => s.StartsWith("Bounty:")) == true;
         ExpectTrue(hasBountyStatus, "Bounty status effect appears in player snapshot");
 
+        // ── Step 27: Player status effects model ──────────────────────────────────
+        // ApplyStatus/ClearStatus/HasStatus let the server attach typed statuses
+        // to players.  They appear in PlayerSnapshot.StatusEffects and are wiped
+        // on Karma Break.
+
+        var psState = new GameState();
+        psState.RegisterPlayer("ap_target", "Target");
+        psState.SetPlayerPosition("ap_target", TilePosition.Origin);
+        var psServer = new AuthoritativeWorldServer(psState, "status-test");
+
+        ExpectTrue(!psServer.HasStatus("ap_target", PlayerStatusKind.Poisoned), "No Poisoned status initially");
+
+        psServer.ApplyStatus("ap_target", PlayerStatusKind.Poisoned);
+        ExpectTrue(psServer.HasStatus("ap_target", PlayerStatusKind.Poisoned), "Poisoned status active after ApplyStatus");
+
+        var psSnap = psServer.CreateInterestSnapshot("ap_target");
+        var psPlayer = psSnap.Players.FirstOrDefault(p => p.Id == "ap_target");
+        ExpectTrue(psPlayer?.StatusEffects.Contains("Poisoned") == true,
+            "Poisoned appears in PlayerSnapshot.StatusEffects");
+
+        psServer.ClearStatus("ap_target", PlayerStatusKind.Poisoned);
+        ExpectTrue(!psServer.HasStatus("ap_target", PlayerStatusKind.Poisoned), "Poisoned cleared after ClearStatus");
+
+        var psSnapAfterClear = psServer.CreateInterestSnapshot("ap_target");
+        var psPlayerAfterClear = psSnapAfterClear.Players.FirstOrDefault(p => p.Id == "ap_target");
+        ExpectTrue(psPlayerAfterClear?.StatusEffects.Contains("Poisoned") != true,
+            "Poisoned absent from snapshot after ClearStatus");
+
+        // Multiple statuses can coexist
+        psServer.ApplyStatus("ap_target", PlayerStatusKind.Poisoned);
+        psServer.ApplyStatus("ap_target", PlayerStatusKind.Burning);
+        ExpectTrue(psServer.HasStatus("ap_target", PlayerStatusKind.Poisoned) &&
+                   psServer.HasStatus("ap_target", PlayerStatusKind.Burning),
+            "Multiple statuses can be active simultaneously");
+
+        // Karma Break clears all persistent statuses
+        psServer.ProcessIntent(new ServerIntent("ap_target", 1, IntentType.KarmaBreak,
+            new Dictionary<string, string>()));
+        ExpectTrue(!psServer.HasStatus("ap_target", PlayerStatusKind.Poisoned),
+            "Poisoned cleared after Karma Break");
+        ExpectTrue(!psServer.HasStatus("ap_target", PlayerStatusKind.Burning),
+            "Burning cleared after Karma Break");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.

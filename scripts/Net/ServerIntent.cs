@@ -3,6 +3,14 @@ using Karma.Data;
 
 namespace Karma.Net;
 
+public enum PlayerStatusKind
+{
+    Poisoned,
+    Burning,
+    Chilled,
+    Silenced
+}
+
 public enum IntentType
 {
     Move,
