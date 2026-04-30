@@ -64,6 +64,7 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, long> _supplyDropExpiryByEntityId = new();
     public const long SupplyDropDefaultExpiryTicks = 300;
     public const int NpcPatrolTickInterval = 5;
+    public const int ClaimScripPerTick = 1;
     private readonly Dictionary<string, ShopOffer> _seededOffers = new();
     private sealed record DropClaim(string OwnerId, string OwnerName);
     private sealed record LocalChatMessage(
@@ -186,6 +187,7 @@ public sealed class AuthoritativeWorldServer
         ApplySupplyDropExpiry();
         for (var i = 0; i < patrolSteps; i++) StepNpcPatrols();
         for (var i = 0; i < repDecaySteps; i++) _state.Factions.Decay();
+        ApplyClaimScrip(ticks);
     }
 
     public void AdvanceMatchTime(int seconds)
@@ -517,6 +519,7 @@ public sealed class AuthoritativeWorldServer
             IntentType.Dismount => ProcessDismount(intent),
             IntentType.IssueWanted => ProcessIssueWanted(intent),
             IntentType.ReadyUp => ProcessReadyUp(intent),
+            IntentType.ClaimStation => ProcessClaimStation(intent),
             _ => Reject(intent, $"Unsupported intent type: {intent.Type}")
         };
     }
@@ -1950,6 +1953,56 @@ public sealed class AuthoritativeWorldServer
         }
 
         return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessClaimStation(ServerIntent intent)
+    {
+        if (!intent.Payload.TryGetValue("entityId", out var entityId))
+            return Reject(intent, "ClaimStation requires entityId.");
+
+        if (!_worldStructures.TryGetValue(entityId, out var structure))
+            return Reject(intent, $"Unknown structure: {entityId}.");
+
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var player))
+            return Reject(intent, "Player state unavailable.");
+
+        if (!player.HasTeam)
+            return Reject(intent, "Player must be in a posse to claim a station.");
+
+        var radiusSquared = Config.InterestRadiusTiles * Config.InterestRadiusTiles;
+        if (player.Position.DistanceSquaredTo(structure.Position) > radiusSquared)
+            return Reject(intent, "Structure is out of range.");
+
+        if (!string.IsNullOrEmpty(structure.ClaimingPosseId) && structure.ClaimingPosseId != player.TeamId)
+            return Reject(intent, $"Structure is already claimed by another posse.");
+
+        _worldStructures[entityId] = structure with { ClaimingPosseId = player.TeamId };
+
+        var serverEvent = AppendEvent(
+            "station_claimed",
+            $"Posse {player.TeamId} claimed {structure.Name}.",
+            new Dictionary<string, string>
+            {
+                ["entityId"] = entityId,
+                ["posseId"] = player.TeamId,
+                ["claimerPlayerId"] = intent.PlayerId
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private void ApplyClaimScrip(long ticks)
+    {
+        foreach (var structure in _worldStructures.Values)
+        {
+            if (string.IsNullOrEmpty(structure.ClaimingPosseId)) continue;
+            var posseMembers = _connectedPlayerIds
+                .Where(pid => _state.Players.TryGetValue(pid, out var p) &&
+                              p.HasTeam && p.TeamId == structure.ClaimingPosseId)
+                .ToArray();
+            foreach (var memberId in posseMembers)
+                _state.AddScrip(memberId, (int)(ClaimScripPerTick * ticks));
+        }
     }
 
     public NpcDialogueSnapshot GetDialogueFor(string playerId, string npcId)
@@ -3423,7 +3476,8 @@ public sealed class AuthoritativeWorldServer
             entity.IsInteractable,
             entity.InteractionPrompt,
             entity.Integrity,
-            FormatStructureCondition(entity.Integrity));
+            FormatStructureCondition(entity.Integrity),
+            entity.ClaimingPosseId);
     }
 
     private static ShopOfferSnapshot ToSnapshot(ShopOffer offer, PlayerState player, LeaderboardStanding standing)

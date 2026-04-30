@@ -42,7 +42,8 @@ public enum IntentType
     Mount,
     Dismount,
     IssueWanted,
-    ReadyUp
+    ReadyUp,
+    ClaimStation
 }
 
 public sealed record ServerIntent(
@@ -107,7 +108,8 @@ public sealed record WorldStructureEntity(
     string InteractionResult,
     int Integrity = 100,
     string FactionId = StarterFactions.CivicRepairGuildId,
-    string LocationId = "");
+    string LocationId = "",
+    string ClaimingPosseId = "");
 
 public sealed record WorldStructureSnapshot(
     string EntityId,
@@ -121,7 +123,8 @@ public sealed record WorldStructureSnapshot(
     bool IsInteractable,
     string InteractionPrompt,
     int Integrity,
-    string Condition);
+    string Condition,
+    string ClaimingPosseId = "");
 
 public sealed record ShopOfferSnapshot(
     string OfferId,

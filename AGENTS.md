@@ -284,7 +284,7 @@ group are prerequisites for later ones in the same group.
 | 31 | NPC patrol routes — NPCs step between 2–3 tile waypoints on a per-tick cadence; position updated in `NpcEntity`; snapshot reflects current position | ✅ done |
 | 32 | Reputation decay — NPC opinions and faction standings drift toward 0 each tick cycle proportional to inactivity; decay rate configured in `ServerConfig` | ✅ done |
 | 33 | Faction store gating — `PurchaseItem` intent rejected when player's faction reputation is below the offer's minimum threshold; `ShopOfferSnapshot` includes `MinReputation` field | ✅ done |
-| 34 | Station claim intent — `ClaimStation` intent lets a posse flag an unclaimed station as theirs; station owners receive passive scrip per server tick; `WorldStructureEntity` gains `ClaimingPosseId` | pending |
+| 34 | Station claim intent — `ClaimStation` intent lets a posse flag an unclaimed station as theirs; station owners receive passive scrip per server tick; `WorldStructureEntity` gains `ClaimingPosseId` | ✅ done |
 | 35 | Death trophy drop — when a player triggers a Karma Break on another, the scorer receives a named unique item (e.g., "Ace's Dog Tag") seeded from the victim's display name | pending |
 | 36 | Crafting intent — `CraftItem` intent validated at a workshop structure; server holds a recipe table (`CraftingRecipe[]`); consumes ingredients and produces the output item | pending |
 | 37 | Posse shared quest module — `PosseQuestModule` subclass assigns the same multi-step objective to all posse members; shared completion triggers a group scrip bonus via `QuestModuleRegistry` | pending |
