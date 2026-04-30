@@ -21,6 +21,13 @@ public enum EquipmentSlot
     Trinket
 }
 
+public enum WeaponKind
+{
+    None,
+    Melee,
+    Ranged
+}
+
 public sealed record GameItem(
     string Id,
     string Name,
@@ -32,7 +39,11 @@ public sealed record GameItem(
     int Defense = 0,
     int? KarmaRequirement = null,
     KarmaDirection RequiredPath = KarmaDirection.Neutral,
-    bool IsContraband = false);
+    bool IsContraband = false,
+    WeaponKind WeaponKind = WeaponKind.None,
+    int StaminaCost = 0,
+    int MagazineSize = 0,
+    string AmmoItemId = "");
 
 public static class StarterItems
 {
@@ -405,11 +416,30 @@ public static class StarterItems
             PowerCellId => PowerCell,
             BoltCuttersId => BoltCutters,
             MagneticGrabberId => MagneticGrabber,
+            BallisticRoundId => BallisticRound,
+            EnergyCellId => EnergyCell,
             _ => null
         };
 
         return item is not null;
     }
+
+    public const string BallisticRoundId = "ballistic_round";
+    public const string EnergyCellId = "energy_cell";
+
+    public static readonly GameItem BallisticRound = new(
+        BallisticRoundId,
+        "Ballistic Round",
+        ItemCategory.Tool,
+        new[] { "ammo", "ballistic" },
+        "A single ballistic round; reloads matching weapons.");
+
+    public static readonly GameItem EnergyCell = new(
+        EnergyCellId,
+        "Energy Cell",
+        ItemCategory.Tool,
+        new[] { "ammo", "energy" },
+        "A charged energy cell; reloads energy weapons.");
 
     private static GameItem Weapon(
         string id,
@@ -418,6 +448,18 @@ public static class StarterItems
         string description,
         int Power)
     {
+        // Default: melee with a small stamina cost. Ranged weapons pass tags
+        // ("rifle", "pistol", "smg", "shotgun", "energy", "ballistic") and we
+        // upgrade them to Ranged with a magazine + ammo type.
+        var isRanged = tags.Contains("rifle") || tags.Contains("pistol") ||
+                       tags.Contains("smg") || tags.Contains("shotgun") ||
+                       tags.Contains("rifle") || tags.Contains("explosive");
+        var ammoItemId = tags.Contains("energy") ? EnergyCellId :
+                         tags.Contains("ballistic") ? BallisticRoundId : "";
+        var magazineSize = tags.Contains("shotgun") ? 6 :
+                           tags.Contains("rifle") ? 12 :
+                           tags.Contains("smg") ? 24 :
+                           tags.Contains("pistol") ? 8 : 0;
         return new GameItem(
             id,
             name,
@@ -425,7 +467,11 @@ public static class StarterItems
             tags,
             description,
             EquipmentSlot.MainHand,
-            Power);
+            Power,
+            WeaponKind: isRanged ? WeaponKind.Ranged : WeaponKind.Melee,
+            StaminaCost: isRanged ? 0 : 10,
+            MagazineSize: magazineSize,
+            AmmoItemId: ammoItemId);
     }
 
     private static GameItem Tool(

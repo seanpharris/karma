@@ -3609,27 +3609,27 @@ public partial class GameplaySmokeTest : Node
         // ── Step 25: Wraith perk speed modifier ───────────────────────────────────
         // Players at karma ≤ -150 earn Wraith Surge. When HP ≤ 30%, their snapshot
         // SpeedModifier is 1.5; at higher HP or without the perk, it is 1.0.
-        var wrState = new GameState();
-        wrState.RegisterPlayer("an_wraith", "Shade");
-        wrState.RegisterPlayer("an_attacker", "Hunter");
-        wrState.SetPlayerPosition("an_wraith", TilePosition.Origin);
-        wrState.SetPlayerPosition("an_attacker", TilePosition.Origin);
-        wrState.Players["an_wraith"].ApplyKarma(-PerkCatalog.WraithThreshold);
-        var wrServer = new AuthoritativeWorldServer(wrState, "wraith-test");
+        var wrcState = new GameState();
+        wrcState.RegisterPlayer("an_wraith", "Shade");
+        wrcState.RegisterPlayer("an_attacker", "Hunter");
+        wrcState.SetPlayerPosition("an_wraith", TilePosition.Origin);
+        wrcState.SetPlayerPosition("an_attacker", TilePosition.Origin);
+        wrcState.Players["an_wraith"].ApplyKarma(-PerkCatalog.WraithThreshold);
+        var wrcServer = new AuthoritativeWorldServer(wrcState, "wraith-test");
 
         // Full HP — no speed bonus even with perk
-        var wrFullSnap = wrServer.CreateInterestSnapshot("an_wraith");
+        var wrFullSnap = wrcServer.CreateInterestSnapshot("an_wraith");
         var wrSelf = wrFullSnap.Players.FirstOrDefault(p => p.Id == "an_wraith");
-        ExpectTrue(wrState.Players["an_wraith"].Karma.Score <= -PerkCatalog.WraithThreshold, "Wraith perk player has required karma");
+        ExpectTrue(wrcState.Players["an_wraith"].Karma.Score <= -PerkCatalog.WraithThreshold, "Wraith perk player has required karma");
         ExpectEqual(1f, wrSelf?.SpeedModifier ?? 0f, "SpeedModifier is 1.0 at full HP even with Wraith perk");
 
         // Damage wraith to ≤ 30% HP
-        var wrMaxHp = wrState.Players["an_wraith"].MaxHealth;
+        var wrMaxHp = wrcState.Players["an_wraith"].MaxHealth;
         var lowHpTarget = (int)(wrMaxHp * PerkCatalog.WraithLowHpPercent);
-        wrState.Players["an_wraith"].ApplyDamage(wrMaxHp - lowHpTarget);
-        var wrLowSnap = wrServer.CreateInterestSnapshot("an_wraith");
+        wrcState.Players["an_wraith"].ApplyDamage(wrMaxHp - lowHpTarget);
+        var wrLowSnap = wrcServer.CreateInterestSnapshot("an_wraith");
         var wrLowSelf = wrLowSnap.Players.FirstOrDefault(p => p.Id == "an_wraith");
-        ExpectTrue(wrState.Players["an_wraith"].Health <= lowHpTarget, "Wraith player HP is at or below 30%");
+        ExpectTrue(wrcState.Players["an_wraith"].Health <= lowHpTarget, "Wraith player HP is at or below 30%");
         ExpectEqual(PerkCatalog.WraithSpeedModifier, wrLowSelf?.SpeedModifier ?? 0f, "SpeedModifier is 1.5 at ≤ 30% HP with Wraith perk");
 
         // Normal player at low HP has no boost
@@ -4478,6 +4478,92 @@ public partial class GameplaySmokeTest : Node
         var shSellBubble = HudController.FormatSellBubble(shState.Players["aa_seller"].Inventory, 50);
         ExpectTrue(shSellBubble.Contains("Sell") || shSellBubble.Contains("Nothing"),
             "FormatSellBubble shows a sell or empty header");
+
+        // Weapon resource costs: ranged needs ammo + reload, melee needs stamina.
+        var gunState = new GameState();
+        gunState.RegisterPlayer("aa_gunner", "Gunner");
+        gunState.RegisterPlayer("ab_dummy", "Dummy");
+        gunState.SetPlayerPosition("aa_gunner", TilePosition.Origin);
+        gunState.SetPlayerPosition("ab_dummy", TilePosition.Origin);
+        gunState.AddItem("aa_gunner", StarterItems.ElectroPistol);
+        gunState.AddItem("aa_gunner", StarterItems.EnergyCell);
+        var gunServer = new AuthoritativeWorldServer(gunState, "weapon-resource-test");
+        var gunSeq = 1;
+        foreach (var gPid in gunServer.ConnectedPlayerIds)
+            gunServer.ProcessIntent(new ServerIntent(gPid, gunSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+
+        // Equip pistol -> magazine starts empty (ranged weapons must reload first)
+        gunServer.ProcessIntent(new ServerIntent("aa_gunner", gunSeq++, IntentType.UseItem,
+            new Dictionary<string, string> { ["itemId"] = StarterItems.ElectroPistolId }));
+        ExpectEqual(0, gunState.Players["aa_gunner"].CurrentAmmo,
+            "equipping a ranged weapon starts with empty magazine");
+
+        // Attack with empty mag -> rejected
+        var gunEmptyAttack = gunServer.ProcessIntent(new ServerIntent("aa_gunner", gunSeq++, IntentType.Attack,
+            new Dictionary<string, string> { ["targetId"] = "ab_dummy" }));
+        ExpectFalse(gunEmptyAttack.WasAccepted, "Attack rejected when ranged weapon magazine is empty");
+
+        // Reload -> ammo full, ammo item consumed
+        var gunReload = gunServer.ProcessIntent(new ServerIntent("aa_gunner", gunSeq++, IntentType.Reload,
+            new Dictionary<string, string>()));
+        ExpectTrue(gunReload.WasAccepted, "Reload accepted with ammo in inventory");
+        ExpectEqual(StarterItems.ElectroPistol.MagazineSize, gunState.Players["aa_gunner"].CurrentAmmo,
+            "Reload refills magazine to MagazineSize");
+        ExpectFalse(gunState.Players["aa_gunner"].Inventory.Any(i => i.Id == StarterItems.EnergyCellId),
+            "Reload consumes one ammo item from inventory");
+        ExpectTrue(gunServer.EventLog.Any(e => e.EventId.Contains("weapon_reloaded")),
+            "weapon_reloaded event fires on successful reload");
+
+        // Attack succeeds now -> ammo decrements
+        var gunAmmoBefore = gunState.Players["aa_gunner"].CurrentAmmo;
+        gunServer.ProcessIntent(new ServerIntent("aa_gunner", gunSeq++, IntentType.Attack,
+            new Dictionary<string, string> { ["targetId"] = "ab_dummy" }));
+        ExpectEqual(gunAmmoBefore - 1, gunState.Players["aa_gunner"].CurrentAmmo,
+            "Successful ranged attack decrements ammo by 1");
+
+        // Reload rejected when no ammo item in inventory
+        var gunReloadFail = gunServer.ProcessIntent(new ServerIntent("aa_gunner", gunSeq++, IntentType.Reload,
+            new Dictionary<string, string>()));
+        ExpectFalse(gunReloadFail.WasAccepted, "Reload rejected when no matching ammo in inventory");
+
+        // Melee path: equip stun baton, attack costs stamina
+        var wrMeleeState = new GameState();
+        wrMeleeState.RegisterPlayer("aa_brawler", "Brawler");
+        wrMeleeState.RegisterPlayer("ab_punching", "Bag");
+        wrMeleeState.SetPlayerPosition("aa_brawler", TilePosition.Origin);
+        wrMeleeState.SetPlayerPosition("ab_punching", TilePosition.Origin);
+        wrMeleeState.AddItem("aa_brawler", StarterItems.StunBaton);
+        var wrMeleeServer = new AuthoritativeWorldServer(wrMeleeState, "weapon-melee-test");
+        var wrMeleeSeq = 1;
+        foreach (var wrPid in wrMeleeServer.ConnectedPlayerIds)
+            wrMeleeServer.ProcessIntent(new ServerIntent(wrPid, wrMeleeSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        wrMeleeServer.ProcessIntent(new ServerIntent("aa_brawler", wrMeleeSeq++, IntentType.UseItem,
+            new Dictionary<string, string> { ["itemId"] = StarterItems.StunBatonId }));
+
+        var staminaBefore = wrMeleeState.Players["aa_brawler"].Stamina;
+        var wrSwing = wrMeleeServer.ProcessIntent(new ServerIntent("aa_brawler", wrMeleeSeq++, IntentType.Attack,
+            new Dictionary<string, string> { ["targetId"] = "ab_punching" }));
+        ExpectTrue(wrSwing.WasAccepted, "Melee attack accepted with full stamina");
+        ExpectEqual(staminaBefore - StarterItems.StunBaton.StaminaCost,
+            wrMeleeState.Players["aa_brawler"].Stamina,
+            "Melee attack deducts the weapon's StaminaCost");
+
+        // Reload rejected for melee weapon
+        var wrMeleeReload = wrMeleeServer.ProcessIntent(new ServerIntent("aa_brawler", wrMeleeSeq++, IntentType.Reload,
+            new Dictionary<string, string>()));
+        ExpectFalse(wrMeleeReload.WasAccepted, "Reload rejected for melee weapon");
+
+        // Attack rejected when stamina is too low
+        wrMeleeState.Players["aa_brawler"].SpendStamina(95);
+        var wrTired = wrMeleeServer.ProcessIntent(new ServerIntent("aa_brawler", wrMeleeSeq++, IntentType.Attack,
+            new Dictionary<string, string> { ["targetId"] = "ab_punching" }));
+        ExpectFalse(wrTired.WasAccepted, "Melee attack rejected when stamina < StaminaCost");
+
+        // Stamina regens during idle ticks
+        var staminaAfterDrain = wrMeleeState.Players["aa_brawler"].Stamina;
+        wrMeleeServer.AdvanceIdleTicks(5);
+        ExpectTrue(wrMeleeState.Players["aa_brawler"].Stamina > staminaAfterDrain,
+            "Stamina regenerates during AdvanceIdleTicks");
 
         // Hotbar formatter renders 9 slots; equipped slot is starred.
         var hbEmpty = HudController.FormatHotbar(System.Array.Empty<GameItem>(), -1);

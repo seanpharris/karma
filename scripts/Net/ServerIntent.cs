@@ -45,7 +45,8 @@ public enum IntentType
     ReadyUp,
     ClaimStation,
     CraftItem,
-    SellItem
+    SellItem,
+    Reload
 }
 
 public sealed record ServerIntent(

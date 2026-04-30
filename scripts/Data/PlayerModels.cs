@@ -25,6 +25,35 @@ public sealed class PlayerState
     public bool IsDown { get; private set; } = false;
     public int MaxHealth { get; } = 100;
     public int Health { get; private set; } = 100;
+    public int MaxStamina { get; } = 100;
+    public int Stamina { get; private set; } = 100;
+    public int MaxAmmo { get; private set; } = 0;
+    public int CurrentAmmo { get; private set; } = 0;
+
+    public void SpendStamina(int amount)
+    {
+        if (amount <= 0) return;
+        Stamina = System.Math.Max(0, Stamina - amount);
+    }
+
+    public void RegenStamina(int amount)
+    {
+        if (amount <= 0) return;
+        Stamina = System.Math.Min(MaxStamina, Stamina + amount);
+    }
+
+    public void SetAmmo(int magazineSize, int currentAmmo)
+    {
+        MaxAmmo = System.Math.Max(0, magazineSize);
+        CurrentAmmo = System.Math.Clamp(currentAmmo, 0, MaxAmmo);
+    }
+
+    public bool ConsumeAmmo()
+    {
+        if (CurrentAmmo <= 0) return false;
+        CurrentAmmo--;
+        return true;
+    }
     public int Scrip { get; private set; }
     public TilePosition Position { get; private set; } = TilePosition.Origin;
     public PlayerAppearanceSelection Appearance { get; private set; } = PlayerAppearanceSelection.Default;

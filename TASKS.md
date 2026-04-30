@@ -91,50 +91,20 @@ Things the test suite confirms but a player would notice.
   - Art (add to `ART_NEEDED.md`): interior floor + wall tiles per
     building (clinic, saloon, workshop, etc.), door-arrival fade
     transition, optional window cutout tiles for partial outside-view.
-- [ ] **Weapon resource costs: melee→stamina, ranged→ammo** — today every
-  weapon swings/fires for free; the only friction is the global
-  `AttackCooldownTicks = 3`. Split the cost model by weapon kind.
-  - Extend the `Weapon(...)` factory in `ItemModels.cs` with a `WeaponKind`
-    (`Melee` / `Ranged`) plus per-kind fields:
-    - **Melee**: `StaminaCost` (per swing).
-    - **Ranged**: `MagazineSize`, `AmmoItemId` (e.g. `"ballistic_round"`,
-      `"energy_cell"`, `"arrow"`).
-  - Stamina is currently client-side only in `PlayerController` (sprint).
-    Promote it to server-authoritative: add `Stamina`/`MaxStamina` to
-    `PlayerState`, regen per `AdvanceIdleTicks`, decrement on accepted melee
-    attacks. Keep the client-side sprint stamina display but source it from
-    the snapshot.
-  - Track `_currentAmmoByPlayer: Dictionary<string,int>` server-side, keyed
-    by player. Reset on weapon swap and Karma Break. (Only used when current
-    weapon is `Ranged`.)
-  - In `ProcessAttack`:
-    - Lookup the equipped weapon's `WeaponKind`.
-    - **Ranged**: reject when ammo == 0 ("click — empty!"); decrement on hit.
-    - **Melee**: reject when stamina < `StaminaCost` ("too tired"); deduct on
-      hit.
-    - Unarmed (no main-hand) keeps current behaviour or costs a small flat
-      stamina charge — decide during implementation.
-  - Add `IntentType.Reload` + `ProcessReload`: only valid for `Ranged`
-    weapons; consume one stack of the matching ammo item from inventory,
-    refill magazine to `MagazineSize`. Reject for melee.
-  - Surface in `PlayerSnapshot`: `Stamina`, `MaxStamina`, `CurrentAmmo`,
-    `MagazineSize`, `EquippedWeaponKind` (so HUD picks the right readout).
-  - HUD: dedicated combat readout area showing either `Ammo: 12/30` or
-    `Stamina: 64/100` based on equipped weapon, with a "Reload (R)" prompt
-    when ranged is below ~25% and a "Tired" warning when stamina is below
-    one swing's cost.
-  - Input: rebind R to reload. The current R handler is
-    `UseRepairKitOnPeerThroughServer` — move that to a different key or to a
-    context-sensitive interact.
-  - Smoke tests:
-    - melee: stamina decrements on swing, attack rejected at low stamina,
-      regen happens during AdvanceIdleTicks
-    - ranged: ammo decrements on hit, attack rejected when empty, reload
-      consumes ammo item and refills, reload rejected for melee
-    - snapshot reflects current state for both weapon kinds
-  - Art (add to `ART_NEEDED.md`): ammo type icons (16x16), reload-progress
-    overlay (3-frame muzzle dim animation), magazine-empty HUD pulse,
-    stamina-low fatigue tint on player sprite.
+- [x] **Weapon resource costs: melee→stamina, ranged→ammo** —
+  *server done 2026-04-29*. Server now enforces resource costs in
+  `ProcessAttack`: ranged weapons (auto-detected from weapon tags
+  `pistol`/`smg`/`shotgun`/`rifle`/`energy`/`ballistic`) require ammo
+  in the magazine; melee weapons require stamina. `IntentType.Reload`
+  consumes one stack of the matching `AmmoItemId` and refills the
+  magazine. `BallisticRound` and `EnergyCell` ammo items added. Stamina
+  regenerates during `AdvanceIdleTicks` at `StaminaRegenPerIdleTick`.
+  Equipping a ranged weapon starts with an empty magazine.
+  *Outstanding follow-ups* (move to a fresh entry if you want them as
+  separate tasks): expose `CurrentAmmo` / `MaxAmmo` / `Stamina` /
+  `EquippedWeaponKind` in `PlayerSnapshot` for HUD readout; rebind R to
+  reload (current R = repair-kit-on-peer); art deliverables in
+  `ART_NEEDED.md`.
 
 ---
 

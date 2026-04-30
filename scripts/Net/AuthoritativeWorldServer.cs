@@ -194,6 +194,7 @@ public sealed class AuthoritativeWorldServer
         for (var i = 0; i < patrolSteps; i++) StepNpcPatrols();
         for (var i = 0; i < repDecaySteps; i++) _state.Factions.Decay();
         ApplyClaimScrip(ticks);
+        ApplyStaminaRegen(ticks);
     }
 
     public void AdvanceMatchTime(int seconds)
@@ -582,6 +583,7 @@ public sealed class AuthoritativeWorldServer
             IntentType.ClaimStation => ProcessClaimStation(intent),
             IntentType.CraftItem => ProcessCraftItem(intent),
             IntentType.SellItem => ProcessSellItem(intent),
+            IntentType.Reload => ProcessReload(intent),
             _ => Reject(intent, $"Unsupported intent type: {intent.Type}")
         };
     }
@@ -1670,6 +1672,22 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, $"Attack is on cooldown for {remainingTicks} more server tick(s).");
         }
 
+        // Resource gate: ranged weapons need ammo, melee needs stamina.
+        var equippedWeapon = attacker.Equipment.TryGetValue(EquipmentSlot.MainHand, out var weapon) ? weapon : null;
+        if (equippedWeapon is not null)
+        {
+            if (equippedWeapon.WeaponKind == WeaponKind.Ranged)
+            {
+                if (attacker.CurrentAmmo <= 0)
+                    return Reject(intent, $"Out of ammo — reload {equippedWeapon.Name}.");
+            }
+            else if (equippedWeapon.WeaponKind == WeaponKind.Melee)
+            {
+                if (attacker.Stamina < equippedWeapon.StaminaCost)
+                    return Reject(intent, $"Too tired to swing {equippedWeapon.Name} (need {equippedWeapon.StaminaCost} stamina, have {attacker.Stamina}).");
+            }
+        }
+
         var attackerInLawless = _lawlessTiles.Contains(attacker.Position);
         var shift = isDuelAttack || attackerInLawless
             ? new KarmaShift(0, KarmaDirection.Neutral,
@@ -1686,6 +1704,13 @@ public sealed class AuthoritativeWorldServer
         var damage = 30 + attacker.AttackPower;
         var wentDown = _state.DamagePlayer(intent.PlayerId, targetId, damage, isDuelAttack ? "accepted duel strike" : "server-authorized attack");
         _lastAttackTickByPlayer[intent.PlayerId] = _tick;
+        if (equippedWeapon is not null)
+        {
+            if (equippedWeapon.WeaponKind == WeaponKind.Ranged)
+                attacker.ConsumeAmmo();
+            else if (equippedWeapon.WeaponKind == WeaponKind.Melee)
+                attacker.SpendStamina(equippedWeapon.StaminaCost);
+        }
         AddCombatHeat(attacker.Position);
         if (wentDown)
         {
@@ -2078,6 +2103,35 @@ public sealed class AuthoritativeWorldServer
 
     public const int SellItemFallbackPrice = 5;
     public const int SellItemPercentOfPrice = 50;
+    public const int StaminaRegenPerIdleTick = 2;
+
+    private ServerProcessResult ProcessReload(ServerIntent intent)
+    {
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var player))
+            return Reject(intent, "Player state unavailable.");
+        if (!player.Equipment.TryGetValue(EquipmentSlot.MainHand, out var weapon))
+            return Reject(intent, "No weapon equipped.");
+        if (weapon.WeaponKind != WeaponKind.Ranged)
+            return Reject(intent, $"{weapon.Name} cannot be reloaded.");
+        if (string.IsNullOrEmpty(weapon.AmmoItemId))
+            return Reject(intent, $"{weapon.Name} has no ammo type.");
+        if (!player.Inventory.Any(i => i.Id == weapon.AmmoItemId))
+            return Reject(intent, $"No {weapon.AmmoItemId} in inventory.");
+        if (!_state.ConsumeItem(intent.PlayerId, weapon.AmmoItemId))
+            return Reject(intent, $"Failed to consume ammo.");
+        player.SetAmmo(weapon.MagazineSize, weapon.MagazineSize);
+        var serverEvent = AppendEvent(
+            "weapon_reloaded",
+            $"{intent.PlayerId} reloaded {weapon.Name}.",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["weaponId"] = weapon.Id,
+                ["magazineSize"] = weapon.MagazineSize.ToString(),
+                ["ammoItemId"] = weapon.AmmoItemId
+            });
+        return ServerProcessResult.Accepted(serverEvent);
+    }
 
     private ServerProcessResult ProcessSellItem(ServerIntent intent)
     {
@@ -2162,6 +2216,14 @@ public sealed class AuthoritativeWorldServer
             });
 
         return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private void ApplyStaminaRegen(long ticks)
+    {
+        var amount = (int)(StaminaRegenPerIdleTick * ticks);
+        if (amount <= 0) return;
+        foreach (var pid in _connectedPlayerIds)
+            if (_state.Players.TryGetValue(pid, out var p)) p.RegenStamina(amount);
     }
 
     private void ApplyClaimScrip(long ticks)
@@ -2620,6 +2682,15 @@ public sealed class AuthoritativeWorldServer
         if (!_state.EquipPlayer(intent.PlayerId, itemId))
         {
             return Reject(intent, $"Player cannot equip item: {item.Name}.");
+        }
+
+        // Equipping a ranged weapon resets ammo state; magazine starts empty until reloaded.
+        if (item.Slot == EquipmentSlot.MainHand && _state.Players.TryGetValue(intent.PlayerId, out var equipPlayer))
+        {
+            if (item.WeaponKind == WeaponKind.Ranged)
+                equipPlayer.SetAmmo(item.MagazineSize, 0);
+            else
+                equipPlayer.SetAmmo(0, 0);
         }
 
         var serverEvent = AppendEvent(
