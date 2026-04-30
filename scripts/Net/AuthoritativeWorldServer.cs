@@ -70,6 +70,7 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, string> _posseQuestOwners = new();
     private readonly Dictionary<string, ShopOffer> _seededOffers = new();
     private readonly HashSet<TilePosition> _lawlessTiles = new();
+    private readonly HashSet<string> _inLawlessByPlayer = new();
     private readonly Dictionary<string, HashSet<(int, int)>> _visitedChunksByPlayer = new();
     public const int FogOfWarMinimumRevealRadiusChunks = 1;
     private sealed record DropClaim(string OwnerId, string OwnerName);
@@ -890,6 +891,36 @@ public sealed class AuthoritativeWorldServer
         }
 
         _state.SetPlayerPosition(intent.PlayerId, target);
+
+        var nowLawless = _lawlessTiles.Contains(target);
+        var wasLawless = _inLawlessByPlayer.Contains(intent.PlayerId);
+        if (nowLawless && !wasLawless)
+        {
+            _inLawlessByPlayer.Add(intent.PlayerId);
+            AppendEvent(
+                "entered_lawless_zone",
+                $"{intent.PlayerId} entered a lawless zone.",
+                new Dictionary<string, string>
+                {
+                    ["playerId"] = intent.PlayerId,
+                    ["x"] = x.ToString(),
+                    ["y"] = y.ToString()
+                });
+        }
+        else if (!nowLawless && wasLawless)
+        {
+            _inLawlessByPlayer.Remove(intent.PlayerId);
+            AppendEvent(
+                "left_lawless_zone",
+                $"{intent.PlayerId} returned to patrolled territory.",
+                new Dictionary<string, string>
+                {
+                    ["playerId"] = intent.PlayerId,
+                    ["x"] = x.ToString(),
+                    ["y"] = y.ToString()
+                });
+        }
+
         var data = new Dictionary<string, string>
         {
             ["playerId"] = intent.PlayerId,

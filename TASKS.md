@@ -45,10 +45,11 @@ Things the test suite confirms but a player would notice.
   uses it for LMB attacks so client and HUD pick the same target.
   *Outstanding follow-up*: in-world reticule / outline sprite (deferred to
   art pass — listed in `ART_NEEDED.md` Step 24/25 area).
-- [ ] **Lawless zone player feedback** — server emits no `zone_changed` event
-  when a player crosses a lawless boundary. Status effect appears in the
-  snapshot but not as a transient toast. Add a one-shot `entered_lawless` /
-  `left_lawless` event on per-tick boundary crossing.
+- [x] **Lawless zone player feedback** — *done 2026-04-29*. `ProcessMove`
+  now tracks `_inLawlessByPlayer` and emits `entered_lawless_zone` /
+  `left_lawless_zone` server events on boundary crossings. Lawless-to-
+  lawless moves don't emit redundant events. The HUD's
+  `FormatLatestServerEvent` will pick these up automatically.
 - [ ] **Posse quest activation path** — `StartPosseQuest` is a public server
   method but no intent or NPC dialogue option triggers it. Wire either an
   `IntentType.StartPosseQuest` or a "posse_outpost"-roled NPC dialogue choice

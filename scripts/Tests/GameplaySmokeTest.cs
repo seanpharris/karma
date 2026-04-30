@@ -4362,6 +4362,39 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(lzState.Players["aa_outlaw"].Karma.Score < lzKarmaAfterMove,
             "attack outside lawless zone applies normal karma penalty");
 
+        // Lawless zone enter/exit toast: walking onto / off of a lawless tile
+        // emits entered_lawless_zone / left_lawless_zone events.
+        var ltState = new GameState();
+        ltState.RegisterPlayer("aa_walker", "Walker");
+        ltState.SetPlayerPosition("aa_walker", new TilePosition(0, 0));
+        var ltServer = new AuthoritativeWorldServer(ltState, "lawless-toast-test");
+        var ltSeq = 1;
+        foreach (var ltPid in ltServer.ConnectedPlayerIds)
+            ltServer.ProcessIntent(new ServerIntent(ltPid, ltSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+
+        var ltLawlessTile = new TilePosition(40, 40);
+        ltServer.MarkTileLawless(ltLawlessTile);
+
+        // First crossing: enter the lawless tile -> entered event
+        ltServer.ProcessIntent(new ServerIntent("aa_walker", ltSeq++, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "40", ["y"] = "40" }));
+        ExpectTrue(ltServer.EventLog.Any(e => e.EventId.Contains("entered_lawless_zone")),
+            "entered_lawless_zone event fires on first move into a lawless tile");
+
+        // Walking on another lawless tile (not yet flagged) is a no-op for the toast
+        ltServer.MarkTileLawless(new TilePosition(40, 41));
+        ltServer.ProcessIntent(new ServerIntent("aa_walker", ltSeq++, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "40", ["y"] = "41" }));
+        var enteredCount = ltServer.EventLog.Count(e => e.EventId.Contains("entered_lawless_zone"));
+        ExpectEqual(1, enteredCount,
+            "moving lawless-to-lawless does not emit a redundant entered_lawless_zone");
+
+        // Step out: emits left event
+        ltServer.ProcessIntent(new ServerIntent("aa_walker", ltSeq++, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "39", ["y"] = "39" }));
+        ExpectTrue(ltServer.EventLog.Any(e => e.EventId.Contains("left_lawless_zone")),
+            "left_lawless_zone event fires on stepping off a lawless tile");
+
         // ── Step 39: Fog of war ───────────────────────────────────────────────────
         // Server tracks visited chunks per player; CreateInterestSnapshot only
         // includes chunks the player has visited (via FogOfWarMinimumRevealRadius).
