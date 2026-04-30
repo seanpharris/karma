@@ -69,7 +69,31 @@ public enum StructureSpriteKind
     BoardingSchoolFallenLeavesPile,
     BoardingSchoolGrassFlowersA,
     BoardingSchoolGrassFlowersB,
-    BoardingSchoolGrassFlowersC
+    BoardingSchoolGrassFlowersC,
+    // Sliced props from the priority Gemini atlases (2026-04-30):
+    ClinicBed,
+    MedicalCrate,
+    AmbulanceStretcher,
+    MedicineCabinet,
+    SupplyDropParachute,
+    ShopKiosk,
+    ShopShelves,
+    LockedMetalChest,
+    WoodChestOpen,
+    AmmoCrateMetal,
+    WeaponCaseLong,
+    ToolBoxOpen,
+    BackpackBrown,
+    WrappedParcel,
+    WantedMugShotFrame,
+    WantedBulletinBoard,
+    JailBarredWindow,
+    BarricadeGate,
+    EvidenceTable,
+    EvidenceLockers,
+    GuardBoothKiosk,
+    SirenBeaconBlue,
+    HandcuffsSilver
 }
 
 public sealed record StructureSpriteDefinition(
@@ -91,6 +115,9 @@ public static class StructureArtCatalog
     public const string BoardingSchoolGrassAtlasPath = "res://assets/themes/boarding_school/grass_tiles_1_32.png";
     public const string GeminiStaticPropsRoot = "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/";
     public const string GeminiNaturalPropsRoot = "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/";
+    public const string SlicedClinicRoot = "res://assets/art/generated/sliced/clinic_rescue_revive/";
+    public const string SlicedSupplyShopRoot = "res://assets/art/generated/sliced/supply_shop_loot/";
+    public const string SlicedWantedBountyRoot = "res://assets/art/generated/sliced/wanted_bounty_law/";
 
     private static readonly IReadOnlyDictionary<StructureSpriteKind, StructureSpriteDefinition> Definitions =
         new Dictionary<StructureSpriteKind, StructureSpriteDefinition>
@@ -346,7 +373,82 @@ public static class StructureArtCatalog
             [StructureSpriteKind.BoardingSchoolGrassFlowersB] = BoardingSchoolGrassDetail(
                 StructureSpriteKind.BoardingSchoolGrassFlowersB, "boarding_school_grass_flowers_b", "Grass Flowers B", new Rect2(32f, 0f, 32f, 32f)),
             [StructureSpriteKind.BoardingSchoolGrassFlowersC] = BoardingSchoolGrassDetail(
-                StructureSpriteKind.BoardingSchoolGrassFlowersC, "boarding_school_grass_flowers_c", "Grass Flowers C", new Rect2(64f, 0f, 32f, 32f))
+                StructureSpriteKind.BoardingSchoolGrassFlowersC, "boarding_school_grass_flowers_c", "Grass Flowers C", new Rect2(64f, 0f, 32f, 32f)),
+
+            // Sliced clinic / rescue / revive props
+            [StructureSpriteKind.ClinicBed] = SlicedProp(
+                StructureSpriteKind.ClinicBed, "clinic_bed", "Clinic Bed", "clinic_prop",
+                new Vector2(40f, 28f), SlicedClinicRoot, "clinic_bed.png"),
+            [StructureSpriteKind.MedicalCrate] = SlicedProp(
+                StructureSpriteKind.MedicalCrate, "medical_crate", "Medical Crate", "clinic_prop",
+                new Vector2(28f, 28f), SlicedClinicRoot, "medical_crate.png"),
+            [StructureSpriteKind.AmbulanceStretcher] = SlicedProp(
+                StructureSpriteKind.AmbulanceStretcher, "ambulance_stretcher", "Ambulance Stretcher", "clinic_prop",
+                new Vector2(48f, 28f), SlicedClinicRoot, "ambulance_stretcher.png"),
+            [StructureSpriteKind.MedicineCabinet] = SlicedProp(
+                StructureSpriteKind.MedicineCabinet, "medicine_cabinet", "Medicine Cabinet", "clinic_prop",
+                new Vector2(28f, 36f), SlicedClinicRoot, "medicine_cabinet.png"),
+
+            // Sliced supply / shop / loot props
+            [StructureSpriteKind.SupplyDropParachute] = SlicedProp(
+                StructureSpriteKind.SupplyDropParachute, "supply_drop_parachute", "Supply Drop", "supply_prop",
+                new Vector2(40f, 40f), SlicedSupplyShopRoot, "supply_drop_parachute.png"),
+            [StructureSpriteKind.ShopKiosk] = SlicedProp(
+                StructureSpriteKind.ShopKiosk, "shop_kiosk", "Shop Kiosk", "shop_prop",
+                new Vector2(48f, 48f), SlicedSupplyShopRoot, "shop_kiosk.png"),
+            [StructureSpriteKind.ShopShelves] = SlicedProp(
+                StructureSpriteKind.ShopShelves, "shop_shelves", "Shop Shelves", "shop_prop",
+                new Vector2(40f, 44f), SlicedSupplyShopRoot, "shop_shelves.png"),
+            [StructureSpriteKind.LockedMetalChest] = SlicedProp(
+                StructureSpriteKind.LockedMetalChest, "locked_metal_chest", "Locked Metal Chest", "loot_prop",
+                new Vector2(32f, 28f), SlicedSupplyShopRoot, "locked_metal_chest.png"),
+            [StructureSpriteKind.WoodChestOpen] = SlicedProp(
+                StructureSpriteKind.WoodChestOpen, "wood_chest_open", "Wood Chest (Open)", "loot_prop",
+                new Vector2(32f, 28f), SlicedSupplyShopRoot, "wood_chest_open.png"),
+            [StructureSpriteKind.AmmoCrateMetal] = SlicedProp(
+                StructureSpriteKind.AmmoCrateMetal, "ammo_crate_metal", "Ammo Crate", "loot_prop",
+                new Vector2(32f, 28f), SlicedSupplyShopRoot, "ammo_crate_metal.png"),
+            [StructureSpriteKind.WeaponCaseLong] = SlicedProp(
+                StructureSpriteKind.WeaponCaseLong, "weapon_case_long", "Weapon Case", "loot_prop",
+                new Vector2(40f, 20f), SlicedSupplyShopRoot, "weapon_case_long.png"),
+            [StructureSpriteKind.ToolBoxOpen] = SlicedProp(
+                StructureSpriteKind.ToolBoxOpen, "tool_box_open", "Tool Box (Open)", "loot_prop",
+                new Vector2(32f, 24f), SlicedSupplyShopRoot, "tool_box_open.png"),
+            [StructureSpriteKind.BackpackBrown] = SlicedProp(
+                StructureSpriteKind.BackpackBrown, "backpack_brown", "Backpack", "loot_prop",
+                new Vector2(28f, 32f), SlicedSupplyShopRoot, "backpack_brown.png"),
+            [StructureSpriteKind.WrappedParcel] = SlicedProp(
+                StructureSpriteKind.WrappedParcel, "wrapped_parcel", "Wrapped Parcel", "loot_prop",
+                new Vector2(28f, 28f), SlicedSupplyShopRoot, "wrapped_parcel.png"),
+
+            // Sliced wanted / bounty / law props
+            [StructureSpriteKind.WantedMugShotFrame] = SlicedProp(
+                StructureSpriteKind.WantedMugShotFrame, "wanted_mug_shot_frame", "Wanted Mug Shot", "law_prop",
+                new Vector2(28f, 36f), SlicedWantedBountyRoot, "wanted_mug_shot_frame.png"),
+            [StructureSpriteKind.WantedBulletinBoard] = SlicedProp(
+                StructureSpriteKind.WantedBulletinBoard, "wanted_bulletin_board", "Wanted Bulletin Board", "law_prop",
+                new Vector2(40f, 36f), SlicedWantedBountyRoot, "wanted_bulletin_board.png"),
+            [StructureSpriteKind.JailBarredWindow] = SlicedProp(
+                StructureSpriteKind.JailBarredWindow, "jail_barred_window", "Jail Barred Window", "law_prop",
+                new Vector2(28f, 36f), SlicedWantedBountyRoot, "jail_barred_window.png"),
+            [StructureSpriteKind.BarricadeGate] = SlicedProp(
+                StructureSpriteKind.BarricadeGate, "barricade_gate", "Barricade Gate", "law_prop",
+                new Vector2(40f, 28f), SlicedWantedBountyRoot, "barricade_gate.png"),
+            [StructureSpriteKind.EvidenceTable] = SlicedProp(
+                StructureSpriteKind.EvidenceTable, "evidence_table", "Evidence Table", "law_prop",
+                new Vector2(40f, 28f), SlicedWantedBountyRoot, "evidence_table.png"),
+            [StructureSpriteKind.EvidenceLockers] = SlicedProp(
+                StructureSpriteKind.EvidenceLockers, "evidence_lockers", "Evidence Lockers", "law_prop",
+                new Vector2(36f, 40f), SlicedWantedBountyRoot, "evidence_lockers.png"),
+            [StructureSpriteKind.GuardBoothKiosk] = SlicedProp(
+                StructureSpriteKind.GuardBoothKiosk, "guard_booth_kiosk", "Guard Booth", "law_prop",
+                new Vector2(40f, 44f), SlicedWantedBountyRoot, "guard_booth_kiosk.png"),
+            [StructureSpriteKind.SirenBeaconBlue] = SlicedProp(
+                StructureSpriteKind.SirenBeaconBlue, "siren_beacon_blue", "Siren Beacon", "law_prop",
+                new Vector2(20f, 40f), SlicedWantedBountyRoot, "siren_beacon_blue.png"),
+            [StructureSpriteKind.HandcuffsSilver] = SlicedProp(
+                StructureSpriteKind.HandcuffsSilver, "handcuffs_silver", "Handcuffs", "law_prop",
+                new Vector2(28f, 24f), SlicedWantedBountyRoot, "handcuffs_silver.png")
         };
 
     public static IReadOnlyDictionary<StructureSpriteKind, StructureSpriteDefinition> All => Definitions;
@@ -497,6 +599,29 @@ public static class StructureArtCatalog
         string fileName)
     {
         return GeminiProp(kind, id, displayName, category, size, GeminiStaticPropsRoot + fileName);
+    }
+
+    private static StructureSpriteDefinition SlicedProp(
+        StructureSpriteKind kind,
+        string id,
+        string displayName,
+        string category,
+        Vector2 size,
+        string root,
+        string fileName)
+    {
+        // Sliced PNGs are whole images at variable sizes (each atlas cell
+        // produces its own file), so we use HasAtlasRegion=false rather than
+        // the GeminiProp helper's hardcoded 128x128 region.
+        return new StructureSpriteDefinition(
+            kind,
+            id,
+            displayName,
+            category,
+            size,
+            root + fileName,
+            new Rect2(0f, 0f, 0f, 0f),
+            HasAtlasRegion: false);
     }
 
     private static StructureSpriteDefinition GeminiNaturalProp(

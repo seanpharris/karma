@@ -1,0 +1,332 @@
+[
+  {
+    "name": "clinic_sign",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/clinic_sign.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      8,
+      7,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "clinic_terminals",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/clinic_terminals.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      212,
+      7,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "clinic_bed",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/clinic_bed.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      416,
+      7,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "ambulance_stretcher",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/ambulance_stretcher.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      620,
+      7,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "medic_bag",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/medic_bag.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      824,
+      7,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "medicine_cabinet",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/medicine_cabinet.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      8,
+      177,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "holo_tripod",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/holo_tripod.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      212,
+      177,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "diagnostic_kiosk",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/diagnostic_kiosk.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      416,
+      177,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "scrip_tray",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/scrip_tray.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      620,
+      177,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "biohazard_barricade",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/biohazard_barricade.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      824,
+      177,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "pillbox_tray",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/pillbox_tray.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      8,
+      347,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "biohazard_quarantine",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/biohazard_quarantine.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      212,
+      347,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "oxygen_tank_short",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/oxygen_tank_short.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      416,
+      347,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "oxygen_tank_tall",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/oxygen_tank_tall.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      620,
+      347,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "surgical_light",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/surgical_light.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      824,
+      347,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "bucket_caution_sign",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/bucket_caution_sign.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      8,
+      517,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "surgical_light_alt",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/surgical_light_alt.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      212,
+      517,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "downed_marker_red_a",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/downed_marker_red_a.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      416,
+      517,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "downed_marker_red_b",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/downed_marker_red_b.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      620,
+      517,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "shield_buff",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/shield_buff.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      824,
+      517,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "rescue_banner",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/rescue_banner.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      8,
+      687,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "receipt",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/receipt.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      212,
+      687,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "medical_crate",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/medical_crate.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      416,
+      687,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "medical_terminal",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/medical_terminal.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      620,
+      687,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "medical_terminal_alt",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/medical_terminal_alt.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      824,
+      687,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "medical_terminal_b",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/medical_terminal_b.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      8,
+      857,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "medical_terminal_c",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/medical_terminal_c.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      212,
+      857,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "refugee_tent",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/refugee_tent.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      416,
+      857,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "ritual_altar",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/ritual_altar.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      620,
+      857,
+      187,
+      156
+    ]
+  },
+  {
+    "name": "bench",
+    "path": "res://assets/art/generated/sliced/clinic_rescue_revive/bench.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_clinic_rescue_revive_atlas.jpg",
+    "source_region": [
+      824,
+      857,
+      187,
+      156
+    ]
+  }
+]

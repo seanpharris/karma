@@ -1,0 +1,277 @@
+[
+  {
+    "name": "wanted_bulletin_board",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/wanted_bulletin_board.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      7,
+      7,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "scanner_kiosk_blue",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/scanner_kiosk_blue.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      211,
+      7,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "wanted_poster_crate",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/wanted_poster_crate.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      415,
+      7,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "ledger_desk_chair",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/ledger_desk_chair.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      619,
+      7,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "guard_booth_kiosk",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/guard_booth_kiosk.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      823,
+      7,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "barricade_gate",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/barricade_gate.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      7,
+      211,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "scanner_archway",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/scanner_archway.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      211,
+      211,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "evidence_bag_clear",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/evidence_bag_clear.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      415,
+      211,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "evidence_lockers",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/evidence_lockers.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      619,
+      211,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "courthouse_pulpit",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/courthouse_pulpit.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      823,
+      211,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "siren_beacon_blue",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/siren_beacon_blue.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      7,
+      415,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "wanted_yellow_sign",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/wanted_yellow_sign.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      211,
+      415,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "trash_can_metal",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/trash_can_metal.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      415,
+      415,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "jail_barred_window",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/jail_barred_window.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      619,
+      415,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "handcuffs_silver",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/handcuffs_silver.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      823,
+      415,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "mail_envelope_letters",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/mail_envelope_letters.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      7,
+      619,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "badge_silver_octagon",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/badge_silver_octagon.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      211,
+      619,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "badge_silver_octagon_alt",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/badge_silver_octagon_alt.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      415,
+      619,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "wanted_mug_shot_frame",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/wanted_mug_shot_frame.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      619,
+      619,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "ballot_box_locked",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/ballot_box_locked.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      823,
+      619,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "paperwork_stack",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/paperwork_stack.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      7,
+      823,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "tripod_camera",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/tripod_camera.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      211,
+      823,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "evidence_table",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/evidence_table.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      415,
+      823,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "wanted_poster_wall_corkboard",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/wanted_poster_wall_corkboard.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      619,
+      823,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "atm_kiosk_red",
+    "path": "res://assets/art/generated/sliced/wanted_bounty_law/atm_kiosk_red.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_wanted_bounty_law_atlas.jpg",
+    "source_region": [
+      823,
+      823,
+      189,
+      189
+    ]
+  }
+]

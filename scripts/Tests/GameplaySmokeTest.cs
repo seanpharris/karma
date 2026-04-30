@@ -4863,6 +4863,31 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(wrMeleeState.Players["aa_brawler"].Stamina > staminaAfterDrain,
             "Stamina regenerates during AdvanceIdleTicks");
 
+        // Sliced atlas props are registered in StructureArtCatalog and point at
+        // the right sliced-PNG path so runtime can load them without a slicing
+        // pass at game-startup.
+        var slicedKinds = new[]
+        {
+            StructureSpriteKind.ClinicBed,
+            StructureSpriteKind.MedicalCrate,
+            StructureSpriteKind.SupplyDropParachute,
+            StructureSpriteKind.ShopKiosk,
+            StructureSpriteKind.AmmoCrateMetal,
+            StructureSpriteKind.WantedMugShotFrame,
+            StructureSpriteKind.JailBarredWindow,
+            StructureSpriteKind.HandcuffsSilver
+        };
+        foreach (var kind in slicedKinds)
+        {
+            ExpectTrue(StructureArtCatalog.All.ContainsKey(kind),
+                $"StructureArtCatalog includes {kind}");
+            var def = StructureArtCatalog.GetById(StructureArtCatalog.All[kind].Id);
+            ExpectTrue(def.AtlasPath.Contains("/sliced/"),
+                $"{kind} resolves to a sliced-atlas resource path");
+            ExpectFalse(def.HasAtlasRegion,
+                $"{kind} is a whole-PNG sliced prop (no atlas region required)");
+        }
+
         // Event icon resolver: maps server event ids to sliced UI icon paths.
         ExpectEqual("supply_spawned",
             HudController.ResolveEventIconName("world1:42:supply_drop_spawned"),

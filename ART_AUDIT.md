@@ -344,6 +344,10 @@ Run from project root:
 |---|---|---|---|
 | `karma_priority_prototype_ui_icons_atlas.jpg` | `tools/slice_prototype_ui_icons.gd` | `assets/art/generated/sliced/prototype_ui_icons/` | 36 labeled HUD-event icons (interact, ready_up, match_started, wanted, bounty_claimed, contraband_detected, supply_spawned, supply_claimed, clinic_revive, duel_*, player_*, karma_break, item_*, structure_interacted, posse_*, local_chat, mount, dismount, quest_*, dialogue, entanglement, rumor, witness, evidence, danger_heat, restart) |
 | `karma_static_ui_status_icons_atlas.jpg` | `tools/slice_ui_status_icons.gd` | `assets/art/generated/sliced/ui_status_icons/` | 36 generic karma/social status icons (positive, negative, wanted, bounty, witness, trade, posse, rumor, contraband, rescue, duel, theft, evidence, law, clinic, supply_drop, structure_repair, sabotage, chat, faction, mount, downed_status, karma_break, local_proximity, shop, quest, return, bribe, apology, trust_vouch, danger_heat) |
+| `karma_static_event_markers_atlas.jpg` | `tools/slice_event_markers.gd` | `assets/art/generated/sliced/event_markers/` | 36 small flat icons (target ring, location pin, warning triangle, shield, racing flag, ring buoy, skull, wanted poster, parachute mushroom, red cross, money bag, exclamation, crossed swords, magnifier, eye bubble, posse circle, handshake, X box, package, fire triangle, horse, shovel chest) |
+| `karma_priority_clinic_rescue_revive_atlas.jpg` | `tools/slice_clinic_rescue_revive.gd` | `assets/art/generated/sliced/clinic_rescue_revive/` | 30 clinic/rescue props (clinic sign, terminals, bed, ambulance stretcher, medic bag, medicine cabinet, holo tripod, diagnostic kiosk, scrip tray, biohazard barricade, pillbox tray, oxygen tanks, surgical light, downed markers, shield buff, RESCUE banner, medical crate, medical terminals, refugee tent, ritual altar, bench) |
+| `karma_priority_supply_shop_loot_atlas.jpg` | `tools/slice_supply_shop_loot.gd` | `assets/art/generated/sliced/supply_shop_loot/` | 21 supply/shop props (supply drop parachute, barrel, bedroll, scales table, shop kiosk/shelves/tent, locked + open chests, ammo crate, medical crate, weapon case, tool box, backpack, parcel, money sack, scrap pile, cluttered loot, signpost, discount tag) |
+| `karma_priority_wanted_bounty_law_atlas.jpg` | `tools/slice_wanted_bounty_law.gd` | `assets/art/generated/sliced/wanted_bounty_law/` | 25 wanted/bounty props (bulletin board, scanner kiosk, ledger desk, guard booth, barricade gate, scanner archway, evidence bag/lockers/table, jail barred window, handcuffs, mail envelope, badges, mug shot frame, ballot box, paperwork stack, tripod camera, ATM kiosk) |
 
 The first slice is **wired into the live HUD** —
 `HudController.ResolveEventIconName(eventId)` maps server-event ids to
@@ -352,28 +356,34 @@ label, and 9 smoke tests cover the resolver logic.
 
 ### Atlases NOT yet sliced (ranked by next priority)
 
-1. **`karma_static_event_markers_atlas.jpg`** — 36 small flat icons
-   (target, pin, warning triangle, shield, flag, ring buoy, skull, etc.).
-   Useful for minimap markers and tile overlays. ~6×6 grid; appears to be
-   no labels, so a uniform-grid slice should work cleanly.
-2. **`karma_priority_clinic_rescue_revive_atlas.jpg`** — clinic structure
-   variants (bed, stretcher, medic bag, oxygen tank, biohazard barricade,
-   surgical light, etc.). For Step 16 wiring.
-3. **`karma_priority_supply_shop_loot_atlas.jpg`** — supply drop crate
-   (parachute), shop kiosk, chests, ammo crate, weapon case, sack. For
-   Step 30 + shop UX.
-4. **`karma_priority_wanted_bounty_law_atlas.jpg`** — wanted poster, jail
-   bars, handcuffs, badge, evidence bag. For Step 24 Warden visuals.
-5. **`karma_priority_structure_world_state_atlas.jpg`** — generator and
+1. **`karma_priority_structure_world_state_atlas.jpg`** — generator and
    greenhouse damage states; for Step 12 sabotage display.
-6. **`karma_static_modular_walls_doors_atlas.jpg`** — modular walls/doors
+2. **`karma_static_modular_walls_doors_atlas.jpg`** — modular walls/doors
    per theme; for Step 17–18 path generation and seamless interiors.
-7. **`karma_static_interior_furniture_atlas.jpg`** — beds, desks,
+3. **`karma_static_interior_furniture_atlas.jpg`** — beds, desks,
    cabinets; for interior-rendering follow-ups.
-8. **`karma_static_crafting_stations_atlas.jpg`** — workbench variants;
+4. **`karma_static_crafting_stations_atlas.jpg`** — workbench variants;
    for Step 36 crafting UI.
-9. **`karma_static_containers_loot_atlas.jpg`** — chests, lockers, sacks;
+5. **`karma_static_containers_loot_atlas.jpg`** — chests, lockers, sacks;
    for general loot prop variety.
+6. **`karma_priority_player_interactions_atlas.jpg`** — duel signs, posse
+   banners, contracts, treasure chests; for player-interaction polish.
+7. **`karma_priority_location_exteriors_atlas.jpg`** — clinic/shop/jail
+   building exteriors; for world-gen prop placement.
+8. **`karma_priority_theme_variant_matrix_atlas.jpg`** — theme alternates
+   for the same mechanical objects; for theme filtering.
+9. **`karma_static_hazards_disasters_atlas.jpg`** — fire/oil/electric/etc.
+   tile decals; for Step 12 heat-zone display.
+10. **`karma_static_evidence_clues_atlas.jpg`** — footprints, blood,
+    tire skids, sealed letters, IDs; for Step 4 rumor quest evidence.
+11. **`karma_static_player_interaction_props_atlas.jpg`** — barter
+    terminal, neon handshake, voting tablet, faction flag.
+12. **`karma_static_faction_reputation_symbols_atlas.jpg`** — 32
+    reputation badges; for Step 32 reputation HUD.
+13. **`karma_static_mission_boards_atlas.jpg`** — labeled mission board
+    variants (lost-and-found, rumor, posse recruitment, faction notice,
+    delivery, salvage claim, etc.). Note: labeled atlas — needs
+    per-row Y measurement like the UI icon atlases.
 
 Each subsequent slicer should follow the same pattern: a `debug_*_strip.gd`
 that exports the leftmost column for visual measurement, then a
