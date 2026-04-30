@@ -1829,3 +1829,435 @@ designing new interactions.
 - "Witnessed by NPC or player" is the karma multiplier for almost all
   of these. The witnesses system from BRAINSTORMING.md "Public
   Witnesses" is the prerequisite for the dark-funny axis to land.
+
+### Extreme Karma Drops — Expanded Pool
+
+Continuing from the original 11. All retain the cliff-action design
+target: a single use should drop a neutral player into Outlaw or
+Wraith tier.
+
+12. **Pickpocket the Wanted target while they bleed out** — steal from
+    a downed Wanted player who's about to Karma Break, denying them
+    the chance to redeem via clinic. Karma- + 5-min "callous" rumor.
+13. **Sabotage your own posse quest** — fake step completion on a
+    `PosseQuestModule` so the bonus never lands. Posse members lose
+    the scrip, and the saboteur gets a "betrayer" rumor.
+14. **Walk a contraband package through an active revive** — carry a
+    contraband-flagged item into the clinic interior while another
+    player is being auto-revived. Decay applies to *both* players.
+15. **Ritual humiliation** — bind a downed player to a structure with
+    rope/bind item, then leave them visible to all incoming witnesses.
+    Karma cliff per witness who arrives.
+16. **Secret broadcast** — use a Recording Wire to capture a posse
+    chat, then post it to the public notice board. Cascading karma-
+    per posse member exposed.
+17. **Steal an NPC's only ration** — trigger a "child NPC starves"
+    flavor event (karma cliff + faction reputation crash with the
+    affected faction). Tone-checked: NPC reaction is sad-mutter, not
+    horror.
+18. **Interrupt a Saint blessing** — attack a player in the middle of
+    a Saint's bless animation. Massive karma- + immediate Wanted +
+    every Saint-aligned NPC refuses service for the rest of the
+    match.
+19. **Corral and abandon** — herd a player into a lawless zone using
+    movement-blocking placements (Tripwires, Smoke Bombs), then
+    destroy the bridge/path back. Karma- + rumor.
+20. **Misroute a clinic patient** — kidnap a downed player out of
+    clinic range and stash them in a workshop or saloon, denying
+    auto-revive. Karma cliff + rumor with kidnapper named.
+21. **Communal pot poisoning** — slip a drug or Spoiled Stew into a
+    posse's Communal Pot while it's cooking. All eaters get the
+    debuff. Karma- per affected eater.
+22. **Trophy soup** — cook a victim's Dog Tag into a meal item via
+    crafting. Tone-tasteful absurdity, but the act is a desecration
+    flag. Massive karma-.
+23. **Door-lock arson** — burn a structure while the door is locked
+    from outside (Lockpick or sabotaged door). Karma cliff per
+    trapped player.
+24. **Forged toll racket** — sell Forged Toll Tokens to non-suspecting
+    players who get caught at the next checkpoint, marked Wanted in
+    your stead. Karma-.
+25. **Strip-and-leave** — loot a downed player's full kit *and* their
+    Cleanliness items, leaving them to respawn naked and reeking.
+    Bigger karma- than a normal full loot.
+26. **Pawn pledged item** — sell or destroy an item another player
+    Pledge-Tokened to you. Pledge resolution fails publicly. Karma-
+    + "broken oath" rumor.
+27. **EMP a clinic** — detonate an EMP Charge inside a clinic during
+    multiple active revives. All revives fail. Karma cliff per
+    failed patient.
+28. **Mass rumor flood** — post 5+ rumor pamphlets about the same
+    target on the notice board within a minute. Target gets a
+    saturation karma-, you get a "rumor monger" flag.
+29. **Decoy-Saint scam** — disguise as a Saint (using NPC cosplay +
+    Disguise Kit), accept tribute under false title. Karma cliff
+    when uncovered.
+30. **Wraith dismount ambush** — Wraith Surge into a mounted target,
+    dismount them mid-route, leave them stranded in lawless zone.
+    Karma- + bounty if Wanted target.
+31. **The Reverend's Trick** — initiate a Saint blessing animation,
+    swap to dropping a Scourge's Mark on the recipient instead.
+    Karma cliff + faction reputation crash.
+32. **Frame job** — plant a contraband item in another player's
+    inventory (requires lockpick or surrender exploit). They get
+    detected, they go Wanted. Karma cliff for the framer if exposed.
+33. **Wired confession leak** — record a private apology / confession
+    via Recording Wire, sell to the rival faction or dealer. Karma-.
+34. **Mount-and-strand** — steal a mount, ride to lawless zone,
+    dismount, abandon. Owner has to traverse hostile zone on foot.
+    Karma-.
+35. **Burn the mailbag** — destroy a Sealed Dispatch *as the courier*
+    before delivery. Karma- + faction reputation crash with the
+    sender's faction.
+36. **Snitch karma loop** — sell drug recipes / dealer locations to
+    law NPCs. Dealers get marked Wanted by association. Karma- for
+    the snitch (selling info is shady) but bounty payout if a dealer
+    is downed.
+37. **Posse pawn** — sell your own posse's claimed-station
+    coordinates to a Wanted-flagged enemy posse for scrip. Massive
+    karma- if station is then sabotaged.
+38. **Inverted blessing** — convince a Paragon to wear a Scourge's
+    Mark "as a joke." If they accept, both lose karma; if they
+    refuse, only the proposer loses (silly).
+39. **Demolition during occupancy** — destroy a structure while
+    players are inside its interior. Karma cliff per occupant.
+40. **Bathhouse poison** — pre-poison the only nearby clean-water
+    structure before the late-match Cleanliness peak. All bathers
+    take the debuff. Karma- per affected.
+41. **Funeral kidnap** — pose as a funeral organizer, lure another
+    player to a "memorial" that turns out to be an ambush in a
+    lawless zone.
+42. **Confession blackmail** — find another player's Confession
+    Scroll, threaten to publish unless they pay scrip. Karma- per
+    extortion attempt.
+43. **Hostage delivery** — carry a downed player toward clinic, then
+    refuse to drop them inside, holding them at the threshold for
+    scrip ransom. Karma- per second of stalling.
+44. **Saint-grief** — repeatedly trigger the Saint's bless animation
+    cooldown by attacking adjacent NPCs to lock them out of giving
+    blessings. Karma- + faction crash.
+45. **Bounty doubling fraud** — claim the same bounty proxy twice by
+    presenting the same Wanted Poster to two different Wardens. If
+    detected, karma cliff + bounty system lockout for the match.
+
+### Comedic Interactions — Expanded Pool
+
+Continuing from the original 14. Frequent, low-stakes, designed to be
+remembered for the story not the karma score.
+
+15. **Group yawn** — when posse members yawn within 5 sec of each
+    other, all get a brief Sleepy debuff (slight aim wobble) + a
+    rumor `they-yawned-in-sync`.
+16. **Hat trade emote** — swap headwear with another player; resets
+    Cleanliness one tier for both (a fresh hat is a fresh start).
+17. **Photobomb the Saint** — appear in frame when a Saint's
+    blessing animation fires; mutual silly karma+.
+18. **Mount costume day** — equip a hat on your mount; nearby NPCs
+    issue confused dialogue for the rest of the match.
+19. **Read your own rumor aloud** — stand at the notice board and
+    chat your own rumor verbatim. Tiny karma+ for the meta humility.
+20. **Group whoopie symphony** — 3+ players place whoopie cushions
+    in the same saloon within 30 sec. Combined cushion deflation
+    triggers an absurd cascading sound cue + crowd murmur.
+21. **Decoy dance-off** — place 3 Decoys near you and emote dance.
+    Decoys mirror; nearby players get `disoriented` flavor for 5
+    sec.
+22. **Drink offering toast** — give a stranger a drink with a bow
+    emote. Mutual silly karma+.
+23. **Whisper network** — chat at minimum volume inside a structure
+    that someone outside can barely hear (forces them to read
+    bubble fadeout). Silly rumor flavor.
+24. **Fake-Karma-Break pose** — emote that mimics the Downed pose
+    without actual damage. If a rescuer arrives and starts the
+    revive, you "spring up" and laugh. Mutual silly karma+ if
+    rescuer accepts the prank.
+25. **Fake tribute** — offer a Tribute Coin to a Saint, then
+    immediately take it back. Saint's NPC reaction line plays;
+    silly karma flavor.
+26. **Mute trade** — perform a full trade with another player
+    using only emotes (no chat). Achievement-style flavor rumor.
+27. **Wrong-mount confusion** — try to ride a parked mount you
+    don't own. Mount makes a confused vocal cue + rejection
+    animation; tiny silly karma flavor.
+28. **Vendor menu recital** — at a shop, chat each offer's name and
+    price out loud in local chat. Vendor NPC plays embarrassed
+    cue.
+29. **Pet your enemy's mount** — non-aggressive interaction with a
+    Wanted/rival player's parked mount. Mount likes you; mount
+    owner gets a flavor notification.
+30. **Mock-bow to a Wanted player** — formal-bow emote toward a
+    Wanted target. Both get silly karma+. Witnesses chuckle (NPC
+    cue).
+31. **Contraband-only trade** — barter where every traded item must
+    be flagged contraband. Triggers a special "shady deal" cue
+    visible to law NPCs in line of sight.
+32. **Stack of hats** — equip multiple hats simultaneously (silly
+    visible stack). NPCs comment.
+33. **Overdressed for the saloon** — wear all-fancy apparel in a
+    low-tier saloon; rumor records "out-of-place fashion."
+34. **Unhug emote** — retroactively cancel a recent hug; silly
+    karma swing both ways.
+35. **Vow of silence** — opt out of all chat for 5 minutes; tiny
+    karma+ for restraint.
+36. **Vow of lies** — every chat is server-prefixed `[lie]` for 5
+    min; silly social karma flavor; NPCs treat your dialogue
+    inputs with a confused cue.
+37. **Posse karaoke** — three+ players chat the same lyric line
+    in sync within 3 sec. Triggers a rumor + brief group buff.
+38. **Group nap** — posse all sit at once in a saloon. Brief
+    Cleanliness reset for the group.
+39. **Gift a brick** — give another player a Scrap Brick item with
+    a bow. Pure flavor rumor `received_a_brick`.
+40. **Toast to absent friends** — drink emote that names a
+    Karma-Broken player in chat. Tiny social karma+.
+41. **Compliment chain** — give 3 different players Apology
+    Flowers in 60 sec. Rumor `compliment_spree`.
+42. **Dramatic exit** — leave a saloon while in active local chat
+    range; door cue plays at full volume. Silly rumor flavor.
+43. **Read someone's Wanted poster aloud to them** — chat the
+    poster text within range of the Wanted player. Mutual silly
+    karma flavor; NPC reaction.
+44. **Pose as the Saint** — stand exactly on the Saint's last
+    blessing position while they're absent. NPC plays the wrong
+    greeting; silly karma+.
+45. **Dramatic cry** — emote near a Scourge with the cry animation;
+    Scourge NPC reaction line; tiny social karma+.
+46. **Mounted parade** — 3+ posse members ride single-file slowly
+    through town. Triggers a "the parade has arrived" rumor;
+    silly karma+ to all.
+47. **One-of-everything walkout** — buy one of every item from a
+    vendor, then leave without using them. Vendor markup applies
+    permanently. Silly karma flavor.
+48. **Numbered list chat** — chat with `1. ... 2. ... 3. ...`
+    style for absurd flavor.
+49. **Bath in inappropriate places** — bath emote at a notice
+    board, saloon counter, or atop a parked mount. Cleanliness
+    reset + silly rumor.
+50. **Proposal to a corpse** — emote a marriage proposal to a
+    Karma-Broken player. Silly flavor; rumor.
+51. **Posse synchronized sneeze** — chat-trigger sneeze across
+    posse within 2 sec; silly rumor + brief Cleanliness penalty
+    for all.
+52. **Brick-stack architecture** — three+ players each gift a
+    brick to the same target; target's inventory now contains a
+    "tiny wall" item.
+53. **NPC lookalike contest** — three+ players equip identical
+    NPC cosplay; the matched NPC reacts with confused dialogue
+    cycling.
+54. **Mount-mounted-on-mount** — attempt to ride a mount while
+    already mounted on another mount. Triggers an error cue +
+    silly rumor.
+55. **Tipping ceremony** — give a vendor a 1-scrip "tip" emote
+    after every purchase for 5 minutes; vendor reacts with growing
+    irritation; silly rumor.
+56. **Double Apology** — give Apology Flower to a player who has
+    just given you one. Both get tiny flavor karma+.
+57. **Borrowed boot return** — return a previously-stolen single
+    boot to its owner with an Apology Flower. Mutual karma+.
+58. **Interpretive dance combat** — dance emote inside combat
+    range of another dancing player; counts as a "duel" with no
+    damage. Crowd murmur cue.
+59. **Whoopie rain** — drop 5+ Whoopie Cushions in a single tile
+    area; subsequent steps trigger overlapping cues.
+60. **Statue audit** — three+ players hold statue mode in the
+    same saloon; NPC misidentifies them all as decor.
+
+### Dark-Comedic Sweet Spot — Expanded Pool
+
+Continuing from the original 6. Stories players retell.
+
+7. **Funeral DJ** — play a music emote at a player's actual
+   `karma_break` event. Silly karma- + cinematic rumor.
+8. **Smell blackmail** — threaten in posse chat to relieve in a
+   target's claimed station. They pay scrip to avoid it. The
+   threat resolves either way: paid (karma- for extortion), not
+   paid (karma cascade as it happens).
+9. **Mail forwarding scam** — accept a Sealed Dispatch, attach a
+   Personal Letter rerouting it to a wrong recipient. Original
+   sender's intent is fully derailed.
+10. **Resurrect-rob** — wait near clinic; rob a player the moment
+    they're revived (in Karma Break Grace window). They have no
+    items to defend with. Karma- + dark slapstick.
+11. **Drug-confession** — feed a target Euphoric, then prompt
+    them into a Confession Scroll. Their karma+ for confessing is
+    doubled by the drug; the rumor is brutal.
+12. **Posse mutiny** — leader is downed; the member who triggers
+    leader-promote inherits the leader's Wanted flag.
+13. **Saint-1-second steal** — at match-end, give Tribute to the
+    current Saint, immediately rob it back. The leaderboard math
+    sometimes flips you to Saint by 1 karma. Story-grade theft.
+14. **Bathroom Wanted speedrun** — relieve outside, get
+    "Public Indecency" flag, get ambushed by Warden mid-zip.
+15. **Photo-bomb crime** — capture another player committing a
+    crime via Photograph; sell to the Warden as evidence.
+16. **Misnamed Pledge Token** — pledge to "feed Mara" but feed
+    Dallen by mistake; karma resolution unclear; rumor records
+    confusion.
+17. **Toll booth scam** — operate a fake toll booth (placed
+    structure) in a non-toll zone. Players who pay get nothing.
+    Karma-.
+18. **Drug-bounty laundering** — feed Combat Stim to a Wanted
+    target; their comedown causes Karma Break; you claim
+    bounty technically without striking.
+19. **Cargo Pack abandonment** — drop a Cargo Pack with one
+    Whoopie Cushion in it on a busy path; pickup triggers the
+    prank.
+20. **Posse Quest grief** — start a Posse Quest, immediately
+    Karma Break to deny everyone the bonus.
+21. **Crafting karma scam** — accept ingredients from another
+    player to "help craft," walk away with the result.
+22. **Sober-up scam** — sell Hangover Cure to addicted players at
+    extreme markup.
+23. **Faction trade-down** — exploit faction price gaps by buying
+    cheap at one faction, selling expensive at the rival.
+24. **Witnessed reluctance** — refuse to help a downed player
+    publicly. Multiple NPC witnesses; karma- proportional to
+    witness count.
+25. **Ghost mail** — carry a Sealed Dispatch addressed to a
+    Karma-Broken player; deliver to their respawn. Flavor rumor +
+    karma+.
+26. **Conjugal accident** — Apology Flower delivered to the wrong
+    target during another player's Pledge ceremony.
+27. **Mount-hat swap** — swap hats on two parked mounts; owners
+    ride off on each other's. Silly rumor.
+28. **Manic chef** — Combat Stim while at full hunger triggers a
+    flavor "manic chef" event; the player produces surplus
+    Communal Pot Stew without ingredients.
+29. **Wanted poster collection** — collect 5 different Wanted
+    Posters from boards as a meta-quest. Reward is a hidden
+    flavor title.
+30. **Fake duel** — challenge an unaware player to a duel using
+    only emotes; if they "accept" with the wrong gesture, they
+    get a flavor karma flag.
+31. **Drug-fueled clinic dance** — eat Euphoric inside a clinic;
+    forced dance emote loops; clinic NPC reaction shifts to "what
+    are you doing in here."
+32. **Fake-Saint funeral** — hold a fake funeral for a *living*
+    Saint; their next blessing animation lags by 5 sec because
+    the world thinks they're dead.
+33. **Inheritance lottery** — Karma-Break with full inventory in a
+    Communal Pot. Pot flavor changes; three players in vicinity
+    get `inherited_a_stew_recipe` rumor.
+34. **Confession-into-rumor pipeline** — submit a Confession
+    Scroll, immediately have a posse member post a derived rumor
+    about it on the notice board.
+35. **The "Mara Method"** — engage Mara in romance dialogue,
+    immediately propose to Dallen via Pledge Token. Both NPCs
+    react; rumor forms a love triangle; karma cascade depends on
+    public timing.
+36. **Saint-Scourge trade-off** — Saint and Scourge agree to swap
+    one item each. Server records the swap as a rumor; titles
+    don't change but the moment is logged for the match summary.
+37. **Mount delivery** — load a downed player onto a mount and
+    deliver them to clinic via auto-route. Mount-flavor karma+.
+38. **Misidentified hero** — rescue a downed player who turns out
+    to be Wanted; you get accidental bounty + karma- from
+    contextual law.
+39. **Whoopie-cushion ambush at trial** — during a posse-led
+    "trial" of a Wanted player, plant whoopie cushions on the
+    judge's seat. Flavor rumor; trial conclusion is interrupted.
+
+### Crowd / Group / Witness Dynamics
+
+Multi-player or NPC-cluster moments that emerge when 3+ actors share
+a tile region.
+
+- **Mob justice** — 5+ players within local chat range of a Wanted
+  player, all attack within 5 sec. Server resolves as a "mob"
+  event: collective karma- (chaotic) for all, but bounty is split
+  evenly. Mob justice is *not* a karma+ — the absence of law makes
+  it shady.
+- **Public auction** — a player flags an item with the Auction
+  emote in a saloon; nearby players can bid via local chat. Server
+  resolves to highest bidder after 60 sec. Flavor rumor +
+  faction-specific reactions.
+- **Crowd-sourced rumor** — when 3+ players witness the same event
+  and all share rumors about it within 90 sec, the rumor becomes
+  a "verified" tier — propagates further across NPCs, harder to
+  deny.
+- **Strike at a faction shop** — 3+ posse members refuse to engage
+  with a vendor (no dialogue, no purchases) for 5 minutes. Vendor
+  reputation drops; vendor's prices drop with it. Pure social
+  pressure.
+- **Witness training** — 3+ players witness the same crime; if
+  they all submit reports (via NPC dialogue) within 2 minutes,
+  each earns a `lawful` karma+ multiplier.
+- **Public trial** — a posse "tries" a Wanted player in a saloon:
+  one member acts as the prosecutor (chat), one as the defender,
+  others as witnesses. Server logs a flavor "trial held" event;
+  outcome is purely social, but the rumor records who voted
+  guilty.
+- **Block party** — 5+ players occupying the same interior chunk
+  for 3+ minutes triggers a "celebration" flavor: all members
+  get a brief Cleanliness reset and a `gathered_at_X` rumor.
+- **Crowd panic** — yell "FIRE!" with 3+ NPCs in chat range;
+  panic propagates: NPCs flee outward, inventory carried by
+  panicking NPCs may drop on the floor (free pickup if the
+  alarm was a hoax = karma-).
+- **Communal craft** — 3+ players contribute ingredients to a
+  shared Communal Pot or workshop bench; resulting item has a
+  `communal` flavor tag, distributed evenly. Karma+ for all.
+- **Public exorcism** — 3+ players using emote-only interactions
+  at a player flagged with Scourge's Mark can "exorcise" them
+  (mark consumed). Silly cooperative event; flavor karma+.
+- **Outdoor concert** — 3+ players using music emotes
+  simultaneously within 5 tiles trigger an ambient music swell
+  and a `crowd_drew` flavor rumor.
+- **Quiet protest** — 3+ players using Vow of Silence within
+  the same interior for 60 sec; vendor reputation in that
+  building drops.
+- **Wanted dead-pool** — when 3+ Wanted players occupy the same
+  region, server emits a `wanted_convergence` event. Bounty
+  hunters within range get a notification; first to claim
+  multiple bounties simultaneously gets a flavor title.
+- **Mass tribute window** — when a Saint is in a saloon and 3+
+  players give Tribute Coins within 60 sec, server fires a
+  "saint's gathering" rumor that propagates broadly.
+- **Faction fashion show** — 3+ players wearing matching faction
+  pins gather in a saloon; faction NPCs offer a one-time
+  collective discount.
+- **Group photograph** — 3+ players line up and trigger a single
+  Photograph emote together; the resulting evidence item is a
+  group portrait. Sellable; rumor flavor.
+- **Public confession circle** — 3+ players each submit a
+  Confession Scroll within the same minute in the same building.
+  Server resolves to a "communal forgiveness" event: all karma
+  reductions slightly buffed, all rumors slightly muted.
+
+### Edge / Exploit Interactions
+
+These are *intentional* legalist edge cases — they reward players who
+read the rule book. Add as flavor only; balance follows usage.
+
+- **Doorway exploit** — stand exactly on a door tile to be both
+  inside and outside; chat is heard at full volume by both audiences,
+  but the player's location is ambiguous to law NPCs (no contraband
+  detection ticks). Silly meta moment; resolves naturally if door
+  enter/exit is decisive.
+- **Mount restroom** — relieve while mounted; the mount takes the
+  Cleanliness hit instead. Mount Feed becomes the cleaner.
+- **Lawless tribute** — give Tribute in a lawless zone; karma still
+  applies but Wanted/Indecency flags don't. Useful for borderline
+  social tests.
+- **Posse Quest no-contact start** — start a posse quest from
+  outside the posse (e.g. via a stolen Pledge Token); some quests
+  silently complete because the conditions accidentally match.
+  Server logs as "ghost quest" rumor.
+- **Sleeping vendor** — buy at a saloon while the vendor is in
+  group nap; transaction completes but the vendor mutters in their
+  sleep. Silly rumor.
+- **Hat overlap** — two players standing on the exact same tile
+  while both wearing the same hat; server visualizes a single
+  larger hat. Pure flavor.
+- **Echo chamber** — chat in a structure with another player using
+  Vow of Silence; the silenced player's lack of response is
+  interpreted by NPCs as agreement.
+- **Corpse mailbox** — give a Sealed Dispatch to a Karma-Broken
+  player at the moment of break; package follows them through
+  respawn. Edge-case mail flow.
+- **Mount-on-toll** — riding through a toll checkpoint on a mount
+  costs different scrip than on foot; some mounts may bypass with
+  faction reputation. Useful smuggler mechanic.
+- **Saint-Scourge same-team** — Saint and Scourge in the same
+  posse; titles and posse perks both apply. The match-end summary
+  records the contradiction explicitly.
