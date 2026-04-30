@@ -408,6 +408,12 @@ public sealed class AuthoritativeWorldServer
 
     public void SeedShopOffer(ShopOffer offer) => _seededOffers[offer.Id] = offer;
 
+    public void AssignBuildingInterior(string entityId, BuildingInterior interior)
+    {
+        if (!_worldStructures.TryGetValue(entityId, out var structure)) return;
+        _worldStructures[entityId] = structure with { Interior = interior };
+    }
+
     public void MarkTileLawless(TilePosition position) => _lawlessTiles.Add(position);
     public bool IsTileLawless(TilePosition position) => _lawlessTiles.Contains(position);
     public bool IsPlayerInLawlessZone(string playerId) =>
@@ -844,16 +850,58 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, "Move intent requires integer x and y payload values.");
         }
 
-        _state.SetPlayerPosition(intent.PlayerId, new TilePosition(x, y));
+        var target = new TilePosition(x, y);
+        var enteredInterior = string.Empty;
+        var exitedInterior = string.Empty;
+
+        // Interior bounds enforcement: if player is inside a structure, clamp moves to bounds.
+        // Door tiles trigger an exit; everything outside the bounds is rejected unless on a door.
+        if (_enteredStructureByPlayer.TryGetValue(intent.PlayerId, out var insideEntityId) &&
+            _worldStructures.TryGetValue(insideEntityId, out var insideStructure) &&
+            insideStructure.Interior is not null)
+        {
+            var interior = insideStructure.Interior;
+            if (!interior.Contains(target))
+            {
+                if (interior.IsDoor(target))
+                {
+                    _enteredStructureByPlayer.Remove(intent.PlayerId);
+                    exitedInterior = insideEntityId;
+                }
+                else
+                {
+                    return Reject(intent, $"Cannot leave {insideStructure.Name} except through a door.");
+                }
+            }
+        }
+        else
+        {
+            // Outside path: stepping onto a door tile of any structure auto-enters that structure.
+            foreach (var structure in _worldStructures.Values)
+            {
+                if (structure.Interior is null) continue;
+                if (structure.Interior.IsDoor(target))
+                {
+                    _enteredStructureByPlayer[intent.PlayerId] = structure.EntityId;
+                    enteredInterior = structure.EntityId;
+                    break;
+                }
+            }
+        }
+
+        _state.SetPlayerPosition(intent.PlayerId, target);
+        var data = new Dictionary<string, string>
+        {
+            ["playerId"] = intent.PlayerId,
+            ["x"] = x.ToString(),
+            ["y"] = y.ToString()
+        };
+        if (!string.IsNullOrEmpty(enteredInterior)) data["enteredInterior"] = enteredInterior;
+        if (!string.IsNullOrEmpty(exitedInterior)) data["exitedInterior"] = exitedInterior;
         var serverEvent = AppendEvent(
             "player_moved",
             $"{intent.PlayerId} moved to {x},{y}",
-            new Dictionary<string, string>
-            {
-                ["playerId"] = intent.PlayerId,
-                ["x"] = x.ToString(),
-                ["y"] = y.ToString()
-            });
+            data);
 
         return ServerProcessResult.Accepted(serverEvent);
     }

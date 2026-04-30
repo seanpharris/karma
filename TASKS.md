@@ -56,41 +56,23 @@ Things the test suite confirms but a player would notice.
 - [ ] **Crafting recipe table is tiny** — `StarterRecipes` has only 2 entries.
   Add 4–6 more covering common item categories (weapon repair, food prep,
   ammunition, contraband repackaging).
-- [ ] **Seamless building interiors** — going through a structure's door
-  should drop the player into a constrained interior view: movement clamps
-  to the building's footprint, the world outside is hidden, only the
-  interior tiles render. Today entering only sets a status effect (`Inside:
-  {name}`) and muffles local chat (Step 11) — movement and rendering still
-  use world tiles.
-  - Server: extend `WorldStructureEntity` (or a new `BuildingInterior`
-    record) with `InteriorBoundsTiles` (rect) and an `InteriorTileMap`
-    layout (floor/wall/door/furniture). Reuse the existing
-    `_enteredStructureByPlayer` dictionary as the gate.
-  - In `ProcessMovePlayer`: when the player is inside, reject moves that
-    leave `InteriorBoundsTiles`. Door tile triggers `ExitStructure` instead
-    of a normal move.
-  - Snapshot: when a player is inside, `CreateInterestSnapshot` returns
-    only the interior tile set + the players/NPCs that share the same
-    interior, hiding the outside world. (Other players outside do not see
-    the inside-player either, except optionally via window tiles.)
-  - Client: `WorldRoot` swaps to interior rendering when the local player
-    is inside — replace the chunked world tiles with the interior layout
-    and hide structures/NPCs outside that interior. Camera bounds clamp
-    to the interior rect.
-  - Door handling: each structure declares one or more `DoorTilePosition`
-    entries. Walking onto a door from outside enters; from inside exits.
-    Use the existing Interact intent for explicit door use, but also fire
-    on tile-entry for seamlessness.
-  - NPCs: NPCs that "live" in a structure (Mara at the clinic, Dallen at
-    the saloon) should appear inside, not outside, unless their patrol
-    route (Step 31) takes them out a door.
-  - Smoke tests: enter through door → bounds enforced, snapshot scoped to
-    interior; attempt to walk outside the bounds → rejected; exit through
-    door → world view restored; another player outside cannot see the
-    inside-player.
-  - Art (add to `ART_NEEDED.md`): interior floor + wall tiles per
-    building (clinic, saloon, workshop, etc.), door-arrival fade
-    transition, optional window cutout tiles for partial outside-view.
+- [x] **Seamless building interiors — server slice** —
+  *server done 2026-04-29*. `BuildingInterior(MinX, MinY, Width, Height,
+  DoorTiles)` record added; `WorldStructureEntity.Interior` is optional.
+  `ProcessMove` enforces interior bounds: walking onto a door tile from
+  outside auto-enters that structure; while inside, moves outside the
+  bounds are rejected unless the target is a door tile (which exits).
+  Move events surface `enteredInterior` / `exitedInterior` in the data
+  payload. Smoke tests cover enter, in-bounds move, escape rejection,
+  exit, and post-exit free movement.
+  *Outstanding follow-ups*:
+  - Snapshot scoping (return only the interior tile set + co-located
+    players/NPCs; hide outside world from inside players, and vice
+    versa).
+  - Client rendering swap (`WorldRoot` interior view, camera clamp).
+  - NPC residency (Mara/Dallen appear inside their building unless
+    patrol takes them out).
+  - Art deliverables in `ART_NEEDED.md`.
 - [x] **Weapon resource costs: melee→stamina, ranged→ammo** —
   *server done 2026-04-29*. Server now enforces resource costs in
   `ProcessAttack`: ranged weapons (auto-detected from weapon tags

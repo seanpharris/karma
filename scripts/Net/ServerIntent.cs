@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Karma.Data;
 
 namespace Karma.Net;
@@ -99,6 +100,21 @@ public sealed record WorldItemSnapshot(
     string DropOwnerId = "",
     string DropOwnerName = "");
 
+public sealed record BuildingInterior(
+    int MinX,
+    int MinY,
+    int Width,
+    int Height,
+    IReadOnlyList<TilePosition> DoorTiles)
+{
+    public bool Contains(TilePosition tile) =>
+        tile.X >= MinX && tile.X < MinX + Width &&
+        tile.Y >= MinY && tile.Y < MinY + Height;
+
+    public bool IsDoor(TilePosition tile) =>
+        DoorTiles.Any(d => d.X == tile.X && d.Y == tile.Y);
+}
+
 public sealed record WorldStructureEntity(
     string EntityId,
     string StructureId,
@@ -112,7 +128,8 @@ public sealed record WorldStructureEntity(
     int Integrity = 100,
     string FactionId = StarterFactions.CivicRepairGuildId,
     string LocationId = "",
-    string ClaimingPosseId = "");
+    string ClaimingPosseId = "",
+    BuildingInterior Interior = null);
 
 public sealed record WorldStructureSnapshot(
     string EntityId,

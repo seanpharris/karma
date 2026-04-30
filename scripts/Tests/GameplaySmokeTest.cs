@@ -4479,6 +4479,52 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(shSellBubble.Contains("Sell") || shSellBubble.Contains("Nothing"),
             "FormatSellBubble shows a sell or empty header");
 
+        // Building interior bounds: walking onto a door enters; movement clamps
+        // to the building footprint; only door tiles can exit.
+        var biState = new GameState();
+        biState.RegisterPlayer("aa_visitor", "Visitor");
+        biState.SetPlayerPosition("aa_visitor", TilePosition.Origin);
+        var biServer = new AuthoritativeWorldServer(biState, "interior-test");
+        var biSeq = 1;
+        foreach (var biPid in biServer.ConnectedPlayerIds)
+            biServer.ProcessIntent(new ServerIntent(biPid, biSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        biServer.SeedWorldStructure("bi_clinic", "Clinic", "clinic", new TilePosition(10, 10));
+        // 4x4 interior at (10,10)-(13,13), door at (10,9) on the north edge
+        var biInterior = new BuildingInterior(
+            MinX: 10, MinY: 10, Width: 4, Height: 4,
+            DoorTiles: new[] { new TilePosition(10, 9) });
+        biServer.AssignBuildingInterior("bi_clinic", biInterior);
+
+        // Walk to the door from outside
+        var biEnter = biServer.ProcessIntent(new ServerIntent("aa_visitor", biSeq++, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "10", ["y"] = "9" }));
+        ExpectTrue(biEnter.WasAccepted, "stepping onto a door tile is accepted");
+        ExpectTrue(biEnter.Event?.Data.GetValueOrDefault("enteredInterior") == "bi_clinic",
+            "stepping onto a door records enteredInterior in the move event");
+
+        // Step into the interior
+        var biStep = biServer.ProcessIntent(new ServerIntent("aa_visitor", biSeq++, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "11", ["y"] = "11" }));
+        ExpectTrue(biStep.WasAccepted, "stepping inside the interior is accepted");
+
+        // Try to step outside the bounds (not via door) — rejected
+        var biEscape = biServer.ProcessIntent(new ServerIntent("aa_visitor", biSeq++, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "20", ["y"] = "20" }));
+        ExpectFalse(biEscape.WasAccepted,
+            "movement outside the interior bounds is rejected when not stepping on a door");
+
+        // Step back onto the door — exits
+        var biExit = biServer.ProcessIntent(new ServerIntent("aa_visitor", biSeq++, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "10", ["y"] = "9" }));
+        ExpectTrue(biExit.WasAccepted, "stepping back onto the door from inside exits the interior");
+        ExpectTrue(biExit.Event?.Data.GetValueOrDefault("exitedInterior") == "bi_clinic",
+            "exiting via door records exitedInterior in the move event");
+
+        // Now far-away move is accepted again (no longer inside)
+        var biFreeMove = biServer.ProcessIntent(new ServerIntent("aa_visitor", biSeq++, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "20", ["y"] = "20" }));
+        ExpectTrue(biFreeMove.WasAccepted, "moves outside any interior are unrestricted");
+
         // Weapon resource costs: ranged needs ammo + reload, melee needs stamina.
         var gunState = new GameState();
         gunState.RegisterPlayer("aa_gunner", "Gunner");
