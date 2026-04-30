@@ -58,6 +58,8 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, int> _bountyByPlayerId = new();
     public const int BountyKarmaThreshold = -50;
     private readonly Dictionary<string, HashSet<PlayerStatusKind>> _persistentStatusByPlayer = new();
+    public const int ContrabandKarmaDecayPerTick = 1;
+    private long _lastContrabandDecayTick;
     private sealed record DropClaim(string OwnerId, string OwnerName);
     private sealed record LocalChatMessage(
         string MessageId,
@@ -145,6 +147,7 @@ public sealed class AuthoritativeWorldServer
         PruneLocalChatLog();
         DecayHeatMap(ticks);
         FinalizeExpiredDownedPlayers();
+        ApplyContrabandDecay();
     }
 
     public void AdvanceMatchTime(int seconds)
@@ -905,6 +908,45 @@ public sealed class AuthoritativeWorldServer
                 _combatHeatByChunk.Remove(key);
             else
                 _combatHeatByChunk[key] = remaining;
+        }
+    }
+
+    private void ApplyContrabandDecay()
+    {
+        if (_tick <= _lastContrabandDecayTick)
+            return;
+        _lastContrabandDecayTick = _tick;
+
+        var lawNpcPositions = _npcs.Values
+            .Where(npc => npc.Profile.IsLawAligned)
+            .Select(npc => npc.Position)
+            .ToArray();
+        if (lawNpcPositions.Length == 0)
+            return;
+
+        var radiusSquared = Config.InterestRadiusTiles * Config.InterestRadiusTiles;
+        foreach (var playerId in _connectedPlayerIds)
+        {
+            if (!_state.Players.TryGetValue(playerId, out var player))
+                continue;
+            var hasContraband = player.Inventory.Any(item => item.IsContraband);
+            if (!hasContraband)
+                continue;
+            var nearLaw = lawNpcPositions.Any(pos => player.Position.DistanceSquaredTo(pos) <= radiusSquared);
+            if (!nearLaw)
+                continue;
+            ApplyShift(playerId, new KarmaAction(
+                playerId,
+                playerId,
+                new[] { "deceptive", "forbidden" },
+                $"{player.DisplayName} is near a law NPC while carrying contraband."));
+            AppendEvent("contraband_detected",
+                $"Contraband detected on {player.DisplayName} near a law NPC.",
+                new Dictionary<string, string>
+                {
+                    ["playerId"] = playerId,
+                    ["karmaDecay"] = ContrabandKarmaDecayPerTick.ToString()
+                });
         }
     }
 

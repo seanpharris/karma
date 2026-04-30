@@ -11,7 +11,8 @@ public sealed record NpcProfile(
     string Need,
     string Secret,
     IReadOnlyCollection<string> Likes,
-    IReadOnlyCollection<string> Dislikes);
+    IReadOnlyCollection<string> Dislikes,
+    bool IsLawAligned = false);
 
 public static class StarterNpcs
 {
@@ -24,7 +25,8 @@ public static class StarterNpcs
         "proof that the clinic ledger has been altered",
         "knows Mara is hiding corporate drone parts",
         new[] { "loyalty", "plain speech", "balanced books" },
-        new[] { "betrayal", "public humiliation", "missing receipts" });
+        new[] { "betrayal", "public humiliation", "missing receipts" },
+        IsLawAligned: true);
 
     public static readonly NpcProfile Mara = new(
         "mara_venn",
@@ -35,5 +37,6 @@ public static class StarterNpcs
         "medicine filters for sick children",
         "steals parts from corporate drones",
         new[] { "honesty", "spare parts", "protecting workers" },
-        new[] { "corporate loyalty", "waste", "threats" });
+        new[] { "corporate loyalty", "waste", "threats" },
+        IsLawAligned: true);
 }

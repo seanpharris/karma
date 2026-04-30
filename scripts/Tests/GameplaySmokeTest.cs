@@ -3750,6 +3750,44 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(!psServer.HasStatus("ap_target", PlayerStatusKind.Burning),
             "Burning cleared after Karma Break");
 
+        // ── Step 28: Contraband item tag ───────────────────────────────────────────
+        // Items with IsContraband=true cause karma decay each tick when the holder
+        // is near a law-aligned NPC.  Players far from law NPCs are unaffected.
+
+        // Verify the model flag
+        ExpectTrue(StarterItems.ContrabandPackage.IsContraband, "ContrabandPackage has IsContraband=true");
+        ExpectTrue(!StarterItems.RationPack.IsContraband, "RationPack is not contraband");
+
+        // Player at Mara's position (3,4) — within interest radius
+        var cbState = new GameState();
+        cbState.RegisterPlayer("aq_carrier", "Carrier");
+        cbState.SetPlayerPosition("aq_carrier", new TilePosition(3, 4));
+        cbState.AddItem("aq_carrier", StarterItems.ContrabandPackage);
+        var cbServer = new AuthoritativeWorldServer(cbState, "contraband-test");
+
+        var karmaBefore = cbState.Players["aq_carrier"].Karma.Score;
+        cbServer.AdvanceIdleTicks(1);
+        var karmaAfter = cbState.Players["aq_carrier"].Karma.Score;
+        ExpectTrue(karmaAfter < karmaBefore,
+            "Carrying contraband near law NPC causes karma decay each tick");
+
+        var detectedEvent = cbServer.EventLog.Any(e => e.EventId.Contains("contraband_detected") &&
+            e.Data.GetValueOrDefault("playerId") == "aq_carrier");
+        ExpectTrue(detectedEvent, "contraband_detected event fires when decay triggers");
+
+        // Player far from any NPC — no decay
+        var cbFarState = new GameState();
+        cbFarState.RegisterPlayer("aq_farcarrier", "FarCarrier");
+        cbFarState.SetPlayerPosition("aq_farcarrier", new TilePosition(60, 60));
+        cbFarState.AddItem("aq_farcarrier", StarterItems.ContrabandPackage);
+        var cbFarServer = new AuthoritativeWorldServer(cbFarState, "contraband-far-test");
+
+        var karmaFarBefore = cbFarState.Players["aq_farcarrier"].Karma.Score;
+        cbFarServer.AdvanceIdleTicks(1);
+        var karmaFarAfter = cbFarState.Players["aq_farcarrier"].Karma.Score;
+        ExpectEqual(karmaFarBefore, karmaFarAfter,
+            "Carrying contraband far from law NPCs causes no karma decay");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.

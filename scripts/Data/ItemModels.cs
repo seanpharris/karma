@@ -31,7 +31,8 @@ public sealed record GameItem(
     int Power = 0,
     int Defense = 0,
     int? KarmaRequirement = null,
-    KarmaDirection RequiredPath = KarmaDirection.Neutral);
+    KarmaDirection RequiredPath = KarmaDirection.Neutral,
+    bool IsContraband = false);
 
 public static class StarterItems
 {
@@ -137,7 +138,8 @@ public static class StarterItems
         "Contraband Package",
         ItemCategory.InteractibleObject,
         new[] { "deceptive", "forbidden", "shady" },
-        "Wrapped in enough tape to make innocence unlikely.");
+        "Wrapped in enough tape to make innocence unlikely.",
+        IsContraband: true);
 
     public static readonly GameItem ApologyFlower = new(
         ApologyFlowerId,
