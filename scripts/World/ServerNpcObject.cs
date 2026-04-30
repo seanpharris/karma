@@ -2,6 +2,7 @@ using Godot;
 using System.Collections.Generic;
 using System.Linq;
 using Karma.Art;
+using Karma.Core;
 using Karma.Data;
 using Karma.Net;
 using Karma.UI;
@@ -31,7 +32,19 @@ public partial class ServerNpcObject : Area2D
 
     public override void _UnhandledInput(InputEvent @event)
     {
-        if (!_playerNearby || NpcId != StarterNpcs.Dallen.Id || @event is not InputEventKey { Pressed: true, Echo: false } key)
+        if (!_playerNearby) return;
+
+        if (@event.IsActionPressed("interact"))
+        {
+            if (_hud is not null && !_hud.IsDialogueOpen)
+            {
+                _hud.OpenDialogue(GameState.LocalPlayerId, NpcId);
+                GetViewport().SetInputAsHandled();
+                return;
+            }
+        }
+
+        if (NpcId != StarterNpcs.Dallen.Id || @event is not InputEventKey { Pressed: true, Echo: false } key)
         {
             return;
         }

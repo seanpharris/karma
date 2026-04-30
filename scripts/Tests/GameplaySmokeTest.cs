@@ -4479,6 +4479,46 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(shSellBubble.Contains("Sell") || shSellBubble.Contains("Nothing"),
             "FormatSellBubble shows a sell or empty header");
 
+        // Dialogue choice picker UI: clicking browse/sell choices opens the shop
+        // panel with the right vendor + mode and closes the dialogue.
+        var dlgHud = new HudController();
+        AddChild(dlgHud);
+        var dlgChoices = new List<NpcDialogueChoice>
+        {
+            new("browse_wares", "Browse wares", "open_shop_browse"),
+            new("sell_items", "Sell items", "open_shop_sell"),
+            new("assist_need", "Help with the chore", "generated_assist_need")
+        };
+        var dlgSnapshot = new NpcDialogueSnapshot(
+            StarterNpcs.Dallen.Id, StarterNpcs.Dallen.Name, "How can I help?", dlgChoices);
+
+        dlgHud.OpenDialogue(dlgSnapshot, StarterNpcs.Dallen.Id);
+        ExpectTrue(dlgHud.IsDialogueOpen, "OpenDialogue makes the dialogue panel visible");
+        ExpectEqual(StarterNpcs.Dallen.Id, dlgHud.DialogueNpcId, "OpenDialogue records the active NPC id");
+        ExpectEqual(3, dlgHud.LastDialogueSnapshot.Choices.Count, "OpenDialogue exposes the choice list");
+
+        dlgHud.SelectDialogueChoice("browse_wares");
+        ExpectFalse(dlgHud.IsDialogueOpen, "Selecting browse_wares closes the dialogue panel");
+        ExpectTrue(dlgHud.IsShopOpen, "Selecting browse_wares opens the shop panel");
+        ExpectEqual(StarterNpcs.Dallen.Id, dlgHud.ShopVendorNpcId, "Browse opens shop for the dialogued NPC");
+        ExpectFalse(dlgHud.ShopSellMode, "Browse opens shop in browse mode");
+        dlgHud.CloseShop();
+
+        dlgHud.OpenDialogue(dlgSnapshot, StarterNpcs.Dallen.Id);
+        dlgHud.SelectDialogueChoice("sell_items");
+        ExpectFalse(dlgHud.IsDialogueOpen, "Selecting sell_items closes the dialogue panel");
+        ExpectTrue(dlgHud.IsShopOpen, "Selecting sell_items opens the shop panel");
+        ExpectTrue(dlgHud.ShopSellMode, "Sell opens shop in sell mode");
+        dlgHud.CloseShop();
+
+        // CloseDialogue clears state regardless of choice path
+        dlgHud.OpenDialogue(dlgSnapshot, StarterNpcs.Dallen.Id);
+        dlgHud.CloseDialogue();
+        ExpectFalse(dlgHud.IsDialogueOpen, "CloseDialogue hides the panel");
+        ExpectEqual(string.Empty, dlgHud.DialogueNpcId, "CloseDialogue clears the active NPC id");
+
+        dlgHud.QueueFree();
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.

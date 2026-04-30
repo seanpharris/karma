@@ -13,16 +13,13 @@ Last compiled: 2026-04-29.
 These are partial/complete-but-incomplete features where the next slice is
 already designed.
 
-- [ ] **NPC dialogue choice picker UI** — when the player presses E near a
-  vendor NPC, render `NpcDialogueSnapshot.Choices` as clickable buttons.
-  Selecting "Browse wares" / "Sell items" calls `HudController.OpenShopForVendor`;
-  other choices send `SelectDialogueChoice` (or whatever the existing intent is —
-  audit `ServerIntent.cs`). Closes the loop on the original "talking to the
-  clerk with dialog options" request. Today shop overlay opens via O/K hotkeys
-  only.
-  - Touch points: `HudController.cs` (new `_dialoguePanel` + `OpenDialogue`),
-    `PlayerController.cs` (E handler → find nearest NPC → open dialogue),
-    smoke tests for the panel + browse/sell wiring.
+- [x] **NPC dialogue choice picker UI** — *done 2026-04-29*. E near an NPC
+  opens `_dialoguePanel` with a button per `NpcDialogueChoice`. Browse/sell
+  choices auto-open the shop overlay (right vendor, right mode); other
+  choices send `SelectDialogueChoice` intent. Smoke tests verify open,
+  branch routing, and close. See [HudController.cs](scripts/UI/HudController.cs)
+  `OpenDialogue` / `SelectDialogueChoice` / `CloseDialogue`, and
+  [ServerNpcObject.cs](scripts/World/ServerNpcObject.cs) E-key handler.
 - [ ] **Shop bubble in-panel selection** — clicking an item row in the Browse
   bubble should send `PurchaseItem`; clicking a row in the Sell bubble should
   send `SellItem`. Today the panel only renders text; you still need keys/CLI

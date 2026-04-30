@@ -47,6 +47,12 @@ public partial class HudController : CanvasLayer
     private Label _shopOverlayLabel = new();
     private string _shopVendorNpcId = string.Empty;
     private bool _shopSellMode;
+    private PanelContainer _dialoguePanel = new();
+    private VBoxContainer _dialogueContainer = new();
+    private Label _dialoguePromptLabel = new();
+    private VBoxContainer _dialogueChoicesContainer = new();
+    private string _dialogueNpcId = string.Empty;
+    private NpcDialogueSnapshot _lastDialogueSnapshot;
     private PanelContainer _developerPanel = new();
     private Label _developerOverlayLabel = new();
     private int _developerPageIndex;
@@ -280,6 +286,78 @@ public partial class HudController : CanvasLayer
             var offers = _lastSnapshot?.ShopOffers ?? System.Array.Empty<ShopOfferSnapshot>();
             _shopOverlayLabel.Text = FormatShopBubble(offers, _shopVendorNpcId, _gameState.LocalScrip);
         }
+    }
+
+    public bool IsDialogueOpen => _dialoguePanel.Visible;
+    public string DialogueNpcId => _dialogueNpcId;
+    public NpcDialogueSnapshot LastDialogueSnapshot => _lastDialogueSnapshot;
+
+    public void OpenDialogue(string playerId, string npcId)
+    {
+        var serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
+        var server = serverSession?.Server;
+        if (server is null) return;
+        OpenDialogue(server.GetDialogueFor(playerId, npcId), npcId);
+    }
+
+    public void OpenDialogue(NpcDialogueSnapshot snapshot, string npcId)
+    {
+        _dialogueNpcId = npcId;
+        _lastDialogueSnapshot = snapshot;
+        _dialoguePromptLabel.Text = $"{snapshot.NpcName}\n\n{snapshot.Prompt}";
+        foreach (var child in _dialogueChoicesContainer.GetChildren())
+            child.QueueFree();
+        for (var i = 0; i < snapshot.Choices.Count; i++)
+        {
+            var choice = snapshot.Choices[i];
+            var button = new Button { Text = $"{i + 1}. {choice.Label}" };
+            var capturedId = choice.Id;
+            button.Pressed += () => SelectDialogueChoice(capturedId);
+            _dialogueChoicesContainer.AddChild(button);
+        }
+        var closeButton = new Button { Text = "Cancel" };
+        closeButton.Pressed += CloseDialogue;
+        _dialogueChoicesContainer.AddChild(closeButton);
+        _dialoguePanel.Visible = true;
+    }
+
+    public void CloseDialogue()
+    {
+        _dialogueNpcId = string.Empty;
+        _dialoguePanel.Visible = false;
+    }
+
+    public void SelectDialogueChoice(string choiceId)
+    {
+        if (string.IsNullOrEmpty(_dialogueNpcId)) return;
+        var npcId = _dialogueNpcId;
+        var choice = _lastDialogueSnapshot?.Choices.FirstOrDefault(c => c.Id == choiceId);
+        if (choice is null) return;
+
+        if (choice.ActionId == "open_shop_browse")
+        {
+            CloseDialogue();
+            OpenShopForVendor(npcId, sellMode: false);
+            return;
+        }
+        if (choice.ActionId == "open_shop_sell")
+        {
+            CloseDialogue();
+            OpenShopForVendor(npcId, sellMode: true);
+            return;
+        }
+
+        var serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
+        if (serverSession is not null)
+        {
+            serverSession.SendLocal(IntentType.SelectDialogueChoice,
+                new System.Collections.Generic.Dictionary<string, string>
+                {
+                    ["npcId"] = npcId,
+                    ["choiceId"] = choiceId
+                });
+        }
+        CloseDialogue();
     }
 
     public void SetInventoryOverlayVisible(bool visible)
@@ -776,6 +854,29 @@ public partial class HudController : CanvasLayer
             Text = "Shop"
         };
         _shopPanel.AddChild(_shopOverlayLabel);
+
+        _dialoguePanel = new PanelContainer
+        {
+            OffsetLeft = 240,
+            OffsetTop = 220,
+            OffsetRight = 720,
+            OffsetBottom = 540,
+            Visible = false
+        };
+        root.AddChild(_dialoguePanel);
+
+        _dialogueContainer = new VBoxContainer();
+        _dialoguePanel.AddChild(_dialogueContainer);
+
+        _dialoguePromptLabel = new Label
+        {
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            Text = "Dialogue"
+        };
+        _dialogueContainer.AddChild(_dialoguePromptLabel);
+
+        _dialogueChoicesContainer = new VBoxContainer();
+        _dialogueContainer.AddChild(_dialogueChoicesContainer);
 
         BuildPossePanel(root);
         BuildDeveloperOverlay(root);
