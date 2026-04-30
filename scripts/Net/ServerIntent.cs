@@ -153,7 +153,9 @@ public sealed record MapChunkSnapshot(
 public sealed record NpcEntity(
     NpcProfile Profile,
     TilePosition Position,
-    string LocationId = "");
+    string LocationId = "",
+    IReadOnlyList<TilePosition>? PatrolWaypoints = null,
+    int PatrolIndex = 0);
 
 public sealed record MountEntity(
     string EntityId,

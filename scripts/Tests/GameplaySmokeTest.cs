@@ -3971,6 +3971,54 @@ public partial class GameplaySmokeTest : Node
             "event prototype produces match summary with Outlaw participant");
         GD.Print($"Event playback prototype ran {protoServer.EventLog.Count} server events through {protoServer.Match.Status}.");
 
+        // ── Step 31: NPC patrol routes ────────────────────────────────────────────
+        // NPCs cycle through 2–3 tile waypoints at NpcPatrolTickInterval-tick cadence.
+        // SetNpcPatrol places the NPC at waypoint[0]; each patrol step advances the
+        // index and updates Position; snapshot reflects the new tile coordinates.
+
+        var patrolState = new GameState();
+        patrolState.RegisterPlayer("pt_observer", "Observer");
+        patrolState.SetPlayerPosition("pt_observer", TilePosition.Origin);
+        var patrolServer = new AuthoritativeWorldServer(patrolState, "patrol-test");
+        foreach (var ptPid in patrolServer.ConnectedPlayerIds)
+            patrolServer.ProcessIntent(new ServerIntent(ptPid, 1, IntentType.ReadyUp, new Dictionary<string, string>()));
+
+        var ptWp0 = new TilePosition(2, 2);
+        var ptWp1 = new TilePosition(5, 2);
+        var ptWp2 = new TilePosition(5, 5);
+        patrolServer.SetNpcPatrol(StarterNpcs.Mara.Id, new[] { ptWp0, ptWp1, ptWp2 });
+
+        ExpectTrue(patrolServer.GetNpcPosition(StarterNpcs.Mara.Id) == ptWp0,
+            "NPC starts at waypoint 0 after SetNpcPatrol");
+
+        // Advance exactly one patrol interval → NPC steps to waypoint 1
+        patrolServer.AdvanceIdleTicks(AuthoritativeWorldServer.NpcPatrolTickInterval);
+        ExpectTrue(patrolServer.GetNpcPosition(StarterNpcs.Mara.Id) == ptWp1,
+            "NPC moves to waypoint 1 after one patrol interval");
+
+        // Advance another interval → waypoint 2
+        patrolServer.AdvanceIdleTicks(AuthoritativeWorldServer.NpcPatrolTickInterval);
+        ExpectTrue(patrolServer.GetNpcPosition(StarterNpcs.Mara.Id) == ptWp2,
+            "NPC moves to waypoint 2 after second patrol interval");
+
+        // Advance another interval → wraps back to waypoint 0
+        patrolServer.AdvanceIdleTicks(AuthoritativeWorldServer.NpcPatrolTickInterval);
+        ExpectTrue(patrolServer.GetNpcPosition(StarterNpcs.Mara.Id) == ptWp0,
+            "NPC wraps back to waypoint 0 after cycling all waypoints");
+
+        // Snapshot reflects the patrol position
+        var ptSnapshot = patrolServer.CreateInterestSnapshot("pt_observer");
+        var ptNpcSnap = ptSnapshot.Npcs.FirstOrDefault(n => n.Id == StarterNpcs.Mara.Id);
+        ExpectTrue(ptNpcSnap is not null, "patrol NPC is included in interest snapshot");
+        ExpectTrue(ptNpcSnap?.TileX == ptWp0.X && ptNpcSnap?.TileY == ptWp0.Y,
+            "interest snapshot reflects current patrol position");
+
+        // NPC without waypoints does not move
+        var ptDallenPos = patrolServer.GetNpcPosition(StarterNpcs.Dallen.Id);
+        patrolServer.AdvanceIdleTicks(AuthoritativeWorldServer.NpcPatrolTickInterval);
+        ExpectTrue(patrolServer.GetNpcPosition(StarterNpcs.Dallen.Id) == ptDallenPos,
+            "NPC with no patrol waypoints stays put");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.

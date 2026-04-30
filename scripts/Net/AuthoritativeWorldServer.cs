@@ -63,6 +63,7 @@ public sealed class AuthoritativeWorldServer
     private readonly HashSet<string> _readyUpPlayers = new();
     private readonly Dictionary<string, long> _supplyDropExpiryByEntityId = new();
     public const long SupplyDropDefaultExpiryTicks = 300;
+    public const int NpcPatrolTickInterval = 5;
     private sealed record DropClaim(string OwnerId, string OwnerName);
     private sealed record LocalChatMessage(
         string MessageId,
@@ -174,12 +175,14 @@ public sealed class AuthoritativeWorldServer
             return;
         }
 
+        var patrolSteps = (_tick + ticks) / NpcPatrolTickInterval - _tick / NpcPatrolTickInterval;
         _tick += ticks;
         PruneLocalChatLog();
         DecayHeatMap(ticks);
         FinalizeExpiredDownedPlayers();
         ApplyContrabandDecay();
         ApplySupplyDropExpiry();
+        for (var i = 0; i < patrolSteps; i++) StepNpcPatrols();
     }
 
     public void AdvanceMatchTime(int seconds)
@@ -391,6 +394,12 @@ public sealed class AuthoritativeWorldServer
         return _npcs.TryGetValue(npcId, out var npc) ? npc.Position : TilePosition.Origin;
     }
 
+    public void SetNpcPatrol(string npcId, TilePosition[] waypoints)
+    {
+        if (!_npcs.TryGetValue(npcId, out var npc) || waypoints.Length < 2) return;
+        _npcs[npcId] = npc with { Position = waypoints[0], PatrolWaypoints = waypoints, PatrolIndex = 0 };
+    }
+
     public void SeedWorldStructure(string entityId, string displayName, string category, TilePosition position, int integrity = 75)
     {
         var fallback = StructureArtCatalog.Get(StructureSpriteKind.GreenhouseGlassPanel);
@@ -444,6 +453,7 @@ public sealed class AuthoritativeWorldServer
     public ServerProcessResult ProcessIntent(ServerIntent intent)
     {
         _tick++;
+        if (_tick % NpcPatrolTickInterval == 0) StepNpcPatrols();
 
         if (!_connectedPlayerIds.Contains(intent.PlayerId))
         {
@@ -1006,6 +1016,16 @@ public sealed class AuthoritativeWorldServer
                         ["itemId"] = entity.Item.Id
                     });
             }
+        }
+    }
+
+    private void StepNpcPatrols()
+    {
+        foreach (var (id, npc) in _npcs.ToArray())
+        {
+            if (npc.PatrolWaypoints is not { Count: >= 2 }) continue;
+            var nextIndex = (npc.PatrolIndex + 1) % npc.PatrolWaypoints.Count;
+            _npcs[id] = npc with { Position = npc.PatrolWaypoints[nextIndex], PatrolIndex = nextIndex };
         }
     }
 
