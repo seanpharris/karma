@@ -28,6 +28,8 @@ public static class PerkCatalog
     public const string RenegadeNerveId = "renegade_nerve";
     public const string DreadReputationId = "dread_reputation";
     public const string AbyssalMarkId = "abyssal_mark";
+    public const string WardenId = "warden";
+    public const int WardenThreshold = 150;
 
     private static readonly KarmaPerk[] AscensionPerks =
     {
@@ -35,7 +37,8 @@ public static class PerkCatalog
         new(CalmingPresenceId, "Calming Presence", PerkPath.Ascension, 20, "Negative NPC reactions are softened."),
         new(BeaconAuraId, "Beacon Aura", PerkPath.Ascension, 35, "Nearby allies recover confidence faster, and your stamina recovers faster."),
         new("paragon_favor", "Paragon Favor", PerkPath.Ascension, 50, "Town allies may defend you."),
-        new("exalted_grace", "Exalted Grace", PerkPath.Ascension, 100, "One severe social consequence can be softened.")
+        new("exalted_grace", "Exalted Grace", PerkPath.Ascension, 100, "One severe social consequence can be softened."),
+        new(WardenId, "Warden", PerkPath.Ascension, WardenThreshold, "Issue Wanted warrants on players who have committed crimes. Others earn karma for bringing them down.")
     };
 
     private static readonly KarmaPerk[] DescensionPerks =

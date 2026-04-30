@@ -53,6 +53,8 @@ public sealed class AuthoritativeWorldServer
     public const long LocalChatRetainTicks = 240;
     public const int LocalChatMaxRetainedMessages = 80;
     private readonly Dictionary<string, int> _killsPerPlayer = new();
+    private readonly Dictionary<string, string> _wantedPlayerToIssuerId = new();
+    public const int WantedKarmaReward = 10;
     private sealed record DropClaim(string OwnerId, string OwnerName);
     private sealed record LocalChatMessage(
         string MessageId,
@@ -437,6 +439,7 @@ public sealed class AuthoritativeWorldServer
             IntentType.Rescue => ProcessRescue(intent),
             IntentType.Mount => ProcessMount(intent),
             IntentType.Dismount => ProcessDismount(intent),
+            IntentType.IssueWanted => ProcessIssueWanted(intent),
             _ => Reject(intent, $"Unsupported intent type: {intent.Type}")
         };
     }
@@ -829,6 +832,7 @@ public sealed class AuthoritativeWorldServer
             {
                 var droppedItemCount = DropInventory(playerId).Count;
                 _state.TriggerKarmaBreak(playerId);
+                _wantedPlayerToIssuerId.Remove(playerId);
                 RespawnPlayer(playerId, deathPosition);
                 StartKarmaBreakGrace(playerId);
                 AppendEvent(
@@ -1433,6 +1437,22 @@ public sealed class AuthoritativeWorldServer
             _downedUntilTickByPlayer[targetId] = _tick + DownedCountdownTicks;
             _downedDeathPositionByPlayer[targetId] = target.Position;
             _killsPerPlayer[intent.PlayerId] = _killsPerPlayer.GetValueOrDefault(intent.PlayerId) + 1;
+            if (_wantedPlayerToIssuerId.Remove(targetId))
+            {
+                ApplyShift(intent.PlayerId, new KarmaAction(
+                    intent.PlayerId,
+                    targetId,
+                    new[] { "helpful", "lawful", "protective" },
+                    $"{attacker.DisplayName} brought down the Wanted player {target.DisplayName}."));
+                AppendEvent("wanted_bounty_claimed",
+                    $"{attacker.DisplayName} claimed the Wanted bounty on {target.DisplayName}.",
+                    new Dictionary<string, string>
+                    {
+                        ["playerId"] = intent.PlayerId,
+                        ["targetId"] = targetId,
+                        ["karmaReward"] = WantedKarmaReward.ToString()
+                    });
+            }
         }
 
         var serverEvent = AppendEvent(
@@ -1657,6 +1677,42 @@ public sealed class AuthoritativeWorldServer
                 ["karmaAmount"] = shift.Amount.ToString()
             });
 
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessIssueWanted(ServerIntent intent)
+    {
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var issuer))
+            return Reject(intent, "Unknown player.");
+
+        if (!intent.Payload.TryGetValue("targetId", out var targetId))
+            return Reject(intent, "IssueWanted requires targetId.");
+
+        if (targetId == intent.PlayerId)
+            return Reject(intent, "Cannot issue a Wanted warrant on yourself.");
+
+        if (!_connectedPlayerIds.Contains(targetId) || !_state.Players.TryGetValue(targetId, out var target))
+            return Reject(intent, $"Target player not available: {targetId}.");
+
+        var standing = _state.GetLeaderboardStanding();
+        var perks = PerkCatalog.GetForPlayer(issuer, standing);
+        if (!perks.Any(p => p.Id == PerkCatalog.WardenId))
+            return Reject(intent, "IssueWanted requires the Warden perk (karma ≥ 150).");
+
+        if (_wantedPlayerToIssuerId.ContainsKey(targetId))
+            return Reject(intent, $"{target.DisplayName} is already Wanted.");
+
+        _wantedPlayerToIssuerId[targetId] = intent.PlayerId;
+        var serverEvent = AppendEvent(
+            "player_wanted",
+            $"{issuer.DisplayName} issued a Wanted warrant on {target.DisplayName}.",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["targetId"] = targetId,
+                ["issuerName"] = issuer.DisplayName,
+                ["targetName"] = target.DisplayName
+            });
         return ServerProcessResult.Accepted(serverEvent);
     }
 
@@ -2486,6 +2542,11 @@ public sealed class AuthoritativeWorldServer
             _worldStructures.TryGetValue(structureEntityId, out var structure))
         {
             statuses.Add($"Inside: {structure.Name}");
+        }
+
+        if (_wantedPlayerToIssuerId.ContainsKey(player.Id))
+        {
+            statuses.Add("Wanted");
         }
 
         return statuses;

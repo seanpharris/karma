@@ -3520,6 +3520,80 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(hudSummary.Contains("Hero"), "FormatMatchSummary includes player names");
         ExpectTrue(HudController.FormatMatchSummary(null).Contains("progress"), "FormatMatchSummary handles null gracefully");
 
+        // ── Step 24: Warden perk + IssueWanted intent ─────────────────────────────
+        // Players with karma ≥ 150 earn the Warden perk and can mark others Wanted.
+        // Downing a Wanted player clears the warrant and awards karma to the attacker.
+        var wardenCheckPlayer = new PlayerState("warden_check", "Warden Check");
+        wardenCheckPlayer.ApplyKarma(PerkCatalog.WardenThreshold);
+        ExpectTrue(PerkCatalog.GetForPlayer(
+            wardenCheckPlayer,
+            new LeaderboardStanding("warden_check", "Warden Check", PerkCatalog.WardenThreshold, "", "", 0))
+            .Any(p => p.Id == PerkCatalog.WardenId), "Warden perk awarded at karma ≥ 150");
+        var subWardenPlayer = new PlayerState("sub_check", "Sub Check");
+        subWardenPlayer.ApplyKarma(PerkCatalog.WardenThreshold - 1);
+        ExpectFalse(PerkCatalog.GetForPlayer(
+            subWardenPlayer,
+            new LeaderboardStanding("sub_check", "Sub Check", PerkCatalog.WardenThreshold - 1, "", "", 0))
+            .Any(p => p.Id == PerkCatalog.WardenId), "Warden perk not awarded below karma 150");
+
+        var wdState = new GameState();
+        wdState.RegisterPlayer("am_warden", "Lawbringer");
+        wdState.RegisterPlayer("am_target", "Outlaw");
+        wdState.SetPlayerPosition("am_warden", TilePosition.Origin);
+        wdState.SetPlayerPosition("am_target", TilePosition.Origin);
+        // Give Warden player enough karma for the perk
+        wdState.Players["am_warden"].ApplyKarma(PerkCatalog.WardenThreshold);
+        var wdServer = new AuthoritativeWorldServer(wdState, "warden-test");
+
+        // Reject without perk
+        var noWarden = new GameState();
+        noWarden.RegisterPlayer("am_poor", "Poor");
+        noWarden.RegisterPlayer("am_villain", "Villain");
+        noWarden.SetPlayerPosition("am_poor", TilePosition.Origin);
+        noWarden.SetPlayerPosition("am_villain", TilePosition.Origin);
+        var noWardenServer = new AuthoritativeWorldServer(noWarden, "no-warden");
+        var rejectedWanted = noWardenServer.ProcessIntent(new ServerIntent("am_poor", 1, IntentType.IssueWanted,
+            new Dictionary<string, string> { ["targetId"] = "am_villain" }));
+        ExpectFalse(rejectedWanted.WasAccepted, "IssueWanted rejected without Warden perk");
+
+        // Accept with perk
+        var issuedWanted = wdServer.ProcessIntent(new ServerIntent("am_warden", 1, IntentType.IssueWanted,
+            new Dictionary<string, string> { ["targetId"] = "am_target" }));
+        ExpectTrue(issuedWanted.WasAccepted, "IssueWanted accepted by Warden-perk holder");
+
+        // Status effect visible in snapshot
+        var wdSnap = wdServer.CreateInterestSnapshot("am_warden");
+        var targetSnap = wdSnap.Players.FirstOrDefault(p => p.Id == "am_target");
+        ExpectTrue(targetSnap?.StatusEffects.Any(s => s.Contains("Wanted")) == true, "Wanted player has Wanted status effect");
+
+        // Duplicate Wanted rejected
+        var dupWanted = wdServer.ProcessIntent(new ServerIntent("am_warden", 2, IntentType.IssueWanted,
+            new Dictionary<string, string> { ["targetId"] = "am_target" }));
+        ExpectFalse(dupWanted.WasAccepted, "IssueWanted rejected when target is already Wanted");
+
+        // Downing the Wanted player clears warrant and rewards karma
+        var wardenKarmaBefore = wdState.Players["am_warden"].Karma.Score;
+        for (var wdSeq = 3; wdSeq <= 8; wdSeq++)
+        {
+            wdServer.ProcessIntent(new ServerIntent("am_warden", wdSeq, IntentType.Attack,
+                new Dictionary<string, string> { ["targetId"] = "am_target" }));
+            wdServer.AdvanceIdleTicks(3);
+        }
+        var wdAfterSnap = wdServer.CreateInterestSnapshot("am_warden");
+        var targetAfterSnap = wdAfterSnap.Players.FirstOrDefault(p => p.Id == "am_target");
+        ExpectFalse(targetAfterSnap?.StatusEffects.Any(s => s.Contains("Wanted")) == true, "Wanted status cleared after target is downed");
+        var wantedBountyEvent = wdServer.EventLog.FirstOrDefault(e => e.EventId.Contains("wanted_bounty_claimed"));
+        ExpectTrue(wantedBountyEvent is not null, "wanted_bounty_claimed event fires when Wanted player is downed");
+        ExpectEqual(
+            AuthoritativeWorldServer.WantedKarmaReward.ToString(),
+            wantedBountyEvent?.Data.GetValueOrDefault("karmaReward", ""),
+            "Warden gains karma for downing a Wanted player");
+
+        // Self-warrant rejected
+        var selfWanted = wdServer.ProcessIntent(new ServerIntent("am_warden", 9, IntentType.IssueWanted,
+            new Dictionary<string, string> { ["targetId"] = "am_warden" }));
+        ExpectFalse(selfWanted.WasAccepted, "IssueWanted rejected when targeting self");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.
