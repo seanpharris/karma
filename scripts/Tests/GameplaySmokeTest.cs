@@ -4372,6 +4372,37 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(fwSnap2.MapChunks.All(chunk => fwVisitedSet.Contains(chunk.ChunkKey)),
             "all chunks in fog-of-war snapshot have been visited");
 
+        // ── Step 40: HUD minimap ──────────────────────────────────────────────────
+        // FormatMinimap renders a small radar panel from the interest snapshot.
+        // '@' marks the local player, 'P' = other players, 'N' = NPCs, 'S' = structures.
+
+        var mmState = new GameState();
+        mmState.RegisterPlayer("aa_observer", "Observer");
+        mmState.RegisterPlayer("ab_friend", "Friend");
+        mmState.SetPlayerPosition("aa_observer", new TilePosition(5, 5));
+        mmState.SetPlayerPosition("ab_friend", new TilePosition(7, 6));
+        var mmServer = new AuthoritativeWorldServer(mmState, "minimap-test");
+        foreach (var mmPid in mmServer.ConnectedPlayerIds)
+            mmServer.ProcessIntent(new ServerIntent(mmPid, 1, IntentType.ReadyUp, new Dictionary<string, string>()));
+        mmServer.SeedWorldStructure("mm_clinic", "Clinic", "clinic", new TilePosition(4, 4));
+
+        var mmSnapshot = mmServer.CreateInterestSnapshot("aa_observer");
+        var mmMap = HudController.FormatMinimap(mmSnapshot, "aa_observer", radiusTiles: 5);
+
+        ExpectTrue(mmMap.Contains('@'), "minimap shows local player marker '@'");
+        ExpectTrue(mmMap.Contains('P'), "minimap shows other player marker 'P'");
+        ExpectTrue(mmMap.Contains('N'), "minimap shows NPC marker 'N'");
+        ExpectTrue(mmMap.Contains('S'), "minimap shows structure marker 'S'");
+
+        // 11x11 grid (radiusTiles=5) means 11 rows separated by newlines = 10 newlines
+        var mmRows = mmMap.Split('\n');
+        ExpectEqual(11, mmRows.Length, "minimap renders (radius*2+1) rows");
+        ExpectTrue(mmRows.All(r => r.Length == 11), "minimap rows are (radius*2+1) chars wide");
+
+        // Unavailable case
+        var mmEmpty = HudController.FormatMinimap(mmSnapshot, "nonexistent_player");
+        ExpectTrue(mmEmpty.Contains("unavailable"), "minimap returns unavailable when local player is missing");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.

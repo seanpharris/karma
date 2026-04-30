@@ -1077,6 +1077,44 @@ public partial class HudController : CanvasLayer
         return $"{safeCombatText} | You ATK:{attackPower} DEF:{defense} | {FormatStatusEffects(statusEffects)}";
     }
 
+    public static string FormatMinimap(ClientInterestSnapshot snapshot, string localPlayerId, int radiusTiles = 8)
+    {
+        var local = snapshot.Players.FirstOrDefault(p => p.Id == localPlayerId);
+        if (local is null) return "[minimap unavailable]";
+
+        var size = radiusTiles * 2 + 1;
+        var grid = new char[size, size];
+        for (var y = 0; y < size; y++)
+            for (var x = 0; x < size; x++)
+                grid[x, y] = '.';
+
+        void Place(int worldX, int worldY, char marker)
+        {
+            var dx = worldX - local.TileX + radiusTiles;
+            var dy = worldY - local.TileY + radiusTiles;
+            if (dx >= 0 && dx < size && dy >= 0 && dy < size)
+                grid[dx, dy] = marker;
+        }
+
+        foreach (var structure in snapshot.Structures)
+            Place(structure.TileX, structure.TileY, 'S');
+        foreach (var npc in snapshot.Npcs)
+            Place(npc.TileX, npc.TileY, 'N');
+        foreach (var player in snapshot.Players)
+            if (player.Id != localPlayerId)
+                Place(player.TileX, player.TileY, 'P');
+        Place(local.TileX, local.TileY, '@');
+
+        var sb = new System.Text.StringBuilder();
+        for (var y = 0; y < size; y++)
+        {
+            for (var x = 0; x < size; x++)
+                sb.Append(grid[x, y]);
+            if (y < size - 1) sb.Append('\n');
+        }
+        return sb.ToString();
+    }
+
     public static string FormatMatchStatus(MatchSnapshot match)
     {
         if (match.Status == MatchStatus.Running)
