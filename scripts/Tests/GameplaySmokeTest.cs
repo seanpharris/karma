@@ -4287,6 +4287,48 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(string.Empty, pqServer.GetPosseQuestOwner("pq_test_quest"),
             "posse quest owner is cleared after bonus is awarded");
 
+        // ── Step 38: World tier zones (lawless) ───────────────────────────────────
+        // Tiles can be marked lawless.  Attacks from a lawless attacker position
+        // skip the karma-descent penalty.  Snapshot lists "Lawless Zone" status.
+
+        var lzState = new GameState();
+        lzState.RegisterPlayer("aa_outlaw", "Outlaw");
+        lzState.RegisterPlayer("ab_target", "Target");
+        var lawlessPos = new TilePosition(50, 50);
+        lzState.SetPlayerPosition("aa_outlaw", lawlessPos);
+        lzState.SetPlayerPosition("ab_target", lawlessPos);
+        var lzServer = new AuthoritativeWorldServer(lzState, "lawless-test");
+        var lzSeq = 1;
+        foreach (var lzPid in lzServer.ConnectedPlayerIds)
+            lzServer.ProcessIntent(new ServerIntent(lzPid, lzSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+
+        // Mark the attacker's tile as lawless
+        lzServer.MarkTileLawless(lawlessPos);
+        ExpectTrue(lzServer.IsTileLawless(lawlessPos), "MarkTileLawless flags a tile as lawless");
+        ExpectTrue(lzServer.IsPlayerInLawlessZone("aa_outlaw"),
+            "IsPlayerInLawlessZone is true for player on lawless tile");
+
+        var lzKarmaBefore = lzState.Players["aa_outlaw"].Karma.Score;
+        lzServer.ProcessIntent(new ServerIntent("aa_outlaw", lzSeq++, IntentType.Attack,
+            new Dictionary<string, string> { ["targetId"] = "ab_target" }));
+        ExpectEqual(lzKarmaBefore, lzState.Players["aa_outlaw"].Karma.Score,
+            "attack from lawless zone does not decrease karma");
+
+        var lzSnapshot = lzServer.CreateInterestSnapshot("aa_outlaw");
+        var lzOutlawSnap = lzSnapshot.Players.FirstOrDefault(p => p.Id == "aa_outlaw");
+        ExpectTrue(lzOutlawSnap?.StatusEffects.Any(s => s.Contains("Lawless Zone")) == true,
+            "snapshot shows Lawless Zone status for player on lawless tile");
+
+        // Move attacker out of lawless zone — penalty applies again
+        lzState.SetPlayerPosition("aa_outlaw", new TilePosition(0, 0));
+        lzState.SetPlayerPosition("ab_target", new TilePosition(0, 0));
+        lzServer.AdvanceIdleTicks(AuthoritativeWorldServer.AttackCooldownTicks + 1);
+        var lzKarmaAfterMove = lzState.Players["aa_outlaw"].Karma.Score;
+        lzServer.ProcessIntent(new ServerIntent("aa_outlaw", lzSeq++, IntentType.Attack,
+            new Dictionary<string, string> { ["targetId"] = "ab_target" }));
+        ExpectTrue(lzState.Players["aa_outlaw"].Karma.Score < lzKarmaAfterMove,
+            "attack outside lawless zone applies normal karma penalty");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.

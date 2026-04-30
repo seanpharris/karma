@@ -35,7 +35,7 @@ public sealed class AuthoritativeWorldServer
     private GeneratedTileMap _tileMap;
     private long _tick;
     private bool _matchRewardsPaid;
-    private const long AttackCooldownTicks = 3;
+    public const long AttackCooldownTicks = 3;
     private const long KarmaBreakGraceTicks = 5;
     public const long DownedCountdownTicks = 120;
     public const int RescueHealAmount = 25;
@@ -69,6 +69,7 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, string> _downedByPlayerId = new();
     private readonly Dictionary<string, string> _posseQuestOwners = new();
     private readonly Dictionary<string, ShopOffer> _seededOffers = new();
+    private readonly HashSet<TilePosition> _lawlessTiles = new();
     private sealed record DropClaim(string OwnerId, string OwnerName);
     private sealed record LocalChatMessage(
         string MessageId,
@@ -403,6 +404,11 @@ public sealed class AuthoritativeWorldServer
     }
 
     public void SeedShopOffer(ShopOffer offer) => _seededOffers[offer.Id] = offer;
+
+    public void MarkTileLawless(TilePosition position) => _lawlessTiles.Add(position);
+    public bool IsTileLawless(TilePosition position) => _lawlessTiles.Contains(position);
+    public bool IsPlayerInLawlessZone(string playerId) =>
+        _state.Players.TryGetValue(playerId, out var p) && _lawlessTiles.Contains(p.Position);
 
     public string StartPosseQuest(string playerId, string questId, string giverNpcId = "")
     {
@@ -1644,8 +1650,12 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, $"Attack is on cooldown for {remainingTicks} more server tick(s).");
         }
 
-        var shift = isDuelAttack
-            ? new KarmaShift(0, KarmaDirection.Neutral, $"{attacker.DisplayName} struck {target.DisplayName} during an accepted duel.")
+        var attackerInLawless = _lawlessTiles.Contains(attacker.Position);
+        var shift = isDuelAttack || attackerInLawless
+            ? new KarmaShift(0, KarmaDirection.Neutral,
+                attackerInLawless
+                    ? $"{attacker.DisplayName} struck {target.DisplayName} in a lawless zone — no karma penalty."
+                    : $"{attacker.DisplayName} struck {target.DisplayName} during an accepted duel.")
             : ApplyShift(
                 intent.PlayerId,
                 new KarmaAction(
@@ -2965,6 +2975,11 @@ public sealed class AuthoritativeWorldServer
             _worldStructures.TryGetValue(structureEntityId, out var structure))
         {
             statuses.Add($"Inside: {structure.Name}");
+        }
+
+        if (_lawlessTiles.Contains(player.Position))
+        {
+            statuses.Add("Lawless Zone");
         }
 
         if (_wantedPlayerToIssuerId.ContainsKey(player.Id))
