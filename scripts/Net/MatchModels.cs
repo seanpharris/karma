@@ -4,6 +4,7 @@ namespace Karma.Net;
 
 public enum MatchStatus
 {
+    Lobby,
     Running,
     Finished
 }
@@ -27,9 +28,12 @@ public sealed record MatchSnapshot(
 {
     public int RemainingSeconds => System.Math.Max(0, DurationSeconds - ElapsedSeconds);
 
-    public string Summary => Status == MatchStatus.Running
-        ? $"Match: {FormatTime(RemainingSeconds)} | Saint {CurrentSaintName} ({CurrentSaintScore:+#;-#;0}) | Scourge {CurrentScourgeName} ({CurrentScourgeScore:+#;-#;0})"
-        : $"Match complete: Saint {SaintWinnerName} ({SaintWinnerScore:+#;-#;0}) | Scourge {ScourgeWinnerName} ({ScourgeWinnerScore:+#;-#;0})";
+    public string Summary => Status switch
+    {
+        MatchStatus.Lobby => "Lobby: waiting for players to ready up",
+        MatchStatus.Finished => $"Match complete: Saint {SaintWinnerName} ({SaintWinnerScore:+#;-#;0}) | Scourge {ScourgeWinnerName} ({ScourgeWinnerScore:+#;-#;0})",
+        _ => $"Match: {FormatTime(RemainingSeconds)} | Saint {CurrentSaintName} ({CurrentSaintScore:+#;-#;0}) | Scourge {CurrentScourgeName} ({CurrentScourgeScore:+#;-#;0})"
+    };
 
     private static string FormatTime(int seconds)
     {
@@ -48,13 +52,19 @@ public sealed class MatchState
         _durationSeconds = durationSeconds;
     }
 
-    public MatchStatus Status { get; private set; } = MatchStatus.Running;
+    public MatchStatus Status { get; private set; } = MatchStatus.Lobby;
     public int DurationSeconds => _durationSeconds;
     public int ElapsedSeconds => _elapsedSeconds;
 
+    public void StartMatch()
+    {
+        if (Status == MatchStatus.Lobby)
+            Status = MatchStatus.Running;
+    }
+
     public void Advance(int seconds, LeaderboardStanding standing)
     {
-        if (Status == MatchStatus.Finished || seconds <= 0)
+        if (Status != MatchStatus.Running || seconds <= 0)
         {
             return;
         }

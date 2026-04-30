@@ -695,8 +695,13 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(22.5f, PlayerController.CalculateEffectiveStaminaRecovery(18f, beaconPerks), "Beacon Aura improves stamina recovery");
         ExpectTrue(Mathf.Abs(PlayerController.CalculateEffectiveSprintCost(24f, nervePerks) - 20.4f) < 0.01f, "Renegade Nerve reduces sprint stamina cost");
         var matchServer = new AuthoritativeWorldServer(state, "match-test-world");
-        ExpectEqual(MatchStatus.Running, matchServer.Match.Status, "new server match starts running");
+        ExpectEqual(MatchStatus.Lobby, matchServer.Match.Status, "new server match starts in lobby");
         ExpectEqual(30 * 60, matchServer.Match.RemainingSeconds, "new server match starts with full duration remaining");
+        // Ready up all connected players to start the match
+        var matchReadySeq = 1;
+        foreach (var matchPid in matchServer.ConnectedPlayerIds)
+            matchServer.ProcessIntent(new ServerIntent(matchPid, matchReadySeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        ExpectEqual(MatchStatus.Running, matchServer.Match.Status, "match transitions to Running once all players are ready");
         ExpectEqual("rival_paragon", matchServer.Match.CurrentSaintId, "running match snapshot exposes current Saint leader");
         ExpectEqual("rival_renegade", matchServer.Match.CurrentScourgeId, "running match snapshot exposes current Scourge leader");
         matchServer.AdvanceMatchTime((30 * 60) - 1);
@@ -725,9 +730,10 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(saintScripBeforeMatchEnd + ServerConfig.DefaultMatchWinnerScripReward, state.Players["rival_paragon"].Scrip, "finished match does not pay Saint reward twice");
         ExpectEqual("rival_paragon", matchServer.CreateInterestSnapshot(GameState.LocalPlayerId).Match.SaintWinnerId, "interest snapshot includes Saint match winner");
         var karmaBeforePostMatchIntent = state.LocalKarma.Score;
+        // Use seq=10 (safely higher than ReadyUp seqs 1-4)
         var postMatchScoreIntent = matchServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            1,
+            10,
             IntentType.KarmaAction,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -737,7 +743,7 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(karmaBeforePostMatchIntent, state.LocalKarma.Score, "rejected post-match score intent does not mutate karma");
         var postMatchMove = matchServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
-            1,
+            11,
             IntentType.Move,
             new System.Collections.Generic.Dictionary<string, string>
             {
@@ -2038,7 +2044,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(server.EventLog.Count >= 2, "server records accepted move and karma intent events");
         var interestSnapshot = server.CreateInterestSnapshot(GameState.LocalPlayerId);
         ExpectEqual(2, interestSnapshot.Players.Count, "interest snapshot includes self and nearby players");
-        ExpectEqual(MatchStatus.Running, interestSnapshot.Match.Status, "interest snapshot includes match status");
+        ExpectEqual(MatchStatus.Lobby, interestSnapshot.Match.Status, "interest snapshot includes match status (Lobby before ready-up)");
         ExpectFalse(interestSnapshot.SyncHint.IsDelta, "full interest snapshot reports non-delta sync hint");
         ExpectEqual(0L, interestSnapshot.SyncHint.AfterTick, "full interest snapshot records zero after-tick");
         ExpectTrue(interestSnapshot.SyncHint.ServerEventCount >= 2, "interest snapshot sync hint counts visible server events");
@@ -3476,11 +3482,14 @@ public partial class GameplaySmokeTest : Node
         msServer.ProcessIntent(new ServerIntent("al_villain", 2, IntentType.KarmaAction,
             new Dictionary<string, string> { ["action"] = PrototypeActions.StealFromMaraId }));
 
-        // Match still running — summary is null
+        // Match still in lobby/pre-start — summary is null
         var runningSnap = msServer.CreateInterestSnapshot("al_hero");
-        ExpectTrue(runningSnap.MatchSummary is null, "MatchSummary is null while match is running");
+        ExpectTrue(runningSnap.MatchSummary is null, "MatchSummary is null before match ends");
 
-        // Advance past match duration to finish
+        // Ready up all connected players to start the match, then advance past duration to finish
+        var msSeq = 100;
+        foreach (var msConnPid in msServer.ConnectedPlayerIds)
+            msServer.ProcessIntent(new ServerIntent(msConnPid, msSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
         msServer.AdvanceMatchTime(15);
         var summarySnap = msServer.CreateInterestSnapshot("al_hero");
         ExpectTrue(summarySnap.MatchSummary is not null, "MatchSummary is present after match ends");
@@ -3503,7 +3512,10 @@ public partial class GameplaySmokeTest : Node
             new ServerConfig(MaxPlayers: 4, TargetPlayers: 4, Scale: WorldScale.Small,
                 TickRate: 20, InterestRadiusTiles: 24, CombatRangeTiles: 2,
                 ChunkSizeTiles: 32, MatchDurationSeconds: 5));
-        for (var seq = 1; seq <= 5; seq++)
+        var msKillSeq = 1;
+        foreach (var msKillPid in msKillServer.ConnectedPlayerIds)
+            msKillServer.ProcessIntent(new ServerIntent(msKillPid, msKillSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        for (var seq = msKillSeq; seq < msKillSeq + 5; seq++)
         {
             msKillServer.ProcessIntent(new ServerIntent("al_hero", seq, IntentType.Attack,
                 new Dictionary<string, string> { ["targetId"] = "al_villain" }));
@@ -3787,6 +3799,53 @@ public partial class GameplaySmokeTest : Node
         var karmaFarAfter = cbFarState.Players["aq_farcarrier"].Karma.Score;
         ExpectEqual(karmaFarBefore, karmaFarAfter,
             "Carrying contraband far from law NPCs causes no karma decay");
+
+        // ── Step 29: Lobby / ready-up flow ────────────────────────────────────────
+        // Match starts in Lobby.  AdvanceMatchTime does nothing until a quorum of
+        // connected players has sent ReadyUp; after quorum the match transitions to
+        // Running and the timer advances normally.
+
+        var lobState = new GameState();
+        lobState.RegisterPlayer("ar_p1", "P1");
+        lobState.RegisterPlayer("ar_p2", "P2");
+        lobState.SetPlayerPosition("ar_p1", TilePosition.Origin);
+        lobState.SetPlayerPosition("ar_p2", TilePosition.Origin);
+        var lobServer = new AuthoritativeWorldServer(lobState, "lobby-test",
+            new ServerConfig(MaxPlayers: 2, TargetPlayers: 2, Scale: WorldScale.Small,
+                TickRate: 20, InterestRadiusTiles: 24, CombatRangeTiles: 2,
+                ChunkSizeTiles: 32, MatchDurationSeconds: 60));
+
+        ExpectEqual(MatchStatus.Lobby, lobServer.Match.Status, "new server starts in Lobby");
+
+        // Timer does not advance in Lobby
+        lobServer.AdvanceMatchTime(10);
+        ExpectEqual(60, lobServer.Match.RemainingSeconds, "timer does not count down while in Lobby");
+
+        // One player readies up — still Lobby (quorum not met)
+        var readyResult = lobServer.ProcessIntent(new ServerIntent("ar_p1", 1, IntentType.ReadyUp, new Dictionary<string, string>()));
+        ExpectTrue(readyResult.WasAccepted, "ReadyUp intent is accepted in Lobby");
+        ExpectEqual(MatchStatus.Lobby, lobServer.Match.Status, "match stays in Lobby until all players are ready");
+        ExpectTrue(lobServer.IsReady("ar_p1"), "ReadyUp marks player as ready");
+        ExpectTrue(!lobServer.IsReady("ar_p2"), "player who has not readied up is not ready");
+        ExpectEqual(1, lobServer.ReadyCount, "ReadyCount reflects players who have sent ReadyUp");
+
+        // Duplicate ReadyUp is rejected
+        var dupeReady = lobServer.ProcessIntent(new ServerIntent("ar_p1", 2, IntentType.ReadyUp, new Dictionary<string, string>()));
+        ExpectTrue(!dupeReady.WasAccepted, "duplicate ReadyUp is rejected");
+
+        // Second player readies up — quorum reached, match starts
+        lobServer.ProcessIntent(new ServerIntent("ar_p2", 3, IntentType.ReadyUp, new Dictionary<string, string>()));
+        ExpectEqual(MatchStatus.Running, lobServer.Match.Status, "match transitions to Running once all players ready");
+        ExpectTrue(lobServer.EventLog.Any(e => e.EventId.Contains("match_started")),
+            "match_started event fires when quorum is reached");
+
+        // Timer now advances normally
+        lobServer.AdvanceMatchTime(10);
+        ExpectEqual(50, lobServer.Match.RemainingSeconds, "timer counts down when match is Running");
+
+        // ReadyUp rejected after match started
+        var postStartReady = lobServer.ProcessIntent(new ServerIntent("ar_p2", 4, IntentType.ReadyUp, new Dictionary<string, string>()));
+        ExpectTrue(!postStartReady.WasAccepted, "ReadyUp rejected after match has started");
 
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has

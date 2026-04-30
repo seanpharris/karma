@@ -41,7 +41,8 @@ public enum IntentType
     Rescue,
     Mount,
     Dismount,
-    IssueWanted
+    IssueWanted,
+    ReadyUp
 }
 
 public sealed record ServerIntent(

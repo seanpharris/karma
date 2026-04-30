@@ -60,6 +60,7 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, HashSet<PlayerStatusKind>> _persistentStatusByPlayer = new();
     public const int ContrabandKarmaDecayPerTick = 1;
     private long _lastContrabandDecayTick;
+    private readonly HashSet<string> _readyUpPlayers = new();
     private sealed record DropClaim(string OwnerId, string OwnerName);
     private sealed record LocalChatMessage(
         string MessageId,
@@ -101,6 +102,10 @@ public sealed class AuthoritativeWorldServer
 
     public int GetBounty(string playerId) =>
         _bountyByPlayerId.TryGetValue(playerId, out var bounty) ? bounty : 0;
+
+    public bool IsReady(string playerId) => _readyUpPlayers.Contains(playerId);
+
+    public int ReadyCount => _readyUpPlayers.Count;
 
     public void ApplyStatus(string playerId, PlayerStatusKind kind)
     {
@@ -468,6 +473,7 @@ public sealed class AuthoritativeWorldServer
             IntentType.Mount => ProcessMount(intent),
             IntentType.Dismount => ProcessDismount(intent),
             IntentType.IssueWanted => ProcessIssueWanted(intent),
+            IntentType.ReadyUp => ProcessReadyUp(intent),
             _ => Reject(intent, $"Unsupported intent type: {intent.Type}")
         };
     }
@@ -1806,6 +1812,48 @@ public sealed class AuthoritativeWorldServer
                 ["issuerName"] = issuer.DisplayName,
                 ["targetName"] = target.DisplayName
             });
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessReadyUp(ServerIntent intent)
+    {
+        if (_match.Status == MatchStatus.Finished)
+            return Reject(intent, "Match is already finished.");
+
+        if (_match.Status == MatchStatus.Running)
+            return Reject(intent, "Match has already started.");
+
+        if (!_connectedPlayerIds.Contains(intent.PlayerId))
+            return Reject(intent, "Player is not connected.");
+
+        if (_readyUpPlayers.Contains(intent.PlayerId))
+            return Reject(intent, "Already readied up.");
+
+        _readyUpPlayers.Add(intent.PlayerId);
+
+        var serverEvent = AppendEvent(
+            "player_ready",
+            $"{intent.PlayerId} is ready ({_readyUpPlayers.Count}/{_connectedPlayerIds.Count}).",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["readyCount"] = _readyUpPlayers.Count.ToString(),
+                ["totalCount"] = _connectedPlayerIds.Count.ToString()
+            });
+
+        // Quorum: all connected players have readied up (minimum 1)
+        if (_connectedPlayerIds.Count > 0 && _readyUpPlayers.IsSupersetOf(_connectedPlayerIds))
+        {
+            _match.StartMatch();
+            AppendEvent(
+                "match_started",
+                $"All {_connectedPlayerIds.Count} players ready — match started.",
+                new Dictionary<string, string>
+                {
+                    ["playerCount"] = _connectedPlayerIds.Count.ToString()
+                });
+        }
+
         return ServerProcessResult.Accepted(serverEvent);
     }
 

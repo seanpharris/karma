@@ -27,12 +27,16 @@ public partial class PrototypeServerSession : Node
     {
         _state = GetNode<GameState>("/root/GameState");
         _server = new AuthoritativeWorldServer(_state, "local-prototype", ServerConfig.Prototype4Player);
+        // Prototype session: auto-ready all connected players so the match starts immediately
+        var emptyPayload = new System.Collections.Generic.Dictionary<string, string>();
+        foreach (var playerId in _server.ConnectedPlayerIds.ToArray())
+            Send(playerId, IntentType.ReadyUp, emptyPayload);
         RefreshLocalSnapshot();
     }
 
     public override void _Process(double delta)
     {
-        if (_server is null || _server.Match.Status == MatchStatus.Finished)
+        if (_server is null || _server.Match.Status != MatchStatus.Running)
         {
             return;
         }
