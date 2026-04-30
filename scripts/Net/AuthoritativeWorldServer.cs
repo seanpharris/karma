@@ -591,6 +591,7 @@ public sealed class AuthoritativeWorldServer
             IntentType.CraftItem => ProcessCraftItem(intent),
             IntentType.SellItem => ProcessSellItem(intent),
             IntentType.Reload => ProcessReload(intent),
+            IntentType.StartPosseQuest => ProcessStartPosseQuest(intent),
             _ => Reject(intent, $"Unsupported intent type: {intent.Type}")
         };
     }
@@ -2183,6 +2184,36 @@ public sealed class AuthoritativeWorldServer
     public const int SellItemFallbackPrice = 5;
     public const int SellItemPercentOfPrice = 50;
     public const int StaminaRegenPerIdleTick = 2;
+
+    private ServerProcessResult ProcessStartPosseQuest(ServerIntent intent)
+    {
+        if (!intent.Payload.TryGetValue("questId", out var questId) || string.IsNullOrWhiteSpace(questId))
+            return Reject(intent, "StartPosseQuest requires questId.");
+        var giverNpcId = intent.Payload.TryGetValue("giverNpcId", out var giver) ? giver : "";
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var player))
+            return Reject(intent, "Player state unavailable.");
+        if (!player.HasTeam)
+            return Reject(intent, "Player must be in a posse to start a posse quest.");
+        if (_state.Quests.Quests.ContainsKey(questId))
+            return Reject(intent, $"Quest already exists: {questId}.");
+
+        var posseId = StartPosseQuest(intent.PlayerId, questId, giverNpcId);
+        if (string.IsNullOrEmpty(posseId))
+            return Reject(intent, "Could not start posse quest.");
+
+        // StartPosseQuest already emitted posse_quest_started; surface a success
+        // result with the player_started_posse_quest event id for symmetry.
+        var serverEvent = AppendEvent(
+            "player_started_posse_quest",
+            $"{intent.PlayerId} kicked off posse quest {questId}.",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["posseId"] = posseId,
+                ["questId"] = questId
+            });
+        return ServerProcessResult.Accepted(serverEvent);
+    }
 
     private ServerProcessResult ProcessReload(ServerIntent intent)
     {

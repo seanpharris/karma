@@ -50,10 +50,12 @@ Things the test suite confirms but a player would notice.
   `left_lawless_zone` server events on boundary crossings. Lawless-to-
   lawless moves don't emit redundant events. The HUD's
   `FormatLatestServerEvent` will pick these up automatically.
-- [ ] **Posse quest activation path** — `StartPosseQuest` is a public server
-  method but no intent or NPC dialogue option triggers it. Wire either an
-  `IntentType.StartPosseQuest` or a "posse_outpost"-roled NPC dialogue choice
-  that calls it.
+- [x] **Posse quest activation path** — *done 2026-04-29*. New
+  `IntentType.StartPosseQuest` + `ProcessStartPosseQuest` path: takes
+  `questId` (and optional `giverNpcId`) payload, requires the caller to
+  be in a posse, rejects duplicate ids and missing payload. Emits a
+  `player_started_posse_quest` event on success on top of the existing
+  `posse_quest_started` event from `StartPosseQuest`.
 - [x] **Trophy item identity** — *done 2026-04-29*. Trophy id is now
   `trophy_{victimId}_{tick}`. Duplicate display names can no longer
   collide, and repeat Karma Breaks of the same victim across the match

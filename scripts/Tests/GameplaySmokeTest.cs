@@ -4320,6 +4320,33 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(string.Empty, pqServer.GetPosseQuestOwner("pq_test_quest"),
             "posse quest owner is cleared after bonus is awarded");
 
+        // StartPosseQuest intent path: a player in a posse can trigger a quest
+        // via IntentType.StartPosseQuest. Without a posse, intent is rejected.
+        var pqiSeq = 100;
+        var pqiNoPosse = pqServer.ProcessIntent(new ServerIntent("local_player", pqiSeq++,
+            IntentType.StartPosseQuest,
+            new Dictionary<string, string> { ["questId"] = "pq_intent_quest_orphan" }));
+        ExpectFalse(pqiNoPosse.WasAccepted, "StartPosseQuest intent rejected when player has no posse");
+
+        var pqiOk = pqServer.ProcessIntent(new ServerIntent("aa_lead", pqiSeq++,
+            IntentType.StartPosseQuest,
+            new Dictionary<string, string> { ["questId"] = "pq_intent_quest_real" }));
+        ExpectTrue(pqiOk.WasAccepted, "StartPosseQuest intent accepted for player in a posse");
+        ExpectTrue(pqState.Quests.Quests.ContainsKey("pq_intent_quest_real"),
+            "StartPosseQuest intent registers the quest in GameState.Quests");
+        ExpectTrue(pqServer.EventLog.Any(e => e.EventId.Contains("player_started_posse_quest")),
+            "player_started_posse_quest event fires on intent acceptance");
+
+        var pqiDup = pqServer.ProcessIntent(new ServerIntent("aa_lead", pqiSeq++,
+            IntentType.StartPosseQuest,
+            new Dictionary<string, string> { ["questId"] = "pq_intent_quest_real" }));
+        ExpectFalse(pqiDup.WasAccepted, "StartPosseQuest intent rejected when quest id already exists");
+
+        var pqiNoId = pqServer.ProcessIntent(new ServerIntent("aa_lead", pqiSeq++,
+            IntentType.StartPosseQuest,
+            new Dictionary<string, string>()));
+        ExpectFalse(pqiNoId.WasAccepted, "StartPosseQuest intent rejected when questId payload is missing");
+
         // ── Step 38: World tier zones (lawless) ───────────────────────────────────
         // Tiles can be marked lawless.  Attacks from a lawless attacker position
         // skip the karma-descent penalty.  Snapshot lists "Lawless Zone" status.

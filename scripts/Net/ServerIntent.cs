@@ -47,7 +47,8 @@ public enum IntentType
     ClaimStation,
     CraftItem,
     SellItem,
-    Reload
+    Reload,
+    StartPosseQuest
 }
 
 public sealed record ServerIntent(
