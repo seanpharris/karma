@@ -4329,6 +4329,49 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(lzState.Players["aa_outlaw"].Karma.Score < lzKarmaAfterMove,
             "attack outside lawless zone applies normal karma penalty");
 
+        // ── Step 39: Fog of war ───────────────────────────────────────────────────
+        // Server tracks visited chunks per player; CreateInterestSnapshot only
+        // includes chunks the player has visited (via FogOfWarMinimumRevealRadius).
+
+        var fwState = new GameState();
+        fwState.RegisterPlayer("aa_explorer", "Explorer");
+        fwState.SetPlayerPosition("aa_explorer", new TilePosition(5, 5));
+        var fwServer = new AuthoritativeWorldServer(fwState, "fog-of-war-test");
+        var fwWorld = WorldGenerator.Generate(WorldConfig.FromServerConfig(
+            "fog-of-war-test",
+            new WorldSeed(99, "Fog Test", "test"),
+            ServerConfig.Prototype4Player));
+        fwServer.SetTileMap(fwWorld.TileMap);
+        var fwSeq = 1;
+        foreach (var fwPid in fwServer.ConnectedPlayerIds)
+            fwServer.ProcessIntent(new ServerIntent(fwPid, fwSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+
+        // Take a snapshot — the player's current chunk should be marked visited
+        var fwSnap1 = fwServer.CreateInterestSnapshot("aa_explorer");
+        var fwVisited1Count = fwServer.GetVisitedChunks("aa_explorer").Count;
+        var fwVisited1Snapshot = fwServer.GetVisitedChunks("aa_explorer").ToArray();
+        ExpectTrue(fwVisited1Count > 0, "fog of war records visited chunks after first snapshot");
+
+        // The visited set includes the player's chunk + reveal radius chunks
+        var fwHere = fwServer.GetChunkForTile(new TilePosition(5, 5));
+        ExpectTrue(fwVisited1Snapshot.Contains((fwHere.ChunkX, fwHere.ChunkY)),
+            "player's current chunk is in the visited set");
+
+        // Move player to a different chunk (within the small map's bounds)
+        fwState.SetPlayerPosition("aa_explorer", new TilePosition(45, 45));
+        fwServer.CreateInterestSnapshot("aa_explorer");
+        var fwVisited2Count = fwServer.GetVisitedChunks("aa_explorer").Count;
+        ExpectTrue(fwVisited2Count > fwVisited1Count,
+            "moving to new area expands the visited chunks set");
+        var fwVisited2 = fwServer.GetVisitedChunks("aa_explorer").ToArray();
+
+        // Snapshot only includes visited chunks (not all chunks within radius)
+        var fwSnap2 = fwServer.CreateInterestSnapshot("aa_explorer");
+        ExpectTrue(fwSnap2.MapChunks.Count > 0, "fog-of-war snapshot still has at least the local chunk");
+        var fwVisitedSet = fwVisited2.Select(v => $"{v.X}:{v.Y}").ToHashSet();
+        ExpectTrue(fwSnap2.MapChunks.All(chunk => fwVisitedSet.Contains(chunk.ChunkKey)),
+            "all chunks in fog-of-war snapshot have been visited");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.

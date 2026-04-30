@@ -70,6 +70,8 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, string> _posseQuestOwners = new();
     private readonly Dictionary<string, ShopOffer> _seededOffers = new();
     private readonly HashSet<TilePosition> _lawlessTiles = new();
+    private readonly Dictionary<string, HashSet<(int, int)>> _visitedChunksByPlayer = new();
+    public const int FogOfWarMinimumRevealRadiusChunks = 1;
     private sealed record DropClaim(string OwnerId, string OwnerName);
     private sealed record LocalChatMessage(
         string MessageId,
@@ -758,11 +760,28 @@ public sealed class AuthoritativeWorldServer
             return Array.Empty<MapChunkSnapshot>();
         }
 
+        if (!_visitedChunksByPlayer.TryGetValue(playerId, out var visited))
+        {
+            visited = new HashSet<(int, int)>();
+            _visitedChunksByPlayer[playerId] = visited;
+        }
+
+        var here = GetChunkForTile(player.Position);
+        for (var dx = -FogOfWarMinimumRevealRadiusChunks; dx <= FogOfWarMinimumRevealRadiusChunks; dx++)
+        for (var dy = -FogOfWarMinimumRevealRadiusChunks; dy <= FogOfWarMinimumRevealRadiusChunks; dy++)
+            visited.Add((here.ChunkX + dx, here.ChunkY + dy));
+
         return _tileMap
             .GetChunksAround(player.Position.X, player.Position.Y, Config.InterestRadiusChunks)
+            .Where(chunk => visited.Contains((chunk.Coordinate.X, chunk.Coordinate.Y)))
             .Select(ToSnapshot)
             .ToArray();
     }
+
+    public IReadOnlyCollection<(int X, int Y)> GetVisitedChunks(string playerId) =>
+        _visitedChunksByPlayer.TryGetValue(playerId, out var visited)
+            ? (IReadOnlyCollection<(int, int)>)visited
+            : Array.Empty<(int, int)>();
 
     private IReadOnlyList<LocalChatMessageSnapshot> CreateVisibleLocalChat(string playerId)
     {

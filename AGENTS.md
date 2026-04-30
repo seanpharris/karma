@@ -289,7 +289,7 @@ group are prerequisites for later ones in the same group.
 | 36 | Crafting intent — `CraftItem` intent validated at a workshop structure; server holds a recipe table (`CraftingRecipe[]`); consumes ingredients and produces the output item | ✅ done |
 | 37 | Posse shared quest module — `PosseQuestModule` subclass assigns the same multi-step objective to all posse members; shared completion triggers a group scrip bonus via `QuestModuleRegistry` | ✅ done |
 | 38 | World tier zones — tile-level `IsLawless` flag set at world-gen for fringe areas; attacks in lawless zones skip the karma-descent penalty; shown on HUD when player enters/exits | ✅ done |
-| 39 | Fog of war — `AuthoritativeWorldServer` tracks which chunks each player has visited; `CreateInterestSnapshot` excludes unvisited chunks beyond a minimum reveal radius | pending |
+| 39 | Fog of war — `AuthoritativeWorldServer` tracks which chunks each player has visited; `CreateInterestSnapshot` excludes unvisited chunks beyond a minimum reveal radius | ✅ done |
 | 40 | HUD minimap — small radar panel rendering nearby player, NPC, and structure positions as dots relative to the local player; updates from the interest snapshot each tick | pending |
 
 Art requirements for each step are tracked in `ART_NEEDED.md`.
