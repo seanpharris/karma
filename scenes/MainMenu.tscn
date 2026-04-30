@@ -65,6 +65,10 @@ layout_mode = 2
 layout_mode = 2
 text = "Start Local Prototype"
 
+[node name="EventPrototypeButton" type="Button" parent="Root/MenuPanel/MenuMargin/MenuButtons"]
+layout_mode = 2
+text = "Playable Event Prototypes"
+
 [node name="OptionsButton" type="Button" parent="Root/MenuPanel/MenuMargin/MenuButtons"]
 layout_mode = 2
 text = "Options"

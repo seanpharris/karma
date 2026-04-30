@@ -7,6 +7,7 @@ namespace Karma.UI;
 public partial class MainMenuController : Control
 {
     public const string GameplayScenePath = "res://scenes/Main.tscn";
+    public const string EventPrototypeScenePath = "res://scenes/InGameEventPrototype.tscn";
     private const string OptionsPath = "user://options.cfg";
 
     private static readonly Vector2I[] CommonResolutions =
@@ -20,6 +21,7 @@ public partial class MainMenuController : Control
     };
 
     private Button _startButton;
+    private Button _eventPrototypeButton;
     private Button _optionsButton;
     private Button _creditsButton;
     private Button _quitButton;
@@ -47,6 +49,7 @@ public partial class MainMenuController : Control
     public override void _Ready()
     {
         _startButton = GetNode<Button>("Root/MenuPanel/MenuMargin/MenuButtons/StartButton");
+        _eventPrototypeButton = GetNode<Button>("Root/MenuPanel/MenuMargin/MenuButtons/EventPrototypeButton");
         _optionsButton = GetNode<Button>("Root/MenuPanel/MenuMargin/MenuButtons/OptionsButton");
         _creditsButton = GetNode<Button>("Root/MenuPanel/MenuMargin/MenuButtons/CreditsButton");
         _quitButton = GetNode<Button>("Root/MenuPanel/MenuMargin/MenuButtons/QuitButton");
@@ -70,6 +73,7 @@ public partial class MainMenuController : Control
         _statusLabel = GetNode<Label>("Root/MenuPanel/MenuMargin/MenuButtons/StatusLabel");
 
         _startButton.Pressed += StartGame;
+        _eventPrototypeButton.Pressed += StartEventPrototypes;
         _optionsButton.Pressed += ShowOptions;
         _creditsButton.Pressed += ShowCredits;
         _quitButton.Pressed += QuitGame;
@@ -97,6 +101,12 @@ public partial class MainMenuController : Control
     {
         _statusLabel.Text = "Starting local prototype...";
         GetTree().ChangeSceneToFile(GameplayScenePath);
+    }
+
+    public void StartEventPrototypes()
+    {
+        _statusLabel.Text = "Opening playable event prototypes...";
+        GetTree().ChangeSceneToFile(EventPrototypeScenePath);
     }
 
     public void ShowOptions()

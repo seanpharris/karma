@@ -10,7 +10,8 @@ public enum WorldEventType
     Combat,
     Karma,
     Structure,
-    System
+    System,
+    SupplyDrop
 }
 
 public sealed record WorldEvent(

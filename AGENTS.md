@@ -19,7 +19,8 @@ Core ideas:
 - Work primarily on `develop`.
 - `main` is for stable merges.
 - `add-art` exists for art contributions.
-- Commit and push coherent slices when verification passes.
+- Commit coherent slices when verification passes. Push only when explicitly asked
+  or when the current task clearly includes publishing the finished slice.
 
 ## Local Setup
 
@@ -78,7 +79,8 @@ Before committing:
 - Prefer one coherent commit per feature or integration slice.
 - Include all source, docs, and real assets needed for that slice.
 - Exclude local debug outputs, temporary logs, and exploratory images.
-- Run the verification command above and only push when it passes.
+- Run the verification command above before committing. Push only when explicitly
+  asked or when the current task clearly includes publishing the finished slice.
 - In the final note, mention whether the work was continued from existing
   uncommitted changes.
 
@@ -235,7 +237,7 @@ Godot 2D top-down template:
 
 Steps complete on `develop`. Add new slices to the table as they are planned.
 
-### Steps 1–20 (complete as of 2026-04-29)
+### Steps 1–29 (complete as of 2026-04-29)
 
 | # | Feature | Status |
 |---|---------|--------|
@@ -260,7 +262,7 @@ Steps complete on `develop`. Add new slices to the table as they are planned.
 | 19 | Mount/vehicle entity model (speed modifier, parking, occupancy) | ✅ done |
 | 20 | Mount/dismount intents + karma hooks | ✅ done |
 
-### Steps 21–40 (active plan as of 2026-04-29)
+### Steps 30–40 (active plan as of 2026-04-29)
 
 Theme groups: **match lifecycle** → **karma depth** → **player state** → **world events**
 → **economy/factions** → **crafting/social** → **map and UI**.
@@ -329,8 +331,8 @@ Stations not matched by any module get a flat `QuestDefinition` (stabilize fallb
 
 ## Current Prototype Features
 
-_Last updated 2026-04-29 (steps 1–20 complete). This list drifts — verify against
-the code before assuming a feature is or isn't present._
+_Last updated 2026-04-29 (steps 1–29 complete). This list drifts — verify against
+the code before using it to plan work or assuming a feature is or isn't present._
 
 - Top-down local movement, mouse-wheel camera zoom, and Left Shift sprint with stamina.
 - `I` toggles an inventory overlay with scrip, equipment, and grouped items.

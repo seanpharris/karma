@@ -61,6 +61,8 @@ public sealed class AuthoritativeWorldServer
     public const int ContrabandKarmaDecayPerTick = 1;
     private long _lastContrabandDecayTick;
     private readonly HashSet<string> _readyUpPlayers = new();
+    private readonly Dictionary<string, long> _supplyDropExpiryByEntityId = new();
+    public const long SupplyDropDefaultExpiryTicks = 300;
     private sealed record DropClaim(string OwnerId, string OwnerName);
     private sealed record LocalChatMessage(
         string MessageId,
@@ -106,6 +108,30 @@ public sealed class AuthoritativeWorldServer
     public bool IsReady(string playerId) => _readyUpPlayers.Contains(playerId);
 
     public int ReadyCount => _readyUpPlayers.Count;
+
+    public string ScheduleSupplyDrop(TilePosition position, GameItem item, long expiryTicks = SupplyDropDefaultExpiryTicks)
+    {
+        var entityId = $"supply_drop_{_tick}_{item.Id}";
+        SeedWorldItem(entityId, item, position);
+        _supplyDropExpiryByEntityId[entityId] = _tick + expiryTicks;
+        _state.AddWorldEvent(
+            WorldEventType.SupplyDrop,
+            $"A supply cache containing {item.Name} has appeared at ({position.X}, {position.Y}). First to arrive claims it.",
+            string.Empty,
+            WorldEvent.GlobalTargetId);
+        AppendEvent(
+            "supply_drop_spawned",
+            $"Supply drop: {item.Name} at ({position.X}, {position.Y}). Expires in {expiryTicks} ticks.",
+            new Dictionary<string, string>
+            {
+                ["entityId"] = entityId,
+                ["itemId"] = item.Id,
+                ["tileX"] = position.X.ToString(),
+                ["tileY"] = position.Y.ToString(),
+                ["expiryTick"] = (_tick + expiryTicks).ToString()
+            });
+        return entityId;
+    }
 
     public void ApplyStatus(string playerId, PlayerStatusKind kind)
     {
@@ -153,6 +179,7 @@ public sealed class AuthoritativeWorldServer
         DecayHeatMap(ticks);
         FinalizeExpiredDownedPlayers();
         ApplyContrabandDecay();
+        ApplySupplyDropExpiry();
     }
 
     public void AdvanceMatchTime(int seconds)
@@ -956,6 +983,32 @@ public sealed class AuthoritativeWorldServer
         }
     }
 
+    private void ApplySupplyDropExpiry()
+    {
+        if (_supplyDropExpiryByEntityId.Count == 0)
+            return;
+        var expired = _supplyDropExpiryByEntityId
+            .Where(pair => _tick >= pair.Value)
+            .Select(pair => pair.Key)
+            .ToArray();
+        foreach (var entityId in expired)
+        {
+            _supplyDropExpiryByEntityId.Remove(entityId);
+            if (_worldItems.TryGetValue(entityId, out var entity) && entity.IsAvailable)
+            {
+                _worldItems.Remove(entityId);
+                AppendEvent(
+                    "supply_drop_expired",
+                    $"Unclaimed supply drop ({entity.Item.Name}) expired.",
+                    new Dictionary<string, string>
+                    {
+                        ["entityId"] = entityId,
+                        ["itemId"] = entity.Item.Id
+                    });
+            }
+        }
+    }
+
     private ServerProcessResult ProcessKarmaAction(ServerIntent intent)
     {
         if (!intent.Payload.TryGetValue("action", out var actionId))
@@ -1046,6 +1099,22 @@ public sealed class AuthoritativeWorldServer
         }
 
         _worldItems[entityId] = entity with { IsAvailable = false };
+        _supplyDropExpiryByEntityId.Remove(entityId);
+
+        var isSupplyDrop = entityId.StartsWith("supply_drop_");
+        if (isSupplyDrop)
+        {
+            AppendEvent(
+                "supply_drop_claimed",
+                $"{player.DisplayName} claimed the supply cache ({entity.Item.Name}).",
+                new Dictionary<string, string>
+                {
+                    ["playerId"] = intent.PlayerId,
+                    ["entityId"] = entityId,
+                    ["itemId"] = entity.Item.Id
+                });
+        }
+
         var serverEvent = AppendEvent(
             "item_picked_up",
             $"{intent.PlayerId} picked up {entity.Item.Id}",

@@ -3847,6 +3847,130 @@ public partial class GameplaySmokeTest : Node
         var postStartReady = lobServer.ProcessIntent(new ServerIntent("ar_p2", 4, IntentType.ReadyUp, new Dictionary<string, string>()));
         ExpectTrue(!postStartReady.WasAccepted, "ReadyUp rejected after match has started");
 
+        // ── Step 30: Supply drop world event ──────────────────────────────────────
+        // ScheduleSupplyDrop seeds a world item at a broadcast location.  The first
+        // player to pick it up emits supply_drop_claimed.  The cache expires and is
+        // removed if not claimed within the expiry window.
+
+        var sdState = new GameState();
+        sdState.RegisterPlayer("as_player", "Treasure Hunter");
+        sdState.SetPlayerPosition("as_player", TilePosition.Origin);
+        var sdServer = new AuthoritativeWorldServer(sdState, "supply-drop-test");
+        var sdReadySeq = 1;
+        foreach (var sdPid in sdServer.ConnectedPlayerIds)
+            sdServer.ProcessIntent(new ServerIntent(sdPid, sdReadySeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+
+        var sdDropPos = new TilePosition(2, 2);
+        var sdEntityId = sdServer.ScheduleSupplyDrop(sdDropPos, StarterItems.MediPatch, expiryTicks: 50);
+        ExpectTrue(!string.IsNullOrEmpty(sdEntityId), "ScheduleSupplyDrop returns a non-empty entity ID");
+        ExpectTrue(sdServer.WorldItems.ContainsKey(sdEntityId), "supply drop world item is seeded");
+        ExpectTrue(sdServer.EventLog.Any(e => e.EventId.Contains("supply_drop_spawned")),
+            "supply_drop_spawned event emitted when drop is scheduled");
+
+        // Global world event broadcast
+        var sdWorldEvent = sdState.WorldEvents.Events.LastOrDefault(e => e.Type == WorldEventType.SupplyDrop);
+        ExpectTrue(sdWorldEvent is not null, "supply drop emits a global SupplyDrop world event");
+        ExpectTrue(sdWorldEvent?.IsGlobal == true, "supply drop world event is global (visible to all)");
+
+        // Player claims the drop
+        sdState.SetPlayerPosition("as_player", sdDropPos);
+        var claimResult = sdServer.ProcessIntent(new ServerIntent("as_player", sdReadySeq++, IntentType.Interact,
+            new Dictionary<string, string> { ["entityId"] = sdEntityId }));
+        ExpectTrue(claimResult.WasAccepted, "player can claim a supply drop by interacting with it");
+        ExpectTrue(sdServer.EventLog.Any(e => e.EventId.Contains("supply_drop_claimed") &&
+            e.Data.GetValueOrDefault("playerId") == "as_player"),
+            "supply_drop_claimed event fires when player picks up supply drop");
+        ExpectTrue(sdState.Players["as_player"].Inventory.Any(i => i.Id == StarterItems.MediPatchId),
+            "claimed supply drop item is added to player inventory");
+
+        // Expiry: unclaimed supply drop is removed after timeout
+        var sdExpireState = new GameState();
+        sdExpireState.RegisterPlayer("as_bystander", "Bystander");
+        sdExpireState.SetPlayerPosition("as_bystander", new TilePosition(60, 60));
+        var sdExpireServer = new AuthoritativeWorldServer(sdExpireState, "supply-drop-expire-test");
+        var sdExpireId = sdExpireServer.ScheduleSupplyDrop(TilePosition.Origin, StarterItems.DataChip, expiryTicks: 5);
+        sdExpireServer.AdvanceIdleTicks(6);
+        ExpectTrue(!sdExpireServer.WorldItems.ContainsKey(sdExpireId) ||
+                   !sdExpireServer.WorldItems[sdExpireId].IsAvailable,
+            "expired supply drop is removed from world items");
+        ExpectTrue(sdExpireServer.EventLog.Any(e => e.EventId.Contains("supply_drop_expired")),
+            "supply_drop_expired event fires when drop times out");
+
+        // ── Event playback prototype: updated match systems together ──────────────
+        // This short narrative prototype plays several newer systems in sequence so
+        // future slices can catch integration breaks, not just isolated unit failures:
+        // lobby ready-up → Warden marks an outlaw Wanted → contraband ticks near law
+        // NPCs → Wraith low-HP speed kicks in → supply drop is claimed → match summary.
+        var protoConfig = new ServerConfig(
+            MaxPlayers: 7,
+            TargetPlayers: 7,
+            Scale: WorldScale.Small,
+            TickRate: 20,
+            InterestRadiusTiles: 24,
+            CombatRangeTiles: 2,
+            ChunkSizeTiles: ServerConfig.DefaultChunkSizeTiles,
+            MatchDurationSeconds: 12);
+        var protoState = new GameState();
+        protoState.RegisterPlayer("proto_warden", "Prototype Warden");
+        protoState.RegisterPlayer("proto_outlaw", "Prototype Outlaw");
+        protoState.RegisterPlayer("proto_wraith", "Prototype Wraith");
+        protoState.SetPlayerPosition("proto_warden", TilePosition.Origin);
+        protoState.SetPlayerPosition("proto_outlaw", new TilePosition(3, 4));
+        protoState.SetPlayerPosition("proto_wraith", new TilePosition(1, 0));
+        protoState.Players["proto_warden"].ApplyKarma(PerkCatalog.WardenThreshold);
+        protoState.Players["proto_outlaw"].ApplyKarma(AuthoritativeWorldServer.BountyKarmaThreshold - 25);
+        protoState.Players["proto_wraith"].ApplyKarma(-PerkCatalog.WraithThreshold);
+        protoState.Players["proto_wraith"].ApplyDamage(70);
+        protoState.AddItem("proto_outlaw", StarterItems.ContrabandPackage);
+
+        var protoServer = new AuthoritativeWorldServer(protoState, "event-playback-prototype", protoConfig);
+        var protoSeq = 1;
+        foreach (var protoPid in protoServer.ConnectedPlayerIds)
+        {
+            var ready = protoServer.ProcessIntent(new ServerIntent(protoPid, protoSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+            ExpectTrue(ready.WasAccepted, $"event prototype ready-up accepted for {protoPid}");
+        }
+
+        ExpectEqual(MatchStatus.Running, protoServer.Match.Status, "event prototype starts match after all players ready");
+        var protoWanted = protoServer.ProcessIntent(new ServerIntent("proto_warden", protoSeq++, IntentType.IssueWanted,
+            new Dictionary<string, string> { ["targetId"] = "proto_outlaw" }));
+        ExpectTrue(protoWanted.WasAccepted, "event prototype Warden can mark outlaw Wanted");
+        protoServer.AdvanceIdleTicks(1);
+        var protoDropId = protoServer.ScheduleSupplyDrop(new TilePosition(1, 0), StarterItems.DataChip, expiryTicks: 20);
+        var protoClaim = protoServer.ProcessIntent(new ServerIntent("proto_wraith", protoSeq++, IntentType.Interact,
+            new Dictionary<string, string> { ["entityId"] = protoDropId }));
+        ExpectTrue(protoClaim.WasAccepted, "event prototype Wraith can claim supply drop");
+
+        var protoSnapshot = protoServer.CreateInterestSnapshot("proto_warden");
+        var protoOutlaw = protoSnapshot.Players.FirstOrDefault(player => player.Id == "proto_outlaw");
+        var protoWraith = protoSnapshot.Players.FirstOrDefault(player => player.Id == "proto_wraith");
+        ExpectTrue(protoOutlaw?.StatusEffects.Any(status => status.Contains("Wanted")) == true,
+            "event prototype snapshot shows Wanted status");
+        ExpectTrue(protoOutlaw?.StatusEffects.Any(status => status.StartsWith("Bounty:")) == true,
+            "event prototype snapshot shows bounty status");
+        ExpectEqual(PerkCatalog.WraithSpeedModifier, protoWraith?.SpeedModifier ?? 0f,
+            "event prototype snapshot shows low-HP Wraith speed modifier");
+        ExpectTrue(protoState.Players["proto_outlaw"].Karma.Score < AuthoritativeWorldServer.BountyKarmaThreshold - 25,
+            "event prototype contraband decay applies near law NPC");
+        ExpectTrue(protoState.Players["proto_wraith"].Inventory.Any(item => item.Id == StarterItems.DataChipId),
+            "event prototype claimed supply drop reaches inventory");
+        ExpectTrue(protoServer.EventLog.Any(e => e.EventId.Contains("match_started")),
+            "event prototype emits match_started event");
+        ExpectTrue(protoServer.EventLog.Any(e => e.EventId.Contains("player_wanted")),
+            "event prototype emits player_wanted event");
+        ExpectTrue(protoServer.EventLog.Any(e => e.EventId.Contains("contraband_detected")),
+            "event prototype emits contraband_detected event");
+        ExpectTrue(protoServer.EventLog.Any(e => e.EventId.Contains("supply_drop_claimed")),
+            "event prototype emits supply_drop_claimed event");
+
+        protoServer.AdvanceMatchTime(protoConfig.MatchDurationSeconds);
+        var protoSummary = protoServer.CreateInterestSnapshot("proto_warden").MatchSummary;
+        ExpectTrue(protoSummary?.Players.Any(player => player.Id == "proto_warden") == true,
+            "event prototype produces match summary with Warden participant");
+        ExpectTrue(protoSummary?.Players.Any(player => player.Id == "proto_outlaw") == true,
+            "event prototype produces match summary with Outlaw participant");
+        GD.Print($"Event playback prototype ran {protoServer.EventLog.Count} server events through {protoServer.Match.Status}.");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.
