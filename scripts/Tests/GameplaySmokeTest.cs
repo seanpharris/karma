@@ -4873,6 +4873,96 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(0, HudController.ParseBountyAmount("Wanted"),
             "ParseBountyAmount returns 0 for non-bounty status effects");
 
+        // Sequence guard exemptions: idempotent / unordered intents are not
+        // gated by the monotonic sequence check.
+        ExpectTrue(AuthoritativeWorldServer.IsSequenceExempt(IntentType.SendLocalChat),
+            "SendLocalChat is exempt from strict sequence ordering");
+        ExpectTrue(AuthoritativeWorldServer.IsSequenceExempt(IntentType.ReadyUp),
+            "ReadyUp is exempt from strict sequence ordering");
+        ExpectTrue(AuthoritativeWorldServer.IsSequenceExempt(IntentType.SelectDialogueChoice),
+            "SelectDialogueChoice is exempt from strict sequence ordering");
+        ExpectFalse(AuthoritativeWorldServer.IsSequenceExempt(IntentType.Move),
+            "Move keeps strict sequence ordering");
+        ExpectFalse(AuthoritativeWorldServer.IsSequenceExempt(IntentType.Attack),
+            "Attack keeps strict sequence ordering (server cooldown is the spam guard)");
+
+        // Behavior test: a chat intent with a stale sequence is still accepted.
+        var sgState = new GameState();
+        sgState.RegisterPlayer("aa_sgchat", "Chatter");
+        sgState.SetPlayerPosition("aa_sgchat", TilePosition.Origin);
+        var sgServer = new AuthoritativeWorldServer(sgState, "sequence-guard-test");
+        foreach (var sgPid in sgServer.ConnectedPlayerIds)
+            sgServer.ProcessIntent(new ServerIntent(sgPid, 50, IntentType.ReadyUp, new Dictionary<string, string>()));
+        // Send a Move with high sequence, then a chat with a low sequence — chat
+        // should still be accepted because chat is exempt from the guard.
+        sgServer.ProcessIntent(new ServerIntent("aa_sgchat", 100, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "1", ["y"] = "0" }));
+        var sgChat = sgServer.ProcessIntent(new ServerIntent("aa_sgchat", 5, IntentType.SendLocalChat,
+            new Dictionary<string, string> { ["text"] = "out of order chat" }));
+        ExpectTrue(sgChat.WasAccepted,
+            "out-of-order chat intent is still accepted under sequence-exempt rule");
+
+        // Per-NPC vendor catalogues: SeedVendorCatalogue attaches offers to a
+        // specific vendor; CreateVisibleShopOffers includes them; GetVendorCatalogue
+        // surfaces the merged static + seeded list per vendor.
+        var vcState = new GameState();
+        vcState.RegisterPlayer("aa_vcbuyer", "Buyer");
+        vcState.SetPlayerPosition("aa_vcbuyer", new TilePosition(6, 4));
+        vcState.AddScrip("aa_vcbuyer", 200);
+        var vcServer = new AuthoritativeWorldServer(vcState, "vendor-catalogue-test");
+        foreach (var vcPid in vcServer.ConnectedPlayerIds)
+            vcServer.ProcessIntent(new ServerIntent(vcPid, 1, IntentType.ReadyUp, new Dictionary<string, string>()));
+
+        // Mara has no static offers in StarterShopCatalog. Seed a 2-offer catalogue
+        // on her so she becomes a vendor without modifying the static catalog.
+        vcServer.SeedVendorCatalogue(StarterNpcs.Mara.Id, new[]
+        {
+            new ShopOffer("vc_mara_patch", StarterNpcs.Mara.Id, StarterItems.MediPatchId, 8),
+            new ShopOffer("vc_mara_kit", StarterNpcs.Mara.Id, StarterItems.RepairKitId, 18)
+        });
+
+        var vcMaraCatalogue = vcServer.GetVendorCatalogue(StarterNpcs.Mara.Id);
+        ExpectEqual(2, vcMaraCatalogue.Count, "Mara's catalogue contains exactly the seeded offers");
+        ExpectTrue(vcMaraCatalogue.All(o => o.VendorNpcId == StarterNpcs.Mara.Id),
+            "all offers in Mara's catalogue point to her vendor id");
+
+        // Move buyer next to Mara (3,4) and confirm seeded offers appear in snapshot
+        vcState.SetPlayerPosition("aa_vcbuyer", new TilePosition(3, 4));
+        var vcSnap = vcServer.CreateInterestSnapshot("aa_vcbuyer");
+        var vcMaraOffers = vcSnap.ShopOffers.Where(o => o.VendorNpcId == StarterNpcs.Mara.Id).ToList();
+        ExpectEqual(2, vcMaraOffers.Count, "snapshot includes seeded vendor catalogue offers");
+        ExpectTrue(vcMaraOffers.Any(o => o.OfferId == "vc_mara_patch"),
+            "seeded patch offer surfaces in snapshot");
+
+        // Dallen still has his static catalog merged in
+        var vcDallenCatalogue = vcServer.GetVendorCatalogue(StarterNpcs.Dallen.Id);
+        ExpectTrue(vcDallenCatalogue.Count >= 5,
+            "Dallen retains his static StarterShopCatalog offers");
+
+        // Catalogues bound to a coercive vendor id: passing offers tagged with a
+        // different vendor id is rebound to the target vendor on seed.
+        vcServer.SeedVendorCatalogue(StarterNpcs.Mara.Id, new[]
+        {
+            new ShopOffer("vc_mara_template", "abstract_template_vendor", StarterItems.RationPackId, 5)
+        });
+        var rebound = vcServer.GetVendorCatalogue(StarterNpcs.Mara.Id)
+            .First(o => o.Id == "vc_mara_template");
+        ExpectEqual(StarterNpcs.Mara.Id, rebound.VendorNpcId,
+            "SeedVendorCatalogue rebinds template offers to the target vendor id");
+
+        // NPC role tags: starter NPCs ship with the right tag set so callers can
+        // query function/alignment without string-contains checks on Role.
+        ExpectTrue(StarterNpcs.Mara.HasTag(NpcRoleTags.Clinic),
+            "Mara is tagged as a clinic NPC");
+        ExpectTrue(StarterNpcs.Mara.HasTag(NpcRoleTags.LawAligned),
+            "Mara is tagged as law-aligned");
+        ExpectTrue(StarterNpcs.Dallen.HasTag(NpcRoleTags.Vendor),
+            "Dallen is tagged as a vendor");
+        ExpectTrue(StarterNpcs.Dallen.HasTag(NpcRoleTags.Clinic),
+            "Dallen is tagged as a clinic NPC (he shares the clinic location)");
+        ExpectFalse(StarterNpcs.Mara.HasTag(NpcRoleTags.Dealer),
+            "Mara is not tagged as a dealer");
+
         // Synthetic player-list test: explicit Bounty status effects exercise
         // the formatter's sort + filter + top-N behavior.
         var blFakePlayers = new List<PlayerSnapshot>

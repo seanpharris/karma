@@ -133,13 +133,18 @@ Things the test suite confirms but a player would notice.
 
 ## P3 — System/architecture work
 
-- [ ] **Replace per-NPC role checks with role tags** — `IsNearClinicNpc` and
-  `IsLawAligned` use string contains / boolean flags. As the cast grows, a
-  `NpcProfile.Tags` set with constants would scale better.
-- [ ] **Server-driven shop catalogues per NPC** — `_seededOffers` exists for
-  ad-hoc offers; consider promoting it so each vendor NPC has a
-  `VendorCatalogue` rather than every offer being in `StarterShopCatalog`.
-  Necessary for "random dealers" mentioned in the original UX request.
+- [x] **Replace per-NPC role checks with role tags** — *done 2026-04-30*.
+  `NpcRoleTags` constants (`Clinic`, `Vendor`, `Workshop`, `Saloon`,
+  `Warden`, `Dealer`, `LawAligned`, `OutlawAligned`); `NpcProfile.Tags`
+  + `HasTag(string)` helper. Mara/Dallen tagged. `IsNearClinicNpc` now
+  delegates to the generic `IsNearNpcWithTag(position, tag)`.
+- [x] **Server-driven shop catalogues per NPC** — *done 2026-04-30*.
+  `SeedVendorCatalogue(vendorNpcId, offers)` and `GetVendorCatalogue`
+  let any NPC become a vendor without touching the static catalog.
+  Templates can use a placeholder vendor id; seed rebinds them on
+  attach. `CreateVisibleShopOffers` now merges seeded + static offers
+  per visible vendor (was previously only consulting the static set —
+  latent bug).
 - [ ] **PlayerStatus model split** — `_persistentStatusByPlayer` and
   `GetStatusEffectsFor` co-exist. The former is for explicit status effects
   (Poisoned/Burning/etc.); the latter formats *any* derived state as a string.
@@ -147,10 +152,13 @@ Things the test suite confirms but a player would notice.
 - [ ] **Quest module discovery** — `QuestModuleRegistry` is a static class with
   a hardcoded module list. New modules require editing two places. Consider an
   attribute-based or assembly-scan registration.
-- [ ] **Sequence guard for non-stateful intents** — `_lastSequenceByPlayer`
-  blocks legitimately-out-of-order intents from a single player. Reasonable for
-  movement, less so for `ReadyUp`/`SelectDialogueChoice`. Audit which intent
-  types actually need sequencing.
+- [x] **Sequence guard for non-stateful intents** — *done 2026-04-30*.
+  `IsSequenceExempt(IntentType)` whitelists idempotent / unordered
+  intents (`SendLocalChat`, `SendPosseChat`, `ReadyUp`,
+  `SelectDialogueChoice`, `StartDialogue`, `SetAppearance`); these
+  bypass both the stale-sequence reject AND the
+  `_lastSequenceByPlayer` update so they can't gum up subsequent
+  sequenced intents. Move/Attack/etc. keep the strict guard.
 
 ---
 

@@ -542,7 +542,8 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, $"Unknown or disconnected player: {intent.PlayerId}.");
         }
 
-        if (_lastSequenceByPlayer.TryGetValue(intent.PlayerId, out var lastSequence) &&
+        if (!IsSequenceExempt(intent.Type) &&
+            _lastSequenceByPlayer.TryGetValue(intent.PlayerId, out var lastSequence) &&
             intent.Sequence <= lastSequence)
         {
             return Reject(intent, $"Rejected stale intent {intent.Sequence}; last accepted was {lastSequence}.");
@@ -559,7 +560,8 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, $"Player is downed ({remaining} ticks remaining); only chat is allowed.");
         }
 
-        _lastSequenceByPlayer[intent.PlayerId] = intent.Sequence;
+        if (!IsSequenceExempt(intent.Type))
+            _lastSequenceByPlayer[intent.PlayerId] = intent.Sequence;
 
         return intent.Type switch
         {
@@ -612,6 +614,20 @@ public sealed class AuthoritativeWorldServer
     {
         return type is IntentType.SendLocalChat or IntentType.SendPosseChat;
     }
+
+    /// <summary>
+    /// Intents that are idempotent or server-state-checked end-to-end and
+    /// don't need strict monotonic sequence ordering. Out-of-order delivery
+    /// of these is harmless (or actively desirable, e.g. lobby ReadyUp from
+    /// multiple clients arriving in any order).
+    /// </summary>
+    public static bool IsSequenceExempt(IntentType type) =>
+        type is IntentType.SendLocalChat
+            or IntentType.SendPosseChat
+            or IntentType.ReadyUp
+            or IntentType.SelectDialogueChoice
+            or IntentType.StartDialogue
+            or IntentType.SetAppearance;
 
     public PlayerInterest GetInterestFor(string playerId)
     {
@@ -892,11 +908,49 @@ public sealed class AuthoritativeWorldServer
             return Array.Empty<ShopOfferSnapshot>();
         }
 
-        return StarterShopCatalog.Offers
-            .Where(offer => visibleNpcIds.Contains(offer.VendorNpcId))
+        // Merge the static starter catalog with any per-vendor seeded offers.
+        // Seeded offers take precedence on id collision.
+        var seen = new HashSet<string>();
+        var merged = new List<ShopOffer>();
+        foreach (var offer in _seededOffers.Values)
+        {
+            if (!visibleNpcIds.Contains(offer.VendorNpcId)) continue;
+            if (seen.Add(offer.Id)) merged.Add(offer);
+        }
+        foreach (var offer in StarterShopCatalog.Offers)
+        {
+            if (!visibleNpcIds.Contains(offer.VendorNpcId)) continue;
+            if (seen.Add(offer.Id)) merged.Add(offer);
+        }
+        return merged
             .OrderBy(offer => offer.Id)
             .Select(offer => ToSnapshot(offer, player, standing))
             .ToArray();
+    }
+
+    public void SeedVendorCatalogue(string vendorNpcId, IEnumerable<ShopOffer> offers)
+    {
+        if (string.IsNullOrEmpty(vendorNpcId) || offers is null) return;
+        foreach (var offer in offers)
+        {
+            // Coerce vendor id so callers can pass abstract "dealer offers" templates
+            // and have them attach to the right vendor on seed.
+            var bound = offer.VendorNpcId == vendorNpcId
+                ? offer
+                : offer with { VendorNpcId = vendorNpcId };
+            _seededOffers[bound.Id] = bound;
+        }
+    }
+
+    public IReadOnlyList<ShopOffer> GetVendorCatalogue(string vendorNpcId)
+    {
+        var seeded = _seededOffers.Values.Where(o => o.VendorNpcId == vendorNpcId);
+        var starter = StarterShopCatalog.Offers.Where(o => o.VendorNpcId == vendorNpcId);
+        var seen = new HashSet<string>();
+        var result = new List<ShopOffer>();
+        foreach (var o in seeded) if (seen.Add(o.Id)) result.Add(o);
+        foreach (var o in starter) if (seen.Add(o.Id)) result.Add(o);
+        return result;
     }
 
     private ServerProcessResult ProcessMove(ServerIntent intent)
@@ -1167,11 +1221,14 @@ public sealed class AuthoritativeWorldServer
         }
     }
 
-    private bool IsNearClinicNpc(TilePosition position)
+    private bool IsNearClinicNpc(TilePosition position) =>
+        IsNearNpcWithTag(position, NpcRoleTags.Clinic);
+
+    private bool IsNearNpcWithTag(TilePosition position, string tag)
     {
         var radiusSquared = Config.InterestRadiusTiles * Config.InterestRadiusTiles;
         return _npcs.Values.Any(npc =>
-            npc.Profile.Role.Contains("clinic", StringComparison.OrdinalIgnoreCase) &&
+            npc.Profile.HasTag(tag) &&
             npc.Position.DistanceSquaredTo(position) <= radiusSquared);
     }
 
@@ -1208,7 +1265,7 @@ public sealed class AuthoritativeWorldServer
         _lastContrabandDecayTick = _tick;
 
         var lawNpcPositions = _npcs.Values
-            .Where(npc => npc.Profile.IsLawAligned)
+            .Where(npc => npc.Profile.IsLawAligned || npc.Profile.HasTag(NpcRoleTags.LawAligned))
             .Select(npc => npc.Position)
             .ToArray();
         if (lawNpcPositions.Length == 0)
