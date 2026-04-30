@@ -56,9 +56,13 @@ Things the test suite confirms but a player would notice.
 - [ ] **Trophy item identity** — trophies use the victim's display name to
   derive an item id, but two players with the same display name would collide
   on the same trophy id. Either include `victimId` or a tick suffix in the id.
-- [ ] **Crafting recipe table is tiny** — `StarterRecipes` has only 2 entries.
-  Add 4–6 more covering common item categories (weapon repair, food prep,
-  ammunition, contraband repackaging).
+- [x] **Crafting recipe table is tiny** — *done 2026-04-29*. `StarterRecipes`
+  expanded from 2 to 8 entries: ballistic round (BoltCutters + DataChip),
+  energy cell (PowerCell + ChemInjector), flashlight (PortableTerminal +
+  PowerCell), stun baton (PracticeStick + PowerCell), grappling hook
+  (BoltCutters + MultiTool), and a comedic contraband-package-from-flowers
+  laundering recipe in the WhoopieCushion lineage. All ingredients and
+  outputs resolve via `StarterItems.TryGetById`.
 - [x] **Seamless building interiors — server slice** —
   *server done 2026-04-29*. `BuildingInterior(MinX, MinY, Width, Height,
   DoorTiles)` record added; `WorldStructureEntity.Interior` is optional.

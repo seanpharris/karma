@@ -4233,6 +4233,32 @@ public partial class GameplaySmokeTest : Node
             new Dictionary<string, string> { ["recipeId"] = "nonexistent_recipe" }));
         ExpectTrue(!crBadRecipe.WasAccepted, "CraftItem rejected for unknown recipe id");
 
+        // Recipe table coverage: verify the expanded recipe set includes the
+        // new ammo / weapon / utility recipes and they all resolve.
+        var recipeIds = new[]
+        {
+            StarterRecipes.BallisticRoundFromScrapId,
+            StarterRecipes.EnergyCellFromPowerCellId,
+            StarterRecipes.FlashlightFromTerminalId,
+            StarterRecipes.StunBatonFromStickId,
+            StarterRecipes.GrapplingHookFromToolsId,
+            StarterRecipes.ContrabandPackageFromFlowerId
+        };
+        foreach (var rid in recipeIds)
+        {
+            ExpectTrue(StarterRecipes.TryGet(rid, out var r),
+                $"recipe {rid} is registered in StarterRecipes.All");
+            ExpectTrue(r.IngredientItemIds.Count > 0,
+                $"recipe {rid} has at least one ingredient");
+            ExpectTrue(StarterItems.TryGetById(r.OutputItemId, out _),
+                $"recipe {rid} output item resolves via StarterItems");
+            foreach (var ingredient in r.IngredientItemIds)
+                ExpectTrue(StarterItems.TryGetById(ingredient, out _),
+                    $"recipe {rid} ingredient {ingredient} resolves via StarterItems");
+        }
+        ExpectEqual(8, StarterRecipes.All.Count,
+            "starter recipe set has 2 original + 6 new entries");
+
         // ── Step 37: Posse shared quest module ────────────────────────────────────
         // PosseQuestModule produces a multi-step quest assigned to a posse.
         // AwardPosseQuestBonus pays PosseQuestBonusScrip to all connected members.
