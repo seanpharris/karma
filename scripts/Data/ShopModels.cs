@@ -8,7 +8,9 @@ public sealed record ShopOffer(
     string VendorNpcId,
     string ItemId,
     int Price,
-    string Currency = "scrip");
+    string Currency = "scrip",
+    string RequiredFactionId = "",
+    int MinReputation = 0);
 
 public static class StarterShopCatalog
 {

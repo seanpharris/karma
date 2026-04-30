@@ -130,7 +130,9 @@ public sealed record ShopOfferSnapshot(
     string ItemName,
     ItemCategory Category,
     int Price,
-    string Currency);
+    string Currency,
+    string RequiredFactionId = "",
+    int MinReputation = 0);
 
 public sealed record MapTileSnapshot(
     int TileX,

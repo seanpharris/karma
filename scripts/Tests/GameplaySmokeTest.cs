@@ -4062,6 +4062,46 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(0, repState.Factions.GetReputation(StarterFactions.FreeSettlersId, "rd_player"),
             "negative reputation decays fully to 0");
 
+        // ── Step 33: Faction store gating ────────────────────────────────────────
+        // PurchaseItem is rejected when player reputation with RequiredFactionId is
+        // below MinReputation.  ShopOfferSnapshot exposes both fields.
+
+        var gateState = new GameState();
+        gateState.RegisterPlayer("ag_buyer", "Ag Buyer");
+        gateState.SetPlayerPosition("ag_buyer", new TilePosition(6, 4)); // near Dallen
+        gateState.AddScrip("ag_buyer", 100);
+        var gateServer = new AuthoritativeWorldServer(gateState, "shop-gate-test");
+        foreach (var sgPid in gateServer.ConnectedPlayerIds)
+            gateServer.ProcessIntent(new ServerIntent(sgPid, 1, IntentType.ReadyUp, new Dictionary<string, string>()));
+
+        // Create a gated offer that requires reputation 20 with Free Settlers
+        var gatedOffer = new ShopOffer(
+            "sg_gated_offer",
+            StarterNpcs.Dallen.Id,
+            StarterItems.MediPatchId,
+            12,
+            RequiredFactionId: StarterFactions.FreeSettlersId,
+            MinReputation: 20);
+
+        // Inject the offer into the catalog (register it via a shim on gateServer)
+        // We test the snapshot MinReputation field using existing ungated Dallen offer
+        var sgDallenSnap = gateServer.CreateInterestSnapshot("ag_buyer")
+            .ShopOffers.FirstOrDefault(o => o.OfferId == StarterShopCatalog.DallenMediPatchOfferId);
+        ExpectTrue(sgDallenSnap is not null, "shop offer appears in snapshot near vendor NPC");
+        ExpectEqual(0, sgDallenSnap?.MinReputation ?? -1, "standard offer has MinReputation of 0");
+
+        // Register the gated offer so PurchaseItem intents can reference it
+        gateServer.SeedShopOffer(gatedOffer);
+
+        var sgNoRepResult = gateServer.ProcessIntent(new ServerIntent("ag_buyer", 2, IntentType.PurchaseItem,
+            new Dictionary<string, string> { ["offerId"] = gatedOffer.Id }));
+        ExpectTrue(!sgNoRepResult.WasAccepted, "PurchaseItem rejected when player has no faction reputation");
+
+        gateState.Factions.Apply(StarterFactions.FreeSettlersId, "ag_buyer", 20);
+        var sgWithRepResult = gateServer.ProcessIntent(new ServerIntent("ag_buyer", 3, IntentType.PurchaseItem,
+            new Dictionary<string, string> { ["offerId"] = gatedOffer.Id }));
+        ExpectTrue(sgWithRepResult.WasAccepted, "PurchaseItem accepted when player meets MinReputation");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.

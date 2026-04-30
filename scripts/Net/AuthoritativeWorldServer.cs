@@ -64,6 +64,7 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, long> _supplyDropExpiryByEntityId = new();
     public const long SupplyDropDefaultExpiryTicks = 300;
     public const int NpcPatrolTickInterval = 5;
+    private readonly Dictionary<string, ShopOffer> _seededOffers = new();
     private sealed record DropClaim(string OwnerId, string OwnerName);
     private sealed record LocalChatMessage(
         string MessageId,
@@ -395,6 +396,8 @@ public sealed class AuthoritativeWorldServer
     {
         return _npcs.TryGetValue(npcId, out var npc) ? npc.Position : TilePosition.Origin;
     }
+
+    public void SeedShopOffer(ShopOffer offer) => _seededOffers[offer.Id] = offer;
 
     public void SetNpcPatrol(string npcId, TilePosition[] waypoints)
     {
@@ -2488,7 +2491,7 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, "PurchaseItem intent requires offerId.");
         }
 
-        if (!StarterShopCatalog.TryGet(offerId, out var offer))
+        if (!_seededOffers.TryGetValue(offerId, out var offer) && !StarterShopCatalog.TryGet(offerId, out offer))
         {
             return Reject(intent, $"Unknown shop offer id: {offerId}.");
         }
@@ -2501,6 +2504,13 @@ public sealed class AuthoritativeWorldServer
         if (!StarterItems.TryGetById(offer.ItemId, out var item))
         {
             return Reject(intent, $"Shop offer points to unknown item id: {offer.ItemId}.");
+        }
+
+        if (offer.MinReputation > 0 && !string.IsNullOrEmpty(offer.RequiredFactionId))
+        {
+            var rep = _state.Factions.GetReputation(offer.RequiredFactionId, intent.PlayerId);
+            if (rep < offer.MinReputation)
+                return Reject(intent, $"Insufficient reputation with {offer.RequiredFactionId}: need {offer.MinReputation}, have {rep}.");
         }
 
         var price = ShopPricing.CalculatePrice(offer, _state.Players[intent.PlayerId], _state.GetLeaderboardStanding());
@@ -3427,7 +3437,9 @@ public sealed class AuthoritativeWorldServer
             item.Name,
             item.Category,
             price,
-            offer.Currency);
+            offer.Currency,
+            offer.RequiredFactionId,
+            offer.MinReputation);
     }
 
     private static MapChunkSnapshot ToSnapshot(GeneratedTileChunk chunk)
