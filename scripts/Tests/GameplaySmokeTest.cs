@@ -4648,6 +4648,109 @@ public partial class GameplaySmokeTest : Node
             new Dictionary<string, string> { ["x"] = "20", ["y"] = "20" }));
         ExpectTrue(biFreeMove.WasAccepted, "moves outside any interior are unrestricted");
 
+        // Interior snapshot scoping: outside viewer doesn't see inside player;
+        // two players in the same interior see each other; players in different
+        // interiors don't.
+        var siState = new GameState();
+        siState.RegisterPlayer("aa_inside1", "Inside1");
+        siState.RegisterPlayer("ab_inside2", "Inside2");
+        siState.RegisterPlayer("ac_outside", "Outside");
+        siState.SetPlayerPosition("aa_inside1", TilePosition.Origin);
+        siState.SetPlayerPosition("ab_inside2", TilePosition.Origin);
+        siState.SetPlayerPosition("ac_outside", TilePosition.Origin);
+        var siServer = new AuthoritativeWorldServer(siState, "interior-scope-test");
+        var siSeq = 1;
+        foreach (var siPid in siServer.ConnectedPlayerIds)
+            siServer.ProcessIntent(new ServerIntent(siPid, siSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        // Two structures with interiors, doors at adjacent tiles
+        siServer.SeedWorldStructure("si_clinic", "Clinic", "clinic", new TilePosition(2, 2));
+        siServer.SeedWorldStructure("si_saloon", "Saloon", "saloon", new TilePosition(8, 8));
+        siServer.AssignBuildingInterior("si_clinic", new BuildingInterior(2, 2, 2, 2, new[] { new TilePosition(2, 1) }));
+        siServer.AssignBuildingInterior("si_saloon", new BuildingInterior(8, 8, 2, 2, new[] { new TilePosition(8, 7) }));
+        // Send both inside players through their respective doors (auto-enter)
+        siServer.ProcessIntent(new ServerIntent("aa_inside1", siSeq++, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "2", ["y"] = "1" }));
+        siServer.ProcessIntent(new ServerIntent("aa_inside1", siSeq++, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "2", ["y"] = "2" }));
+        siServer.ProcessIntent(new ServerIntent("ab_inside2", siSeq++, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "8", ["y"] = "7" }));
+        siServer.ProcessIntent(new ServerIntent("ab_inside2", siSeq++, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "8", ["y"] = "8" }));
+
+        // Outside viewer should NOT see inside players
+        var siOutsideSnap = siServer.CreateInterestSnapshot("ac_outside");
+        ExpectFalse(siOutsideSnap.Players.Any(p => p.Id == "aa_inside1"),
+            "outside viewer cannot see player inside a structure");
+        ExpectFalse(siOutsideSnap.Players.Any(p => p.Id == "ab_inside2"),
+            "outside viewer cannot see player inside a different structure either");
+
+        // Inside1 should see themself (with InsideStructureId set) but not Inside2
+        var siInside1Snap = siServer.CreateInterestSnapshot("aa_inside1");
+        var siInside1Self = siInside1Snap.Players.FirstOrDefault(p => p.Id == "aa_inside1");
+        ExpectTrue(siInside1Self is not null, "inside player sees themself in their snapshot");
+        ExpectEqual("si_clinic", siInside1Self?.InsideStructureId,
+            "PlayerSnapshot.InsideStructureId reflects the structure the player is inside");
+        ExpectFalse(siInside1Snap.Players.Any(p => p.Id == "ab_inside2"),
+            "inside player cannot see another player inside a different structure");
+        ExpectFalse(siInside1Snap.Players.Any(p => p.Id == "ac_outside"),
+            "inside player cannot see outside players");
+
+        // If we move outside back in via door, both should see each other
+        siServer.ProcessIntent(new ServerIntent("ac_outside", siSeq++, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "2", ["y"] = "1" }));
+        siServer.ProcessIntent(new ServerIntent("ac_outside", siSeq++, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "2", ["y"] = "3" }));
+        var siInside1AfterJoin = siServer.CreateInterestSnapshot("aa_inside1");
+        ExpectTrue(siInside1AfterJoin.Players.Any(p => p.Id == "ac_outside"),
+            "two players inside the same interior can see each other");
+
+        // PlayerSnapshot.InsideStructureId is empty for outside players in their own snapshot
+        var siOutsideSnap2 = siServer.CreateInterestSnapshot("ab_inside2");
+        var siInside2Self = siOutsideSnap2.Players.FirstOrDefault(p => p.Id == "ab_inside2");
+        ExpectEqual("si_saloon", siInside2Self?.InsideStructureId,
+            "second inside player's InsideStructureId reflects their own structure");
+
+        // door_opened events fire on enter and exit with a direction tag
+        ExpectTrue(siServer.EventLog.Any(e => e.EventId.Contains("door_opened") &&
+                e.Data.GetValueOrDefault("direction") == "enter"),
+            "door_opened event with direction=enter fires on entering an interior");
+        // Force an exit and verify the matching event
+        siServer.ProcessIntent(new ServerIntent("aa_inside1", siSeq++, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "2", ["y"] = "1" }));
+        ExpectTrue(siServer.EventLog.Any(e => e.EventId.Contains("door_opened") &&
+                e.Data.GetValueOrDefault("direction") == "exit"),
+            "door_opened event with direction=exit fires on leaving an interior");
+
+        // NPC residency: an NPC marked as a resident of a structure with their
+        // tile inside that structure's bounds is hidden from outside viewers
+        // and visible to viewers inside the same structure.
+        var nrState = new GameState();
+        nrState.RegisterPlayer("aa_inside_nr", "Inside");
+        nrState.RegisterPlayer("ab_outside_nr", "Outside");
+        nrState.SetPlayerPosition("aa_inside_nr", TilePosition.Origin);
+        nrState.SetPlayerPosition("ab_outside_nr", TilePosition.Origin);
+        var nrServer = new AuthoritativeWorldServer(nrState, "npc-residency-test");
+        var nrSeq = 1;
+        foreach (var nrPid in nrServer.ConnectedPlayerIds)
+            nrServer.ProcessIntent(new ServerIntent(nrPid, nrSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        // Mara starts at (3,4) by default. Set up a clinic with bounds containing (3,4).
+        nrServer.SeedWorldStructure("nr_clinic", "Clinic", "clinic", new TilePosition(2, 2));
+        nrServer.AssignBuildingInterior("nr_clinic",
+            new BuildingInterior(2, 2, 4, 4, new[] { new TilePosition(2, 1) }));
+        nrServer.AssignNpcResidency(StarterNpcs.Mara.Id, "nr_clinic");
+        // Outside player at origin can NOT see Mara
+        var nrOutsideSnap = nrServer.CreateInterestSnapshot("ab_outside_nr");
+        ExpectFalse(nrOutsideSnap.Npcs.Any(n => n.Id == StarterNpcs.Mara.Id),
+            "outside viewer cannot see resident NPC inside their assigned structure");
+        // Move inside player into the clinic via door (2,1)
+        nrServer.ProcessIntent(new ServerIntent("aa_inside_nr", nrSeq++, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "2", ["y"] = "1" }));
+        nrServer.ProcessIntent(new ServerIntent("aa_inside_nr", nrSeq++, IntentType.Move,
+            new Dictionary<string, string> { ["x"] = "3", ["y"] = "3" }));
+        var nrInsideSnap = nrServer.CreateInterestSnapshot("aa_inside_nr");
+        ExpectTrue(nrInsideSnap.Npcs.Any(n => n.Id == StarterNpcs.Mara.Id),
+            "inside viewer sees resident NPC inside their structure");
+
         // Weapon resource costs: ranged needs ammo + reload, melee needs stamina.
         var gunState = new GameState();
         gunState.RegisterPlayer("aa_gunner", "Gunner");

@@ -68,23 +68,22 @@ Things the test suite confirms but a player would notice.
   (BoltCutters + MultiTool), and a comedic contraband-package-from-flowers
   laundering recipe in the WhoopieCushion lineage. All ingredients and
   outputs resolve via `StarterItems.TryGetById`.
-- [x] **Seamless building interiors — server slice** —
-  *server done 2026-04-29*. `BuildingInterior(MinX, MinY, Width, Height,
-  DoorTiles)` record added; `WorldStructureEntity.Interior` is optional.
-  `ProcessMove` enforces interior bounds: walking onto a door tile from
-  outside auto-enters that structure; while inside, moves outside the
-  bounds are rejected unless the target is a door tile (which exits).
-  Move events surface `enteredInterior` / `exitedInterior` in the data
-  payload. Smoke tests cover enter, in-bounds move, escape rejection,
-  exit, and post-exit free movement.
-  *Outstanding follow-ups*:
-  - Snapshot scoping (return only the interior tile set + co-located
-    players/NPCs; hide outside world from inside players, and vice
-    versa).
-  - Client rendering swap (`WorldRoot` interior view, camera clamp).
-  - NPC residency (Mara/Dallen appear inside their building unless
-    patrol takes them out).
-  - Art deliverables in `ART_NEEDED.md`.
+- [x] **Seamless building interiors** — *full slice done 2026-04-30*.
+  Server `BuildingInterior(MinX, MinY, Width, Height, DoorTiles)` enforces
+  movement bounds and auto enter/exit on door tiles; `door_opened` event
+  fires with `direction=enter|exit`. `PlayerSnapshot.InsideStructureId`
+  exposes the viewer's containing structure; `CreateInterestSnapshot`
+  scopes the visible player set, NPC set, and map chunks to whichever
+  interior the viewer occupies (or excludes interior-only entities when
+  outside). `NpcEntity.ResidentStructureEntityId` + `AssignNpcResidency`
+  let NPCs live inside structures (Mara/Dallen ready to be assigned).
+  `WorldStructureSnapshot` surfaces interior bounds for the client;
+  `PlayerController.ApplyInteriorCameraClamp` clamps the camera to
+  interior limits when the local player is inside, and unclamps on
+  exit. Smoke tests cover snapshot scoping, NPC residency, and the
+  door event direction tag.
+  *Remaining*: dedicated interior-floor/wall art and door audio cues
+  (already listed in `ART_NEEDED.md` and `SOUND_NEEDED.md`).
 - [x] **Weapon resource costs: melee→stamina, ranged→ammo** —
   *server done 2026-04-29*. Server now enforces resource costs in
   `ProcessAttack`: ranged weapons (auto-detected from weapon tags

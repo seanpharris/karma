@@ -145,7 +145,11 @@ public sealed record WorldStructureSnapshot(
     string InteractionPrompt,
     int Integrity,
     string Condition,
-    string ClaimingPosseId = "");
+    string ClaimingPosseId = "",
+    int InteriorMinX = 0,
+    int InteriorMinY = 0,
+    int InteriorWidth = 0,
+    int InteriorHeight = 0);
 
 public sealed record ShopOfferSnapshot(
     string OfferId,
@@ -181,7 +185,8 @@ public sealed record NpcEntity(
     TilePosition Position,
     string LocationId = "",
     IReadOnlyList<TilePosition>? PatrolWaypoints = null,
-    int PatrolIndex = 0);
+    int PatrolIndex = 0,
+    string ResidentStructureEntityId = "");
 
 public sealed record MountEntity(
     string EntityId,

@@ -415,6 +415,12 @@ public sealed class AuthoritativeWorldServer
         _worldStructures[entityId] = structure with { Interior = interior };
     }
 
+    public void AssignNpcResidency(string npcId, string structureEntityId)
+    {
+        if (!_npcs.TryGetValue(npcId, out var npc)) return;
+        _npcs[npcId] = npc with { ResidentStructureEntityId = structureEntityId };
+    }
+
     public void MarkTileLawless(TilePosition position) => _lawlessTiles.Add(position);
     public bool IsTileLawless(TilePosition position) => _lawlessTiles.Contains(position);
     public bool IsPlayerInLawlessZone(string playerId) =>
@@ -650,11 +656,39 @@ public sealed class AuthoritativeWorldServer
             playerId
         };
         var standing = _state.GetLeaderboardStanding();
+
+        // Interior scoping: if the viewer is inside a structure, restrict the
+        // visible set to players/NPCs sharing that interior. If the viewer is
+        // outside, hide players/NPCs who are inside any interior.
+        var viewerInsideId = _enteredStructureByPlayer.TryGetValue(playerId, out var viewerInside) ? viewerInside : string.Empty;
+        bool PlayerSharesInteriorView(string otherId)
+        {
+            var otherInside = _enteredStructureByPlayer.TryGetValue(otherId, out var inside) ? inside : string.Empty;
+            return otherInside == viewerInsideId;
+        }
+        bool NpcSharesInteriorView(NpcEntity entity)
+        {
+            var residentId = entity.ResidentStructureEntityId ?? string.Empty;
+            // NPC is "in" their resident structure unless mid-patrol (we approximate
+            // patrol-out by checking whether their tile is inside the resident bounds).
+            var insideId = string.Empty;
+            if (!string.IsNullOrEmpty(residentId) &&
+                _worldStructures.TryGetValue(residentId, out var resStruct) &&
+                resStruct.Interior is not null &&
+                resStruct.Interior.Contains(entity.Position))
+            {
+                insideId = residentId;
+            }
+            return insideId == viewerInsideId;
+        }
+
         var visiblePlayers = _state.Players.Values
             .Where(player => visiblePlayerIds.Contains(player.Id))
+            .Where(player => player.Id == playerId || PlayerSharesInteriorView(player.Id))
             .ToArray();
         var visibleNpcs = _npcs.Values
             .Where(entity => interest.VisibleNpcIds.Contains(entity.Profile.Id))
+            .Where(NpcSharesInteriorView)
             .OrderBy(entity => entity.Profile.Id)
             .Select(ToSnapshot)
             .ToArray();
@@ -715,7 +749,9 @@ public sealed class AuthoritativeWorldServer
             playerId,
             Config.InterestRadiusTiles,
             interest,
-            SnapshotBuilder.PlayersFrom(visiblePlayers, standing, GetStatusEffectsFor),
+            SnapshotBuilder.PlayersFrom(
+                visiblePlayers, standing, GetStatusEffectsFor,
+                p => _enteredStructureByPlayer.TryGetValue(p.Id, out var s) ? s : string.Empty),
             visibleNpcs,
             visibleDialogues,
             visibleQuests,
@@ -781,6 +817,24 @@ public sealed class AuthoritativeWorldServer
         for (var dx = -FogOfWarMinimumRevealRadiusChunks; dx <= FogOfWarMinimumRevealRadiusChunks; dx++)
         for (var dy = -FogOfWarMinimumRevealRadiusChunks; dy <= FogOfWarMinimumRevealRadiusChunks; dy++)
             visited.Add((here.ChunkX + dx, here.ChunkY + dy));
+
+        // Interior scoping: when the viewer is inside a structure, restrict
+        // the visible chunk set to the chunk(s) overlapping the interior bounds.
+        if (_enteredStructureByPlayer.TryGetValue(playerId, out var insideId) &&
+            _worldStructures.TryGetValue(insideId, out var insideStructure) &&
+            insideStructure.Interior is not null)
+        {
+            var ix = insideStructure.Interior;
+            var minChunk = (ix.MinX / Config.ChunkSizeTiles, ix.MinY / Config.ChunkSizeTiles);
+            var maxChunk = ((ix.MinX + ix.Width - 1) / Config.ChunkSizeTiles, (ix.MinY + ix.Height - 1) / Config.ChunkSizeTiles);
+            return _tileMap
+                .GetChunksAround(player.Position.X, player.Position.Y, Config.InterestRadiusChunks)
+                .Where(chunk =>
+                    chunk.Coordinate.X >= minChunk.Item1 && chunk.Coordinate.X <= maxChunk.Item1 &&
+                    chunk.Coordinate.Y >= minChunk.Item2 && chunk.Coordinate.Y <= maxChunk.Item2)
+                .Select(ToSnapshot)
+                .ToArray();
+        }
 
         return _tileMap
             .GetChunksAround(player.Position.X, player.Position.Y, Config.InterestRadiusChunks)
@@ -869,6 +923,17 @@ public sealed class AuthoritativeWorldServer
                 {
                     _enteredStructureByPlayer.Remove(intent.PlayerId);
                     exitedInterior = insideEntityId;
+                    AppendEvent(
+                        "door_opened",
+                        $"{intent.PlayerId} stepped through the door of {insideStructure.Name}.",
+                        new Dictionary<string, string>
+                        {
+                            ["playerId"] = intent.PlayerId,
+                            ["structureId"] = insideEntityId,
+                            ["direction"] = "exit",
+                            ["x"] = x.ToString(),
+                            ["y"] = y.ToString()
+                        });
                 }
                 else
                 {
@@ -886,6 +951,17 @@ public sealed class AuthoritativeWorldServer
                 {
                     _enteredStructureByPlayer[intent.PlayerId] = structure.EntityId;
                     enteredInterior = structure.EntityId;
+                    AppendEvent(
+                        "door_opened",
+                        $"{intent.PlayerId} entered {structure.Name}.",
+                        new Dictionary<string, string>
+                        {
+                            ["playerId"] = intent.PlayerId,
+                            ["structureId"] = structure.EntityId,
+                            ["direction"] = "enter",
+                            ["x"] = x.ToString(),
+                            ["y"] = y.ToString()
+                        });
                     break;
                 }
             }
@@ -3863,7 +3939,11 @@ public sealed class AuthoritativeWorldServer
             entity.InteractionPrompt,
             entity.Integrity,
             FormatStructureCondition(entity.Integrity),
-            entity.ClaimingPosseId);
+            entity.ClaimingPosseId,
+            entity.Interior?.MinX ?? 0,
+            entity.Interior?.MinY ?? 0,
+            entity.Interior?.Width ?? 0,
+            entity.Interior?.Height ?? 0);
     }
 
     private static ShopOfferSnapshot ToSnapshot(ShopOffer offer, PlayerState player, LeaderboardStanding standing)

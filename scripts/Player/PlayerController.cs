@@ -559,6 +559,30 @@ public partial class PlayerController : CharacterBody2D
     private void OnLocalSnapshotChanged(string snapshotSummary)
     {
         ApplyAuthoritativePosition(_serverSession?.LastLocalSnapshot);
+        ApplyInteriorCameraClamp(_serverSession?.LastLocalSnapshot);
+    }
+
+    private void ApplyInteriorCameraClamp(ClientInterestSnapshot snapshot)
+    {
+        if (_camera is null || snapshot is null) return;
+        var local = snapshot.Players.FirstOrDefault(p => p.Id == GameState.LocalPlayerId);
+        if (local is null) return;
+        if (string.IsNullOrEmpty(local.InsideStructureId))
+        {
+            // Outside: remove camera limits.
+            _camera.LimitLeft = int.MinValue;
+            _camera.LimitTop = int.MinValue;
+            _camera.LimitRight = int.MaxValue;
+            _camera.LimitBottom = int.MaxValue;
+            return;
+        }
+        var structure = snapshot.Structures.FirstOrDefault(s => s.EntityId == local.InsideStructureId);
+        if (structure is null || structure.InteriorWidth <= 0 || structure.InteriorHeight <= 0) return;
+        const int tileSizePx = 32;
+        _camera.LimitLeft = structure.InteriorMinX * tileSizePx;
+        _camera.LimitTop = structure.InteriorMinY * tileSizePx;
+        _camera.LimitRight = (structure.InteriorMinX + structure.InteriorWidth) * tileSizePx;
+        _camera.LimitBottom = (structure.InteriorMinY + structure.InteriorHeight) * tileSizePx;
     }
 
     private void ApplyAuthoritativePosition(ClientInterestSnapshot snapshot)

@@ -40,7 +40,8 @@ public sealed record PlayerSnapshot(
     string PosseId = "",
     int KarmaPeak = 0,
     int KarmaFloor = 0,
-    float SpeedModifier = 1f);
+    float SpeedModifier = 1f,
+    string InsideStructureId = "");
 
 public sealed record LeaderboardSnapshot(
     string SaintPlayerId,
@@ -98,6 +99,15 @@ public static class SnapshotBuilder
         LeaderboardStanding standing,
         Func<PlayerState, IReadOnlyList<string>> statusEffectsFor)
     {
+        return PlayersFrom(players, standing, statusEffectsFor, _ => string.Empty);
+    }
+
+    public static IReadOnlyList<PlayerSnapshot> PlayersFrom(
+        IEnumerable<PlayerState> players,
+        LeaderboardStanding standing,
+        Func<PlayerState, IReadOnlyList<string>> statusEffectsFor,
+        Func<PlayerState, string> insideStructureFor)
+    {
         return players
             .OrderBy(player => player.Id)
             .Select(player => new PlayerSnapshot(
@@ -120,7 +130,8 @@ public static class SnapshotBuilder
                 player.TeamId,
                 player.Karma.KarmaPeak,
                 player.Karma.KarmaFloor,
-                CalculateSpeedModifier(player, standing)))
+                CalculateSpeedModifier(player, standing),
+                insideStructureFor(player)))
             .ToArray();
     }
 
