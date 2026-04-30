@@ -103,6 +103,30 @@ public partial class PlayerController : CharacterBody2D
 
     public override void _UnhandledInput(InputEvent @event)
     {
+        if (@event.IsActionPressed("attack"))
+        {
+            AttackNearestThroughServer();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        if (@event.IsActionPressed("inventory_toggle"))
+        {
+            _hud?.ToggleInventoryOverlay();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        for (var i = 1; i <= 9; i++)
+        {
+            if (@event.IsActionPressed($"hotbar_{i}"))
+            {
+                EquipHotbarSlotThroughServer(i - 1);
+                GetViewport().SetInputAsHandled();
+                return;
+            }
+        }
+
         if (@event is InputEventMouseButton { Pressed: true } mouseButton)
         {
             if (mouseButton.ButtonIndex == MouseButton.WheelUp)
@@ -276,6 +300,46 @@ public partial class PlayerController : CharacterBody2D
             new System.Collections.Generic.Dictionary<string, string>
             {
                 ["itemId"] = itemId
+            });
+    }
+
+    private void EquipHotbarSlotThroughServer(int slotIndex)
+    {
+        if (_serverSession is null) return;
+        var inventory = _gameState.Inventory;
+        if (slotIndex < 0 || slotIndex >= inventory.Count) return;
+        EquipThroughServer(inventory[slotIndex].Id);
+    }
+
+    private void AttackNearestThroughServer()
+    {
+        if (_serverSession is null) return;
+        var snapshot = _serverSession.LastLocalSnapshot;
+        if (snapshot is null) return;
+        var localId = GameState.LocalPlayerId;
+        var local = snapshot.Players.FirstOrDefault(p => p.Id == localId);
+        if (local is null) return;
+
+        var combatRange = _serverSession.Server.Config.CombatRangeTiles;
+        var rangeSq = combatRange * combatRange;
+        var target = snapshot.Players
+            .Where(p => p.Id != localId)
+            .Where(p => (p.TileX - local.TileX) * (p.TileX - local.TileX) +
+                        (p.TileY - local.TileY) * (p.TileY - local.TileY) <= rangeSq)
+            .OrderBy(p => (p.TileX - local.TileX) * (p.TileX - local.TileX) +
+                          (p.TileY - local.TileY) * (p.TileY - local.TileY))
+            .FirstOrDefault();
+        if (target is null)
+        {
+            _hud?.ShowPrompt("No target in range.");
+            return;
+        }
+
+        SendLocalWithPrompt(
+            IntentType.Attack,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["targetId"] = target.Id
             });
     }
 
