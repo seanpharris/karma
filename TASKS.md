@@ -145,13 +145,18 @@ Things the test suite confirms but a player would notice.
   attach. `CreateVisibleShopOffers` now merges seeded + static offers
   per visible vendor (was previously only consulting the static set —
   latent bug).
-- [ ] **PlayerStatus model split** — `_persistentStatusByPlayer` and
-  `GetStatusEffectsFor` co-exist. The former is for explicit status effects
-  (Poisoned/Burning/etc.); the latter formats *any* derived state as a string.
-  Worth a refactor pass to clarify what's persistent vs. derived.
-- [ ] **Quest module discovery** — `QuestModuleRegistry` is a static class with
-  a hardcoded module list. New modules require editing two places. Consider an
-  attribute-based or assembly-scan registration.
+- [x] **PlayerStatus model split** — *done 2026-04-30*. `GetStatusEffectsFor`
+  now composes from two private iterators: `GetDerivedStatusEffectsFor`
+  (Downed countdown, Karma Break Grace, Attack Cooldown, Inside, Lawless,
+  Wanted, Bounty — all recomputed each snapshot from authoritative state)
+  and `GetPersistentStatusEffectsFor` (Poisoned/Burning/etc. stored in
+  `_persistentStatusByPlayer` and manipulated via `ApplyStatus` /
+  `ClearStatus`). Public `GetPersistentStatuses(playerId)` exposes the
+  set for tests/HUD. Snapshot output unchanged — internal split only.
+- [x] **Quest module discovery** — *done 2026-04-30*. `QuestModuleRegistry`
+  now exposes `Register(QuestModule)` (idempotent) and an `All` view.
+  Built-in modules are registered at type-init via `Register` calls;
+  external modules can plug in at runtime without editing the registry.
 - [x] **Sequence guard for non-stateful intents** — *done 2026-04-30*.
   `IsSequenceExempt(IntentType)` whitelists idempotent / unordered
   intents (`SendLocalChat`, `SendPosseChat`, `ReadyUp`,

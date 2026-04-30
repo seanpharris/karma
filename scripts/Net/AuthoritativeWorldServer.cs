@@ -3329,56 +3329,82 @@ public sealed class AuthoritativeWorldServer
         return respawnPosition;
     }
 
+    /// <summary>
+    /// Merged status effects surfaced in <see cref="PlayerSnapshot.StatusEffects"/>.
+    /// Composed of two separately-tracked categories:
+    ///   * Derived  — recomputed every snapshot from authoritative state
+    ///                (Downed countdown, Karma Break Grace, Attack Cooldown,
+    ///                Inside: structure, Lawless Zone, Wanted, Bounty: N).
+    ///                These cannot be set or cleared directly; they reflect
+    ///                whatever the underlying state says right now.
+    ///   * Persistent — stored in <see cref="_persistentStatusByPlayer"/> and
+    ///                  manipulated via <see cref="ApplyStatus"/> /
+    ///                  <see cref="ClearStatus"/> (Poisoned, Burning, etc.).
+    /// </summary>
     private IReadOnlyList<string> GetStatusEffectsFor(PlayerState player)
     {
         var statuses = new List<string>();
+        statuses.AddRange(GetDerivedStatusEffectsFor(player));
+        statuses.AddRange(GetPersistentStatusEffectsFor(player));
+        return statuses;
+    }
+
+    private IEnumerable<string> GetDerivedStatusEffectsFor(PlayerState player)
+    {
         if (_downedUntilTickByPlayer.TryGetValue(player.Id, out var downedUntilTick) &&
             _tick <= downedUntilTick)
         {
-            statuses.Add($"Downed ({downedUntilTick - _tick})");
+            yield return $"Downed ({downedUntilTick - _tick})";
         }
 
         if (_karmaBreakGraceUntilTickByPlayer.TryGetValue(player.Id, out var graceUntilTick) &&
             _tick <= graceUntilTick)
         {
-            statuses.Add($"Karma Break Grace ({graceUntilTick - _tick + 1})");
+            yield return $"Karma Break Grace ({graceUntilTick - _tick + 1})";
         }
 
         if (_lastAttackTickByPlayer.TryGetValue(player.Id, out var lastAttackTick) &&
             _tick < lastAttackTick + AttackCooldownTicks)
         {
-            statuses.Add($"Attack Cooldown ({lastAttackTick + AttackCooldownTicks - _tick})");
+            yield return $"Attack Cooldown ({lastAttackTick + AttackCooldownTicks - _tick})";
         }
 
         if (_enteredStructureByPlayer.TryGetValue(player.Id, out var structureEntityId) &&
             _worldStructures.TryGetValue(structureEntityId, out var structure))
         {
-            statuses.Add($"Inside: {structure.Name}");
+            yield return $"Inside: {structure.Name}";
         }
 
         if (_lawlessTiles.Contains(player.Position))
         {
-            statuses.Add("Lawless Zone");
+            yield return "Lawless Zone";
         }
 
         if (_wantedPlayerToIssuerId.ContainsKey(player.Id))
         {
-            statuses.Add("Wanted");
+            yield return "Wanted";
         }
 
         if (_bountyByPlayerId.TryGetValue(player.Id, out var bounty) && bounty > 0)
         {
-            statuses.Add($"Bounty: {bounty}");
+            yield return $"Bounty: {bounty}";
         }
+    }
 
+    private IEnumerable<string> GetPersistentStatusEffectsFor(PlayerState player)
+    {
         if (_persistentStatusByPlayer.TryGetValue(player.Id, out var persistentSet))
         {
             foreach (var kind in persistentSet)
-                statuses.Add(kind.ToString());
+                yield return kind.ToString();
         }
-
-        return statuses;
     }
+
+    /// <summary>Public read-only view of persistent statuses for a player; useful for tests / HUD.</summary>
+    public IReadOnlyCollection<PlayerStatusKind> GetPersistentStatuses(string playerId) =>
+        _persistentStatusByPlayer.TryGetValue(playerId, out var set)
+            ? (IReadOnlyCollection<PlayerStatusKind>)set
+            : Array.Empty<PlayerStatusKind>();
 
     private IReadOnlyList<string> DropInventory(string playerId)
     {

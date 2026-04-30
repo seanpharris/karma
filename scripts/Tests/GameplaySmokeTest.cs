@@ -3724,42 +3724,42 @@ public partial class GameplaySmokeTest : Node
         // to players.  They appear in PlayerSnapshot.StatusEffects and are wiped
         // on Karma Break.
 
-        var psState = new GameState();
-        psState.RegisterPlayer("ap_target", "Target");
-        psState.SetPlayerPosition("ap_target", TilePosition.Origin);
-        var psServer = new AuthoritativeWorldServer(psState, "status-test");
+        var pssState = new GameState();
+        pssState.RegisterPlayer("ap_target", "Target");
+        pssState.SetPlayerPosition("ap_target", TilePosition.Origin);
+        var pssServer = new AuthoritativeWorldServer(pssState, "status-test");
 
-        ExpectTrue(!psServer.HasStatus("ap_target", PlayerStatusKind.Poisoned), "No Poisoned status initially");
+        ExpectTrue(!pssServer.HasStatus("ap_target", PlayerStatusKind.Poisoned), "No Poisoned status initially");
 
-        psServer.ApplyStatus("ap_target", PlayerStatusKind.Poisoned);
-        ExpectTrue(psServer.HasStatus("ap_target", PlayerStatusKind.Poisoned), "Poisoned status active after ApplyStatus");
+        pssServer.ApplyStatus("ap_target", PlayerStatusKind.Poisoned);
+        ExpectTrue(pssServer.HasStatus("ap_target", PlayerStatusKind.Poisoned), "Poisoned status active after ApplyStatus");
 
-        var psSnap = psServer.CreateInterestSnapshot("ap_target");
-        var psPlayer = psSnap.Players.FirstOrDefault(p => p.Id == "ap_target");
+        var pssSnap = pssServer.CreateInterestSnapshot("ap_target");
+        var psPlayer = pssSnap.Players.FirstOrDefault(p => p.Id == "ap_target");
         ExpectTrue(psPlayer?.StatusEffects.Contains("Poisoned") == true,
             "Poisoned appears in PlayerSnapshot.StatusEffects");
 
-        psServer.ClearStatus("ap_target", PlayerStatusKind.Poisoned);
-        ExpectTrue(!psServer.HasStatus("ap_target", PlayerStatusKind.Poisoned), "Poisoned cleared after ClearStatus");
+        pssServer.ClearStatus("ap_target", PlayerStatusKind.Poisoned);
+        ExpectTrue(!pssServer.HasStatus("ap_target", PlayerStatusKind.Poisoned), "Poisoned cleared after ClearStatus");
 
-        var psSnapAfterClear = psServer.CreateInterestSnapshot("ap_target");
-        var psPlayerAfterClear = psSnapAfterClear.Players.FirstOrDefault(p => p.Id == "ap_target");
+        var pssSnapAfterClear = pssServer.CreateInterestSnapshot("ap_target");
+        var psPlayerAfterClear = pssSnapAfterClear.Players.FirstOrDefault(p => p.Id == "ap_target");
         ExpectTrue(psPlayerAfterClear?.StatusEffects.Contains("Poisoned") != true,
             "Poisoned absent from snapshot after ClearStatus");
 
         // Multiple statuses can coexist
-        psServer.ApplyStatus("ap_target", PlayerStatusKind.Poisoned);
-        psServer.ApplyStatus("ap_target", PlayerStatusKind.Burning);
-        ExpectTrue(psServer.HasStatus("ap_target", PlayerStatusKind.Poisoned) &&
-                   psServer.HasStatus("ap_target", PlayerStatusKind.Burning),
+        pssServer.ApplyStatus("ap_target", PlayerStatusKind.Poisoned);
+        pssServer.ApplyStatus("ap_target", PlayerStatusKind.Burning);
+        ExpectTrue(pssServer.HasStatus("ap_target", PlayerStatusKind.Poisoned) &&
+                   pssServer.HasStatus("ap_target", PlayerStatusKind.Burning),
             "Multiple statuses can be active simultaneously");
 
         // Karma Break clears all persistent statuses
-        psServer.ProcessIntent(new ServerIntent("ap_target", 1, IntentType.KarmaBreak,
+        pssServer.ProcessIntent(new ServerIntent("ap_target", 1, IntentType.KarmaBreak,
             new Dictionary<string, string>()));
-        ExpectTrue(!psServer.HasStatus("ap_target", PlayerStatusKind.Poisoned),
+        ExpectTrue(!pssServer.HasStatus("ap_target", PlayerStatusKind.Poisoned),
             "Poisoned cleared after Karma Break");
-        ExpectTrue(!psServer.HasStatus("ap_target", PlayerStatusKind.Burning),
+        ExpectTrue(!pssServer.HasStatus("ap_target", PlayerStatusKind.Burning),
             "Burning cleared after Karma Break");
 
         // ── Step 28: Contraband item tag ───────────────────────────────────────────
@@ -4872,6 +4872,50 @@ public partial class GameplaySmokeTest : Node
             "ParseBountyAmount extracts the integer from a Bounty: N string");
         ExpectEqual(0, HudController.ParseBountyAmount("Wanted"),
             "ParseBountyAmount returns 0 for non-bounty status effects");
+
+        // Quest module registry: built-in modules are registered at type-init,
+        // Register is idempotent, and All exposes the live module list.
+        ExpectTrue(QuestModuleRegistry.All.Contains(QuestModuleRegistry.Repair),
+            "QuestModuleRegistry.All includes the Repair module");
+        ExpectTrue(QuestModuleRegistry.All.Contains(QuestModuleRegistry.Posse),
+            "QuestModuleRegistry.All includes the Posse module");
+        var preCount = QuestModuleRegistry.All.Count;
+        QuestModuleRegistry.Register(QuestModuleRegistry.Repair);
+        ExpectEqual(preCount, QuestModuleRegistry.All.Count,
+            "Re-registering an existing module is a no-op");
+        ExpectTrue(QuestModuleRegistry.GetForCompletion(PosseQuestModule.PosseCompletionPrefix + "abc")
+                == QuestModuleRegistry.Posse,
+            "GetForCompletion resolves to the Posse module by completion prefix");
+
+        // PlayerStatus model split: persistent statuses (ApplyStatus) are
+        // surfaced separately from derived statuses (Downed, Lawless Zone,
+        // Bounty: N, Inside: X, etc.) but both end up in the merged snapshot.
+        var splitState = new GameState();
+        splitState.RegisterPlayer("aa_split", "PSplit");
+        splitState.SetPlayerPosition("aa_split", TilePosition.Origin);
+        var splitServer = new AuthoritativeWorldServer(splitState, "status-split-test");
+        foreach (var splitPid in splitServer.ConnectedPlayerIds)
+            splitServer.ProcessIntent(new ServerIntent(splitPid, 1, IntentType.ReadyUp, new Dictionary<string, string>()));
+
+        ExpectEqual(0, splitServer.GetPersistentStatuses("aa_split").Count,
+            "persistent status set is empty by default");
+        splitServer.ApplyStatus("aa_split", PlayerStatusKind.Poisoned);
+        ExpectTrue(splitServer.GetPersistentStatuses("aa_split").Contains(PlayerStatusKind.Poisoned),
+            "ApplyStatus adds the kind to the persistent set");
+        splitServer.ClearStatus("aa_split", PlayerStatusKind.Poisoned);
+        ExpectFalse(splitServer.GetPersistentStatuses("aa_split").Contains(PlayerStatusKind.Poisoned),
+            "ClearStatus removes the kind from the persistent set");
+
+        // Snapshot still surfaces both derived (Lawless Zone) and persistent
+        // (Burning) entries in the same StatusEffects list.
+        splitServer.MarkTileLawless(TilePosition.Origin);
+        splitServer.ApplyStatus("aa_split", PlayerStatusKind.Burning);
+        var splitSnap = splitServer.CreateInterestSnapshot("aa_split");
+        var splitSelf = splitSnap.Players.First(p => p.Id == "aa_split");
+        ExpectTrue(splitSelf.StatusEffects.Any(s => s == "Lawless Zone"),
+            "snapshot includes derived 'Lawless Zone' status");
+        ExpectTrue(splitSelf.StatusEffects.Any(s => s == "Burning"),
+            "snapshot includes persistent 'Burning' status alongside derived");
 
         // Sequence guard exemptions: idempotent / unordered intents are not
         // gated by the monotonic sequence check.
