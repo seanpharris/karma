@@ -8,13 +8,14 @@ public static class QuestModuleRegistry
     public static readonly RepairMissionModule Repair = new();
     public static readonly DeliveryQuestModule Delivery = new();
     public static readonly RumorQuestModule Rumor = new();
+    public static readonly PosseQuestModule Posse = new();
 
     private static readonly Dictionary<string, QuestModule> _byStationRole;
     private static readonly List<QuestModule> _withCompletionPrefix;
 
     static QuestModuleRegistry()
     {
-        QuestModule[] modules = [Repair, Delivery, Rumor];
+        QuestModule[] modules = [Repair, Delivery, Rumor, Posse];
         _byStationRole = new Dictionary<string, QuestModule>();
         _withCompletionPrefix = new List<QuestModule>();
 

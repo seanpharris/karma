@@ -4233,6 +4233,60 @@ public partial class GameplaySmokeTest : Node
             new Dictionary<string, string> { ["recipeId"] = "nonexistent_recipe" }));
         ExpectTrue(!crBadRecipe.WasAccepted, "CraftItem rejected for unknown recipe id");
 
+        // ── Step 37: Posse shared quest module ────────────────────────────────────
+        // PosseQuestModule produces a multi-step quest assigned to a posse.
+        // AwardPosseQuestBonus pays PosseQuestBonusScrip to all connected members.
+
+        var pqState = new GameState();
+        pqState.RegisterPlayer("aa_lead", "Posse Lead");
+        pqState.RegisterPlayer("ab_buddy", "Posse Buddy");
+        pqState.SetPlayerPosition("aa_lead", TilePosition.Origin);
+        pqState.SetPlayerPosition("ab_buddy", TilePosition.Origin);
+        var pqServer = new AuthoritativeWorldServer(pqState, "posse-quest-test");
+        var pqSeq = 1;
+        foreach (var pqPid in pqServer.ConnectedPlayerIds)
+            pqServer.ProcessIntent(new ServerIntent(pqPid, pqSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+
+        // Form posse
+        pqServer.ProcessIntent(new ServerIntent("aa_lead", pqSeq++, IntentType.InvitePosse,
+            new Dictionary<string, string> { ["targetPlayerId"] = "ab_buddy" }));
+        pqServer.ProcessIntent(new ServerIntent("ab_buddy", pqSeq++, IntentType.AcceptPosse,
+            new Dictionary<string, string>()));
+
+        // Cannot start a posse quest without a posse (use a third player not in any team)
+        var pqOrphanResult = pqServer.StartPosseQuest("local_player", "pq_orphan_quest");
+        ExpectTrue(string.IsNullOrEmpty(pqOrphanResult), "StartPosseQuest returns empty when player has no posse");
+
+        // Start a posse quest as the lead
+        var pqPosseId = pqServer.StartPosseQuest("aa_lead", "pq_test_quest");
+        ExpectTrue(!string.IsNullOrEmpty(pqPosseId), "StartPosseQuest returns the posse id when player is in a posse");
+        ExpectTrue(pqState.Quests.Quests.ContainsKey("pq_test_quest"),
+            "posse quest is registered in GameState.Quests");
+        ExpectEqual(pqPosseId, pqServer.GetPosseQuestOwner("pq_test_quest"),
+            "posse quest owner is recorded");
+        ExpectTrue(pqServer.EventLog.Any(e => e.EventId.Contains("posse_quest_started")),
+            "posse_quest_started event fires when a posse quest is started");
+
+        // Check: the quest definition has multi-step structure (two steps)
+        var pqQuestDef = pqState.Quests.Get("pq_test_quest").Definition;
+        ExpectTrue(pqQuestDef.Steps != null && pqQuestDef.Steps.Count == 2,
+            "PosseQuestModule produces a 2-step quest");
+
+        // Award bonus and verify each posse member gets scrip
+        var pqLeadScripBefore = pqState.Players["aa_lead"].Scrip;
+        var pqBuddyScripBefore = pqState.Players["ab_buddy"].Scrip;
+        pqServer.AwardPosseQuestBonus("pq_test_quest");
+        ExpectEqual(pqLeadScripBefore + AuthoritativeWorldServer.PosseQuestBonusScrip,
+            pqState.Players["aa_lead"].Scrip,
+            "posse quest bonus paid to leader");
+        ExpectEqual(pqBuddyScripBefore + AuthoritativeWorldServer.PosseQuestBonusScrip,
+            pqState.Players["ab_buddy"].Scrip,
+            "posse quest bonus paid to member");
+        ExpectTrue(pqServer.EventLog.Any(e => e.EventId.Contains("posse_quest_completed")),
+            "posse_quest_completed event fires on bonus award");
+        ExpectEqual(string.Empty, pqServer.GetPosseQuestOwner("pq_test_quest"),
+            "posse quest owner is cleared after bonus is awarded");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.

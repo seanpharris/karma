@@ -65,7 +65,9 @@ public sealed class AuthoritativeWorldServer
     public const long SupplyDropDefaultExpiryTicks = 300;
     public const int NpcPatrolTickInterval = 5;
     public const int ClaimScripPerTick = 1;
+    public const int PosseQuestBonusScrip = 25;
     private readonly Dictionary<string, string> _downedByPlayerId = new();
+    private readonly Dictionary<string, string> _posseQuestOwners = new();
     private readonly Dictionary<string, ShopOffer> _seededOffers = new();
     private sealed record DropClaim(string OwnerId, string OwnerName);
     private sealed record LocalChatMessage(
@@ -401,6 +403,55 @@ public sealed class AuthoritativeWorldServer
     }
 
     public void SeedShopOffer(ShopOffer offer) => _seededOffers[offer.Id] = offer;
+
+    public string StartPosseQuest(string playerId, string questId, string giverNpcId = "")
+    {
+        if (!_state.Players.TryGetValue(playerId, out var player) || !player.HasTeam) return string.Empty;
+        var context = new QuestCreationContext(
+            questId,
+            LocationId: "posse_run",
+            LocationName: "Posse Outpost",
+            LocationRole: PosseQuestModule.PosseStationRole,
+            GiverNpcId: giverNpcId,
+            ScripReward: PosseQuestBonusScrip,
+            OtherPlacements: System.Array.Empty<QuestPlacementInfo>());
+        var def = QuestModuleRegistry.Posse.CreateQuest(context);
+        _state.Quests.AddDefinition(def);
+        _posseQuestOwners[questId] = player.TeamId;
+        AppendEvent(
+            "posse_quest_started",
+            $"Posse {player.TeamId} started shared quest {questId}.",
+            new Dictionary<string, string>
+            {
+                ["questId"] = questId,
+                ["posseId"] = player.TeamId,
+                ["leaderPlayerId"] = playerId
+            });
+        return player.TeamId;
+    }
+
+    public void AwardPosseQuestBonus(string questId)
+    {
+        if (!_posseQuestOwners.Remove(questId, out var posseId)) return;
+        var members = _connectedPlayerIds
+            .Where(pid => _state.Players.TryGetValue(pid, out var p) && p.HasTeam && p.TeamId == posseId)
+            .ToArray();
+        foreach (var memberId in members)
+            _state.AddScrip(memberId, PosseQuestBonusScrip);
+        AppendEvent(
+            "posse_quest_completed",
+            $"Posse {posseId} earned {PosseQuestBonusScrip} scrip bonus per member on {questId}.",
+            new Dictionary<string, string>
+            {
+                ["questId"] = questId,
+                ["posseId"] = posseId,
+                ["memberCount"] = members.Length.ToString(),
+                ["bonusScrip"] = PosseQuestBonusScrip.ToString()
+            });
+    }
+
+    public string GetPosseQuestOwner(string questId) =>
+        _posseQuestOwners.TryGetValue(questId, out var posseId) ? posseId : string.Empty;
 
     public void SetNpcPatrol(string npcId, TilePosition[] waypoints)
     {
