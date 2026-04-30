@@ -147,7 +147,45 @@ public enum StructureSpriteKind
     WindowLit,
     WindowBroken,
     FenceStraight,
-    Archway
+    Archway,
+    // Player interactions:
+    DuelPostSign,
+    PosseBannerHanging,
+    GoldMedallionStand,
+    BallotBoxWood,
+    TorchStanding,
+    HunterRecruitSign,
+    MailboxLitRed,
+    GiftBoxBlue,
+    // Location exteriors:
+    ClinicExterior,
+    BountyOfficeExterior,
+    JailBlockExterior,
+    GreenhouseDome,
+    CheckpointGuardTower,
+    SafehouseTent,
+    PosseCampRally,
+    SafehouseCaveEntrance,
+    SupplyDropLandingPad,
+    // Hazards / disasters (Step 12 heat zone):
+    FireFlames,
+    ElectricPortalBlue,
+    OilSpillDark,
+    ToxicPoolGreen,
+    RadioactiveSign,
+    BiohazardConeOrange,
+    AlertSirenRed,
+    // Mission boards:
+    RumorBoardLabeled,
+    PosseRecruitmentBoardLabeled,
+    DeliveryBoardLabeled,
+    DuelChallengeBoardLabeled,
+    LawBulletinBoardLabeled,
+    // Theme variant matrix (multi-theme alternates):
+    WagonSupplyWestern,
+    PodSupplyScifi,
+    BarrelsSupplyPostApoc,
+    FantasyShrine
 }
 
 public sealed record StructureSpriteDefinition(
@@ -177,6 +215,11 @@ public static class StructureArtCatalog
     public const string SlicedCraftingStationsRoot = "res://assets/art/generated/sliced/crafting_stations/";
     public const string SlicedContainersLootRoot = "res://assets/art/generated/sliced/containers_loot/";
     public const string SlicedWallsDoorsRoot = "res://assets/art/generated/sliced/modular_walls_doors/";
+    public const string SlicedPlayerInteractionsRoot = "res://assets/art/generated/sliced/player_interactions/";
+    public const string SlicedLocationExteriorsRoot = "res://assets/art/generated/sliced/location_exteriors/";
+    public const string SlicedHazardsDisastersRoot = "res://assets/art/generated/sliced/hazards_disasters/";
+    public const string SlicedMissionBoardsRoot = "res://assets/art/generated/sliced/mission_boards/";
+    public const string SlicedThemeVariantRoot = "res://assets/art/generated/sliced/theme_variant_matrix/";
 
     private static readonly IReadOnlyDictionary<StructureSpriteKind, StructureSpriteDefinition> Definitions =
         new Dictionary<StructureSpriteKind, StructureSpriteDefinition>
@@ -664,7 +707,116 @@ public static class StructureArtCatalog
                 new Vector2(36f, 24f), SlicedWallsDoorsRoot, "fence_straight.png"),
             [StructureSpriteKind.Archway] = SlicedProp(
                 StructureSpriteKind.Archway, "archway", "Archway", "wall_prop",
-                new Vector2(40f, 40f), SlicedWallsDoorsRoot, "archway.png")
+                new Vector2(40f, 40f), SlicedWallsDoorsRoot, "archway.png"),
+
+            // Player interactions
+            [StructureSpriteKind.DuelPostSign] = SlicedProp(
+                StructureSpriteKind.DuelPostSign, "duel_post_sign", "Duel Post Sign", "interaction_prop",
+                new Vector2(28f, 36f), SlicedPlayerInteractionsRoot, "duel_post_sign.png"),
+            [StructureSpriteKind.PosseBannerHanging] = SlicedProp(
+                StructureSpriteKind.PosseBannerHanging, "posse_banner_hanging", "Posse Banner", "interaction_prop",
+                new Vector2(24f, 40f), SlicedPlayerInteractionsRoot, "posse_banner_hanging.png"),
+            [StructureSpriteKind.GoldMedallionStand] = SlicedProp(
+                StructureSpriteKind.GoldMedallionStand, "gold_medallion_stand", "Gold Medallion", "interaction_prop",
+                new Vector2(24f, 32f), SlicedPlayerInteractionsRoot, "gold_medallion.png"),
+            [StructureSpriteKind.BallotBoxWood] = SlicedProp(
+                StructureSpriteKind.BallotBoxWood, "ballot_box_wood", "Ballot Box", "interaction_prop",
+                new Vector2(24f, 32f), SlicedPlayerInteractionsRoot, "ballot_box_wood.png"),
+            [StructureSpriteKind.TorchStanding] = SlicedProp(
+                StructureSpriteKind.TorchStanding, "torch_standing", "Torch (Standing)", "interaction_prop",
+                new Vector2(20f, 40f), SlicedPlayerInteractionsRoot, "torch_standing.png"),
+            [StructureSpriteKind.HunterRecruitSign] = SlicedProp(
+                StructureSpriteKind.HunterRecruitSign, "hunter_recruit_sign", "Hunter Recruit Sign", "interaction_prop",
+                new Vector2(28f, 36f), SlicedPlayerInteractionsRoot, "hunter_recruit_sign.png"),
+            [StructureSpriteKind.MailboxLitRed] = SlicedProp(
+                StructureSpriteKind.MailboxLitRed, "mailbox_lit_red", "Mailbox", "interaction_prop",
+                new Vector2(20f, 32f), SlicedPlayerInteractionsRoot, "mailbox_lit_red.png"),
+            [StructureSpriteKind.GiftBoxBlue] = SlicedProp(
+                StructureSpriteKind.GiftBoxBlue, "gift_box_blue", "Gift Box", "interaction_prop",
+                new Vector2(24f, 24f), SlicedPlayerInteractionsRoot, "gift_box.png"),
+
+            // Location exteriors
+            [StructureSpriteKind.ClinicExterior] = SlicedProp(
+                StructureSpriteKind.ClinicExterior, "clinic_exterior", "Clinic Exterior", "exterior_building",
+                new Vector2(64f, 56f), SlicedLocationExteriorsRoot, "clinic_exterior.png"),
+            [StructureSpriteKind.BountyOfficeExterior] = SlicedProp(
+                StructureSpriteKind.BountyOfficeExterior, "bounty_office_exterior", "Bounty Office", "exterior_building",
+                new Vector2(56f, 56f), SlicedLocationExteriorsRoot, "bounty_office_exterior.png"),
+            [StructureSpriteKind.JailBlockExterior] = SlicedProp(
+                StructureSpriteKind.JailBlockExterior, "jail_block_exterior", "Jail Block", "exterior_building",
+                new Vector2(64f, 56f), SlicedLocationExteriorsRoot, "jail_block_exterior.png"),
+            [StructureSpriteKind.GreenhouseDome] = SlicedProp(
+                StructureSpriteKind.GreenhouseDome, "greenhouse_dome", "Greenhouse Dome", "exterior_building",
+                new Vector2(72f, 56f), SlicedLocationExteriorsRoot, "greenhouse_dome.png"),
+            [StructureSpriteKind.CheckpointGuardTower] = SlicedProp(
+                StructureSpriteKind.CheckpointGuardTower, "checkpoint_guard_tower", "Checkpoint Tower", "exterior_building",
+                new Vector2(56f, 64f), SlicedLocationExteriorsRoot, "checkpoint_guard_tower.png"),
+            [StructureSpriteKind.SafehouseTent] = SlicedProp(
+                StructureSpriteKind.SafehouseTent, "safehouse_tent", "Safehouse Tent", "exterior_building",
+                new Vector2(56f, 48f), SlicedLocationExteriorsRoot, "safehouse_tent.png"),
+            [StructureSpriteKind.PosseCampRally] = SlicedProp(
+                StructureSpriteKind.PosseCampRally, "posse_camp_rally", "Posse Camp", "exterior_building",
+                new Vector2(64f, 56f), SlicedLocationExteriorsRoot, "posse_camp_rally.png"),
+            [StructureSpriteKind.SafehouseCaveEntrance] = SlicedProp(
+                StructureSpriteKind.SafehouseCaveEntrance, "safehouse_cave_entrance", "Safehouse Cave", "exterior_building",
+                new Vector2(72f, 64f), SlicedLocationExteriorsRoot, "safehouse_cave_entrance.png"),
+            [StructureSpriteKind.SupplyDropLandingPad] = SlicedProp(
+                StructureSpriteKind.SupplyDropLandingPad, "supply_drop_landing_pad", "Supply Drop Pad", "exterior_building",
+                new Vector2(72f, 56f), SlicedLocationExteriorsRoot, "supply_drop_landing_pad.png"),
+
+            // Hazards / disasters (Step 12 heat zone & sabotage flair)
+            [StructureSpriteKind.FireFlames] = SlicedProp(
+                StructureSpriteKind.FireFlames, "fire_flames", "Fire", "hazard",
+                new Vector2(28f, 36f), SlicedHazardsDisastersRoot, "fire_flames.png"),
+            [StructureSpriteKind.ElectricPortalBlue] = SlicedProp(
+                StructureSpriteKind.ElectricPortalBlue, "electric_portal_blue", "Electric Portal", "hazard",
+                new Vector2(40f, 28f), SlicedHazardsDisastersRoot, "electric_portal_blue.png"),
+            [StructureSpriteKind.OilSpillDark] = SlicedProp(
+                StructureSpriteKind.OilSpillDark, "oil_spill_dark", "Oil Spill", "hazard",
+                new Vector2(40f, 24f), SlicedHazardsDisastersRoot, "oil_spill_dark.png"),
+            [StructureSpriteKind.ToxicPoolGreen] = SlicedProp(
+                StructureSpriteKind.ToxicPoolGreen, "toxic_pool_green", "Toxic Pool", "hazard",
+                new Vector2(40f, 24f), SlicedHazardsDisastersRoot, "toxic_pool_green.png"),
+            [StructureSpriteKind.RadioactiveSign] = SlicedProp(
+                StructureSpriteKind.RadioactiveSign, "radioactive_sign", "Radioactive Sign", "hazard",
+                new Vector2(28f, 32f), SlicedHazardsDisastersRoot, "radioactive_sign.png"),
+            [StructureSpriteKind.BiohazardConeOrange] = SlicedProp(
+                StructureSpriteKind.BiohazardConeOrange, "biohazard_cone_orange", "Biohazard Cone", "hazard",
+                new Vector2(20f, 28f), SlicedHazardsDisastersRoot, "biohazard_cone_orange.png"),
+            [StructureSpriteKind.AlertSirenRed] = SlicedProp(
+                StructureSpriteKind.AlertSirenRed, "alert_siren_red", "Alert Siren", "hazard",
+                new Vector2(20f, 36f), SlicedHazardsDisastersRoot, "alert_siren_red.png"),
+
+            // Mission boards (labeled)
+            [StructureSpriteKind.RumorBoardLabeled] = SlicedProp(
+                StructureSpriteKind.RumorBoardLabeled, "rumor_board_labeled", "Rumor Board", "mission_board",
+                new Vector2(40f, 32f), SlicedMissionBoardsRoot, "rumor_board.png"),
+            [StructureSpriteKind.PosseRecruitmentBoardLabeled] = SlicedProp(
+                StructureSpriteKind.PosseRecruitmentBoardLabeled, "posse_recruitment_board", "Posse Recruitment Board", "mission_board",
+                new Vector2(40f, 32f), SlicedMissionBoardsRoot, "posse_recruitment_board.png"),
+            [StructureSpriteKind.DeliveryBoardLabeled] = SlicedProp(
+                StructureSpriteKind.DeliveryBoardLabeled, "delivery_board", "Delivery Board", "mission_board",
+                new Vector2(40f, 32f), SlicedMissionBoardsRoot, "delivery_board.png"),
+            [StructureSpriteKind.DuelChallengeBoardLabeled] = SlicedProp(
+                StructureSpriteKind.DuelChallengeBoardLabeled, "duel_challenge_board", "Duel Challenge Board", "mission_board",
+                new Vector2(40f, 32f), SlicedMissionBoardsRoot, "duel_challenge_board.png"),
+            [StructureSpriteKind.LawBulletinBoardLabeled] = SlicedProp(
+                StructureSpriteKind.LawBulletinBoardLabeled, "law_bulletin_board", "Law Bulletin Board", "mission_board",
+                new Vector2(40f, 32f), SlicedMissionBoardsRoot, "law_bulletin_board.png"),
+
+            // Theme variant alternates
+            [StructureSpriteKind.WagonSupplyWestern] = SlicedProp(
+                StructureSpriteKind.WagonSupplyWestern, "wagon_supply_western", "Covered Wagon (Western Supply)", "theme_variant",
+                new Vector2(56f, 40f), SlicedThemeVariantRoot, "wagon_supply_western.png"),
+            [StructureSpriteKind.PodSupplyScifi] = SlicedProp(
+                StructureSpriteKind.PodSupplyScifi, "pod_supply_scifi", "Drop Pod (Sci-Fi Supply)", "theme_variant",
+                new Vector2(48f, 48f), SlicedThemeVariantRoot, "pod_supply_scifi.png"),
+            [StructureSpriteKind.BarrelsSupplyPostApoc] = SlicedProp(
+                StructureSpriteKind.BarrelsSupplyPostApoc, "barrels_supply_postapoc", "Fuel Barrels (Post-Apoc Supply)", "theme_variant",
+                new Vector2(48f, 40f), SlicedThemeVariantRoot, "barrels_supply_postapoc.png"),
+            [StructureSpriteKind.FantasyShrine] = SlicedProp(
+                StructureSpriteKind.FantasyShrine, "fantasy_shrine", "Fantasy Shrine", "theme_variant",
+                new Vector2(40f, 56f), SlicedThemeVariantRoot, "fantasy_shrine.png")
         };
 
     public static IReadOnlyDictionary<StructureSpriteKind, StructureSpriteDefinition> All => Definitions;

@@ -1,0 +1,376 @@
+[
+  {
+    "name": "winged_halo",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/winged_halo.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      6,
+      5,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "demon_horned_red",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/demon_horned_red.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      176,
+      5,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "knight_blue_shield",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/knight_blue_shield.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      346,
+      5,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "money_wagon",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/money_wagon.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      516,
+      5,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "leaf_clover_emblem",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/leaf_clover_emblem.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      686,
+      5,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "hammer_pick_skull",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/hammer_pick_skull.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      856,
+      5,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "green_cross_heart",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/green_cross_heart.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      6,
+      151,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "hammer_wrench_crossed",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/hammer_wrench_crossed.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      176,
+      151,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "hooded_assassin",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/hooded_assassin.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      346,
+      151,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "blue_flag_star_a",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/blue_flag_star_a.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      516,
+      151,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "blue_flag_star_b",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/blue_flag_star_b.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      686,
+      151,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "eye_blue",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/eye_blue.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      856,
+      151,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "pirate_skull_swords",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/pirate_skull_swords.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      6,
+      297,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "spy_eye_yellow",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/spy_eye_yellow.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      176,
+      297,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "target_skull",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/target_skull.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      346,
+      297,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "target_skull_money",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/target_skull_money.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      516,
+      297,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "purple_horn_shout",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/purple_horn_shout.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      686,
+      297,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "purple_question_shout",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/purple_question_shout.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      856,
+      297,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "scarcity_x_box",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/scarcity_x_box.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      6,
+      443,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "ribbon_medal",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/ribbon_medal.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      176,
+      443,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "fist_offering",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/fist_offering.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      346,
+      443,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "blade_swords_silver",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/blade_swords_silver.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      516,
+      443,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "dark_blade",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/dark_blade.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      686,
+      443,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "money_bag_lock",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/money_bag_lock.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      856,
+      443,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "green_shield",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/green_shield.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      6,
+      589,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "red_shield_swords",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/red_shield_swords.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      176,
+      589,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "red_shield_swords_alt",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/red_shield_swords_alt.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      346,
+      589,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "blue_heart_offering",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/blue_heart_offering.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      516,
+      589,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "broken_heart_red",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/broken_heart_red.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      686,
+      589,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "dove_peace",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/dove_peace.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      6,
+      735,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "gold_coins_marker",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/gold_coins_marker.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      176,
+      735,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "file_folder_evidence",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/file_folder_evidence.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      346,
+      735,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "danger_triangle_a",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/danger_triangle_a.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      516,
+      735,
+      158,
+      135
+    ]
+  },
+  {
+    "name": "danger_triangle_b",
+    "path": "res://assets/art/generated/sliced/faction_reputation_symbols/danger_triangle_b.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_faction_reputation_symbols_atlas.jpg",
+    "source_region": [
+      686,
+      735,
+      158,
+      135
+    ]
+  }
+]

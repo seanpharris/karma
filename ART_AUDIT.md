@@ -353,32 +353,29 @@ Run from project root:
 | `karma_static_crafting_stations_atlas.jpg` | `tools/slice_crafting_stations.gd` | `assets/art/generated/sliced/crafting_stations/` | 12 workbench variants (mechanical, alchemy, weapons display, pressure vessel, water filtration, fuel pump, scribe desk, paper desk, recycling, electronics, hydroponics, computer) |
 | `karma_static_containers_loot_atlas.jpg` | `tools/slice_containers_loot.gd` | `assets/art/generated/sliced/containers_loot/` | 25 container variants (wood/scifi/ornate chests, dumpster, medkit box, gun case, tool box, lockbox, duffel/backpack, money sack, cash pile, bedroll, energy cells crate, military trunk, shipping container, fragile box, treasure chest, safe, scrap pile, barrel) |
 | `karma_static_modular_walls_doors_atlas.jpg` | `tools/slice_modular_walls_doors.gd` | `assets/art/generated/sliced/modular_walls_doors/` | 27 wall/door tiles (sci-fi/wood/scrap/stone walls, clinic/shop/jail/curtain doors, airlock open/closed, gates, windows, fence, railing, barricade, checkpoint, archway, sign hanger, awning, roof edge) |
+| `karma_priority_player_interactions_atlas.jpg` | `tools/slice_player_interactions.gd` | `assets/art/generated/sliced/player_interactions/` | 36 interaction props (duel post sign, parade flags, gambling table, handshake statue, gift box, accept/decline/prohibited handshake medals, posse banners, contracts pinboard, treasure chests open/closed, treasure maps, gold medallion, danger signs, ballot box, sealed letters, magic ritual circle, torches, hunter sign, board game, casino chips, mailbox) |
+| `karma_priority_location_exteriors_atlas.jpg` | `tools/slice_location_exteriors.gd` | `assets/art/generated/sliced/location_exteriors/` | 12 building exteriors (clinic, shop kiosk, bounty office, jail block, checkpoint guard tower, safehouse tent, repair garage, greenhouse dome, posse camp/rally, faction request board shelter, safehouse cave entrance, supply drop landing pad) |
+| `karma_priority_theme_variant_matrix_atlas.jpg` | `tools/slice_theme_variant_matrix.gd` | `assets/art/generated/sliced/theme_variant_matrix/` | 12 theme alternates (covered wagon=western supply, drop pod=sci-fi supply, fuel barrels=post-apoc supply, ornate chest=fantasy loot, plank=lawless, sci-fi archway, tire barricade=post-apoc, fantasy guild gate, red cross sign=western clinic, ATM=sci-fi clinic, red cross tent=post-apoc clinic, fantasy shrine) |
+| `karma_static_hazards_disasters_atlas.jpg` | `tools/slice_hazards_disasters.gd` | `assets/art/generated/sliced/hazards_disasters/` | 30 hazard decals (warning barricade, fire, electric portal, sparking cable, leaking pipe, steam manhole, oil/toxic pools, radioactive sign, biohazard cone, broken glass, rock pile, broken metal beams, blue puddle, red flag, purple meteor, broken viewscreen, broken planks, alert siren, repair signs, biohazard crate, medkit, dark hole, red barrel) |
+| `karma_static_evidence_clues_atlas.jpg` | `tools/slice_evidence_clues.gd` | `assets/art/generated/sliced/evidence_clues/` | 25 evidence/clue items (footprints, signed letter, broken padlock, cracked tablet, torn cloth, bullet casings, prybar/pliers, evidence sack, bagged jewelry, clipboard, blood splatter, tire skids, engraved stone, official permit, forged permit, anonymous letter, sealed certificate, ID badge, broken radio, rumor newspaper, sparking wire, antique key) |
+| `karma_static_player_interaction_props_atlas.jpg` | `tools/slice_player_interaction_props.gd` | `assets/art/generated/sliced/player_interaction_props/` | 20 interaction props (barter terminal, neon handshake, gift box, alert sign, rifles+star, satellite dish, locked chest, signed contract, faction flag, wax seal, voting tablet, money envelope+seal, magnet+coin, gear+chest, blue arrow, parchments, evil eye computer, badge slot board, casino chips dice) |
+| `karma_static_faction_reputation_symbols_atlas.jpg` | `tools/slice_faction_reputation_symbols.gd` | `assets/art/generated/sliced/faction_reputation_symbols/` | 34 faction/reputation badge icons (winged halo, demon, knight shield, money wagon, hammer/pick skull, hooded assassin, blue flags, eye, pirate skull, target skull, purple horns, x-box, ribbon medals, blade swords, money bag lock, green/red shields, dove peace, gold coins, danger triangles) |
+| `karma_static_mission_boards_atlas.jpg` | `tools/slice_mission_boards.gd` | `assets/art/generated/sliced/mission_boards/` | 20 mission board variants (adventure quest, computer data, danger skull, ornate faction, bandage health, wanted poster, supply check, repair tool, lost-and-found, rumor, posse recruitment, faction notice, black market coded, law bulletin, community vote, delivery, salvage claim, duel challenge, apology, warning) |
 
 The first slice is **wired into the live HUD** —
 `HudController.ResolveEventIconName(eventId)` maps server-event ids to
 icon names, `_eventIcon` displays the matched icon next to the event
 label, and 9 smoke tests cover the resolver logic.
 
-### Atlases NOT yet sliced (ranked by next priority)
+### Atlases NOT yet sliced
 
-1. **`karma_priority_player_interactions_atlas.jpg`** — duel signs, posse
-   banners, contracts, treasure chests; for player-interaction polish.
-2. **`karma_priority_location_exteriors_atlas.jpg`** — clinic/shop/jail
-   building exteriors; for world-gen prop placement.
-3. **`karma_priority_theme_variant_matrix_atlas.jpg`** — theme alternates
-   for the same mechanical objects; for theme filtering.
-4. **`karma_static_hazards_disasters_atlas.jpg`** — fire/oil/electric/etc.
-   tile decals; for Step 12 heat-zone display.
-5. **`karma_static_evidence_clues_atlas.jpg`** — footprints, blood,
-   tire skids, sealed letters, IDs; for Step 4 rumor quest evidence.
-6. **`karma_static_player_interaction_props_atlas.jpg`** — barter
-   terminal, neon handshake, voting tablet, faction flag.
-7. **`karma_static_faction_reputation_symbols_atlas.jpg`** — 32
-   reputation badges; for Step 32 reputation HUD.
-8. **`karma_static_mission_boards_atlas.jpg`** — labeled mission board
-   variants (lost-and-found, rumor, posse recruitment, faction notice,
-   delivery, salvage claim, etc.). Labeled atlas — needs per-row Y
-   measurement like the UI icon atlases.
+**All surveyed atlases have now been sliced.** The remaining ~14 atlases
+in `assets/art/generated/static_event_atlases/` (event_props_universal,
+fantasy/scifi/post-apoc/western variants, terrain_ground_details, etc.)
+are theme-specific re-skins or world-state filler with low immediate
+runtime priority — the slicer pattern is now well-established and
+follows the same `slice_<atlas>.gd` template if/when those become
+needed.
 
 Each subsequent slicer should follow the same pattern: a `debug_*_strip.gd`
 that exports the leftmost column for visual measurement, then a

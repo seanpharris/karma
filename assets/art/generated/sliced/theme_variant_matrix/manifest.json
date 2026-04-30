@@ -1,0 +1,134 @@
+[
+  {
+    "name": "wagon_supply_western",
+    "path": "res://assets/art/generated/sliced/theme_variant_matrix/wagon_supply_western.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_theme_variant_matrix_atlas.jpg",
+    "source_region": [
+      9,
+      9,
+      238,
+      238
+    ]
+  },
+  {
+    "name": "pod_supply_scifi",
+    "path": "res://assets/art/generated/sliced/theme_variant_matrix/pod_supply_scifi.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_theme_variant_matrix_atlas.jpg",
+    "source_region": [
+      265,
+      9,
+      238,
+      238
+    ]
+  },
+  {
+    "name": "barrels_supply_postapoc",
+    "path": "res://assets/art/generated/sliced/theme_variant_matrix/barrels_supply_postapoc.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_theme_variant_matrix_atlas.jpg",
+    "source_region": [
+      521,
+      9,
+      238,
+      238
+    ]
+  },
+  {
+    "name": "ornate_chest_loot_fantasy",
+    "path": "res://assets/art/generated/sliced/theme_variant_matrix/ornate_chest_loot_fantasy.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_theme_variant_matrix_atlas.jpg",
+    "source_region": [
+      9,
+      265,
+      238,
+      238
+    ]
+  },
+  {
+    "name": "plank_lawless_western",
+    "path": "res://assets/art/generated/sliced/theme_variant_matrix/plank_lawless_western.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_theme_variant_matrix_atlas.jpg",
+    "source_region": [
+      9,
+      521,
+      238,
+      238
+    ]
+  },
+  {
+    "name": "scifi_archway",
+    "path": "res://assets/art/generated/sliced/theme_variant_matrix/scifi_archway.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_theme_variant_matrix_atlas.jpg",
+    "source_region": [
+      265,
+      521,
+      238,
+      238
+    ]
+  },
+  {
+    "name": "tire_barricade_postapoc",
+    "path": "res://assets/art/generated/sliced/theme_variant_matrix/tire_barricade_postapoc.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_theme_variant_matrix_atlas.jpg",
+    "source_region": [
+      521,
+      521,
+      238,
+      238
+    ]
+  },
+  {
+    "name": "fantasy_guild_gate",
+    "path": "res://assets/art/generated/sliced/theme_variant_matrix/fantasy_guild_gate.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_theme_variant_matrix_atlas.jpg",
+    "source_region": [
+      777,
+      521,
+      238,
+      238
+    ]
+  },
+  {
+    "name": "red_cross_sign_western",
+    "path": "res://assets/art/generated/sliced/theme_variant_matrix/red_cross_sign_western.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_theme_variant_matrix_atlas.jpg",
+    "source_region": [
+      9,
+      777,
+      238,
+      238
+    ]
+  },
+  {
+    "name": "atm_clinic_scifi",
+    "path": "res://assets/art/generated/sliced/theme_variant_matrix/atm_clinic_scifi.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_theme_variant_matrix_atlas.jpg",
+    "source_region": [
+      265,
+      777,
+      238,
+      238
+    ]
+  },
+  {
+    "name": "red_cross_tent_postapoc",
+    "path": "res://assets/art/generated/sliced/theme_variant_matrix/red_cross_tent_postapoc.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_theme_variant_matrix_atlas.jpg",
+    "source_region": [
+      521,
+      777,
+      238,
+      238
+    ]
+  },
+  {
+    "name": "fantasy_shrine",
+    "path": "res://assets/art/generated/sliced/theme_variant_matrix/fantasy_shrine.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_theme_variant_matrix_atlas.jpg",
+    "source_region": [
+      777,
+      777,
+      238,
+      238
+    ]
+  }
+]

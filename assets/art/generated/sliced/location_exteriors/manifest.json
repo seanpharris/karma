@@ -1,0 +1,134 @@
+[
+  {
+    "name": "clinic_exterior",
+    "path": "res://assets/art/generated/sliced/location_exteriors/clinic_exterior.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
+    "source_region": [
+      26,
+      17,
+      204,
+      272
+    ]
+  },
+  {
+    "name": "shop_kiosk_exterior",
+    "path": "res://assets/art/generated/sliced/location_exteriors/shop_kiosk_exterior.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
+    "source_region": [
+      282,
+      17,
+      204,
+      272
+    ]
+  },
+  {
+    "name": "bounty_office_exterior",
+    "path": "res://assets/art/generated/sliced/location_exteriors/bounty_office_exterior.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
+    "source_region": [
+      538,
+      17,
+      204,
+      272
+    ]
+  },
+  {
+    "name": "jail_block_exterior",
+    "path": "res://assets/art/generated/sliced/location_exteriors/jail_block_exterior.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
+    "source_region": [
+      794,
+      17,
+      204,
+      272
+    ]
+  },
+  {
+    "name": "checkpoint_guard_tower",
+    "path": "res://assets/art/generated/sliced/location_exteriors/checkpoint_guard_tower.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
+    "source_region": [
+      26,
+      358,
+      204,
+      272
+    ]
+  },
+  {
+    "name": "safehouse_tent",
+    "path": "res://assets/art/generated/sliced/location_exteriors/safehouse_tent.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
+    "source_region": [
+      282,
+      358,
+      204,
+      272
+    ]
+  },
+  {
+    "name": "repair_garage",
+    "path": "res://assets/art/generated/sliced/location_exteriors/repair_garage.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
+    "source_region": [
+      538,
+      358,
+      204,
+      272
+    ]
+  },
+  {
+    "name": "greenhouse_dome",
+    "path": "res://assets/art/generated/sliced/location_exteriors/greenhouse_dome.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
+    "source_region": [
+      794,
+      358,
+      204,
+      272
+    ]
+  },
+  {
+    "name": "posse_camp_rally",
+    "path": "res://assets/art/generated/sliced/location_exteriors/posse_camp_rally.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
+    "source_region": [
+      26,
+      699,
+      204,
+      272
+    ]
+  },
+  {
+    "name": "faction_request_board_shelter",
+    "path": "res://assets/art/generated/sliced/location_exteriors/faction_request_board_shelter.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
+    "source_region": [
+      282,
+      699,
+      204,
+      272
+    ]
+  },
+  {
+    "name": "safehouse_cave_entrance",
+    "path": "res://assets/art/generated/sliced/location_exteriors/safehouse_cave_entrance.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
+    "source_region": [
+      538,
+      699,
+      204,
+      272
+    ]
+  },
+  {
+    "name": "supply_drop_landing_pad",
+    "path": "res://assets/art/generated/sliced/location_exteriors/supply_drop_landing_pad.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
+    "source_region": [
+      794,
+      699,
+      204,
+      272
+    ]
+  }
+]

@@ -1,0 +1,277 @@
+[
+  {
+    "name": "footprints_brown",
+    "path": "res://assets/art/generated/sliced/evidence_clues/footprints_brown.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      7,
+      7,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "signed_letter",
+    "path": "res://assets/art/generated/sliced/evidence_clues/signed_letter.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      211,
+      7,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "broken_padlock",
+    "path": "res://assets/art/generated/sliced/evidence_clues/broken_padlock.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      415,
+      7,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "evidence_crate_x",
+    "path": "res://assets/art/generated/sliced/evidence_clues/evidence_crate_x.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      619,
+      7,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "cracked_tablet",
+    "path": "res://assets/art/generated/sliced/evidence_clues/cracked_tablet.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      823,
+      7,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "torn_cloth_grey",
+    "path": "res://assets/art/generated/sliced/evidence_clues/torn_cloth_grey.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      7,
+      211,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "bullet_casings_gold",
+    "path": "res://assets/art/generated/sliced/evidence_clues/bullet_casings_gold.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      211,
+      211,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "prybar_pliers",
+    "path": "res://assets/art/generated/sliced/evidence_clues/prybar_pliers.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      415,
+      211,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "evidence_sack_brown",
+    "path": "res://assets/art/generated/sliced/evidence_clues/evidence_sack_brown.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      619,
+      211,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "bagged_jewelry_evidence",
+    "path": "res://assets/art/generated/sliced/evidence_clues/bagged_jewelry_evidence.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      823,
+      211,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "clipboard_signed",
+    "path": "res://assets/art/generated/sliced/evidence_clues/clipboard_signed.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      7,
+      415,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "blood_splatter",
+    "path": "res://assets/art/generated/sliced/evidence_clues/blood_splatter.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      211,
+      415,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "tire_skid_a",
+    "path": "res://assets/art/generated/sliced/evidence_clues/tire_skid_a.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      415,
+      415,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "tire_skid_b",
+    "path": "res://assets/art/generated/sliced/evidence_clues/tire_skid_b.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      619,
+      415,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "engraved_stone",
+    "path": "res://assets/art/generated/sliced/evidence_clues/engraved_stone.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      823,
+      415,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "official_permit",
+    "path": "res://assets/art/generated/sliced/evidence_clues/official_permit.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      7,
+      619,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "forged_permit",
+    "path": "res://assets/art/generated/sliced/evidence_clues/forged_permit.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      211,
+      619,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "money_envelope",
+    "path": "res://assets/art/generated/sliced/evidence_clues/money_envelope.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      415,
+      619,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "anonymous_letter",
+    "path": "res://assets/art/generated/sliced/evidence_clues/anonymous_letter.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      619,
+      619,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "sealed_certificate",
+    "path": "res://assets/art/generated/sliced/evidence_clues/sealed_certificate.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      823,
+      619,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "id_badge_clipped",
+    "path": "res://assets/art/generated/sliced/evidence_clues/id_badge_clipped.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      7,
+      823,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "broken_radio",
+    "path": "res://assets/art/generated/sliced/evidence_clues/broken_radio.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      211,
+      823,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "rumor_newspaper_stack",
+    "path": "res://assets/art/generated/sliced/evidence_clues/rumor_newspaper_stack.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      415,
+      823,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "sparking_wire",
+    "path": "res://assets/art/generated/sliced/evidence_clues/sparking_wire.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      619,
+      823,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "antique_key",
+    "path": "res://assets/art/generated/sliced/evidence_clues/antique_key.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_evidence_clues_atlas.jpg",
+    "source_region": [
+      823,
+      823,
+      189,
+      189
+    ]
+  }
+]
