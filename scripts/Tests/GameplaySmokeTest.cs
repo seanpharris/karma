@@ -3627,6 +3627,86 @@ public partial class GameplaySmokeTest : Node
             normalPlayer, new LeaderboardStanding("normal_check", "Normal", 0, "", "", 0));
         ExpectEqual(1f, normalSnap, "SpeedModifier is 1.0 for non-Wraith player even at low HP");
 
+        // ── Step 26: Bounty system ─────────────────────────────────────────────────
+        // Players whose karma falls below -50 accrue a scrip bounty equal to the
+        // overage (e.g. karma -60 → bounty 10).  Downing them transfers the bounty
+        // scrip to the scorer.  A Karma Break clears the bounty.
+
+        var bqState = new GameState();
+        bqState.RegisterPlayer("ao_hunter", "Hunter");
+        bqState.RegisterPlayer("ao_outlaw", "Outlaw");
+        bqState.RegisterPlayer("ao_bystander", "Bystander");
+        bqState.SetPlayerPosition("ao_hunter", TilePosition.Origin);
+        bqState.SetPlayerPosition("ao_outlaw", TilePosition.Origin);
+        bqState.SetPlayerPosition("ao_bystander", TilePosition.Origin);
+        var bqServer = new AuthoritativeWorldServer(bqState, "bounty-test");
+
+        // No bounty yet — karma is 0
+        ExpectEqual(0, bqServer.GetBounty("ao_outlaw"), "No bounty at zero karma");
+
+        // Descend outlaw to -50 exactly — no bounty yet (threshold is < -50)
+        bqState.Players["ao_outlaw"].ApplyKarma(AuthoritativeWorldServer.BountyKarmaThreshold);
+        bqServer.ProcessIntent(new ServerIntent("ao_outlaw", 1, IntentType.KarmaAction,
+            new Dictionary<string, string> { ["action"] = PrototypeActions.StealFromMaraId }));
+        var bountyAfterThreshold = bqServer.GetBounty("ao_outlaw");
+        ExpectTrue(bqState.Players["ao_outlaw"].Karma.Score < AuthoritativeWorldServer.BountyKarmaThreshold,
+            "Outlaw karma is below threshold after steal");
+        ExpectTrue(bountyAfterThreshold > 0, "Bounty accrues when karma drops below threshold");
+
+        // Bounty should equal |karma| - 50
+        var expectedBounty = -(bqState.Players["ao_outlaw"].Karma.Score - AuthoritativeWorldServer.BountyKarmaThreshold);
+        ExpectEqual(expectedBounty, bountyAfterThreshold, "Bounty equals karma overage below threshold");
+
+        // Down the outlaw — hunter claims the bounty scrip
+        var hunterScripBefore = bqState.Players["ao_hunter"].Scrip;
+        bqServer.AdvanceIdleTicks(5);
+        bqServer.ProcessIntent(new ServerIntent("ao_hunter", 2, IntentType.Attack,
+            new Dictionary<string, string> { ["targetId"] = "ao_outlaw" }));
+        bqServer.AdvanceIdleTicks(5);
+        bqServer.ProcessIntent(new ServerIntent("ao_hunter", 3, IntentType.Attack,
+            new Dictionary<string, string> { ["targetId"] = "ao_outlaw" }));
+        bqServer.AdvanceIdleTicks(5);
+        bqServer.ProcessIntent(new ServerIntent("ao_hunter", 4, IntentType.Attack,
+            new Dictionary<string, string> { ["targetId"] = "ao_outlaw" }));
+        var outlawDowned = bqState.Players["ao_outlaw"].Health <= 0;
+        ExpectTrue(outlawDowned, "Outlaw was downed");
+
+        if (outlawDowned)
+        {
+            var bountyClaimed = bqServer.EventLog.Any(e => e.EventId.Contains("bounty_claimed") &&
+                e.Data.GetValueOrDefault("targetId") == "ao_outlaw");
+            ExpectTrue(bountyClaimed, "bounty_claimed event fires when bounty outlaw is downed");
+            var hunterScripAfter = bqState.Players["ao_hunter"].Scrip;
+            ExpectTrue(hunterScripAfter > hunterScripBefore, "Hunter receives scrip bounty for downing outlaw");
+            ExpectEqual(0, bqServer.GetBounty("ao_outlaw"), "Bounty cleared after it is claimed");
+        }
+
+        // Karma Break clears any remaining bounty
+        var bqBreakState = new GameState();
+        bqBreakState.RegisterPlayer("ao_fugitive", "Fugitive");
+        bqBreakState.SetPlayerPosition("ao_fugitive", TilePosition.Origin);
+        bqBreakState.Players["ao_fugitive"].ApplyKarma(AuthoritativeWorldServer.BountyKarmaThreshold - 20);
+        var bqBreakServer = new AuthoritativeWorldServer(bqBreakState, "bounty-break-test");
+        bqBreakServer.ProcessIntent(new ServerIntent("ao_fugitive", 1, IntentType.KarmaAction,
+            new Dictionary<string, string> { ["action"] = PrototypeActions.StealFromMaraId }));
+        ExpectTrue(bqBreakServer.GetBounty("ao_fugitive") > 0, "Fugitive has bounty before Karma Break");
+        bqBreakServer.ProcessIntent(new ServerIntent("ao_fugitive", 2, IntentType.KarmaBreak,
+            new Dictionary<string, string>()));
+        ExpectEqual(0, bqBreakServer.GetBounty("ao_fugitive"), "Bounty cleared after Karma Break");
+
+        // Bounty status effect appears in snapshot
+        var bqSnapState = new GameState();
+        bqSnapState.RegisterPlayer("ao_marked", "Marked");
+        bqSnapState.SetPlayerPosition("ao_marked", TilePosition.Origin);
+        bqSnapState.Players["ao_marked"].ApplyKarma(AuthoritativeWorldServer.BountyKarmaThreshold - 10);
+        var bqSnapServer = new AuthoritativeWorldServer(bqSnapState, "bounty-snap-test");
+        bqSnapServer.ProcessIntent(new ServerIntent("ao_marked", 1, IntentType.KarmaAction,
+            new Dictionary<string, string> { ["action"] = PrototypeActions.StealFromMaraId }));
+        var bqSnap = bqSnapServer.CreateInterestSnapshot("ao_marked");
+        var markedSnapshot = bqSnap.Players.FirstOrDefault(p => p.Id == "ao_marked");
+        var hasBountyStatus = markedSnapshot?.StatusEffects.Any(s => s.StartsWith("Bounty:")) == true;
+        ExpectTrue(hasBountyStatus, "Bounty status effect appears in player snapshot");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.

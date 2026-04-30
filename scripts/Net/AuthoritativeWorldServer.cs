@@ -55,6 +55,8 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, int> _killsPerPlayer = new();
     private readonly Dictionary<string, string> _wantedPlayerToIssuerId = new();
     public const int WantedKarmaReward = 10;
+    private readonly Dictionary<string, int> _bountyByPlayerId = new();
+    public const int BountyKarmaThreshold = -50;
     private sealed record DropClaim(string OwnerId, string OwnerName);
     private sealed record LocalChatMessage(
         string MessageId,
@@ -93,6 +95,9 @@ public sealed class AuthoritativeWorldServer
         .Select(message => ToLocalChatSnapshot(message, message.SpeakerPosition))
         .ToArray();
     public MatchSnapshot Match => _match.Snapshot(_state.GetLeaderboardStanding());
+
+    public int GetBounty(string playerId) =>
+        _bountyByPlayerId.TryGetValue(playerId, out var bounty) ? bounty : 0;
 
     public int GetChunkHeat(int chunkX, int chunkY) =>
         _combatHeatByChunk.TryGetValue((chunkX, chunkY), out var heat) ? heat : 0;
@@ -1437,6 +1442,19 @@ public sealed class AuthoritativeWorldServer
             _downedUntilTickByPlayer[targetId] = _tick + DownedCountdownTicks;
             _downedDeathPositionByPlayer[targetId] = target.Position;
             _killsPerPlayer[intent.PlayerId] = _killsPerPlayer.GetValueOrDefault(intent.PlayerId) + 1;
+            if (_bountyByPlayerId.Remove(targetId, out var bountyAmount) && bountyAmount > 0)
+            {
+                _state.AddScrip(intent.PlayerId, bountyAmount);
+                AppendEvent("bounty_claimed",
+                    $"{attacker.DisplayName} claimed a {bountyAmount} scrip bounty on {target.DisplayName}.",
+                    new Dictionary<string, string>
+                    {
+                        ["playerId"] = intent.PlayerId,
+                        ["targetId"] = targetId,
+                        ["scripAmount"] = bountyAmount.ToString()
+                    });
+            }
+
             if (_wantedPlayerToIssuerId.Remove(targetId))
             {
                 ApplyShift(intent.PlayerId, new KarmaAction(
@@ -1535,7 +1553,20 @@ public sealed class AuthoritativeWorldServer
         var before = _state.GetLeaderboardStanding();
         var shift = _state.ApplyShift(playerId, action);
         EmitTitleChangeEvents(before);
+        UpdateBounty(playerId);
         return shift;
+    }
+
+    private void UpdateBounty(string playerId)
+    {
+        if (!_state.Players.TryGetValue(playerId, out var player))
+            return;
+        var karma = player.Karma.Score;
+        var newBounty = karma < BountyKarmaThreshold ? -(karma - BountyKarmaThreshold) : 0;
+        if (newBounty > 0)
+            _bountyByPlayerId[playerId] = newBounty;
+        else
+            _bountyByPlayerId.Remove(playerId);
     }
 
     private void EmitTitleChangeEvents(LeaderboardStanding before)
@@ -2489,6 +2520,7 @@ public sealed class AuthoritativeWorldServer
     {
         var droppedItemCount = DropInventory(intent.PlayerId).Count;
         _state.TriggerKarmaBreak(intent.PlayerId);
+        _bountyByPlayerId.Remove(intent.PlayerId);
         RespawnPlayer(intent.PlayerId, _state.Players[intent.PlayerId].Position);
         StartKarmaBreakGrace(intent.PlayerId);
         var serverEvent = AppendEvent(
@@ -2547,6 +2579,11 @@ public sealed class AuthoritativeWorldServer
         if (_wantedPlayerToIssuerId.ContainsKey(player.Id))
         {
             statuses.Add("Wanted");
+        }
+
+        if (_bountyByPlayerId.TryGetValue(player.Id, out var bounty) && bounty > 0)
+        {
+            statuses.Add($"Bounty: {bounty}");
         }
 
         return statuses;
