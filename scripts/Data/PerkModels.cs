@@ -30,6 +30,10 @@ public static class PerkCatalog
     public const string AbyssalMarkId = "abyssal_mark";
     public const string WardenId = "warden";
     public const int WardenThreshold = 150;
+    public const string WraithId = "wraith_surge";
+    public const int WraithThreshold = 150;
+    public const float WraithSpeedModifier = 1.5f;
+    public const float WraithLowHpPercent = 0.3f;
 
     private static readonly KarmaPerk[] AscensionPerks =
     {
@@ -47,7 +51,8 @@ public static class PerkCatalog
         new(RumorcraftId, "Rumorcraft", PerkPath.Descension, 20, "Rumors spread globally when you expose them."),
         new(RenegadeNerveId, "Renegade Nerve", PerkPath.Descension, 35, "Intimidation attempts become more reliable, and sprinting costs less stamina."),
         new(DreadReputationId, "Dread Reputation", PerkPath.Descension, 50, "Fear softens negative NPC reactions to harmful, violent, or deceptive actions."),
-        new("abyssal_mark", "Abyssal Mark", PerkPath.Descension, 100, "Criminal factions may protect you.")
+        new("abyssal_mark", "Abyssal Mark", PerkPath.Descension, 100, "Criminal factions may protect you."),
+        new(WraithId, "Wraith Surge", PerkPath.Descension, WraithThreshold, "At ≤ 30% HP, gain a 50% speed boost that makes you nearly impossible to pin down.")
     };
 
     private static readonly KarmaPerk SaintStanding = new(

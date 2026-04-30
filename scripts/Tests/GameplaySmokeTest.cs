@@ -3594,6 +3594,39 @@ public partial class GameplaySmokeTest : Node
             new Dictionary<string, string> { ["targetId"] = "am_warden" }));
         ExpectFalse(selfWanted.WasAccepted, "IssueWanted rejected when targeting self");
 
+        // ── Step 25: Wraith perk speed modifier ───────────────────────────────────
+        // Players at karma ≤ -150 earn Wraith Surge. When HP ≤ 30%, their snapshot
+        // SpeedModifier is 1.5; at higher HP or without the perk, it is 1.0.
+        var wrState = new GameState();
+        wrState.RegisterPlayer("an_wraith", "Shade");
+        wrState.RegisterPlayer("an_attacker", "Hunter");
+        wrState.SetPlayerPosition("an_wraith", TilePosition.Origin);
+        wrState.SetPlayerPosition("an_attacker", TilePosition.Origin);
+        wrState.Players["an_wraith"].ApplyKarma(-PerkCatalog.WraithThreshold);
+        var wrServer = new AuthoritativeWorldServer(wrState, "wraith-test");
+
+        // Full HP — no speed bonus even with perk
+        var wrFullSnap = wrServer.CreateInterestSnapshot("an_wraith");
+        var wrSelf = wrFullSnap.Players.FirstOrDefault(p => p.Id == "an_wraith");
+        ExpectTrue(wrState.Players["an_wraith"].Karma.Score <= -PerkCatalog.WraithThreshold, "Wraith perk player has required karma");
+        ExpectEqual(1f, wrSelf?.SpeedModifier ?? 0f, "SpeedModifier is 1.0 at full HP even with Wraith perk");
+
+        // Damage wraith to ≤ 30% HP
+        var wrMaxHp = wrState.Players["an_wraith"].MaxHealth;
+        var lowHpTarget = (int)(wrMaxHp * PerkCatalog.WraithLowHpPercent);
+        wrState.Players["an_wraith"].ApplyDamage(wrMaxHp - lowHpTarget);
+        var wrLowSnap = wrServer.CreateInterestSnapshot("an_wraith");
+        var wrLowSelf = wrLowSnap.Players.FirstOrDefault(p => p.Id == "an_wraith");
+        ExpectTrue(wrState.Players["an_wraith"].Health <= lowHpTarget, "Wraith player HP is at or below 30%");
+        ExpectEqual(PerkCatalog.WraithSpeedModifier, wrLowSelf?.SpeedModifier ?? 0f, "SpeedModifier is 1.5 at ≤ 30% HP with Wraith perk");
+
+        // Normal player at low HP has no boost
+        var normalPlayer = new PlayerState("normal_check", "Normal");
+        normalPlayer.ApplyDamage(normalPlayer.MaxHealth - lowHpTarget);
+        var normalSnap = SnapshotBuilder.CalculateSpeedModifier(
+            normalPlayer, new LeaderboardStanding("normal_check", "Normal", 0, "", "", 0));
+        ExpectEqual(1f, normalSnap, "SpeedModifier is 1.0 for non-Wraith player even at low HP");
+
         // ── Step 16: Clinic recovery hook ─────────────────────────────────────────
         // When a downed countdown expires near a clinic NPC and the player has
         // enough scrip, the server auto-revives them instead of triggering karma break.

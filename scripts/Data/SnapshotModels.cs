@@ -39,7 +39,8 @@ public sealed record PlayerSnapshot(
     IReadOnlyList<string> StatusEffects,
     string PosseId = "",
     int KarmaPeak = 0,
-    int KarmaFloor = 0);
+    int KarmaFloor = 0,
+    float SpeedModifier = 1f);
 
 public sealed record LeaderboardSnapshot(
     string SaintPlayerId,
@@ -118,8 +119,21 @@ public static class SnapshotBuilder
                 statusEffectsFor(player),
                 player.TeamId,
                 player.Karma.KarmaPeak,
-                player.Karma.KarmaFloor))
+                player.Karma.KarmaFloor,
+                CalculateSpeedModifier(player, standing)))
             .ToArray();
+    }
+
+    public static float CalculateSpeedModifier(PlayerState player, LeaderboardStanding standing)
+    {
+        if (!PerkCatalog.GetForPlayer(player, standing).Any(p => p.Id == PerkCatalog.WraithId))
+        {
+            return 1f;
+        }
+
+        var lowHp = player.MaxHealth > 0 &&
+                    player.Health <= (int)(player.MaxHealth * PerkCatalog.WraithLowHpPercent);
+        return lowHp ? PerkCatalog.WraithSpeedModifier : 1f;
     }
 
     public static LeaderboardSnapshot LeaderboardFrom(LeaderboardStanding standing)
