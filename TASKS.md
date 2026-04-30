@@ -103,21 +103,24 @@ Things the test suite confirms but a player would notice.
 
 ## P2 — Polish & coverage gaps
 
-- [ ] **Minimap integration into the live HUD** — `HudController.FormatMinimap`
-  renders to a string, but no panel currently displays it. Either wire it into
-  the developer overlay or add a dedicated minimap panel in the corner.
-- [ ] **Fog-of-war client-side rendering** — server filters chunks correctly,
-  but `WorldRoot.cs` does not yet render fog overlay tiles for unvisited
-  neighbours. Add the dark overlay on chunks within view distance but missing
-  from the snapshot.
-- [ ] **NPC patrol world-gen integration** — `SetNpcPatrol` is exposed as a
-  public method, but `WorldGenerator` does not yet seed patrol routes per NPC.
-  Decide on a default cadence (one route per station NPC?) and seed at gen
-  time.
-- [ ] **Bounty UI** — bounty amount is in `StatusEffects` as `"Bounty: N"` but
-  there's no scoreboard or "biggest bounty" leaderboard panel.
-- [ ] **Match summary HUD** — `MatchSummarySnapshot` exists; verify it's
-  rendered at end of match (smoke test covers data, not UI).
+- [x] **Minimap integration into the live HUD** — *done 2026-04-30*. New
+  `_minimapPanel` in the corner refreshed each snapshot via
+  `FormatMinimap` at radius 6.
+- [x] **Fog-of-war client-side rendering** — *done 2026-04-30*. New
+  `WorldRoot.ComputeFogChunks` static + `RenderFogOfWar` overlays a dark
+  ColorRect on chunks within interest radius that aren't in the visited
+  set. Smoke test covers chunk-set delta.
+- [x] **NPC patrol world-gen integration** — *done 2026-04-30*. Mara
+  ships with a 3-tile clinic patrol; Dallen with a 2-tile shop route.
+  Seeded at construction in `SeedStarterNpcs`.
+- [x] **Bounty UI** — *done 2026-04-30*. New `_bountyPanel` shows the
+  top 5 active bounties parsed from `StatusEffects` via
+  `FormatBountyLeaderboard`. Sorted descending; reports "none active"
+  when empty.
+- [x] **Match summary HUD** — *done 2026-04-30*. New `_matchSummaryPanel`
+  becomes visible on `MatchStatus.Finished` and renders the existing
+  `FormatMatchSummary(snapshot.MatchSummary)`. Hidden during running /
+  lobby.
 - [ ] **Wraith perk visual** — speed modifier reflects in snapshot but no
   trail/blur sprite. Listed in `ART_NEEDED.md` step 25.
 - [ ] **Warden / Wanted visuals** — wanted poster icon listed in

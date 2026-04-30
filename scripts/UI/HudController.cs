@@ -58,6 +58,12 @@ public partial class HudController : CanvasLayer
     private NpcDialogueSnapshot _lastDialogueSnapshot;
     private PanelContainer _hotbarPanel = new();
     private Label _hotbarLabel = new();
+    private PanelContainer _minimapPanel = new();
+    private Label _minimapLabel = new();
+    private PanelContainer _bountyPanel = new();
+    private Label _bountyLabel = new();
+    private PanelContainer _matchSummaryPanel = new();
+    private Label _matchSummaryLabel = new();
     private PanelContainer _developerPanel = new();
     private Label _developerOverlayLabel = new();
     private int _developerPageIndex;
@@ -982,6 +988,54 @@ public partial class HudController : CanvasLayer
         };
         _hotbarPanel.AddChild(_hotbarLabel);
 
+        _minimapPanel = new PanelContainer
+        {
+            OffsetLeft = 1100,
+            OffsetTop = 16,
+            OffsetRight = 1280,
+            OffsetBottom = 200
+        };
+        root.AddChild(_minimapPanel);
+
+        _minimapLabel = new Label
+        {
+            Text = "[minimap unavailable]"
+        };
+        _minimapPanel.AddChild(_minimapLabel);
+
+        _bountyPanel = new PanelContainer
+        {
+            OffsetLeft = 1100,
+            OffsetTop = 220,
+            OffsetRight = 1280,
+            OffsetBottom = 360
+        };
+        root.AddChild(_bountyPanel);
+
+        _bountyLabel = new Label
+        {
+            Text = "Bounties: --",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart
+        };
+        _bountyPanel.AddChild(_bountyLabel);
+
+        _matchSummaryPanel = new PanelContainer
+        {
+            OffsetLeft = 200,
+            OffsetTop = 220,
+            OffsetRight = 1080,
+            OffsetBottom = 540,
+            Visible = false
+        };
+        root.AddChild(_matchSummaryPanel);
+
+        _matchSummaryLabel = new Label
+        {
+            Text = "Match in progress.",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart
+        };
+        _matchSummaryPanel.AddChild(_matchSummaryLabel);
+
         BuildPossePanel(root);
         BuildDeveloperOverlay(root);
         BuildEscapeMenu(root);
@@ -1300,6 +1354,17 @@ public partial class HudController : CanvasLayer
 
             var combatRange = serverSession.Server.Config.CombatRangeTiles;
             _targetLabel.Text = FormatAttackTargetLine(snapshot, snapshot.PlayerId, combatRange);
+            _minimapLabel.Text = FormatMinimap(snapshot, snapshot.PlayerId, radiusTiles: 6);
+            _bountyLabel.Text = FormatBountyLeaderboard(snapshot);
+
+            // Match summary appears when the match has finished and the server
+            // has populated MatchSummarySnapshot (which CreateInterestSnapshot
+            // does in the Finished state).
+            var summaryVisible = snapshot.Match.Status == MatchStatus.Finished
+                                 && snapshot.MatchSummary is not null;
+            _matchSummaryPanel.Visible = summaryVisible;
+            if (summaryVisible)
+                _matchSummaryLabel.Text = FormatMatchSummary(snapshot.MatchSummary);
         }
 
         _syncLabel.Text = $"Sync: {snapshotSummary}";
@@ -1349,6 +1414,32 @@ public partial class HudController : CanvasLayer
     {
         var safeCombatText = string.IsNullOrWhiteSpace(combatText) ? "Combat: none" : combatText;
         return $"{safeCombatText} | You ATK:{attackPower} DEF:{defense} | {FormatStatusEffects(statusEffects)}";
+    }
+
+    public static int ParseBountyAmount(string statusEffect)
+    {
+        if (string.IsNullOrEmpty(statusEffect) || !statusEffect.StartsWith("Bounty: ")) return 0;
+        var span = statusEffect.AsSpan("Bounty: ".Length);
+        return int.TryParse(span, out var amount) ? amount : 0;
+    }
+
+    public static string FormatBountyLeaderboard(ClientInterestSnapshot snapshot, int topN = 5) =>
+        FormatBountyLeaderboard(snapshot?.Players ?? (IEnumerable<PlayerSnapshot>)System.Array.Empty<PlayerSnapshot>(), topN);
+
+    public static string FormatBountyLeaderboard(IEnumerable<PlayerSnapshot> players, int topN = 5)
+    {
+        if (players is null) return "Bounties: --";
+        var entries = players
+            .Select(p => (player: p, bounty: p.StatusEffects.Sum(s => ParseBountyAmount(s))))
+            .Where(e => e.bounty > 0)
+            .OrderByDescending(e => e.bounty)
+            .Take(topN)
+            .ToList();
+        if (entries.Count == 0) return "Bounties: none active";
+        var lines = new List<string> { "-- Top Bounties --" };
+        foreach (var (player, bounty) in entries)
+            lines.Add($"  {player.DisplayName,-16} {bounty} scrip");
+        return string.Join('\n', lines);
     }
 
     public static PlayerSnapshot FindAttackTarget(ClientInterestSnapshot snapshot, string localPlayerId, int combatRangeTiles)

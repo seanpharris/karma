@@ -80,6 +80,9 @@ public partial class WorldRoot : Node2D
         AddChild(_tileMapRenderer);
     }
 
+    private Node2D _fogOverlayContainer;
+    public const float TilePixelSize = 32f;
+
     private void RenderSnapshot(ClientInterestSnapshot snapshot)
     {
         if (snapshot is null)
@@ -88,6 +91,7 @@ public partial class WorldRoot : Node2D
         }
 
         _tileMapRenderer.SetChunks(snapshot.MapChunks, ThemeArtRegistry.GetForTheme(GeneratedWorld.Theme));
+        RenderFogOfWar(snapshot);
         if (RenderGeneratedPrototypeActors)
         {
             RenderServerNpcs(snapshot);
@@ -95,6 +99,57 @@ public partial class WorldRoot : Node2D
             RenderServerStructures(snapshot);
             RenderServerItems(snapshot);
             RenderLocalChatBubbles(snapshot);
+        }
+    }
+
+    public static IReadOnlyList<(int X, int Y)> ComputeFogChunks(
+        ClientInterestSnapshot snapshot,
+        int interestRadiusChunks,
+        int chunkSizeTiles)
+    {
+        if (snapshot is null || chunkSizeTiles <= 0) return System.Array.Empty<(int, int)>();
+        var local = snapshot.Players.FirstOrDefault(p => p.Id == snapshot.PlayerId);
+        if (local is null) return System.Array.Empty<(int, int)>();
+        var visibleKeys = new HashSet<string>(snapshot.MapChunks.Select(c => c.ChunkKey));
+        var hereChunkX = local.TileX / chunkSizeTiles;
+        var hereChunkY = local.TileY / chunkSizeTiles;
+        var fog = new List<(int, int)>();
+        for (var dx = -interestRadiusChunks; dx <= interestRadiusChunks; dx++)
+        {
+            for (var dy = -interestRadiusChunks; dy <= interestRadiusChunks; dy++)
+            {
+                var cx = hereChunkX + dx;
+                var cy = hereChunkY + dy;
+                if (!visibleKeys.Contains($"{cx}:{cy}"))
+                    fog.Add((cx, cy));
+            }
+        }
+        return fog;
+    }
+
+    private void RenderFogOfWar(ClientInterestSnapshot snapshot)
+    {
+        if (_fogOverlayContainer is null)
+        {
+            _fogOverlayContainer = new Node2D { Name = "FogOverlay" };
+            AddChild(_fogOverlayContainer);
+        }
+        foreach (var child in _fogOverlayContainer.GetChildren()) child.QueueFree();
+
+        var chunkSizeTiles = Config.Server.ChunkSizeTiles;
+        var interestRadius = Config.Server.InterestRadiusChunks;
+        var fogChunks = ComputeFogChunks(snapshot, interestRadius, chunkSizeTiles);
+        var chunkPixelSize = chunkSizeTiles * TilePixelSize;
+        foreach (var (cx, cy) in fogChunks)
+        {
+            var rect = new ColorRect
+            {
+                Color = new Color(0f, 0f, 0f, 0.55f),
+                Size = new Vector2(chunkPixelSize, chunkPixelSize),
+                Position = new Vector2(cx * chunkPixelSize, cy * chunkPixelSize),
+                MouseFilter = Control.MouseFilterEnum.Ignore
+            };
+            _fogOverlayContainer.AddChild(rect);
         }
     }
 

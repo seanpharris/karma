@@ -4262,8 +4262,26 @@ public sealed class AuthoritativeWorldServer
 
     private void SeedStarterNpcs()
     {
-        _npcs[StarterNpcs.Mara.Id] = new NpcEntity(StarterNpcs.Mara, new TilePosition(3, 4));
-        _npcs[StarterNpcs.Dallen.Id] = new NpcEntity(StarterNpcs.Dallen, new TilePosition(6, 4));
+        // Mara at (3,4) patrols a 3-tile route around the clinic; Dallen at
+        // (6,4) walks a tighter 2-tile shop route. Patrols make NPCs feel
+        // alive without requiring per-NPC scripting.
+        _npcs[StarterNpcs.Mara.Id] = new NpcEntity(
+            StarterNpcs.Mara,
+            new TilePosition(3, 4),
+            PatrolWaypoints: new[]
+            {
+                new TilePosition(3, 4),
+                new TilePosition(4, 4),
+                new TilePosition(3, 5)
+            });
+        _npcs[StarterNpcs.Dallen.Id] = new NpcEntity(
+            StarterNpcs.Dallen,
+            new TilePosition(6, 4),
+            PatrolWaypoints: new[]
+            {
+                new TilePosition(6, 4),
+                new TilePosition(7, 4)
+            });
     }
 
     private void SeedStarterMounts()

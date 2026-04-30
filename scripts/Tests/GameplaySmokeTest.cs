@@ -4013,11 +4013,13 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(ptNpcSnap?.TileX == ptWp0.X && ptNpcSnap?.TileY == ptWp0.Y,
             "interest snapshot reflects current patrol position");
 
-        // NPC without waypoints does not move
-        var ptDallenPos = patrolServer.GetNpcPosition(StarterNpcs.Dallen.Id);
-        patrolServer.AdvanceIdleTicks(AuthoritativeWorldServer.NpcPatrolTickInterval);
-        ExpectTrue(patrolServer.GetNpcPosition(StarterNpcs.Dallen.Id) == ptDallenPos,
-            "NPC with no patrol waypoints stays put");
+        // Default patrols seeded at world-gen: starter NPCs cycle through their
+        // own waypoints unless overridden. Dallen ships with a 2-tile shop route
+        // and Mara with a 3-tile clinic route.
+        ExpectTrue(patrolServer.Npcs[StarterNpcs.Dallen.Id].PatrolWaypoints?.Count == 2,
+            "Dallen ships with a default 2-tile patrol route");
+        ExpectTrue(patrolServer.Npcs[StarterNpcs.Mara.Id].PatrolWaypoints?.Count == 3,
+            "Mara ships with a default 3-tile patrol route");
 
         // ── Step 32: Reputation decay ─────────────────────────────────────────────
         // Faction standings drift toward 0 by 1 per ReputationDecayTickInterval ticks.
@@ -4602,6 +4604,30 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(atfNoneLine.Contains("none in range"),
             "FormatAttackTargetLine reports no target in range");
 
+        // Fog-of-war client helper: chunks within interest radius that are
+        // missing from the snapshot are returned as fog candidates.
+        var fwClState = new GameState();
+        fwClState.RegisterPlayer("aa_fwcl", "FwClient");
+        fwClState.SetPlayerPosition("aa_fwcl", new TilePosition(5, 5));
+        var fwClServer = new AuthoritativeWorldServer(fwClState, "fog-client-test");
+        var fwClWorld = WorldGenerator.Generate(WorldConfig.FromServerConfig(
+            "fog-client-test",
+            new WorldSeed(1, "FogClient", "test"),
+            ServerConfig.Prototype4Player));
+        fwClServer.SetTileMap(fwClWorld.TileMap);
+        foreach (var fwClPid in fwClServer.ConnectedPlayerIds)
+            fwClServer.ProcessIntent(new ServerIntent(fwClPid, 1, IntentType.ReadyUp, new Dictionary<string, string>()));
+        var fwClSnap = fwClServer.CreateInterestSnapshot("aa_fwcl");
+        var fwClFog = WorldRoot.ComputeFogChunks(fwClSnap, interestRadiusChunks: 2, chunkSizeTiles: 32);
+        // Player at chunk (0,0) with radius 2 covers chunks (-2..2)^2 = 25 chunks.
+        // Visited chunks include the local + reveal radius (= 9); 25 - 9 = 16 fog candidates.
+        ExpectTrue(fwClFog.Count > 0, "ComputeFogChunks returns at least one chunk when interest exceeds visited");
+        // Each fog chunk key should NOT be in the snapshot's MapChunks
+        var fwClVisibleKeys = fwClSnap.MapChunks.Select(c => c.ChunkKey).ToHashSet();
+        foreach (var (cx, cy) in fwClFog)
+            ExpectFalse(fwClVisibleKeys.Contains($"{cx}:{cy}"),
+                $"fog chunk ({cx},{cy}) is not in the visible MapChunks set");
+
         // Building interior bounds: walking onto a door enters; movement clamps
         // to the building footprint; only door tiles can exit.
         var biState = new GameState();
@@ -4836,6 +4862,46 @@ public partial class GameplaySmokeTest : Node
         wrMeleeServer.AdvanceIdleTicks(5);
         ExpectTrue(wrMeleeState.Players["aa_brawler"].Stamina > staminaAfterDrain,
             "Stamina regenerates during AdvanceIdleTicks");
+
+        // FormatMatchSummary handles the no-summary case before the match ends.
+        ExpectTrue(HudController.FormatMatchSummary(null).Contains("Match in progress"),
+            "FormatMatchSummary returns 'Match in progress' when no summary is available");
+
+        // Bounty leaderboard formatter parses bounty amounts from StatusEffects.
+        ExpectEqual(25, HudController.ParseBountyAmount("Bounty: 25"),
+            "ParseBountyAmount extracts the integer from a Bounty: N string");
+        ExpectEqual(0, HudController.ParseBountyAmount("Wanted"),
+            "ParseBountyAmount returns 0 for non-bounty status effects");
+
+        // Synthetic player-list test: explicit Bounty status effects exercise
+        // the formatter's sort + filter + top-N behavior.
+        var blFakePlayers = new List<PlayerSnapshot>
+        {
+            new("aa_low", "LowBounty", 0, "Unmarked", 0, "", LeaderboardRole.None,
+                0, 0, 100, 100, 0, PlayerAppearanceSelection.Default,
+                System.Array.Empty<string>(), new Dictionary<EquipmentSlot, string>(),
+                new[] { "Bounty: 10" }),
+            new("ab_high", "HighBounty", 0, "Unmarked", 0, "", LeaderboardRole.None,
+                0, 0, 100, 100, 0, PlayerAppearanceSelection.Default,
+                System.Array.Empty<string>(), new Dictionary<EquipmentSlot, string>(),
+                new[] { "Bounty: 75" }),
+            new("ac_clean", "CleanPlayer", 0, "Unmarked", 0, "", LeaderboardRole.None,
+                0, 0, 100, 100, 0, PlayerAppearanceSelection.Default,
+                System.Array.Empty<string>(), new Dictionary<EquipmentSlot, string>(),
+                System.Array.Empty<string>())
+        };
+        var blBoard = HudController.FormatBountyLeaderboard(blFakePlayers);
+        ExpectTrue(blBoard.Contains("Top Bounties"),
+            "FormatBountyLeaderboard shows header when bounties exist");
+        ExpectTrue(blBoard.Contains("HighBounty") && blBoard.Contains("LowBounty"),
+            "FormatBountyLeaderboard lists all players with active bounties");
+        ExpectTrue(blBoard.IndexOf("HighBounty") < blBoard.IndexOf("LowBounty"),
+            "FormatBountyLeaderboard sorts by bounty descending");
+        ExpectFalse(blBoard.Contains("CleanPlayer"),
+            "FormatBountyLeaderboard excludes players with no active bounty");
+        ExpectTrue(HudController.FormatBountyLeaderboard(System.Array.Empty<PlayerSnapshot>())
+                .Contains("none active"),
+            "FormatBountyLeaderboard reports 'none active' when no bounties exist");
 
         // Hotbar formatter renders 9 slots; equipped slot is starred.
         var hbEmpty = HudController.FormatHotbar(System.Array.Empty<GameItem>(), -1);

@@ -578,7 +578,7 @@ public partial class PlayerController : CharacterBody2D
         }
         var structure = snapshot.Structures.FirstOrDefault(s => s.EntityId == local.InsideStructureId);
         if (structure is null || structure.InteriorWidth <= 0 || structure.InteriorHeight <= 0) return;
-        const int tileSizePx = 32;
+        var tileSizePx = (int)WorldRoot.TilePixelSize;
         _camera.LimitLeft = structure.InteriorMinX * tileSizePx;
         _camera.LimitTop = structure.InteriorMinY * tileSizePx;
         _camera.LimitRight = (structure.InteriorMinX + structure.InteriorWidth) * tileSizePx;
