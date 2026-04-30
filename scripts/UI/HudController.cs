@@ -43,6 +43,10 @@ public partial class HudController : CanvasLayer
     private Label _promptLabel = new();
     private PanelContainer _inventoryPanel = new();
     private Label _inventoryOverlayLabel = new();
+    private PanelContainer _shopPanel = new();
+    private Label _shopOverlayLabel = new();
+    private string _shopVendorNpcId = string.Empty;
+    private bool _shopSellMode;
     private PanelContainer _developerPanel = new();
     private Label _developerOverlayLabel = new();
     private int _developerPageIndex;
@@ -244,6 +248,38 @@ public partial class HudController : CanvasLayer
     public void ToggleInventoryOverlay()
     {
         SetInventoryOverlayVisible(!_inventoryPanel.Visible);
+    }
+
+    public void OpenShopForVendor(string vendorNpcId, bool sellMode = false)
+    {
+        _shopVendorNpcId = vendorNpcId;
+        _shopSellMode = sellMode;
+        _shopPanel.Visible = true;
+        RefreshShopOverlay();
+    }
+
+    public void CloseShop()
+    {
+        _shopVendorNpcId = string.Empty;
+        _shopPanel.Visible = false;
+    }
+
+    public bool IsShopOpen => _shopPanel.Visible;
+    public string ShopVendorNpcId => _shopVendorNpcId;
+    public bool ShopSellMode => _shopSellMode;
+
+    private void RefreshShopOverlay()
+    {
+        if (!_shopPanel.Visible || _gameState is null) return;
+        if (_shopSellMode)
+        {
+            _shopOverlayLabel.Text = FormatSellBubble(_gameState.Inventory, _gameState.LocalScrip);
+        }
+        else
+        {
+            var offers = _lastSnapshot?.ShopOffers ?? System.Array.Empty<ShopOfferSnapshot>();
+            _shopOverlayLabel.Text = FormatShopBubble(offers, _shopVendorNpcId, _gameState.LocalScrip);
+        }
     }
 
     public void SetInventoryOverlayVisible(bool visible)
@@ -724,6 +760,23 @@ public partial class HudController : CanvasLayer
         };
         _inventoryPanel.AddChild(_inventoryOverlayLabel);
 
+        _shopPanel = new PanelContainer
+        {
+            OffsetLeft = 480,
+            OffsetTop = 200,
+            OffsetRight = 880,
+            OffsetBottom = 540,
+            Visible = false
+        };
+        root.AddChild(_shopPanel);
+
+        _shopOverlayLabel = new Label
+        {
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            Text = "Shop"
+        };
+        _shopPanel.AddChild(_shopOverlayLabel);
+
         BuildPossePanel(root);
         BuildDeveloperOverlay(root);
         BuildEscapeMenu(root);
@@ -1025,6 +1078,11 @@ public partial class HudController : CanvasLayer
             if (_possePanel.Visible)
             {
                 RefreshPossePanel();
+            }
+
+            if (_shopPanel.Visible)
+            {
+                RefreshShopOverlay();
             }
         }
 

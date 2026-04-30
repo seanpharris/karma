@@ -178,6 +178,43 @@ public partial class PlayerController : CharacterBody2D
         {
             CycleAppearanceThroughServer(AppearanceCycleSlot.Outfit);
         }
+        else if (key.Keycode == Key.O)
+        {
+            ToggleShopOverlayForNearestVendor(sellMode: false);
+        }
+        else if (key.Keycode == Key.K)
+        {
+            ToggleShopOverlayForNearestVendor(sellMode: true);
+        }
+    }
+
+    private void ToggleShopOverlayForNearestVendor(bool sellMode)
+    {
+        if (_hud is null || _serverSession is null) return;
+        if (_hud.IsShopOpen)
+        {
+            _hud.CloseShop();
+            return;
+        }
+
+        var snapshot = _serverSession.LastLocalSnapshot;
+        if (snapshot is null) return;
+        var local = snapshot.Players.FirstOrDefault(p => p.Id == GameState.LocalPlayerId);
+        if (local is null) return;
+
+        var vendorIds = snapshot.ShopOffers.Select(o => o.VendorNpcId).Distinct().ToHashSet();
+        var nearestVendor = snapshot.Npcs
+            .Where(npc => vendorIds.Contains(npc.Id))
+            .OrderBy(npc => (npc.TileX - local.TileX) * (npc.TileX - local.TileX) +
+                            (npc.TileY - local.TileY) * (npc.TileY - local.TileY))
+            .FirstOrDefault();
+        if (nearestVendor is null)
+        {
+            _hud.ShowPrompt("No vendor in range.");
+            return;
+        }
+
+        _hud.OpenShopForVendor(nearestVendor.Id, sellMode);
     }
 
     public void AdjustCameraZoom(float delta)

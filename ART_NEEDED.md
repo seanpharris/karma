@@ -169,4 +169,94 @@ Both sets must match the base model's current directional frame count.
 
 ---
 
-*Updated: 2026-04-29 (steps 22–29)*
+## Step 30 — Supply Drop World Event
+
+- **Supply drop crate sprite**: distinctive cargo container that drops onto a tile (32×32 or 16×16; ideally with a brief 2–3 frame "landing" animation)
+- **Drop beacon overlay**: pulsing column or marker rendered above the drop position so it's findable from range
+- **Expired drop ghost**: faded version of the crate that dissipates over a 2–3 frame fadeout when the drop times out unclaimed
+
+---
+
+## Step 31 — NPC Patrol Routes
+
+- **Waypoint marker** (debug/dev only): small dotted-circle tile overlay used during world-gen tuning to visualise patrol paths
+- *(No new player-facing art needed — patrol uses existing NPC walk frames.)*
+
+---
+
+## Step 32 — Reputation Decay
+
+- **Reputation HUD bar segments**: 3-state segment art for the faction reputation strip (high/neutral/low), 8×8 each — used so the bar reads cleanly even as values drift toward 0
+
+---
+
+## Step 33 — Faction Store Gating
+
+- **Locked offer overlay**: small lock icon (16×16) drawn on shop offers the player can't yet purchase (insufficient reputation)
+- **Reputation-required tag** (HUD): a tiny faction badge (8×8) next to gated offer rows so the requirement is glanceable
+
+---
+
+## Step 34 — Station Claim Intent
+
+- **Posse claim flag**: a banner/pennant prop attached to claimed structures (16×16; one variant per posse colour, or a single neutral flag with palette-swap support)
+- **Claim spark**: brief 2–3 frame flash centered on the structure when the claim is granted
+- **Passive scrip tick**: small "+1" coin floater that drifts up from claimed structures every few seconds (16×16, 4-frame fade)
+
+---
+
+## Step 35 — Death Trophy Drop
+
+- **Generic dog-tag icon**: a 16×16 dog-tag inventory icon used for trophy items ("X's Dog Tag"); name overlay is the differentiator
+- **Trophy drop flash**: brief 2-frame icon that floats over the scorer when the tag is awarded
+
+---
+
+## Step 36 — Crafting Intent
+
+- **Workshop interaction prop**: workbench tile (16×32 or 32×32) that signals a craftable structure
+- **Craft confirmation puff**: 2–3 frame smoke/spark animation at the workbench when an item is produced
+- **Recipe panel chrome**: HUD window for the recipe list (use existing inventory chrome if possible — only ingredient/result row art is new: 16×16 ingredient slots with arrow → output)
+
+---
+
+## Step 37 — Posse Shared Quest
+
+- **Posse quest banner**: a HUD banner (similar to the Saint/Scourge title-change banner) announcing a posse quest start/completion to all members
+- **Shared objective marker**: a small posse-coloured pin (8×8) drawn on the minimap/HUD over the active posse-quest target tile
+
+---
+
+## Step 38 — World Tier Zones (Lawless)
+
+- **Lawless tile overlay**: a sparse warning hatch or red tint variant of the floor tiles (16×16, kept subtle so movement isn't impaired)
+- **Zone boundary marker**: a 1-tile-wide skull-or-warning border tile rendered along lawless/lawful boundaries (16×16, 4 directions)
+- **HUD zone toast**: a short banner sprite for "Entered Lawless Zone" / "Returned to Patrolled Territory"
+
+---
+
+## Step 39 — Fog of War
+
+- **Fog tile overlay**: solid dark tile drawn over unvisited chunks (16×16, full opacity)
+- **Reveal edge feathering**: optional 1-pixel gradient tile for the boundary between visited/unvisited chunks
+
+---
+
+## Step 40 — HUD Minimap
+
+- **Minimap panel chrome**: small radar window in the corner of the HUD (96×96 or 128×128) — frame + background
+- **Minimap dot icons**: 4×4 colour-coded markers for self (white), friendlies (green), hostiles (red), NPCs (yellow), structures (blue)
+- **Minimap compass tick**: optional N/S/E/W tick marks on the panel border (4×4 each)
+
+---
+
+## Shop UX Upgrade (input + dialog)
+
+- **Shop bubble panel**: a HUD popup window (192×128 or similar) opened from a vendor's "Browse wares" dialogue choice; lists item name, price, and a "purchase" highlight on hover
+- **Sell bubble panel**: paired window for "Sell items" listing inventory rows with computed sell-back prices
+- **Hotbar strip**: 1–9 numbered inventory slot row drawn above the existing inventory display (each slot 16×16 with number badge)
+- **Active hotbar slot highlight**: a pulse/glow around the currently-equipped hotbar slot
+
+---
+
+*Updated: 2026-04-29 (steps 30–40 + shop UX)*
