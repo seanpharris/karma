@@ -4479,6 +4479,18 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(shSellBubble.Contains("Sell") || shSellBubble.Contains("Nothing"),
             "FormatSellBubble shows a sell or empty header");
 
+        // Shop bubble rebuilds button rows on refresh — one button per visible
+        // offer (browse) or per inventory item (sell), plus a Close button.
+        var shopUiHud = new HudController();
+        AddChild(shopUiHud);
+        // Browse mode against an empty offer set still produces a Close button
+        shopUiHud.OpenShopForVendor(StarterNpcs.Dallen.Id, sellMode: false);
+        ExpectTrue(shopUiHud.IsShopOpen, "OpenShopForVendor opens panel");
+        ExpectTrue(shopUiHud.ShopRowCount >= 1, "shop panel always has at least a Close row");
+        shopUiHud.CloseShop();
+        ExpectFalse(shopUiHud.IsShopOpen, "CloseShop closes panel");
+        shopUiHud.QueueFree();
+
         // Dialogue choice picker UI: clicking browse/sell choices opens the shop
         // panel with the right vendor + mode and closes the dialogue.
         var dlgHud = new HudController();

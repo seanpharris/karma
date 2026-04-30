@@ -44,7 +44,9 @@ public partial class HudController : CanvasLayer
     private PanelContainer _inventoryPanel = new();
     private Label _inventoryOverlayLabel = new();
     private PanelContainer _shopPanel = new();
-    private Label _shopOverlayLabel = new();
+    private VBoxContainer _shopContainer = new();
+    private Label _shopHeaderLabel = new();
+    private VBoxContainer _shopRowsContainer = new();
     private string _shopVendorNpcId = string.Empty;
     private bool _shopSellMode;
     private PanelContainer _dialoguePanel = new();
@@ -277,16 +279,84 @@ public partial class HudController : CanvasLayer
     private void RefreshShopOverlay()
     {
         if (!_shopPanel.Visible || _gameState is null) return;
+        foreach (var child in _shopRowsContainer.GetChildren())
+            child.QueueFree();
+
         if (_shopSellMode)
         {
-            _shopOverlayLabel.Text = FormatSellBubble(_gameState.Inventory, _gameState.LocalScrip);
+            var inventory = _gameState.Inventory;
+            _shopHeaderLabel.Text = inventory.Count == 0
+                ? $"-- Nothing to sell --   Scrip: {_gameState.LocalScrip}"
+                : $"-- Sell ({inventory.Count})   Scrip: {_gameState.LocalScrip} --";
+            for (var i = 0; i < inventory.Count; i++)
+            {
+                var capturedIndex = i;
+                var item = inventory[i];
+                var button = new Button { Text = $"{item.Name}" };
+                button.Pressed += () => SellInventoryRow(capturedIndex);
+                _shopRowsContainer.AddChild(button);
+            }
         }
         else
         {
-            var offers = _lastSnapshot?.ShopOffers ?? System.Array.Empty<ShopOfferSnapshot>();
-            _shopOverlayLabel.Text = FormatShopBubble(offers, _shopVendorNpcId, _gameState.LocalScrip);
+            var allOffers = _lastSnapshot?.ShopOffers ?? System.Array.Empty<ShopOfferSnapshot>();
+            var vendorOffers = allOffers.Where(o => o.VendorNpcId == _shopVendorNpcId).ToList();
+            _shopHeaderLabel.Text = vendorOffers.Count == 0
+                ? $"-- No wares available --   Scrip: {_gameState.LocalScrip}"
+                : $"-- Wares ({vendorOffers.Count})   Scrip: {_gameState.LocalScrip} --";
+            foreach (var offer in vendorOffers)
+            {
+                var capturedOfferId = offer.OfferId;
+                var canAfford = _gameState.LocalScrip >= offer.Price;
+                var rep = offer.MinReputation > 0 ? $" [req {offer.MinReputation}]" : "";
+                var label = $"{offer.ItemName}  {offer.Price} {offer.Currency}{rep}";
+                if (!canAfford) label += " — insufficient";
+                var button = new Button { Text = label, Disabled = !canAfford };
+                button.Pressed += () => BuyShopOffer(capturedOfferId);
+                _shopRowsContainer.AddChild(button);
+            }
         }
+
+        var closeButton = new Button { Text = "Close" };
+        closeButton.Pressed += CloseShop;
+        _shopRowsContainer.AddChild(closeButton);
     }
+
+    public void BuyShopOffer(string offerId)
+    {
+        var serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
+        if (serverSession is null) return;
+        var result = serverSession.PurchaseOffer(offerId);
+        if (!result.WasAccepted)
+        {
+            ShowPrompt(result.RejectionReason);
+            return;
+        }
+        if (_shopPanel.Visible) RefreshShopOverlay();
+    }
+
+    public void SellInventoryRow(int index)
+    {
+        var serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
+        if (serverSession is null || _gameState is null) return;
+        var inventory = _gameState.Inventory;
+        if (index < 0 || index >= inventory.Count) return;
+        var itemId = inventory[index].Id;
+        var result = serverSession.SendLocal(IntentType.SellItem,
+            new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["itemId"] = itemId,
+                ["vendorNpcId"] = _shopVendorNpcId
+            });
+        if (!result.WasAccepted)
+        {
+            ShowPrompt(result.RejectionReason);
+            return;
+        }
+        if (_shopPanel.Visible) RefreshShopOverlay();
+    }
+
+    public int ShopRowCount => _shopRowsContainer.GetChildCount();
 
     public bool IsDialogueOpen => _dialoguePanel.Visible;
     public string DialogueNpcId => _dialogueNpcId;
@@ -848,12 +918,18 @@ public partial class HudController : CanvasLayer
         };
         root.AddChild(_shopPanel);
 
-        _shopOverlayLabel = new Label
+        _shopContainer = new VBoxContainer();
+        _shopPanel.AddChild(_shopContainer);
+
+        _shopHeaderLabel = new Label
         {
             AutowrapMode = TextServer.AutowrapMode.WordSmart,
             Text = "Shop"
         };
-        _shopPanel.AddChild(_shopOverlayLabel);
+        _shopContainer.AddChild(_shopHeaderLabel);
+
+        _shopRowsContainer = new VBoxContainer();
+        _shopContainer.AddChild(_shopRowsContainer);
 
         _dialoguePanel = new PanelContainer
         {

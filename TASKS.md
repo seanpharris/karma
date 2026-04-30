@@ -20,10 +20,13 @@ already designed.
   branch routing, and close. See [HudController.cs](scripts/UI/HudController.cs)
   `OpenDialogue` / `SelectDialogueChoice` / `CloseDialogue`, and
   [ServerNpcObject.cs](scripts/World/ServerNpcObject.cs) E-key handler.
-- [ ] **Shop bubble in-panel selection** — clicking an item row in the Browse
-  bubble should send `PurchaseItem`; clicking a row in the Sell bubble should
-  send `SellItem`. Today the panel only renders text; you still need keys/CLI
-  to actually transact.
+- [x] **Shop bubble in-panel selection** — *done 2026-04-29*. Shop overlay
+  panel now rebuilds rows as Buttons on each refresh: browse mode shows one
+  button per visible offer (disabled when player can't afford), sell mode
+  shows one per inventory item, plus a Close row. Click handlers call
+  `BuyShopOffer` / `SellInventoryRow` which dispatch `PurchaseItem` /
+  `SellItem` intents. See [HudController.cs](scripts/UI/HudController.cs)
+  `RefreshShopOverlay`.
 
 ---
 
