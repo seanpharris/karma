@@ -34,10 +34,10 @@ already designed.
 
 Things the test suite confirms but a player would notice.
 
-- [ ] **Hotbar UX** — number keys 1–9 equip the Nth inventory item, but there's
-  no visible hotbar strip on the HUD telling you which slot is which. Add a
-  fixed bottom-of-screen row showing items 1–9 with a highlight on the
-  currently-equipped slot. Art listed in `ART_NEEDED.md` ("Shop UX Upgrade").
+- [x] **Hotbar UX** — *done 2026-04-29*. `_hotbarPanel` renders below the
+  HUD with 9 slots; equipped MainHand item is marked with `*`. Refreshes
+  on `InventoryChanged`. See [HudController.cs](scripts/UI/HudController.cs)
+  `FormatHotbar` / `FindEquippedHotbarIndex` / `RefreshHotbar`.
 - [ ] **Attack target feedback** — LMB picks the nearest player in combat range
   and silently shoots. No on-screen indicator of *who* you're targeting before
   the click, no miss/hit feedback beyond the event log. Consider a reticule or

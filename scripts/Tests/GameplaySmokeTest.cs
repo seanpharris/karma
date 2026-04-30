@@ -4479,6 +4479,34 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(shSellBubble.Contains("Sell") || shSellBubble.Contains("Nothing"),
             "FormatSellBubble shows a sell or empty header");
 
+        // Hotbar formatter renders 9 slots; equipped slot is starred.
+        var hbEmpty = HudController.FormatHotbar(System.Array.Empty<GameItem>(), -1);
+        ExpectTrue(hbEmpty.Contains("[1") && hbEmpty.Contains("[9"),
+            "FormatHotbar shows all 9 slots when inventory is empty");
+        ExpectTrue(hbEmpty.Contains("—"),
+            "empty hotbar slots show a dash placeholder");
+
+        var hbInv = new List<GameItem>
+        {
+            StarterItems.PracticeStick,
+            StarterItems.RepairKit,
+            StarterItems.RationPack
+        };
+        var hbBar = HudController.FormatHotbar(hbInv, 1);
+        ExpectTrue(hbBar.Contains("[2*"),
+            "FormatHotbar marks the equipped slot with an asterisk");
+        ExpectTrue(hbBar.Contains("Repair") || hbBar.Contains("Practi") || hbBar.Contains("Ration"),
+            "hotbar shows item name fragments");
+
+        var hbEquip = new Dictionary<EquipmentSlot, GameItem>
+        {
+            [EquipmentSlot.MainHand] = StarterItems.RepairKit
+        };
+        ExpectEqual(1, HudController.FindEquippedHotbarIndex(hbInv, hbEquip),
+            "FindEquippedHotbarIndex locates the MainHand item by id");
+        ExpectEqual(-1, HudController.FindEquippedHotbarIndex(hbInv, new Dictionary<EquipmentSlot, GameItem>()),
+            "FindEquippedHotbarIndex returns -1 when nothing is equipped");
+
         // Shop bubble rebuilds button rows on refresh — one button per visible
         // offer (browse) or per inventory item (sell), plus a Close button.
         var shopUiHud = new HudController();

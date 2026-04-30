@@ -55,6 +55,8 @@ public partial class HudController : CanvasLayer
     private VBoxContainer _dialogueChoicesContainer = new();
     private string _dialogueNpcId = string.Empty;
     private NpcDialogueSnapshot _lastDialogueSnapshot;
+    private PanelContainer _hotbarPanel = new();
+    private Label _hotbarLabel = new();
     private PanelContainer _developerPanel = new();
     private Label _developerOverlayLabel = new();
     private int _developerPageIndex;
@@ -954,6 +956,21 @@ public partial class HudController : CanvasLayer
         _dialogueChoicesContainer = new VBoxContainer();
         _dialogueContainer.AddChild(_dialogueChoicesContainer);
 
+        _hotbarPanel = new PanelContainer
+        {
+            OffsetLeft = 16,
+            OffsetTop = 640,
+            OffsetRight = 760,
+            OffsetBottom = 680
+        };
+        root.AddChild(_hotbarPanel);
+
+        _hotbarLabel = new Label
+        {
+            Text = FormatHotbar(System.Array.Empty<GameItem>(), -1)
+        };
+        _hotbarPanel.AddChild(_hotbarLabel);
+
         BuildPossePanel(root);
         BuildDeveloperOverlay(root);
         BuildEscapeMenu(root);
@@ -1176,10 +1193,18 @@ public partial class HudController : CanvasLayer
     private void OnInventoryChanged(string inventoryText)
     {
         _inventoryLabel.Text = inventoryText;
+        RefreshHotbar();
         if (_inventoryPanel.Visible)
         {
             RefreshInventoryOverlay();
         }
+    }
+
+    private void RefreshHotbar()
+    {
+        if (_gameState is null || _hotbarLabel is null) return;
+        var equipped = FindEquippedHotbarIndex(_gameState.Inventory, _gameState.LocalPlayer?.Equipment);
+        _hotbarLabel.Text = FormatHotbar(_gameState.Inventory, equipped);
     }
 
     private void OnLeaderboardChanged(string leaderboardText)
@@ -1310,6 +1335,36 @@ public partial class HudController : CanvasLayer
     {
         var safeCombatText = string.IsNullOrWhiteSpace(combatText) ? "Combat: none" : combatText;
         return $"{safeCombatText} | You ATK:{attackPower} DEF:{defense} | {FormatStatusEffects(statusEffects)}";
+    }
+
+    public const int HotbarSlots = 9;
+
+    public static string FormatHotbar(IReadOnlyList<GameItem> inventory, int equippedIndex)
+    {
+        var sb = new System.Text.StringBuilder();
+        for (var i = 0; i < HotbarSlots; i++)
+        {
+            if (i > 0) sb.Append("  ");
+            var name = i < inventory.Count ? Trim(inventory[i].Name, 8) : "—";
+            var marker = i == equippedIndex ? "*" : " ";
+            sb.Append($"[{i + 1}{marker}{name}]");
+        }
+        return sb.ToString();
+    }
+
+    private static string Trim(string text, int max)
+    {
+        if (string.IsNullOrEmpty(text)) return "—";
+        return text.Length <= max ? text : text.Substring(0, max);
+    }
+
+    public static int FindEquippedHotbarIndex(IReadOnlyList<GameItem> inventory, IReadOnlyDictionary<EquipmentSlot, GameItem> equipment)
+    {
+        if (equipment is null) return -1;
+        if (!equipment.TryGetValue(EquipmentSlot.MainHand, out var equipped)) return -1;
+        for (var i = 0; i < inventory.Count; i++)
+            if (inventory[i].Id == equipped.Id) return i;
+        return -1;
     }
 
     public static string FormatShopBubble(IReadOnlyList<ShopOfferSnapshot> offers, string vendorNpcId, int playerScrip)
