@@ -348,6 +348,11 @@ Run from project root:
 | `karma_priority_clinic_rescue_revive_atlas.jpg` | `tools/slice_clinic_rescue_revive.gd` | `assets/art/generated/sliced/clinic_rescue_revive/` | 30 clinic/rescue props (clinic sign, terminals, bed, ambulance stretcher, medic bag, medicine cabinet, holo tripod, diagnostic kiosk, scrip tray, biohazard barricade, pillbox tray, oxygen tanks, surgical light, downed markers, shield buff, RESCUE banner, medical crate, medical terminals, refugee tent, ritual altar, bench) |
 | `karma_priority_supply_shop_loot_atlas.jpg` | `tools/slice_supply_shop_loot.gd` | `assets/art/generated/sliced/supply_shop_loot/` | 21 supply/shop props (supply drop parachute, barrel, bedroll, scales table, shop kiosk/shelves/tent, locked + open chests, ammo crate, medical crate, weapon case, tool box, backpack, parcel, money sack, scrap pile, cluttered loot, signpost, discount tag) |
 | `karma_priority_wanted_bounty_law_atlas.jpg` | `tools/slice_wanted_bounty_law.gd` | `assets/art/generated/sliced/wanted_bounty_law/` | 25 wanted/bounty props (bulletin board, scanner kiosk, ledger desk, guard booth, barricade gate, scanner archway, evidence bag/lockers/table, jail barred window, handcuffs, mail envelope, badges, mug shot frame, ballot box, paperwork stack, tripod camera, ATM kiosk) |
+| `karma_priority_structure_world_state_atlas.jpg` | `tools/slice_structure_world_state.gd` | `assets/art/generated/sliced/structure_world_state/` | 30 structure damage states (generator pristine→damaged→wrecked→sabotaged, greenhouse pristine + shattered, electrical box closed/sparking, fences, gates, manhole covers, water tanks, surveillance cameras, notice boards, lumber pile, fire pit) |
+| `karma_static_interior_furniture_atlas.jpg` | `tools/slice_interior_furniture.gd` | `assets/art/generated/sliced/interior_furniture/` | 28 interior props (beds, cot, computer desks, scribe desk, lockers, benches, sofas, chairs, stool, vending machine, corkboard, vending, register, stocked shelves, first aid kit) |
+| `karma_static_crafting_stations_atlas.jpg` | `tools/slice_crafting_stations.gd` | `assets/art/generated/sliced/crafting_stations/` | 12 workbench variants (mechanical, alchemy, weapons display, pressure vessel, water filtration, fuel pump, scribe desk, paper desk, recycling, electronics, hydroponics, computer) |
+| `karma_static_containers_loot_atlas.jpg` | `tools/slice_containers_loot.gd` | `assets/art/generated/sliced/containers_loot/` | 25 container variants (wood/scifi/ornate chests, dumpster, medkit box, gun case, tool box, lockbox, duffel/backpack, money sack, cash pile, bedroll, energy cells crate, military trunk, shipping container, fragile box, treasure chest, safe, scrap pile, barrel) |
+| `karma_static_modular_walls_doors_atlas.jpg` | `tools/slice_modular_walls_doors.gd` | `assets/art/generated/sliced/modular_walls_doors/` | 27 wall/door tiles (sci-fi/wood/scrap/stone walls, clinic/shop/jail/curtain doors, airlock open/closed, gates, windows, fence, railing, barricade, checkpoint, archway, sign hanger, awning, roof edge) |
 
 The first slice is **wired into the live HUD** —
 `HudController.ResolveEventIconName(eventId)` maps server-event ids to
@@ -356,34 +361,24 @@ label, and 9 smoke tests cover the resolver logic.
 
 ### Atlases NOT yet sliced (ranked by next priority)
 
-1. **`karma_priority_structure_world_state_atlas.jpg`** — generator and
-   greenhouse damage states; for Step 12 sabotage display.
-2. **`karma_static_modular_walls_doors_atlas.jpg`** — modular walls/doors
-   per theme; for Step 17–18 path generation and seamless interiors.
-3. **`karma_static_interior_furniture_atlas.jpg`** — beds, desks,
-   cabinets; for interior-rendering follow-ups.
-4. **`karma_static_crafting_stations_atlas.jpg`** — workbench variants;
-   for Step 36 crafting UI.
-5. **`karma_static_containers_loot_atlas.jpg`** — chests, lockers, sacks;
-   for general loot prop variety.
-6. **`karma_priority_player_interactions_atlas.jpg`** — duel signs, posse
+1. **`karma_priority_player_interactions_atlas.jpg`** — duel signs, posse
    banners, contracts, treasure chests; for player-interaction polish.
-7. **`karma_priority_location_exteriors_atlas.jpg`** — clinic/shop/jail
+2. **`karma_priority_location_exteriors_atlas.jpg`** — clinic/shop/jail
    building exteriors; for world-gen prop placement.
-8. **`karma_priority_theme_variant_matrix_atlas.jpg`** — theme alternates
+3. **`karma_priority_theme_variant_matrix_atlas.jpg`** — theme alternates
    for the same mechanical objects; for theme filtering.
-9. **`karma_static_hazards_disasters_atlas.jpg`** — fire/oil/electric/etc.
+4. **`karma_static_hazards_disasters_atlas.jpg`** — fire/oil/electric/etc.
    tile decals; for Step 12 heat-zone display.
-10. **`karma_static_evidence_clues_atlas.jpg`** — footprints, blood,
-    tire skids, sealed letters, IDs; for Step 4 rumor quest evidence.
-11. **`karma_static_player_interaction_props_atlas.jpg`** — barter
-    terminal, neon handshake, voting tablet, faction flag.
-12. **`karma_static_faction_reputation_symbols_atlas.jpg`** — 32
-    reputation badges; for Step 32 reputation HUD.
-13. **`karma_static_mission_boards_atlas.jpg`** — labeled mission board
-    variants (lost-and-found, rumor, posse recruitment, faction notice,
-    delivery, salvage claim, etc.). Note: labeled atlas — needs
-    per-row Y measurement like the UI icon atlases.
+5. **`karma_static_evidence_clues_atlas.jpg`** — footprints, blood,
+   tire skids, sealed letters, IDs; for Step 4 rumor quest evidence.
+6. **`karma_static_player_interaction_props_atlas.jpg`** — barter
+   terminal, neon handshake, voting tablet, faction flag.
+7. **`karma_static_faction_reputation_symbols_atlas.jpg`** — 32
+   reputation badges; for Step 32 reputation HUD.
+8. **`karma_static_mission_boards_atlas.jpg`** — labeled mission board
+   variants (lost-and-found, rumor, posse recruitment, faction notice,
+   delivery, salvage claim, etc.). Labeled atlas — needs per-row Y
+   measurement like the UI icon atlases.
 
 Each subsequent slicer should follow the same pattern: a `debug_*_strip.gd`
 that exports the leftmost column for visual measurement, then a

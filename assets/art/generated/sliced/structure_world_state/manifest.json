@@ -1,0 +1,332 @@
+[
+  {
+    "name": "generator_pristine",
+    "path": "res://assets/art/generated/sliced/structure_world_state/generator_pristine.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      7,
+      6,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "generator_damaged",
+    "path": "res://assets/art/generated/sliced/structure_world_state/generator_damaged.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      211,
+      6,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "generator_wrecked",
+    "path": "res://assets/art/generated/sliced/structure_world_state/generator_wrecked.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      415,
+      6,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "generator_sabotaged_wires",
+    "path": "res://assets/art/generated/sliced/structure_world_state/generator_sabotaged_wires.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      619,
+      6,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "greenhouse_pristine",
+    "path": "res://assets/art/generated/sliced/structure_world_state/greenhouse_pristine.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      823,
+      6,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "greenhouse_shattered",
+    "path": "res://assets/art/generated/sliced/structure_world_state/greenhouse_shattered.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      7,
+      176,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "work_table_tools",
+    "path": "res://assets/art/generated/sliced/structure_world_state/work_table_tools.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      211,
+      176,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "sabotaged_tool_pile",
+    "path": "res://assets/art/generated/sliced/structure_world_state/sabotaged_tool_pile.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      415,
+      176,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "electrical_box_closed",
+    "path": "res://assets/art/generated/sliced/structure_world_state/electrical_box_closed.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      619,
+      176,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "electrical_box_sparking",
+    "path": "res://assets/art/generated/sliced/structure_world_state/electrical_box_sparking.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      823,
+      176,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "chain_fence",
+    "path": "res://assets/art/generated/sliced/structure_world_state/chain_fence.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      7,
+      346,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "chain_fence_alt",
+    "path": "res://assets/art/generated/sliced/structure_world_state/chain_fence_alt.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      211,
+      346,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "chain_fence_door_open",
+    "path": "res://assets/art/generated/sliced/structure_world_state/chain_fence_door_open.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      415,
+      346,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "stone_gate",
+    "path": "res://assets/art/generated/sliced/structure_world_state/stone_gate.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      619,
+      346,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "manhole_cover_a",
+    "path": "res://assets/art/generated/sliced/structure_world_state/manhole_cover_a.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      823,
+      346,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "concrete_slab",
+    "path": "res://assets/art/generated/sliced/structure_world_state/concrete_slab.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      7,
+      516,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "concrete_slab_sabotaged",
+    "path": "res://assets/art/generated/sliced/structure_world_state/concrete_slab_sabotaged.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      211,
+      516,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "manhole_cover_b",
+    "path": "res://assets/art/generated/sliced/structure_world_state/manhole_cover_b.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      415,
+      516,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "manhole_uncovered_pit",
+    "path": "res://assets/art/generated/sliced/structure_world_state/manhole_uncovered_pit.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      619,
+      516,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "water_tank_blue",
+    "path": "res://assets/art/generated/sliced/structure_world_state/water_tank_blue.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      823,
+      516,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "water_tank_white",
+    "path": "res://assets/art/generated/sliced/structure_world_state/water_tank_white.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      7,
+      686,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "water_tank_damaged",
+    "path": "res://assets/art/generated/sliced/structure_world_state/water_tank_damaged.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      211,
+      686,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "surveillance_camera",
+    "path": "res://assets/art/generated/sliced/structure_world_state/surveillance_camera.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      415,
+      686,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "security_camera",
+    "path": "res://assets/art/generated/sliced/structure_world_state/security_camera.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      619,
+      686,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "broken_camera",
+    "path": "res://assets/art/generated/sliced/structure_world_state/broken_camera.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      823,
+      686,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "notice_board_cluttered",
+    "path": "res://assets/art/generated/sliced/structure_world_state/notice_board_cluttered.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      7,
+      856,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "notice_board_blank",
+    "path": "res://assets/art/generated/sliced/structure_world_state/notice_board_blank.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      211,
+      856,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "notice_board_busy",
+    "path": "res://assets/art/generated/sliced/structure_world_state/notice_board_busy.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      415,
+      856,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "lumber_pile",
+    "path": "res://assets/art/generated/sliced/structure_world_state/lumber_pile.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      619,
+      856,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "fire_pit",
+    "path": "res://assets/art/generated/sliced/structure_world_state/fire_pit.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_structure_world_state_atlas.jpg",
+    "source_region": [
+      823,
+      856,
+      189,
+      158
+    ]
+  }
+]

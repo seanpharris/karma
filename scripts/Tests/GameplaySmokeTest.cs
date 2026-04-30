@@ -4875,7 +4875,27 @@ public partial class GameplaySmokeTest : Node
             StructureSpriteKind.AmmoCrateMetal,
             StructureSpriteKind.WantedMugShotFrame,
             StructureSpriteKind.JailBarredWindow,
-            StructureSpriteKind.HandcuffsSilver
+            StructureSpriteKind.HandcuffsSilver,
+            // Round 2 (this commit):
+            StructureSpriteKind.GeneratorPristine,
+            StructureSpriteKind.GeneratorWrecked,
+            StructureSpriteKind.GreenhouseShattered,
+            StructureSpriteKind.ElectricalBoxSparking,
+            StructureSpriteKind.NoticeBoardCluttered,
+            StructureSpriteKind.BedClean,
+            StructureSpriteKind.SofaGrey,
+            StructureSpriteKind.VendingMachine,
+            StructureSpriteKind.MechanicalWorkbench,
+            StructureSpriteKind.ElectronicsWorkshop,
+            StructureSpriteKind.HydroponicsPlanterGrown,
+            StructureSpriteKind.WoodChestClosed,
+            StructureSpriteKind.OrnateChest,
+            StructureSpriteKind.SafePadlock,
+            StructureSpriteKind.ClinicDoor,
+            StructureSpriteKind.AirlockDoorOpen,
+            StructureSpriteKind.GateClosed,
+            StructureSpriteKind.WindowBroken,
+            StructureSpriteKind.Archway
         };
         foreach (var kind in slicedKinds)
         {

@@ -1,0 +1,310 @@
+[
+  {
+    "name": "bed_clean",
+    "path": "res://assets/art/generated/sliced/interior_furniture/bed_clean.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      7,
+      6,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "bed_medical",
+    "path": "res://assets/art/generated/sliced/interior_furniture/bed_medical.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      211,
+      6,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "vendor_freezer",
+    "path": "res://assets/art/generated/sliced/interior_furniture/vendor_freezer.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      415,
+      6,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "register_counter",
+    "path": "res://assets/art/generated/sliced/interior_furniture/register_counter.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      619,
+      6,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "stocked_shelves",
+    "path": "res://assets/art/generated/sliced/interior_furniture/stocked_shelves.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      823,
+      6,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "cot_bed",
+    "path": "res://assets/art/generated/sliced/interior_furniture/cot_bed.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      7,
+      176,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "computer_desk",
+    "path": "res://assets/art/generated/sliced/interior_furniture/computer_desk.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      211,
+      176,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "computer_station",
+    "path": "res://assets/art/generated/sliced/interior_furniture/computer_station.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      415,
+      176,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "scribe_desk",
+    "path": "res://assets/art/generated/sliced/interior_furniture/scribe_desk.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      619,
+      176,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "locker_tall_locked",
+    "path": "res://assets/art/generated/sliced/interior_furniture/locker_tall_locked.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      823,
+      176,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "bench_white_metal",
+    "path": "res://assets/art/generated/sliced/interior_furniture/bench_white_metal.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      7,
+      346,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "bench_tan_padded",
+    "path": "res://assets/art/generated/sliced/interior_furniture/bench_tan_padded.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      211,
+      346,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "workbench_tools",
+    "path": "res://assets/art/generated/sliced/interior_furniture/workbench_tools.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      415,
+      346,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "tool_wall_pegboard",
+    "path": "res://assets/art/generated/sliced/interior_furniture/tool_wall_pegboard.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      619,
+      346,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "sofa_grey",
+    "path": "res://assets/art/generated/sliced/interior_furniture/sofa_grey.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      823,
+      346,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "sofa_tan",
+    "path": "res://assets/art/generated/sliced/interior_furniture/sofa_tan.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      7,
+      516,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "bench_wood",
+    "path": "res://assets/art/generated/sliced/interior_furniture/bench_wood.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      211,
+      516,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "bench_grey_long",
+    "path": "res://assets/art/generated/sliced/interior_furniture/bench_grey_long.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      415,
+      516,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "bench_grey_short",
+    "path": "res://assets/art/generated/sliced/interior_furniture/bench_grey_short.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      619,
+      516,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "chair_wood",
+    "path": "res://assets/art/generated/sliced/interior_furniture/chair_wood.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      7,
+      686,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "stool_round",
+    "path": "res://assets/art/generated/sliced/interior_furniture/stool_round.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      211,
+      686,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "corkboard_notes",
+    "path": "res://assets/art/generated/sliced/interior_furniture/corkboard_notes.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      619,
+      686,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "locker_tall_grey",
+    "path": "res://assets/art/generated/sliced/interior_furniture/locker_tall_grey.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      823,
+      686,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "cardboard_box_stack",
+    "path": "res://assets/art/generated/sliced/interior_furniture/cardboard_box_stack.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      7,
+      856,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "trash_can_metal",
+    "path": "res://assets/art/generated/sliced/interior_furniture/trash_can_metal.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      211,
+      856,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "vending_machine",
+    "path": "res://assets/art/generated/sliced/interior_furniture/vending_machine.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      415,
+      856,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "computer_terminal",
+    "path": "res://assets/art/generated/sliced/interior_furniture/computer_terminal.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      619,
+      856,
+      189,
+      158
+    ]
+  },
+  {
+    "name": "first_aid_kit_box",
+    "path": "res://assets/art/generated/sliced/interior_furniture/first_aid_kit_box.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_interior_furniture_atlas.jpg",
+    "source_region": [
+      823,
+      856,
+      189,
+      158
+    ]
+  }
+]

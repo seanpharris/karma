@@ -93,7 +93,61 @@ public enum StructureSpriteKind
     EvidenceLockers,
     GuardBoothKiosk,
     SirenBeaconBlue,
-    HandcuffsSilver
+    HandcuffsSilver,
+    // Structure damage states (Step 12 sabotage display):
+    GeneratorPristine,
+    GeneratorDamaged,
+    GeneratorWrecked,
+    GeneratorSabotaged,
+    GreenhousePristineAlt,
+    GreenhouseShattered,
+    ElectricalBoxClosed,
+    ElectricalBoxSparking,
+    NoticeBoardCluttered,
+    NoticeBoardBlank,
+    FirePit,
+    // Interior furniture:
+    BedClean,
+    CotBed,
+    ScribeDeskInterior,
+    SofaGrey,
+    SofaTan,
+    BenchWood,
+    ChairWood,
+    StoolRound,
+    VendingMachine,
+    CorkboardNotes,
+    StockedShelves,
+    RegisterCounter,
+    // Crafting stations (Step 36):
+    MechanicalWorkbench,
+    AlchemyWorkbench,
+    WeaponsDisplayPegboard,
+    ElectronicsWorkshop,
+    ComputerWorkbench,
+    HydroponicsPlanterGrown,
+    // Containers / loot variety:
+    WoodChestClosed,
+    SciFiChest,
+    OrnateChest,
+    MedkitWhiteBox,
+    DuffelBag,
+    MilitaryTrunk,
+    ShippingContainer,
+    BarrelWood,
+    SafePadlock,
+    // Modular walls / doors (Step 17-18):
+    ClinicDoor,
+    ShopDoor,
+    JailDoor,
+    AirlockDoorOpen,
+    AirlockDoorClosed,
+    GateClosed,
+    GateOpen,
+    WindowLit,
+    WindowBroken,
+    FenceStraight,
+    Archway
 }
 
 public sealed record StructureSpriteDefinition(
@@ -118,6 +172,11 @@ public static class StructureArtCatalog
     public const string SlicedClinicRoot = "res://assets/art/generated/sliced/clinic_rescue_revive/";
     public const string SlicedSupplyShopRoot = "res://assets/art/generated/sliced/supply_shop_loot/";
     public const string SlicedWantedBountyRoot = "res://assets/art/generated/sliced/wanted_bounty_law/";
+    public const string SlicedStructureStateRoot = "res://assets/art/generated/sliced/structure_world_state/";
+    public const string SlicedInteriorFurnitureRoot = "res://assets/art/generated/sliced/interior_furniture/";
+    public const string SlicedCraftingStationsRoot = "res://assets/art/generated/sliced/crafting_stations/";
+    public const string SlicedContainersLootRoot = "res://assets/art/generated/sliced/containers_loot/";
+    public const string SlicedWallsDoorsRoot = "res://assets/art/generated/sliced/modular_walls_doors/";
 
     private static readonly IReadOnlyDictionary<StructureSpriteKind, StructureSpriteDefinition> Definitions =
         new Dictionary<StructureSpriteKind, StructureSpriteDefinition>
@@ -448,7 +507,164 @@ public static class StructureArtCatalog
                 new Vector2(20f, 40f), SlicedWantedBountyRoot, "siren_beacon_blue.png"),
             [StructureSpriteKind.HandcuffsSilver] = SlicedProp(
                 StructureSpriteKind.HandcuffsSilver, "handcuffs_silver", "Handcuffs", "law_prop",
-                new Vector2(28f, 24f), SlicedWantedBountyRoot, "handcuffs_silver.png")
+                new Vector2(28f, 24f), SlicedWantedBountyRoot, "handcuffs_silver.png"),
+
+            // Structure damage states (Step 12)
+            [StructureSpriteKind.GeneratorPristine] = SlicedProp(
+                StructureSpriteKind.GeneratorPristine, "generator_pristine", "Generator (Pristine)", "structure_state",
+                new Vector2(48f, 36f), SlicedStructureStateRoot, "generator_pristine.png"),
+            [StructureSpriteKind.GeneratorDamaged] = SlicedProp(
+                StructureSpriteKind.GeneratorDamaged, "generator_damaged", "Generator (Damaged)", "structure_state",
+                new Vector2(48f, 36f), SlicedStructureStateRoot, "generator_damaged.png"),
+            [StructureSpriteKind.GeneratorWrecked] = SlicedProp(
+                StructureSpriteKind.GeneratorWrecked, "generator_wrecked", "Generator (Wrecked)", "structure_state",
+                new Vector2(48f, 36f), SlicedStructureStateRoot, "generator_wrecked.png"),
+            [StructureSpriteKind.GeneratorSabotaged] = SlicedProp(
+                StructureSpriteKind.GeneratorSabotaged, "generator_sabotaged", "Generator (Sabotaged)", "structure_state",
+                new Vector2(48f, 36f), SlicedStructureStateRoot, "generator_sabotaged_wires.png"),
+            [StructureSpriteKind.GreenhousePristineAlt] = SlicedProp(
+                StructureSpriteKind.GreenhousePristineAlt, "greenhouse_pristine_alt", "Greenhouse (Alt)", "structure_state",
+                new Vector2(64f, 48f), SlicedStructureStateRoot, "greenhouse_pristine.png"),
+            [StructureSpriteKind.GreenhouseShattered] = SlicedProp(
+                StructureSpriteKind.GreenhouseShattered, "greenhouse_shattered", "Greenhouse (Shattered)", "structure_state",
+                new Vector2(64f, 48f), SlicedStructureStateRoot, "greenhouse_shattered.png"),
+            [StructureSpriteKind.ElectricalBoxClosed] = SlicedProp(
+                StructureSpriteKind.ElectricalBoxClosed, "electrical_box_closed", "Electrical Box", "structure_state",
+                new Vector2(24f, 36f), SlicedStructureStateRoot, "electrical_box_closed.png"),
+            [StructureSpriteKind.ElectricalBoxSparking] = SlicedProp(
+                StructureSpriteKind.ElectricalBoxSparking, "electrical_box_sparking", "Electrical Box (Sparking)", "structure_state",
+                new Vector2(24f, 36f), SlicedStructureStateRoot, "electrical_box_sparking.png"),
+            [StructureSpriteKind.NoticeBoardCluttered] = SlicedProp(
+                StructureSpriteKind.NoticeBoardCluttered, "notice_board_cluttered", "Notice Board (Cluttered)", "structure_state",
+                new Vector2(36f, 32f), SlicedStructureStateRoot, "notice_board_cluttered.png"),
+            [StructureSpriteKind.NoticeBoardBlank] = SlicedProp(
+                StructureSpriteKind.NoticeBoardBlank, "notice_board_blank", "Notice Board (Blank)", "structure_state",
+                new Vector2(36f, 32f), SlicedStructureStateRoot, "notice_board_blank.png"),
+            [StructureSpriteKind.FirePit] = SlicedProp(
+                StructureSpriteKind.FirePit, "fire_pit", "Fire Pit", "structure_state",
+                new Vector2(28f, 24f), SlicedStructureStateRoot, "fire_pit.png"),
+
+            // Interior furniture
+            [StructureSpriteKind.BedClean] = SlicedProp(
+                StructureSpriteKind.BedClean, "bed_clean", "Bed", "interior_prop",
+                new Vector2(40f, 28f), SlicedInteriorFurnitureRoot, "bed_clean.png"),
+            [StructureSpriteKind.CotBed] = SlicedProp(
+                StructureSpriteKind.CotBed, "cot_bed", "Cot Bed", "interior_prop",
+                new Vector2(40f, 24f), SlicedInteriorFurnitureRoot, "cot_bed.png"),
+            [StructureSpriteKind.ScribeDeskInterior] = SlicedProp(
+                StructureSpriteKind.ScribeDeskInterior, "scribe_desk_interior", "Scribe Desk", "interior_prop",
+                new Vector2(40f, 32f), SlicedInteriorFurnitureRoot, "scribe_desk.png"),
+            [StructureSpriteKind.SofaGrey] = SlicedProp(
+                StructureSpriteKind.SofaGrey, "sofa_grey", "Sofa (Grey)", "interior_prop",
+                new Vector2(40f, 24f), SlicedInteriorFurnitureRoot, "sofa_grey.png"),
+            [StructureSpriteKind.SofaTan] = SlicedProp(
+                StructureSpriteKind.SofaTan, "sofa_tan", "Sofa (Tan)", "interior_prop",
+                new Vector2(40f, 24f), SlicedInteriorFurnitureRoot, "sofa_tan.png"),
+            [StructureSpriteKind.BenchWood] = SlicedProp(
+                StructureSpriteKind.BenchWood, "bench_wood", "Bench (Wood)", "interior_prop",
+                new Vector2(36f, 20f), SlicedInteriorFurnitureRoot, "bench_wood.png"),
+            [StructureSpriteKind.ChairWood] = SlicedProp(
+                StructureSpriteKind.ChairWood, "chair_wood", "Chair (Wood)", "interior_prop",
+                new Vector2(20f, 28f), SlicedInteriorFurnitureRoot, "chair_wood.png"),
+            [StructureSpriteKind.StoolRound] = SlicedProp(
+                StructureSpriteKind.StoolRound, "stool_round", "Stool", "interior_prop",
+                new Vector2(20f, 24f), SlicedInteriorFurnitureRoot, "stool_round.png"),
+            [StructureSpriteKind.VendingMachine] = SlicedProp(
+                StructureSpriteKind.VendingMachine, "vending_machine", "Vending Machine", "interior_prop",
+                new Vector2(28f, 40f), SlicedInteriorFurnitureRoot, "vending_machine.png"),
+            [StructureSpriteKind.CorkboardNotes] = SlicedProp(
+                StructureSpriteKind.CorkboardNotes, "corkboard_notes", "Corkboard", "interior_prop",
+                new Vector2(40f, 28f), SlicedInteriorFurnitureRoot, "corkboard_notes.png"),
+            [StructureSpriteKind.StockedShelves] = SlicedProp(
+                StructureSpriteKind.StockedShelves, "stocked_shelves", "Stocked Shelves", "interior_prop",
+                new Vector2(40f, 44f), SlicedInteriorFurnitureRoot, "stocked_shelves.png"),
+            [StructureSpriteKind.RegisterCounter] = SlicedProp(
+                StructureSpriteKind.RegisterCounter, "register_counter", "Register Counter", "interior_prop",
+                new Vector2(40f, 28f), SlicedInteriorFurnitureRoot, "register_counter.png"),
+
+            // Crafting stations (Step 36)
+            [StructureSpriteKind.MechanicalWorkbench] = SlicedProp(
+                StructureSpriteKind.MechanicalWorkbench, "mechanical_workbench", "Mechanical Workbench", "workshop",
+                new Vector2(48f, 36f), SlicedCraftingStationsRoot, "mechanical_workbench.png"),
+            [StructureSpriteKind.AlchemyWorkbench] = SlicedProp(
+                StructureSpriteKind.AlchemyWorkbench, "alchemy_workbench", "Alchemy Workbench", "workshop",
+                new Vector2(48f, 36f), SlicedCraftingStationsRoot, "alchemy_workbench.png"),
+            [StructureSpriteKind.WeaponsDisplayPegboard] = SlicedProp(
+                StructureSpriteKind.WeaponsDisplayPegboard, "weapons_display_pegboard", "Weapons Display", "workshop",
+                new Vector2(48f, 36f), SlicedCraftingStationsRoot, "weapons_display_pegboard.png"),
+            [StructureSpriteKind.ElectronicsWorkshop] = SlicedProp(
+                StructureSpriteKind.ElectronicsWorkshop, "electronics_workshop", "Electronics Workshop", "workshop",
+                new Vector2(48f, 36f), SlicedCraftingStationsRoot, "electronics_workshop.png"),
+            [StructureSpriteKind.ComputerWorkbench] = SlicedProp(
+                StructureSpriteKind.ComputerWorkbench, "computer_workbench", "Computer Workbench", "workshop",
+                new Vector2(48f, 36f), SlicedCraftingStationsRoot, "computer_workbench.png"),
+            [StructureSpriteKind.HydroponicsPlanterGrown] = SlicedProp(
+                StructureSpriteKind.HydroponicsPlanterGrown, "hydroponics_planter_grown", "Hydroponics Planter", "workshop",
+                new Vector2(48f, 36f), SlicedCraftingStationsRoot, "hydroponics_planter_grown.png"),
+
+            // Containers / loot variety
+            [StructureSpriteKind.WoodChestClosed] = SlicedProp(
+                StructureSpriteKind.WoodChestClosed, "wood_chest_closed", "Wood Chest (Closed)", "loot_prop",
+                new Vector2(28f, 24f), SlicedContainersLootRoot, "wood_chest.png"),
+            [StructureSpriteKind.SciFiChest] = SlicedProp(
+                StructureSpriteKind.SciFiChest, "scifi_chest", "Sci-Fi Chest", "loot_prop",
+                new Vector2(28f, 24f), SlicedContainersLootRoot, "scifi_chest.png"),
+            [StructureSpriteKind.OrnateChest] = SlicedProp(
+                StructureSpriteKind.OrnateChest, "ornate_chest", "Ornate Chest", "loot_prop",
+                new Vector2(28f, 28f), SlicedContainersLootRoot, "ornate_chest_jeweled.png"),
+            [StructureSpriteKind.MedkitWhiteBox] = SlicedProp(
+                StructureSpriteKind.MedkitWhiteBox, "medkit_white_box", "Medkit Box", "loot_prop",
+                new Vector2(24f, 24f), SlicedContainersLootRoot, "medkit_white_box.png"),
+            [StructureSpriteKind.DuffelBag] = SlicedProp(
+                StructureSpriteKind.DuffelBag, "duffel_bag", "Duffel Bag", "loot_prop",
+                new Vector2(36f, 24f), SlicedContainersLootRoot, "duffel_bag_olive.png"),
+            [StructureSpriteKind.MilitaryTrunk] = SlicedProp(
+                StructureSpriteKind.MilitaryTrunk, "military_trunk", "Military Trunk", "loot_prop",
+                new Vector2(32f, 24f), SlicedContainersLootRoot, "military_trunk_locked.png"),
+            [StructureSpriteKind.ShippingContainer] = SlicedProp(
+                StructureSpriteKind.ShippingContainer, "shipping_container", "Shipping Container", "loot_prop",
+                new Vector2(48f, 32f), SlicedContainersLootRoot, "shipping_container_blue.png"),
+            [StructureSpriteKind.BarrelWood] = SlicedProp(
+                StructureSpriteKind.BarrelWood, "barrel_wood", "Wood Barrel", "loot_prop",
+                new Vector2(20f, 28f), SlicedContainersLootRoot, "barrel_wood.png"),
+            [StructureSpriteKind.SafePadlock] = SlicedProp(
+                StructureSpriteKind.SafePadlock, "safe_padlock", "Safe (Padlock)", "loot_prop",
+                new Vector2(28f, 28f), SlicedContainersLootRoot, "safe_padlock.png"),
+
+            // Modular walls / doors (Step 17-18)
+            [StructureSpriteKind.ClinicDoor] = SlicedProp(
+                StructureSpriteKind.ClinicDoor, "clinic_door", "Clinic Door", "door",
+                new Vector2(24f, 36f), SlicedWallsDoorsRoot, "clinic_door.png"),
+            [StructureSpriteKind.ShopDoor] = SlicedProp(
+                StructureSpriteKind.ShopDoor, "shop_door", "Shop Door", "door",
+                new Vector2(24f, 36f), SlicedWallsDoorsRoot, "shop_door.png"),
+            [StructureSpriteKind.JailDoor] = SlicedProp(
+                StructureSpriteKind.JailDoor, "jail_door", "Jail Door", "door",
+                new Vector2(24f, 36f), SlicedWallsDoorsRoot, "jail_door.png"),
+            [StructureSpriteKind.AirlockDoorOpen] = SlicedProp(
+                StructureSpriteKind.AirlockDoorOpen, "airlock_door_open", "Airlock Door (Open)", "door",
+                new Vector2(28f, 36f), SlicedWallsDoorsRoot, "airlock_door_open.png"),
+            [StructureSpriteKind.AirlockDoorClosed] = SlicedProp(
+                StructureSpriteKind.AirlockDoorClosed, "airlock_door_closed", "Airlock Door (Closed)", "door",
+                new Vector2(28f, 36f), SlicedWallsDoorsRoot, "airlock_door_closed.png"),
+            [StructureSpriteKind.GateClosed] = SlicedProp(
+                StructureSpriteKind.GateClosed, "gate_closed", "Gate (Closed)", "door",
+                new Vector2(36f, 36f), SlicedWallsDoorsRoot, "gate_closed.png"),
+            [StructureSpriteKind.GateOpen] = SlicedProp(
+                StructureSpriteKind.GateOpen, "gate_open", "Gate (Open)", "door",
+                new Vector2(36f, 36f), SlicedWallsDoorsRoot, "gate_open.png"),
+            [StructureSpriteKind.WindowLit] = SlicedProp(
+                StructureSpriteKind.WindowLit, "window_lit", "Window (Lit)", "wall_prop",
+                new Vector2(24f, 32f), SlicedWallsDoorsRoot, "window_lit.png"),
+            [StructureSpriteKind.WindowBroken] = SlicedProp(
+                StructureSpriteKind.WindowBroken, "window_broken", "Window (Broken)", "wall_prop",
+                new Vector2(24f, 32f), SlicedWallsDoorsRoot, "window_broken.png"),
+            [StructureSpriteKind.FenceStraight] = SlicedProp(
+                StructureSpriteKind.FenceStraight, "fence_straight", "Fence", "wall_prop",
+                new Vector2(36f, 24f), SlicedWallsDoorsRoot, "fence_straight.png"),
+            [StructureSpriteKind.Archway] = SlicedProp(
+                StructureSpriteKind.Archway, "archway", "Archway", "wall_prop",
+                new Vector2(40f, 40f), SlicedWallsDoorsRoot, "archway.png")
         };
 
     public static IReadOnlyDictionary<StructureSpriteKind, StructureSpriteDefinition> All => Definitions;
