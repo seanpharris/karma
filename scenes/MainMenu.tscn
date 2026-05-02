@@ -214,6 +214,21 @@ value = 80.0
 layout_mode = 2
 text = "80%"
 
+[node name="AmbientVolumeLabel" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid"]
+layout_mode = 2
+text = "Ambient"
+
+[node name="AmbientVolumeSlider" type="HSlider" parent="Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid"]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+max_value = 100.0
+step = 1.0
+value = 60.0
+
+[node name="AmbientVolumeValue" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid"]
+layout_mode = 2
+text = "60%"
+
 [node name="ControlsTitle" type="Label" parent="Root/OptionsPanel/PanelMargin/OptionsContent"]
 layout_mode = 2
 text = "Controls / Accessibility"

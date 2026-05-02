@@ -2,6 +2,8 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using Karma.Art;
 using Karma.Data;
 
 namespace Karma.Core;
@@ -9,6 +11,8 @@ namespace Karma.Core;
 public partial class GameState : Node
 {
     public const string LocalPlayerId = "local_player";
+    public const string DefaultSavePath = "user://prototype_save.json";
+    public const string DefaultCarryStatePath = "user://carry_state.json";
 
     public PlayerKarma LocalKarma => LocalPlayer.Karma;
     public IReadOnlyList<GameItem> Inventory => LocalPlayer.Inventory;
@@ -25,6 +29,20 @@ public partial class GameState : Node
 
     private readonly Dictionary<string, PlayerState> _players = new();
     private bool _prototypeInventorySeeded;
+    private bool _localPlayerLoaded;
+    public bool CarryStateIntoNextRound { get; private set; }
+
+    private sealed record LocalPlayerSaveData(
+        int KarmaScore,
+        int Scrip,
+        int TileX,
+        int TileY,
+        IReadOnlyList<string> InventoryItemIds,
+        IReadOnlyDictionary<string, string> EquipmentItemIds,
+        PlayerAppearanceSelection Appearance);
+
+    private sealed record CarryStateSettings(
+        bool CarryKarmaRelationshipsFactionRep);
 
     [Signal]
     public delegate void KarmaChangedEventHandler(int score, string tierName, string path);
@@ -64,6 +82,11 @@ public partial class GameState : Node
 
     public override void _Ready()
     {
+        // Auto-load is intentionally off: every game-launch and every
+        // round restart should start from a clean prototype state.
+        // SaveLocalPlayer / LoadLocalPlayer remain as explicit APIs
+        // that future Save / Continue menu actions can invoke.
+        LoadCarryStatePreference();
         EnsurePrototypePlayers();
         GD.Print($"Karma started. Current tier: {LocalKarma.TierName}");
         EmitKarmaChanged();
@@ -79,16 +102,129 @@ public partial class GameState : Node
         EmitWorldEventsChanged();
     }
 
+    public bool SaveLocalPlayer(string path = DefaultSavePath)
+    {
+        EnsurePrototypePlayers();
+        var player = LocalPlayer;
+        var data = new LocalPlayerSaveData(
+            player.Karma.Score,
+            player.Scrip,
+            player.Position.X,
+            player.Position.Y,
+            player.Inventory.Select(item => item.Id).ToArray(),
+            player.Equipment.ToDictionary(pair => pair.Key.ToString(), pair => pair.Value.Id),
+            player.Appearance);
+
+        var file = FileAccess.Open(path, FileAccess.ModeFlags.Write);
+        if (file is null)
+            return false;
+
+        file.StoreString(JsonSerializer.Serialize(data));
+        file.Close();
+        return true;
+    }
+
+    public bool LoadLocalPlayer(string path = DefaultSavePath)
+    {
+        if (!FileAccess.FileExists(path))
+            return false;
+
+        var json = FileAccess.GetFileAsString(path);
+        if (string.IsNullOrWhiteSpace(json))
+            return false;
+
+        LocalPlayerSaveData data;
+        try
+        {
+            data = JsonSerializer.Deserialize<LocalPlayerSaveData>(json);
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+
+        if (data is null)
+            return false;
+
+        var player = RegisterPlayer(LocalPlayerId, "You");
+        player.ApplyKarma(data.KarmaScore);
+        player.AddScrip(data.Scrip);
+        player.SetPosition(new TilePosition(data.TileX, data.TileY));
+        player.SetAppearance(data.Appearance);
+
+        foreach (var itemId in data.InventoryItemIds ?? Array.Empty<string>())
+        {
+            if (StarterItems.TryGetById(itemId, out var item))
+                player.AddItem(item);
+        }
+
+        foreach (var itemId in (data.EquipmentItemIds ?? new Dictionary<string, string>()).Values)
+        {
+            if (StarterItems.TryGetById(itemId, out var item))
+                player.Equip(item);
+        }
+
+        _localPlayerLoaded = true;
+        return true;
+    }
+
+    public bool SaveCarryStatePreference(string path = DefaultCarryStatePath)
+    {
+        var file = FileAccess.Open(path, FileAccess.ModeFlags.Write);
+        if (file is null) return false;
+        file.StoreString(JsonSerializer.Serialize(new CarryStateSettings(CarryStateIntoNextRound)));
+        return true;
+    }
+
+    public bool LoadCarryStatePreference(string path = DefaultCarryStatePath)
+    {
+        if (!FileAccess.FileExists(path))
+        {
+            CarryStateIntoNextRound = false;
+            return false;
+        }
+
+        var json = FileAccess.GetFileAsString(path);
+        try
+        {
+            var settings = JsonSerializer.Deserialize<CarryStateSettings>(json);
+            CarryStateIntoNextRound = settings?.CarryKarmaRelationshipsFactionRep ?? false;
+            return true;
+        }
+        catch (JsonException)
+        {
+            CarryStateIntoNextRound = false;
+            return false;
+        }
+    }
+
+    public void SetCarryStateIntoNextRound(bool enabled, string path = DefaultCarryStatePath)
+    {
+        CarryStateIntoNextRound = enabled;
+        SaveCarryStatePreference(path);
+    }
+
     public KarmaShift ApplyLocalShift(KarmaAction action)
     {
         return ApplyShift(LocalPlayerId, action);
     }
 
-    public KarmaShift ApplyShift(string playerId, KarmaAction action)
+    public KarmaShift ApplyShift(string playerId, KarmaAction action, int? overrideAmount = null)
     {
         EnsurePrototypePlayers();
         var player = _players[playerId];
-        var shift = KarmaRules.CalculateShift(action);
+        var calculated = KarmaRules.CalculateShift(action);
+        var amount = overrideAmount ?? calculated.Amount;
+        var shift = calculated with
+        {
+            Amount = amount,
+            Direction = amount switch
+            {
+                > 0 => KarmaDirection.Ascend,
+                < 0 => KarmaDirection.Descend,
+                _ => KarmaDirection.Neutral
+            }
+        };
         player.ApplyKarma(shift.Amount);
         ApplyRelationshipDelta(playerId, action);
         ApplyFactionDelta(playerId, action);
@@ -134,6 +270,7 @@ public partial class GameState : Node
         }
 
         var player = new PlayerState(playerId, displayName);
+        player.SetLpcBundleId(LpcPlayerAppearanceRegistry.PickBundleId("prototype", playerId));
         _players.Add(playerId, player);
         return player;
     }
@@ -221,6 +358,18 @@ public partial class GameState : Node
         {
             EmitInventoryChanged();
         }
+    }
+
+    public bool TryAddItem(string playerId, GameItem item)
+    {
+        EnsurePrototypePlayers();
+        if (!_players[playerId].TryAddItem(item)) return false;
+        EmitSignal(SignalName.KarmaEvent, $"{_players[playerId].DisplayName} picked up: {item.Name}");
+        if (playerId == LocalPlayerId)
+        {
+            EmitInventoryChanged();
+        }
+        return true;
     }
 
     public bool StartQuest(string questId)
@@ -464,10 +613,10 @@ public partial class GameState : Node
     public bool EquipPlayer(string playerId, string itemId)
     {
         EnsurePrototypePlayers();
-        var item = StarterItems.GetById(itemId);
-        if (!ConsumeItem(playerId, itemId))
+        var catalogItem = StarterItems.GetById(itemId);
+        if (!TryTakeItem(playerId, itemId, out var item))
         {
-            EmitSignal(SignalName.KarmaEvent, $"Cannot equip missing item: {item.Name}");
+            EmitSignal(SignalName.KarmaEvent, $"Cannot equip missing item: {catalogItem.Name}");
             return false;
         }
 
@@ -480,6 +629,49 @@ public partial class GameState : Node
         }
 
         return equipped;
+    }
+
+    public bool WearEquippedItem(string playerId, EquipmentSlot slot, int amount, out GameItem item)
+    {
+        EnsurePrototypePlayers();
+        if (!_players.TryGetValue(playerId, out var player) ||
+            !player.WearEquippedItem(slot, amount, out item))
+        {
+            item = null;
+            return false;
+        }
+
+        if (playerId == LocalPlayerId)
+        {
+            EmitInventoryChanged();
+        }
+
+        EmitCombatChanged();
+        return true;
+    }
+
+    public bool RepairEquippedItem(string playerId, EquipmentSlot slot)
+    {
+        EnsurePrototypePlayers();
+        if (!_players.TryGetValue(playerId, out var player) ||
+            !player.Equipment.TryGetValue(slot, out var item) ||
+            item.MaxDurability <= 0 ||
+            item.Durability >= item.MaxDurability)
+        {
+            return false;
+        }
+
+        var repaired = item with { Durability = item.MaxDurability };
+        if (!player.ReplaceEquippedItem(slot, repaired))
+            return false;
+
+        if (playerId == LocalPlayerId)
+        {
+            EmitInventoryChanged();
+        }
+
+        EmitCombatChanged();
+        return true;
     }
 
     public bool HasItem(string itemId)
@@ -503,6 +695,23 @@ public partial class GameState : Node
         EnsurePrototypePlayers();
         if (!_players.TryGetValue(playerId, out var player) || !player.ConsumeItem(itemId))
         {
+            return false;
+        }
+
+        if (playerId == LocalPlayerId)
+        {
+            EmitInventoryChanged();
+        }
+
+        return true;
+    }
+
+    public bool TryTakeItem(string playerId, string itemId, out GameItem item)
+    {
+        EnsurePrototypePlayers();
+        if (!_players.TryGetValue(playerId, out var player) || !player.TryTakeItem(itemId, out item))
+        {
+            item = null;
             return false;
         }
 
@@ -793,9 +1002,80 @@ public partial class GameState : Node
         if (!_prototypeInventorySeeded)
         {
             _players["peer_stand_in"].AddItem(StarterItems.RepairKit);
-            _players[LocalPlayerId].AddScrip(25);
+            if (!_localPlayerLoaded)
+            {
+                _players[LocalPlayerId].AddScrip(25);
+            }
             _players["peer_stand_in"].AddScrip(10);
             _prototypeInventorySeeded = true;
+        }
+    }
+
+    // Wipe per-match state so the next round starts fresh. Called from
+    // the gameplay scene's "Main Menu" return path so a second match
+    // doesn't inherit the first match's scrip / inventory / karma /
+    // quest progress. Keeps the autoload alive — only resets the data
+    // it owns.
+    public void ResetForNewMatch()
+    {
+        var carriedKarmaByPlayer = CarryStateIntoNextRound
+            ? _players.ToDictionary(pair => pair.Key, pair => pair.Value.Karma.Score)
+            : new Dictionary<string, int>();
+        var carriedRelationships = CarryStateIntoNextRound
+            ? Relationships.Snapshot().ToArray()
+            : Array.Empty<RelationshipSnapshot>();
+        var carriedFactions = CarryStateIntoNextRound
+            ? Factions.Snapshot().ToArray()
+            : Array.Empty<FactionSnapshot>();
+
+        _players.Clear();
+        _prototypeInventorySeeded = false;
+        _localPlayerLoaded = false;
+        Relationships.Clear();
+        Factions.Clear();
+        Quests.Reset(StarterQuests.All);
+        Entanglements.Clear();
+        Duels.Clear();
+        WorldEvents.Clear();
+        EnsurePrototypePlayers();
+        if (CarryStateIntoNextRound)
+        {
+            RestoreCarriedMatchState(carriedKarmaByPlayer, carriedRelationships, carriedFactions);
+        }
+        EmitKarmaChanged();
+        EmitInventoryChanged();
+        EmitLeaderboardChanged();
+        EmitPerksChanged();
+        EmitRelationshipsChanged();
+        EmitFactionsChanged();
+        EmitQuestsChanged();
+        EmitCombatChanged();
+        EmitEntanglementsChanged();
+        EmitDuelsChanged();
+        EmitWorldEventsChanged();
+    }
+
+    private void RestoreCarriedMatchState(
+        IReadOnlyDictionary<string, int> karmaByPlayer,
+        IReadOnlyList<RelationshipSnapshot> relationships,
+        IReadOnlyList<FactionSnapshot> factions)
+    {
+        foreach (var (playerId, score) in karmaByPlayer)
+        {
+            if (_players.TryGetValue(playerId, out var player))
+            {
+                player.ApplyKarma(score - player.Karma.Score);
+            }
+        }
+
+        foreach (var relationship in relationships)
+        {
+            Relationships.Apply(relationship.NpcId, relationship.PlayerId, relationship.Opinion);
+        }
+
+        foreach (var faction in factions)
+        {
+            Factions.Apply(faction.FactionId, faction.PlayerId, faction.Reputation);
         }
     }
 }

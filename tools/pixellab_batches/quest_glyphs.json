@@ -1,0 +1,53 @@
+{
+  "category": "quest_glyphs",
+  "items": [
+    {
+      "id": "quest_recover",
+      "prompt": "medieval quest icon, hand reaching for a chest, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "quest_hunt",
+      "prompt": "medieval quest icon, crossed sword and arrow on red shield, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "quest_deliver",
+      "prompt": "medieval quest icon, sealed scroll with red ribbon, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "quest_smuggle",
+      "prompt": "medieval quest icon, wrapped parcel hidden under cloak, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "quest_investigate",
+      "prompt": "medieval quest icon, magnifying glass over parchment, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "quest_escort",
+      "prompt": "medieval quest icon, two figures walking with shield, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "quest_repair",
+      "prompt": "medieval quest icon, blacksmith hammer over anvil, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "quest_rumor",
+      "prompt": "medieval quest icon, parchment with whisper lines, gold accent, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    }
+  ]
+}

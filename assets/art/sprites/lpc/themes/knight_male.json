@@ -1,0 +1,23 @@
+{
+  "id": "knight_male",
+  "display_name": "Knight-Errant",
+  "tags": [
+    "medieval",
+    "law",
+    "melee"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk.png",
+    "legs": "legs/pants/thin/walk.png",
+    "torso": "torso/armour/plate/male/walk.png",
+    "hair": "hair/buzzcut/adult/walk.png",
+    "weapon": "weapon/sword/arming/universal/fg/walk/silver.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

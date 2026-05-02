@@ -89,3 +89,19 @@ generation literature and demos.
   `assets/art/sprites/generated/player_v2_knight_8dir_4row_reference.png` as a
   temporary player movement/reference sheet because its 8-direction animation
   quality is better than the current generated player sheets.
+
+## Medieval Audio
+
+Per-clip credits (source URL, author, license id, attribution string)
+live in [`assets/audio/CREDITS.md`](assets/audio/CREDITS.md). Summary:
+
+- **Procedurally generated SFX** under `assets/audio/sfx/` (footsteps,
+  grunts, sword swing/hit, bells, chimes, door creak, latch, horn, coin
+  pour) are synthesised from scratch by `tools/generate_sfx.ps1`. They
+  ship under the project license — no third-party attribution required.
+- **Music** under `assets/audio/music/` is sourced externally; see
+  `CREDITS.md` for per-track license fields. Several rows are still
+  marked `TBD` and must be filled in before any commercial publish.
+  Allowed licenses: CC0, CC-BY 3.0/4.0, OGA-BY 3.0, Pixabay Content
+  License, MIT-style audio licenses. Disallowed: any non-commercial
+  ("CC-BY-NC*") or no-derivatives ("CC-BY-ND*") variant.

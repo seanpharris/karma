@@ -1,0 +1,21 @@
+{
+  "id": "peasant_female_v3",
+  "display_name": "Peasant (F) (variant 3)",
+  "tags": [
+    "medieval",
+    "peasant"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/shoes/basic/male/walk.png",
+    "legs": "legs/skirts/slit/thin/walk.png",
+    "torso": "torso/clothes/longsleeve/longsleeve/female/walk.png",
+    "hair": "hair/messy1/adult/walk.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

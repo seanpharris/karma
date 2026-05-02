@@ -1,0 +1,22 @@
+{
+  "id": "smuggler_male",
+  "display_name": "Smuggler",
+  "tags": [
+    "medieval",
+    "outlaw"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk.png",
+    "legs": "legs/pants/thin/walk.png",
+    "torso": "torso/armour/leather/male/walk.png",
+    "hair": "hair/buzzcut/adult/walk.png",
+    "weapon": "weapon/sword/dagger/walk/dagger.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "miller_male_v2",
+  "display_name": "Miller (variant 2)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/shoes/basic/male/walk.png",
+    "legs": "legs/pants/thin/walk.png",
+    "torso": "torso/clothes/longsleeve/scoop/male/walk.png",
+    "hair": "hair/messy1/adult/walk.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

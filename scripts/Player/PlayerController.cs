@@ -36,6 +36,7 @@ public partial class PlayerController : CharacterBody2D
     private float _stamina;
     private bool _isExhausted;
     private PlayerAppearanceSelection _lastAppliedAppearance = null;
+    private string _lastAppliedLpcBundleId = string.Empty;
 
     public override void _Ready()
     {
@@ -160,7 +161,11 @@ public partial class PlayerController : CharacterBody2D
         }
         else if (key.Keycode == Key.R)
         {
-            UseRepairKitOnPeerThroughServer();
+            // Shift+R = repair kit on peer (legacy chord). Bare R = reload.
+            if (key.ShiftPressed)
+                UseRepairKitOnPeerThroughServer();
+            else
+                ReloadThroughServer();
         }
         else if (key.Keycode == Key.T)
         {
@@ -177,6 +182,14 @@ public partial class PlayerController : CharacterBody2D
         else if (key.Keycode == Key.N)
         {
             CycleAppearanceThroughServer(AppearanceCycleSlot.Outfit);
+        }
+        else if (key.Keycode == Key.M)
+        {
+            CycleAppearanceThroughServer(AppearanceCycleSlot.Pants);
+        }
+        else if (key.Keycode == Key.H)
+        {
+            CycleAppearanceThroughServer(AppearanceCycleSlot.Shirt);
         }
         else if (key.Keycode == Key.O)
         {
@@ -344,6 +357,13 @@ public partial class PlayerController : CharacterBody2D
     {
         if (_serverSession is null) return;
         var inventory = _gameState.Inventory;
+        var boundItemId = _hud?.ResolveHotbarSlotItemId(slotIndex, inventory) ?? string.Empty;
+        if (!string.IsNullOrWhiteSpace(boundItemId))
+        {
+            EquipThroughServer(boundItemId);
+            return;
+        }
+
         if (slotIndex < 0 || slotIndex >= inventory.Count) return;
         EquipThroughServer(inventory[slotIndex].Id);
     }
@@ -408,6 +428,11 @@ public partial class PlayerController : CharacterBody2D
             });
     }
 
+    private void ReloadThroughServer()
+    {
+        SendLocalWithPrompt(IntentType.Reload, new System.Collections.Generic.Dictionary<string, string>());
+    }
+
     private void UseRepairKitOnSelfThroughServer()
     {
         SendLocalWithPrompt(
@@ -423,7 +448,9 @@ public partial class PlayerController : CharacterBody2D
     {
         Skin,
         Hair,
-        Outfit
+        Outfit,
+        Pants,
+        Shirt
     }
 
     private void CycleAppearanceThroughServer(AppearanceCycleSlot slot)
@@ -439,6 +466,12 @@ public partial class PlayerController : CharacterBody2D
                 break;
             case AppearanceCycleSlot.Outfit:
                 payload["outfitLayerId"] = CycleOutfitLayerId(current.OutfitLayerId);
+                break;
+            case AppearanceCycleSlot.Pants:
+                payload["pantsLayerId"] = CyclePantsLayerId(current.PantsLayerId);
+                break;
+            case AppearanceCycleSlot.Shirt:
+                payload["shirtLayerId"] = CycleShirtLayerId(current.ShirtLayerId);
                 break;
             default:
                 payload["skinLayerId"] = CycleSkinLayerId(current.SkinLayerId);
@@ -487,6 +520,28 @@ public partial class PlayerController : CharacterBody2D
             "outfit_engineer" => "outfit_settler_32x64",
             "outfit_settler" => "outfit_medic_32x64",
             _ => "outfit_engineer_32x64"
+        };
+    }
+
+    // Pants and shirt cycle through {none, blue} / {none, black}; "none" lets
+    // the underlying outfit layer show through. Future variants slot in here.
+    public static string CyclePantsLayerId(string currentPantsLayerId)
+    {
+        return currentPantsLayerId switch
+        {
+            "" => "pants_blue_32x64",
+            "pants_blue_32x64" => "",
+            _ => "pants_blue_32x64"
+        };
+    }
+
+    public static string CycleShirtLayerId(string currentShirtLayerId)
+    {
+        return currentShirtLayerId switch
+        {
+            "" => "shirt_black_32x64",
+            "shirt_black_32x64" => "",
+            _ => "shirt_black_32x64"
         };
     }
 
@@ -593,7 +648,7 @@ public partial class PlayerController : CharacterBody2D
             return;
         }
 
-        ApplyAppearance(player.Appearance);
+        ApplyAppearance(player);
 
         var authoritativePosition = CalculateWorldPosition(player.TileX, player.TileY);
         if (!ShouldSnapToAuthoritativePosition(GlobalPosition, authoritativePosition, _predictedPosition))
@@ -608,15 +663,22 @@ public partial class PlayerController : CharacterBody2D
         TopDownDepth.Apply(this);
     }
 
-    private void ApplyAppearance(PlayerAppearanceSelection appearance)
+    private void ApplyAppearance(PlayerSnapshot player)
     {
-        if (_characterSprite is null || _lastAppliedAppearance == appearance)
+        if (_characterSprite is null || player is null)
         {
             return;
         }
 
-        _characterSprite.ApplyPlayerAppearanceSelection(appearance);
-        _lastAppliedAppearance = appearance;
+        if (_lastAppliedAppearance == player.Appearance &&
+            _lastAppliedLpcBundleId == (player.LpcBundleId ?? string.Empty))
+        {
+            return;
+        }
+
+        WorldRoot.ApplyPlayerSpriteAppearance(_characterSprite, player);
+        _lastAppliedAppearance = player.Appearance;
+        _lastAppliedLpcBundleId = player.LpcBundleId ?? string.Empty;
     }
 
     private static TilePosition ToTilePosition(Vector2 position)

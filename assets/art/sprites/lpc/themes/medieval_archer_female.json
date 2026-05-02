@@ -1,0 +1,16 @@
+{
+  "id": "medieval_archer_female",
+  "display_name": "Medieval Archer",
+  "tags": ["medieval", "fantasy", "ranged"],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/shoes/basic/male/walk.png",
+    "legs": "legs/pants/thin/walk.png",
+    "torso": "torso/clothes/longsleeve/longsleeve/female/walk.png",
+    "hair": "hair/long/adult/walk.png",
+    "weapon": "weapon/ranged/bow/great/walk/foreground.png"
+  },
+  "animations": ["walk", "idle", "shoot", "hurt"]
+}

@@ -1,0 +1,84 @@
+{
+  "id": "boarding_school",
+  "display_name": "Boarding School",
+  "version": "0.1-stub",
+  "description": "Minimal stub roster + interactions for the boarding-school prototype theme. Expand when art/data work resumes.",
+  "factions": [
+    { "id": "faculty", "display_name": "Faculty Senate", "alignment": "law" },
+    { "id": "students", "display_name": "Student Body", "alignment": "neutral" },
+    { "id": "groundskeepers", "display_name": "Groundskeepers", "alignment": "neutral" }
+  ],
+  "npc_roster": [
+    {
+      "id": "headmaster_braydon",
+      "name": "Headmaster Braydon",
+      "role": "Headmaster",
+      "faction": "faculty",
+      "alignment": "law",
+      "tags": ["faculty", "law"],
+      "appearance_options": [],
+      "relationships": []
+    },
+    {
+      "id": "prefect_iris",
+      "name": "Prefect Iris",
+      "role": "Senior Prefect",
+      "faction": "students",
+      "alignment": "law",
+      "tags": ["student", "law"],
+      "appearance_options": [],
+      "relationships": [
+        { "target": "headmaster_braydon", "type": "friend", "intensity": 3 }
+      ]
+    },
+    {
+      "id": "groundskeeper_aldous",
+      "name": "Groundskeeper Aldous",
+      "role": "Head Groundskeeper",
+      "faction": "groundskeepers",
+      "alignment": "neutral",
+      "tags": ["staff"],
+      "appearance_options": [],
+      "relationships": []
+    }
+  ],
+  "interactions": {
+    "greetings_pool": {
+      "faculty": [
+        "State your name and your business at this academy.",
+        "I trust you have a hall pass for whatever this is."
+      ],
+      "student": [
+        "Don't get caught out after curfew.",
+        "Library's closed if you're looking for cover."
+      ],
+      "staff": [
+        "Mind the rake. Mind the path. Mind your own.",
+        "If you're here to dig something up, don't."
+      ],
+      "law": [
+        "Conduct yourself as a credit to this institution.",
+        "Detention starts whenever I decide it does."
+      ],
+      "peasant": [
+        "Class is in session. Quietly, please."
+      ]
+    },
+    "gossip_templates": {
+      "faculty": [
+        "{relation_name} thinks no one notices the late nights. I notice."
+      ],
+      "student": [
+        "{relation_name} owes me a favour from term break. Don't ask."
+      ],
+      "staff": [
+        "Heard {relation_name} arguing in the courtyard again. Same hour, same voices."
+      ]
+    }
+  },
+  "music": {
+    "sandbox": "SandboxCalm",
+    "scenario": "ScenarioAmbient",
+    "event": "EventTension"
+  }
+}

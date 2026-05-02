@@ -108,4 +108,32 @@ public static class ShopPricing
 
         return discountPercent;
     }
+
+    public static int CalculateRelationshipModifierPercent(int opinion)
+    {
+        return opinion switch
+        {
+            >= 50 => -15,
+            >= 20 => -10,
+            <= -50 => 25,
+            <= -20 => 10,
+            _ => 0
+        };
+    }
+
+    public static int ApplySignedModifier(int price, int modifierPercent)
+    {
+        if (modifierPercent == 0)
+        {
+            return price;
+        }
+
+        if (modifierPercent < 0)
+        {
+            var discount = System.Math.Max(1, (price * System.Math.Abs(modifierPercent)) / 100);
+            return System.Math.Max(1, price - discount);
+        }
+
+        return System.Math.Max(1, (price * (100 + modifierPercent) + 99) / 100);
+    }
 }

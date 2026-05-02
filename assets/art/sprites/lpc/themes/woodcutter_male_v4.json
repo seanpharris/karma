@@ -1,0 +1,25 @@
+{
+  "id": "woodcutter_male_v4",
+  "display_name": "Woodcutter (variant 4)",
+  "tags": [
+    "medieval",
+    "peasant"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/revised/male/walk.png",
+    "legs": "legs/pants2/male/walk.png",
+    "torso": "torso/clothes/longsleeve/longsleeve/male/walk.png",
+    "hair": "hair/messy1/adult/walk.png",
+    "weapon": "weapon/blunt/waraxe/walk/waraxe.png",
+    "waist": "torso/waist/belt_belly/male/walk.png",
+    "neck": "neck/cravat/male/walk.png",
+    "hat": "hat/cloth/bandana/adult/walk.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

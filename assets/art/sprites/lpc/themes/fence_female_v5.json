@@ -1,0 +1,22 @@
+{
+  "id": "fence_female_v5",
+  "display_name": "Fence (F) (variant 5)",
+  "tags": [
+    "medieval",
+    "outlaw"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/rimmed/thin/walk.png",
+    "legs": "legs/cuffed/thin/walk.png",
+    "torso": "torso/armour/legion/female/walk.png",
+    "hair": "hair/buzzcut/adult/walk.png",
+    "hat": "hat/cloth/bandana2/adult/walk.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

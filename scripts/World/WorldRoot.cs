@@ -100,6 +100,33 @@ public partial class WorldRoot : Node2D
             RenderServerItems(snapshot);
             RenderLocalChatBubbles(snapshot);
         }
+        MaybePlayPositionalDoorAudio(snapshot);
+    }
+
+    // Demonstration call site for the PositionalAudioPlayer pattern: when a
+    // door_opened event arrives, spawn a positional one-shot at the door's
+    // tile so distant players hear it muffled and falling off with distance.
+    // The dedupe-by-tick guard avoids replaying the same event after subsequent
+    // snapshots include it again in their event log.
+    private long _lastDoorAudioTick = -1;
+    private void MaybePlayPositionalDoorAudio(ClientInterestSnapshot snapshot)
+    {
+        if (snapshot?.ServerEvents is null || snapshot.ServerEvents.Count == 0) return;
+        for (var i = snapshot.ServerEvents.Count - 1; i >= 0; i--)
+        {
+            var ev = snapshot.ServerEvents[i];
+            if (ev.Tick <= _lastDoorAudioTick) continue;
+            if (!ev.EventId.Contains("door_opened")) continue;
+            if (!ev.Data.TryGetValue("x", out var xs)) continue;
+            if (!ev.Data.TryGetValue("y", out var ys)) continue;
+            if (!int.TryParse(xs, out var tx) || !int.TryParse(ys, out var ty)) continue;
+            _lastDoorAudioTick = ev.Tick;
+            Karma.Audio.PositionalAudioPlayer.PlayEventAt(
+                this,
+                "door_opened",
+                Karma.Audio.PositionalAudioPlayer.TileCenterToWorld(tx, ty));
+            return;
+        }
     }
 
     public static IReadOnlyList<(int X, int Y)> ComputeFogChunks(
@@ -177,6 +204,12 @@ public partial class WorldRoot : Node2D
             {
                 existing.Position = position;
                 TopDownDepth.Apply(existing);
+                // Refresh bundle in case the server's snapshot LpcBundleId changed
+                // (rare — currently picked once at spawn and stable thereafter).
+                if (!string.IsNullOrEmpty(npc.LpcBundleId))
+                {
+                    existing.GetNodeOrNull<PrototypeCharacterSprite>("Sprite")?.ApplyLpcBundle(npc.LpcBundleId);
+                }
                 continue;
             }
 
@@ -192,10 +225,20 @@ public partial class WorldRoot : Node2D
                 Position = position
             };
             node.ZIndex = TopDownDepth.CalculateZIndex(position.Y);
-            node.AddChild(new PrototypeCharacterSprite
+            var npcSprite = new PrototypeCharacterSprite
             {
+                Name = "Sprite",
                 Kind = spriteKind
-            });
+            };
+            // If the server picked an LPC bundle for this NPC, render from
+            // the materialized atlas instead of the legacy PixelLab kind.
+            // ApplyLpcBundle returns false (no-op) when the atlas is missing,
+            // which falls through to the kind-based render — a safe default.
+            if (!string.IsNullOrEmpty(npc.LpcBundleId))
+            {
+                npcSprite.ApplyLpcBundle(npc.LpcBundleId);
+            }
+            node.AddChild(npcSprite);
             node.AddChild(new CollisionShape2D
             {
                 Shape = new CircleShape2D
@@ -232,12 +275,16 @@ public partial class WorldRoot : Node2D
             {
                 existing.Position = position;
                 TopDownDepth.Apply(existing);
-                existing.GetNodeOrNull<PrototypeCharacterSprite>("RemotePlayerSprite")?.ApplyPlayerAppearanceSelection(player.Appearance);
+                ApplyPlayerSpriteAppearance(
+                    existing.GetNodeOrNull<PrototypeCharacterSprite>("RemotePlayerSprite"),
+                    player);
                 var label = existing.GetNodeOrNull<Label>("RemotePlayerName");
                 if (label is not null)
                 {
                     label.Text = player.DisplayName;
                 }
+                ApplyWraithTrail(existing, player);
+                ApplyWantedOverlay(existing, player);
 
                 continue;
             }
@@ -253,7 +300,7 @@ public partial class WorldRoot : Node2D
                 Name = "RemotePlayerSprite",
                 Kind = PrototypeSpriteKind.Player
             };
-            sprite.ApplyPlayerAppearanceSelection(player.Appearance);
+            ApplyPlayerSpriteAppearance(sprite, player);
             node.AddChild(sprite);
             node.AddChild(new Label
             {
@@ -266,7 +313,88 @@ public partial class WorldRoot : Node2D
             });
             AddChild(node);
             _renderedRemotePlayers[player.Id] = node;
+            ApplyWraithTrail(node, player);
+            ApplyWantedOverlay(node, player);
         }
+    }
+
+    public static bool ApplyPlayerSpriteAppearance(PrototypeCharacterSprite sprite, PlayerSnapshot player)
+    {
+        if (sprite is null || player is null)
+            return false;
+
+        if (!string.IsNullOrWhiteSpace(player.LpcBundleId) && sprite.ApplyLpcBundle(player.LpcBundleId))
+            return true;
+
+        sprite.ApplyPlayerAppearanceSelection(player.Appearance);
+        return false;
+    }
+
+    public static bool IsWantedOverlayActive(PlayerSnapshot player)
+    {
+        return player?.StatusEffects?.Any(se =>
+            !string.IsNullOrEmpty(se) &&
+            (se.Equals("Wanted", System.StringComparison.OrdinalIgnoreCase) ||
+             se.StartsWith("Bounty", System.StringComparison.OrdinalIgnoreCase))) == true;
+    }
+
+    private static void ApplyWantedOverlay(Node2D node, PlayerSnapshot player)
+    {
+        const string overlayName = "WantedOverlay";
+        var overlay = node.GetNodeOrNull<Sprite2D>(overlayName);
+        var posterPath = "res://assets/art/generated/sliced/wanted_bounty_law/wanted_mug_shot_frame.png";
+        if (!IsWantedOverlayActive(player))
+        {
+            if (overlay is not null) overlay.Visible = false;
+            return;
+        }
+        if (overlay is null)
+        {
+            overlay = new Sprite2D
+            {
+                Name = overlayName,
+                Position = new Vector2(0f, -82f),
+                Scale = new Vector2(0.6f, 0.6f),
+                ZIndex = TopDownDepth.HudOffsetZ
+            };
+            overlay.Texture = AtlasTextureLoader.Load(posterPath);
+            node.AddChild(overlay);
+        }
+        overlay.Visible = true;
+    }
+
+    public static bool IsWraithTrailActive(PlayerSnapshot player)
+    {
+        // SpeedModifier is set to PerkCatalog.WraithSpeedModifier (~0.7) when
+        // the player has the Wraith perk and is at low HP. SnapshotBuilder.
+        // CalculateSpeedModifier is the authority — anything not 1f means a
+        // perk effect is currently active.
+        return player is not null && Mathf.Abs(player.SpeedModifier - 1f) > 0.001f;
+    }
+
+    private static void ApplyWraithTrail(Node2D node, PlayerSnapshot player)
+    {
+        const string trailName = "WraithTrail";
+        var trail = node.GetNodeOrNull<ColorRect>(trailName);
+        if (!IsWraithTrailActive(player))
+        {
+            if (trail is not null) trail.Visible = false;
+            return;
+        }
+        if (trail is null)
+        {
+            trail = new ColorRect
+            {
+                Name = trailName,
+                Color = new Color(0.55f, 0.35f, 0.95f, 0.35f),
+                Position = new Vector2(-18f, -32f),
+                Size = new Vector2(36f, 48f),
+                MouseFilter = Control.MouseFilterEnum.Ignore,
+                ZIndex = -1
+            };
+            node.AddChild(trail);
+        }
+        trail.Visible = true;
     }
 
     private void CreatePixellabTrialWalker()
@@ -444,7 +572,9 @@ public partial class WorldRoot : Node2D
                 Name = item.EntityId,
                 EntityId = item.EntityId,
                 ItemId = item.ItemId,
+                DropOwnerId = item.DropOwnerId,
                 DropOwnerName = item.DropOwnerName,
+                DropOwnerExpiresTick = item.DropOwnerExpiresTick,
                 Position = new Vector2(item.TileX * 32f, item.TileY * 32f)
             };
             node.ZIndex = TopDownDepth.CalculateZIndex(node.Position.Y, TopDownDepth.ItemOffsetZ);
@@ -463,6 +593,64 @@ public partial class WorldRoot : Node2D
             AddChild(node);
             _renderedServerItems[item.EntityId] = node;
         }
+
+        foreach (var item in snapshot.WorldItems)
+        {
+            if (!IsDynamicWorldItem(item) || !_renderedServerItems.TryGetValue(item.EntityId, out var node))
+            {
+                continue;
+            }
+
+            if (node is ServerWorldItemObject itemObject)
+            {
+                itemObject.DropOwnerId = item.DropOwnerId;
+                itemObject.DropOwnerName = item.DropOwnerName;
+                itemObject.DropOwnerExpiresTick = item.DropOwnerExpiresTick;
+            }
+            ApplyDeathPileOwnershipTint(node, item, snapshot.PlayerId, snapshot.Tick);
+        }
+    }
+
+    public static bool IsDeathPileOwnershipActive(WorldItemSnapshot item, long tick)
+    {
+        if (item is null || string.IsNullOrWhiteSpace(item.DropOwnerId)) return false;
+        return item.DropOwnerExpiresTick <= 0 || item.DropOwnerExpiresTick > tick;
+    }
+
+    public static Color DeathPileOwnershipTint(WorldItemSnapshot item, string localPlayerId, long tick)
+    {
+        if (!IsDeathPileOwnershipActive(item, tick)) return Colors.Transparent;
+        return item.DropOwnerId == localPlayerId
+            ? new Color(1f, 0.82f, 0.24f, 0.24f)
+            : new Color(1f, 0.2f, 0.14f, 0.24f);
+    }
+
+    private static void ApplyDeathPileOwnershipTint(Node2D node, WorldItemSnapshot item, string localPlayerId, long tick)
+    {
+        const string tintName = "DeathPileOwnershipTint";
+        var tint = node.GetNodeOrNull<ColorRect>(tintName);
+        var color = DeathPileOwnershipTint(item, localPlayerId, tick);
+        if (color.A <= 0f)
+        {
+            if (tint is not null) tint.Visible = false;
+            return;
+        }
+
+        if (tint is null)
+        {
+            tint = new ColorRect
+            {
+                Name = tintName,
+                Position = new Vector2(-16f, -16f),
+                Size = new Vector2(TilePixelSize, TilePixelSize),
+                MouseFilter = Control.MouseFilterEnum.Ignore,
+                ZIndex = -2
+            };
+            node.AddChild(tint);
+        }
+
+        tint.Color = color;
+        tint.Visible = true;
     }
 
     private void RemoveNonGeminiScenePrototypeActors()
@@ -540,7 +728,7 @@ public partial class WorldRoot : Node2D
 
     private void CreatePrototypeBuildingShowcase()
     {
-        if (_prototypeBuildingShowcase.Count > 0 || GeneratedWorld.Theme is not ("boarding_school" or "boarding-school"))
+        if (_prototypeBuildingShowcase.Count > 0 || !ThemeRegistry.Get(GeneratedWorld.Theme).HasCapability(ThemeCapabilities.BoardingSchoolPrototypeProps))
         {
             return;
         }
@@ -626,7 +814,7 @@ public partial class WorldRoot : Node2D
 
     private void CreatePrototypeBoardingSchoolProps()
     {
-        if (_prototypeBoardingSchoolProps.Count > 0 || GeneratedWorld.Theme is not ("boarding_school" or "boarding-school"))
+        if (_prototypeBoardingSchoolProps.Count > 0 || !ThemeRegistry.Get(GeneratedWorld.Theme).HasCapability(ThemeCapabilities.BoardingSchoolPrototypeProps))
         {
             return;
         }
@@ -720,7 +908,7 @@ public partial class WorldRoot : Node2D
 
     private void CreatePrototypeBoardingSchoolTrees()
     {
-        if (_prototypeBoardingSchoolTrees.Count > 0 || GeneratedWorld.Theme is not ("boarding_school" or "boarding-school"))
+        if (_prototypeBoardingSchoolTrees.Count > 0 || !ThemeRegistry.Get(GeneratedWorld.Theme).HasCapability(ThemeCapabilities.BoardingSchoolPrototypeProps))
         {
             return;
         }
@@ -814,7 +1002,7 @@ public partial class WorldRoot : Node2D
 
     private void CreatePrototypeBoardingSchoolFlowers()
     {
-        if (_prototypeBoardingSchoolFlowers.Count > 0 || GeneratedWorld.Theme is not ("boarding_school" or "boarding-school"))
+        if (_prototypeBoardingSchoolFlowers.Count > 0 || !ThemeRegistry.Get(GeneratedWorld.Theme).HasCapability(ThemeCapabilities.BoardingSchoolPrototypeProps))
         {
             return;
         }

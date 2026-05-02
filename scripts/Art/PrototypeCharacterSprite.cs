@@ -1,6 +1,7 @@
 using Godot;
 using Karma.Data;
 using Karma.Util;
+using System.Linq;
 
 namespace Karma.Art;
 
@@ -142,33 +143,22 @@ public partial class PrototypeCharacterSprite : Node2D
         }
 
         var normalized = velocity.Normalized();
+        // Diagonal motion shows the character in profile (east/west) rather than
+        // facing the camera — keeps the silhouette readable when both axes are active.
+        if (Mathf.Abs(normalized.X) >= 0.5f && Mathf.Abs(normalized.Y) >= 0.5f)
+        {
+            return normalized.X < 0f
+                ? CharacterFacingDirection.Left
+                : CharacterFacingDirection.Right;
+        }
+
         if (normalized.Y <= -0.5f)
         {
-            if (normalized.X >= 0.5f)
-            {
-                return CharacterFacingDirection.UpRight;
-            }
-
-            if (normalized.X <= -0.5f)
-            {
-                return CharacterFacingDirection.UpLeft;
-            }
-
             return CharacterFacingDirection.Up;
         }
 
         if (normalized.Y >= 0.5f)
         {
-            if (normalized.X >= 0.5f)
-            {
-                return CharacterFacingDirection.DownRight;
-            }
-
-            if (normalized.X <= -0.5f)
-            {
-                return CharacterFacingDirection.DownLeft;
-            }
-
             return CharacterFacingDirection.Down;
         }
 
@@ -235,11 +225,57 @@ public partial class PrototypeCharacterSprite : Node2D
         Rebuild();
     }
 
+    // Resolve and apply an LPC theme bundle by id (e.g. "blacksmith_male").
+    // Looks up the materialized atlas at
+    // assets/art/generated/lpc_npcs/<id>_32x64_8dir_4row.png and overrides
+    // this sprite to render from it. Falls back to the catalog default for
+    // the current Kind if the atlas is missing on disk.
+    public bool ApplyLpcBundle(string bundleId)
+    {
+        if (string.IsNullOrEmpty(bundleId)) return false;
+        var atlasPath = LpcPlayerAppearanceRegistry.BuildAtlasPath(bundleId);
+        if (string.IsNullOrEmpty(atlasPath) || !FileAccess.FileExists(atlasPath))
+        {
+            return false;
+        }
+        SetAtlasPathOverride(atlasPath);
+        return true;
+    }
+
     public string ApplyPlayerAppearanceSelection(
         PlayerAppearanceSelection selection,
         string cacheRoot = "user://player_v2/composites")
     {
         Kind = PrototypeSpriteKind.Player;
+        // Prefer the LPC composed character if the random-pick run wrote one
+        // — gives the prototype an actual walking sprite without depending on
+        // PixelLab credits. SET (don't clear) the AtlasPathOverride so the
+        // renderer actually pulls the new texture instead of falling back to
+        // the catalog's default Kind atlas.
+        if (FileAccess.FileExists(PrototypeSpriteCatalog.LpcRandomCharacterAtlasPath))
+        {
+            SetAtlasPathOverride(PrototypeSpriteCatalog.LpcRandomCharacterAtlasPath);
+            return PrototypeSpriteCatalog.LpcRandomCharacterAtlasPath;
+        }
+
+        // When the player has pants_blue / shirt_black set, blend them on top
+        // of the prebuilt black-boots atlas so the layers are actually visible.
+        // The PlayerV2LayerManifest composer can't help here because most other
+        // referenced layers (hair_short_*, outfit_*) don't exist as files yet.
+        if (HasPantsOrShirt(selection)
+            && FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2RealBaseBlackBootsAtlasPath))
+        {
+            var composedPath = ComposePantsShirtOntoBase(
+                PrototypeSpriteCatalog.PlayerV2RealBaseBlackBootsAtlasPath,
+                selection,
+                cacheRoot);
+            if (!string.IsNullOrEmpty(composedPath))
+            {
+                SetAtlasPathOverride(composedPath);
+                return composedPath;
+            }
+        }
+
         if (IsDefaultSelection(selection) && FileAccess.FileExists(PrototypeSpriteCatalog.PlayerV2RealBaseBlackBootsAtlasPath))
         {
             SetAtlasPathOverride(string.Empty);
@@ -290,6 +326,60 @@ public partial class PrototypeCharacterSprite : Node2D
     private static bool IsDefaultSelection(PlayerAppearanceSelection selection)
     {
         return selection == PlayerAppearanceSelection.Default;
+    }
+
+    public static bool HasPantsOrShirt(PlayerAppearanceSelection selection)
+    {
+        return !string.IsNullOrWhiteSpace(selection.PantsLayerId)
+            || !string.IsNullOrWhiteSpace(selection.ShirtLayerId);
+    }
+
+    private const string PlayerV2LayersRoot = "res://assets/art/sprites/player_v2/layers_32x64/";
+
+    public static string ComposePantsShirtOntoBase(
+        string basePath,
+        PlayerAppearanceSelection selection,
+        string cacheRoot)
+    {
+        var pantsId = selection.PantsLayerId;
+        var shirtId = selection.ShirtLayerId;
+        var cacheKey = $"{System.IO.Path.GetFileNameWithoutExtension(basePath)}__{Sanitize(pantsId)}__{Sanitize(shirtId)}";
+        var outputPath = $"{cacheRoot.TrimEnd('/')}/{cacheKey}.png";
+        if (FileAccess.FileExists(outputPath))
+        {
+            return outputPath;
+        }
+
+        var baseImage = Image.LoadFromFile(basePath);
+        if (baseImage is null || baseImage.IsEmpty())
+        {
+            return string.Empty;
+        }
+
+        BlendOptionalLayer(baseImage, pantsId);
+        BlendOptionalLayer(baseImage, shirtId);
+
+        DirAccess.MakeDirRecursiveAbsolute(ProjectSettings.GlobalizePath(cacheRoot));
+        var save = baseImage.SavePng(outputPath);
+        return save == Error.Ok ? outputPath : string.Empty;
+    }
+
+    private static void BlendOptionalLayer(Image target, string layerId)
+    {
+        if (string.IsNullOrWhiteSpace(layerId)) return;
+        var layerPath = PlayerV2LayersRoot + layerId + ".png";
+        if (!FileAccess.FileExists(layerPath)) return;
+        var layer = Image.LoadFromFile(layerPath);
+        if (layer is null || layer.IsEmpty()) return;
+        if (layer.GetWidth() != target.GetWidth() || layer.GetHeight() != target.GetHeight()) return;
+        target.BlendRect(layer, new Rect2I(Vector2I.Zero, layer.GetSize()), Vector2I.Zero);
+    }
+
+    private static string Sanitize(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return "none";
+        var chars = value.Where(c => char.IsLetterOrDigit(c) || c == '_' || c == '-').ToArray();
+        return chars.Length == 0 ? "layer" : new string(chars);
     }
 
     public static string ExportPlayerAppearanceAtlas(

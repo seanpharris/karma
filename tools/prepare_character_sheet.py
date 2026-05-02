@@ -58,6 +58,8 @@ def read_png_rgba(path: Path) -> tuple[int, int, ImagePixels]:
     pos = 8
     width = height = None
     color_type = None
+    palette: list[tuple[int, int, int]] = []
+    palette_alpha: list[int] = []
     idat = b""
     while pos < len(data):
         length = struct.unpack(">I", data[pos:pos + 4])[0]
@@ -66,8 +68,17 @@ def read_png_rgba(path: Path) -> tuple[int, int, ImagePixels]:
         pos += 12 + length
         if chunk_type == b"IHDR":
             width, height, bit_depth, color_type, _, _, _ = struct.unpack(">IIBBBBB", chunk)
-            if bit_depth != 8 or color_type not in (2, 6):
+            if bit_depth != 8 or color_type not in (2, 3, 6):
                 raise ValueError(f"unsupported PNG format bit_depth={bit_depth} color_type={color_type}")
+        elif chunk_type == b"PLTE":
+            palette = [
+                (chunk[i], chunk[i + 1], chunk[i + 2])
+                for i in range(0, len(chunk), 3)
+            ]
+        elif chunk_type == b"tRNS":
+            # Per-palette-entry alpha (color_type 3) or transparent colour
+            # selector (color_type 0/2). We only honour the indexed case.
+            palette_alpha = list(chunk)
         elif chunk_type == b"IDAT":
             idat += chunk
         elif chunk_type == b"IEND":
@@ -76,7 +87,12 @@ def read_png_rgba(path: Path) -> tuple[int, int, ImagePixels]:
     if width is None or height is None or color_type is None:
         raise ValueError("PNG missing IHDR")
 
-    channels = 4 if color_type == 6 else 3
+    if color_type == 6:
+        channels = 4
+    elif color_type == 2:
+        channels = 3
+    else:  # color_type == 3 (indexed)
+        channels = 1
     bpp = channels
     stride = width * channels
     raw = zlib.decompress(idat)
@@ -114,11 +130,20 @@ def read_png_rgba(path: Path) -> tuple[int, int, ImagePixels]:
     for row in rows:
         out_row = []
         for x in range(width):
-            base = x * channels
-            if channels == 4:
-                out_row.append((row[base], row[base + 1], row[base + 2], row[base + 3]))
+            if color_type == 3:
+                idx = row[x]
+                if idx >= len(palette):
+                    out_row.append((0, 0, 0, 0))
+                    continue
+                r, g, b = palette[idx]
+                a = palette_alpha[idx] if idx < len(palette_alpha) else 255
+                out_row.append((r, g, b, a))
             else:
-                out_row.append((row[base], row[base + 1], row[base + 2], 255))
+                base = x * channels
+                if channels == 4:
+                    out_row.append((row[base], row[base + 1], row[base + 2], row[base + 3]))
+                else:
+                    out_row.append((row[base], row[base + 1], row[base + 2], 255))
         pixels.append(out_row)
     return width, height, pixels
 

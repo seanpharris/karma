@@ -9,7 +9,9 @@ public partial class ServerWorldItemObject : Area2D
 {
     public string EntityId { get; set; } = string.Empty;
     public string ItemId { get; set; } = string.Empty;
+    public string DropOwnerId { get; set; } = string.Empty;
     public string DropOwnerName { get; set; } = string.Empty;
+    public long DropOwnerExpiresTick { get; set; }
 
     private bool _playerNearby;
     private HudController _hud;

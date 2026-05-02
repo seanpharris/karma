@@ -1,0 +1,89 @@
+{
+  "category": "status_icons",
+  "items": [
+    {
+      "id": "status_hungry",
+      "prompt": "small medieval icon of an empty bowl with a wooden spoon, flat color background, transparent edges, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "status_starving",
+      "prompt": "small medieval icon of a skull with empty plate, dark red tint, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "status_dirty",
+      "prompt": "small medieval icon of a brown mud splatter, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "status_filthy",
+      "prompt": "small medieval icon of green flies buzzing around brown mud, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "status_poisoned",
+      "prompt": "small medieval icon of a green skull with bubbling potion drips, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "status_burning",
+      "prompt": "small medieval icon of orange flame with red glow, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "status_chilled",
+      "prompt": "small medieval icon of a blue snowflake with frost crystals, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "status_silenced",
+      "prompt": "small medieval icon of a finger crossing closed lips, white and red, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "status_wraith",
+      "prompt": "small medieval icon of a ghostly hooded figure, transparent purple, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "status_blessed",
+      "prompt": "small medieval icon of golden halo with rays of light, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "status_cursed",
+      "prompt": "small medieval icon of skull with purple energy crackling, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "status_stunned",
+      "prompt": "small medieval icon of swirling stars around a head silhouette, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "status_wanted",
+      "prompt": "small medieval icon of crumpled wanted poster with X on it, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "status_withdrawal",
+      "prompt": "small medieval icon of trembling hand with sweat drops, pale, pixel art",
+      "width": 32,
+      "height": 32
+    }
+  ]
+}

@@ -9,10 +9,12 @@ namespace Karma.World;
 
 public static class WorldGenerator
 {
-    private static readonly string[] Themes =
+    // Aspirational/wishlist theme ids that don't yet have full data
+    // (theme.json + art) but are kept here so we can document them and
+    // eventually back them with ThemeRegistry entries. The random fallback
+    // below pulls from ThemeRegistry.AllIds (only fully-supported themes).
+    public static readonly string[] WishlistThemes =
     {
-        "western-sci-fi",
-        "boarding_school",
         "farming",
         "haunted-coastal",
         "junkyard-fantasy",
@@ -26,25 +28,25 @@ public static class WorldGenerator
     {
         new(
             "clinic",
-            "Mara's Patch Clinic",
+            "Mara's Village Forge",
             "care",
-            "heal injured players, steal medicine, expose triage fraud, or protect the vulnerable",
-            "Free Settlers",
+            "mend the injured, steal remedies, expose false alms, or protect the vulnerable",
+            "Village Freeholders",
             WorldTileIds.ClinicFloor,
-            "Clinic Mechanic",
-            "needs supplies but notices every lie"),
+            "Blacksmith",
+            "needs iron, herbs, and honest hands"),
         new(
             "market",
-            "The Bent Ledger",
+            "The Bent Ledger Tavern",
             "trade",
-            "gift scrip, haggle honestly, pick pockets, fence stolen goods, or tank someone's reputation",
+            "gift coin, haggle honestly, pick pockets, fence stolen goods, or bruise someone's reputation",
             "Backroom Merchants",
             WorldTileIds.MarketFloor,
-            "Ledger Broker",
-            "tracks debts, discounts, and suspicious generosity"),
+            "Tavern Factor",
+            "tracks debts, favors, and suspicious generosity"),
         new(
             "workshop",
-            "Low Noon Tools",
+            "Low Noon Smithy",
             "repair",
             "repair public structures, sabotage machinery, post bounties, or launder blame through contractors",
             "Civic Repair Guild",
@@ -53,25 +55,25 @@ public static class WorldGenerator
             "rewards maintenance and quietly blacklists vandals"),
         new(
             "notice-board",
-            "The Public Problem Wall",
+            "The Village Notice Wall",
             "rumor",
             "pin rumors, expose secrets, accept public bounties, or weaponize Rumorcraft",
-            "Free Settlers",
+            "Village Freeholders",
             WorldTileIds.PathDust,
             "Rumor Clerk",
             "knows which stories are mercy and which are ammunition"),
         new(
             "social-hub",
-            "Last Chair Saloon",
+            "Last Chair Alehouse",
             "relationship",
             "form temporary posses, buy apologies, start feuds, or learn who owes whom",
-            "Free Settlers",
+            "Village Freeholders",
             WorldTileIds.MarketFloor,
-            "Saloon Witness",
+            "Tavern Witness",
             "remembers favors, insults, and who left whom behind"),
         new(
             "restricted-storage",
-            "Authorized Shed 7",
+            "The Locked Tithe Barn",
             "temptation",
             "guard shared supplies, raid contraband, plant evidence, or return stolen Karma Break loot",
             "Civic Repair Guild",
@@ -92,9 +94,9 @@ public static class WorldGenerator
             "The Polite Violence Circle",
             "combat",
             "settle grudges cleanly, break duel etiquette, spectate, intervene, or earn Dread Reputation",
-            "Free Settlers",
+            "Village Freeholders",
             WorldTileIds.DuelRingFloor,
-            "Duel Referee",
+            "Duel Marshal",
             "respects consent, hates cheap shots, sells clean revenge"),
         new(
             "farm-plot",
@@ -116,21 +118,21 @@ public static class WorldGenerator
             "sells bad choices with excellent customer service"),
         new(
             "memory-shrine",
-            "The Apology Engine",
+            "The Penance Shrine",
             "redemption",
             "confess harm, restore trust, pay reparations, or fake remorse for short-term gain",
             "Civic Repair Guild",
             WorldTileIds.ClinicFloor,
             "Reparation Archivist",
-            "calculates whether an apology cost enough to matter"),
+            "judges whether an apology cost enough to matter"),
         new(
             "broadcast-tower",
-            "Saint/Scourge Radio",
+            "Saint/Scourge Bell Tower",
             "broadcast",
-            "amplify heroics, spread scandals, jam rumors, or make a private entanglement public",
-            "Free Settlers",
+            "amplify heroics, spread scandals, drown rumors, or make a private entanglement public",
+            "Village Freeholders",
             WorldTileIds.WorkshopFloor,
-            "Signal Deacon",
+            "Bell Deacon",
             "turns local drama into world events"),
         new(
             "war-memorial",
@@ -143,12 +145,12 @@ public static class WorldGenerator
             "knows every side has a receipt"),
         new(
             "court-of-crows",
-            "The Crow Court",
+            "The Rook Court",
             "judgment",
             "let NPC witnesses vote on punishments, bribe testimony, or earn public absolution",
-            "Free Settlers",
+            "Village Freeholders",
             WorldTileIds.DuelRingFloor,
-            "Crow Bailiff",
+            "Rook Bailiff",
             "never forgets a witness and never blinks first")
     };
 
@@ -156,7 +158,7 @@ public static class WorldGenerator
     {
         var random = new Random(config.Seed.Seed);
         var theme = string.IsNullOrWhiteSpace(config.Seed.Theme)
-            ? Themes[random.Next(Themes.Length)]
+            ? ThemeRegistry.PickRandomId(random)
             : config.Seed.Theme;
         var locationCount = config.Server.Scale switch
         {
@@ -193,7 +195,7 @@ public static class WorldGenerator
 
     private static GeneratedTileMap GenerateTileMap(Random random, WorldConfig config)
     {
-        if (config.Seed.Theme is "boarding_school" or "boarding-school")
+        if (ThemeRegistry.Get(config.Seed.Theme).TileMapStyle == ThemeTileMapStyle.BoardingSchool)
         {
             return GenerateBoardingSchoolTileMap(config);
         }
@@ -367,7 +369,9 @@ public static class WorldGenerator
         WorldConfig config,
         IReadOnlyList<GeneratedLocation> locations)
     {
-        var targetCount = Math.Max(1, config.Server.TargetPlayers * 3);
+        var targetCount = config.Server.Scale == WorldScale.Small
+            ? Math.Max(1, (config.Server.TargetPlayers * 2) + 2)
+            : Math.Max(1, config.Server.TargetPlayers * 3);
         var npcs = new List<NpcProfile> { StarterNpcs.Mara };
 
         for (var i = 1; i < targetCount; i++)
@@ -438,19 +442,19 @@ public static class WorldGenerator
     {
         return location.ThemeTag switch
         {
-            "care" => $"{location.Name} filter stack",
-            "trade" => $"{location.Name} ledger kiosk",
+            "care" => $"{location.Name} herb rack",
+            "trade" => $"{location.Name} account desk",
             "repair" => $"{location.Name} public workbench",
-            "rumor" => $"{location.Name} notice relay",
+            "rumor" => $"{location.Name} notice post",
             "relationship" => $"{location.Name} mediation table",
             "temptation" => $"{location.Name} supply lockup",
             "chaos" => $"{location.Name} oddity rig",
-            "combat" => $"{location.Name} duel beacon",
-            "sustenance" => $"{location.Name} irrigation pump",
+            "combat" => $"{location.Name} duel post",
+            "sustenance" => $"{location.Name} irrigation wheel",
             "crime" => $"{location.Name} shadow dropbox",
-            "redemption" => $"{location.Name} apology terminal",
-            "broadcast" => $"{location.Name} signal booster",
-            "loyalty" => $"{location.Name} memorial relay",
+            "redemption" => $"{location.Name} penance ledger",
+            "broadcast" => $"{location.Name} bell frame",
+            "loyalty" => $"{location.Name} memorial plinth",
             "judgment" => $"{location.Name} witness stand",
             _ => $"{location.Name} station fixture"
         };
@@ -552,7 +556,7 @@ public static class WorldGenerator
             "sustenance" => "food secured without turning hunger into theft",
             "crime" => "heat redirected away from a client who may or may not deserve it",
             "redemption" => "reparations that cost more than words",
-            "broadcast" => "a signal boosted, buried, or corrected before everyone believes the wrong story",
+            "broadcast" => "a proclamation raised, buried, or corrected before everyone believes the wrong story",
             "loyalty" => "old allegiances untangled before they become new violence",
             "judgment" => "witnesses protected from bribes, threats, and convenient forgetfulness",
             _ => location.KarmaHook

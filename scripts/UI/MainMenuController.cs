@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using Karma.Audio;
 
 namespace Karma.UI;
 
@@ -8,7 +9,8 @@ public partial class MainMenuController : Control
 {
     public const string GameplayScenePath = "res://scenes/Main.tscn";
     public const string EventPrototypeScenePath = "res://scenes/InGameEventPrototype.tscn";
-    private const string OptionsPath = "user://options.cfg";
+    public const string OptionsPath = "user://options.cfg";
+    public const string MenuThemePath = PrototypeMusicPlayer.MusicDirectory + PrototypeMusicPlayer.TravellingOnMedievalFileName;
 
     private static readonly Vector2I[] CommonResolutions =
     {
@@ -35,10 +37,12 @@ public partial class MainMenuController : Control
     private HSlider _masterVolumeSlider;
     private HSlider _musicVolumeSlider;
     private HSlider _effectsVolumeSlider;
+    private HSlider _ambientVolumeSlider;
     private Label _detectedResolutionLabel;
     private Label _masterVolumeLabel;
     private Label _musicVolumeLabel;
     private Label _effectsVolumeLabel;
+    private Label _ambientVolumeLabel;
     private AudioStreamPlayer _menuThemePlayer;
     private AudioStreamGeneratorPlayback _themePlayback;
     private double _themeTime;
@@ -65,10 +69,12 @@ public partial class MainMenuController : Control
         _masterVolumeSlider = GetNode<HSlider>("Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid/MasterVolumeSlider");
         _musicVolumeSlider = GetNode<HSlider>("Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid/MusicVolumeSlider");
         _effectsVolumeSlider = GetNode<HSlider>("Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid/EffectsVolumeSlider");
+        _ambientVolumeSlider = GetNode<HSlider>("Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid/AmbientVolumeSlider");
         _detectedResolutionLabel = GetNode<Label>("Root/OptionsPanel/PanelMargin/OptionsContent/DetectedResolutionLabel");
         _masterVolumeLabel = GetNode<Label>("Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid/MasterVolumeValue");
         _musicVolumeLabel = GetNode<Label>("Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid/MusicVolumeValue");
         _effectsVolumeLabel = GetNode<Label>("Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid/EffectsVolumeValue");
+        _ambientVolumeLabel = GetNode<Label>("Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid/AmbientVolumeValue");
         _menuThemePlayer = GetNode<AudioStreamPlayer>("MenuThemePlayer");
         _statusLabel = GetNode<Label>("Root/MenuPanel/MenuMargin/MenuButtons/StatusLabel");
 
@@ -84,14 +90,23 @@ public partial class MainMenuController : Control
         _masterVolumeSlider.ValueChanged += _ => RefreshVolumeLabels();
         _musicVolumeSlider.ValueChanged += _ => RefreshVolumeLabels();
         _effectsVolumeSlider.ValueChanged += _ => RefreshVolumeLabels();
+        _ambientVolumeSlider.ValueChanged += _ => RefreshVolumeLabels();
         _musicVolumeSlider.ValueChanged += _ => ApplyMenuThemeVolume();
         _masterVolumeSlider.ValueChanged += _ => ApplyMenuThemeVolume();
+        // Live-apply each slider edit through the central AudioSettings so
+        // the change is audible immediately and persists into options.cfg.
+        _masterVolumeSlider.ValueChanged += _ => PushSlidersToAudioServer();
+        _musicVolumeSlider.ValueChanged += _ => PushSlidersToAudioServer();
+        _effectsVolumeSlider.ValueChanged += _ => PushSlidersToAudioServer();
+        _ambientVolumeSlider.ValueChanged += _ => PushSlidersToAudioServer();
+        AudioSettings.EnsureBusesExist();
+        HudController.ApplyUiPalette(this, UiPaletteRegistry.MedievalThemeId);
         SetupMenuTheme();
-
         PopulateResolutions();
         LoadOptions();
         RefreshDetectedResolutionLabel();
         RefreshVolumeLabels();
+        PushSlidersToAudioServer();
         ApplyMenuThemeVolume();
         HidePanels();
         _statusLabel.Text = "Prototype entry point: local sandbox match.";
@@ -143,6 +158,21 @@ public partial class MainMenuController : Control
 
     private void SetupMenuTheme()
     {
+        _menuThemePlayer.Bus = AudioSettings.MusicBusName;
+        var menuTheme = LoadMenuThemeStream();
+        if (menuTheme is not null)
+        {
+            if (menuTheme is AudioStreamMP3 mp3)
+            {
+                mp3.Loop = true;
+            }
+
+            _menuThemePlayer.Stream = menuTheme;
+            _menuThemePlayer.Play();
+            _themePlayback = null;
+            return;
+        }
+
         _menuThemePlayer.Stream = new AudioStreamGenerator
         {
             MixRate = 44100,
@@ -151,6 +181,11 @@ public partial class MainMenuController : Control
         _menuThemePlayer.Play();
         _themePlayback = _menuThemePlayer.GetStreamPlayback() as AudioStreamGeneratorPlayback;
         FillMenuThemeBuffer();
+    }
+
+    public static AudioStream LoadMenuThemeStream()
+    {
+        return PrototypeMusicPlayer.LoadPlayableAudio(MenuThemePath);
     }
 
     private void FillMenuThemeBuffer()
@@ -233,9 +268,11 @@ public partial class MainMenuController : Control
         SelectResolution(resolutionText);
         _fullscreenToggle.ButtonPressed = loaded && config.GetValue("video", "fullscreen", false).AsBool();
         _vsyncToggle.ButtonPressed = !loaded || config.GetValue("video", "vsync", true).AsBool();
-        _masterVolumeSlider.Value = loaded ? config.GetValue("audio", "master_volume", 80).AsDouble() : 80;
-        _musicVolumeSlider.Value = loaded ? config.GetValue("audio", "music_volume", 70).AsDouble() : 70;
-        _effectsVolumeSlider.Value = loaded ? config.GetValue("audio", "effects_volume", 80).AsDouble() : 80;
+        if (loaded) AudioSettings.LoadFromConfig(config);
+        _masterVolumeSlider.Value = AudioSettings.MasterVolume;
+        _musicVolumeSlider.Value = AudioSettings.MusicVolume;
+        _effectsVolumeSlider.Value = AudioSettings.SfxVolume;
+        _ambientVolumeSlider.Value = AudioSettings.AmbientVolume;
     }
 
     private void ApplyAndSaveOptions()
@@ -259,21 +296,36 @@ public partial class MainMenuController : Control
     private void SaveOptions(Vector2I resolution)
     {
         var config = new ConfigFile();
+        // Preserve any other sections that may exist on disk.
+        config.Load(OptionsPath);
         config.SetValue("video", "resolution", FormatResolution(resolution));
         config.SetValue("video", "fullscreen", _fullscreenToggle.ButtonPressed);
         config.SetValue("video", "vsync", _vsyncToggle.ButtonPressed);
-        config.SetValue("audio", "master_volume", _masterVolumeSlider.Value);
-        config.SetValue("audio", "music_volume", _musicVolumeSlider.Value);
-        config.SetValue("audio", "effects_volume", _effectsVolumeSlider.Value);
+        SyncSlidersToAudioSettings();
+        AudioSettings.SaveToConfig(config);
         config.Save(OptionsPath);
+    }
+
+    private void SyncSlidersToAudioSettings()
+    {
+        AudioSettings.MasterVolume = _masterVolumeSlider.Value;
+        AudioSettings.MusicVolume = _musicVolumeSlider.Value;
+        AudioSettings.SfxVolume = _effectsVolumeSlider.Value;
+        AudioSettings.AmbientVolume = _ambientVolumeSlider.Value;
+    }
+
+    private void PushSlidersToAudioServer()
+    {
+        if (_masterVolumeSlider is null) return;
+        SyncSlidersToAudioSettings();
+        AudioSettings.ApplyToAudioServer();
     }
 
     private void ApplyMenuThemeVolume()
     {
-        var normalized = (_masterVolumeSlider.Value / 100.0) * (_musicVolumeSlider.Value / 100.0);
-        _menuThemePlayer.VolumeDb = normalized <= 0.001
-            ? -80.0f
-            : (float)(20.0 * Math.Log10(normalized));
+        // The player sits on the Music bus; AudioSettings applies Master and
+        // Music slider gain centrally so menu and gameplay music match.
+        _menuThemePlayer.VolumeDb = 0f;
     }
 
     private void DetectAndSelectCurrentResolution()
@@ -309,6 +361,7 @@ public partial class MainMenuController : Control
         _masterVolumeLabel.Text = $"{Math.Round(_masterVolumeSlider.Value)}%";
         _musicVolumeLabel.Text = $"{Math.Round(_musicVolumeSlider.Value)}%";
         _effectsVolumeLabel.Text = $"{Math.Round(_effectsVolumeSlider.Value)}%";
+        _ambientVolumeLabel.Text = $"{Math.Round(_ambientVolumeSlider.Value)}%";
     }
 
     private static Vector2I GetDetectedResolution()

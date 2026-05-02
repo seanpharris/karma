@@ -1,0 +1,146 @@
+[
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "cargo_crate",
+    "path": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/cargo_crate.png",
+    "source": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/cargo_crate.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "repair_kit_case",
+    "path": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/repair_kit_case.png",
+    "source": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/repair_kit_case.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "utility_junction_box",
+    "path": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/utility_junction_box.png",
+    "source": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/utility_junction_box.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "hydroponics_planter",
+    "path": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/hydroponics_planter.png",
+    "source": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/hydroponics_planter.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "oxygen_tank_rack",
+    "path": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/oxygen_tank_rack.png",
+    "source": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/oxygen_tank_rack.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "compact_kiosk_terminal",
+    "path": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/compact_kiosk_terminal.png",
+    "source": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/compact_kiosk_terminal.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "airlock_door_front",
+    "path": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/airlock_door_front.png",
+    "source": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/airlock_door_front.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "station_wall_segment",
+    "path": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/station_wall_segment.png",
+    "source": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/station_wall_segment.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "solar_panel",
+    "path": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/solar_panel.png",
+    "source": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/solar_panel.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "pipe_cluster",
+    "path": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/pipe_cluster.png",
+    "source": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/pipe_cluster.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "landing_beacon",
+    "path": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/landing_beacon.png",
+    "source": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/landing_beacon.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "exterior_lamp_post",
+    "path": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/exterior_lamp_post.png",
+    "source": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/exterior_lamp_post.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "maintenance_hatch",
+    "path": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/maintenance_hatch.png",
+    "source": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/maintenance_hatch.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "medical_supply_box",
+    "path": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/medical_supply_box.png",
+    "source": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/medical_supply_box.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "portable_terminal",
+    "path": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/portable_terminal.png",
+    "source": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/portable_terminal.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "power_cell_canister",
+    "path": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/power_cell_canister.png",
+    "source": "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/power_cell_canister.png"
+  }
+]

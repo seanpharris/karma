@@ -1,0 +1,87 @@
+{
+  "id": "western_sci_fi",
+  "display_name": "Western Sci-Fi",
+  "version": "0.1-stub",
+  "description": "Minimal stub roster + interactions for the western-sci-fi frontier theme. Expand when the dedicated theme work resumes.",
+  "factions": [
+    { "id": "marshals", "display_name": "Frontier Marshals", "alignment": "law" },
+    { "id": "drifters", "display_name": "Sky Drifters", "alignment": "neutral" },
+    { "id": "rustlers", "display_name": "Comet Rustlers", "alignment": "outlaw" }
+  ],
+  "npc_roster": [
+    {
+      "id": "marshal_corwin",
+      "name": "Marshal Corwin",
+      "role": "Town Marshal",
+      "faction": "marshals",
+      "alignment": "law",
+      "tags": ["law"],
+      "appearance_options": [],
+      "relationships": []
+    },
+    {
+      "id": "drifter_vel",
+      "name": "Drifter Vel",
+      "role": "Long-Haul Wayfarer",
+      "faction": "drifters",
+      "alignment": "neutral",
+      "tags": ["wayfarer"],
+      "appearance_options": [],
+      "relationships": [
+        { "target": "marshal_corwin", "type": "friend", "intensity": 2 }
+      ]
+    },
+    {
+      "id": "rustler_jude",
+      "name": "Jude the Rustler",
+      "role": "Comet Rustler",
+      "faction": "rustlers",
+      "alignment": "outlaw",
+      "tags": ["outlaw"],
+      "appearance_options": [],
+      "relationships": [
+        { "target": "marshal_corwin", "type": "rival", "intensity": 4 }
+      ]
+    }
+  ],
+  "interactions": {
+    "greetings_pool": {
+      "law": [
+        "Walk easy. Town's quiet today and I'd like to keep it that way.",
+        "Hands where I can see 'em — frontier rules, not personal."
+      ],
+      "outlaw": [
+        "Heard you were looking. Coin first, then we talk.",
+        "Marshal asks, you didn't see me."
+      ],
+      "wayfarer": [
+        "Long road behind, longer ahead. Got water?",
+        "Stranger. The dust knows everyone eventually."
+      ],
+      "trade": [
+        "Buying or browsing? Either way, mind the still.",
+        "Fair price is whatever the marshal can't haggle me down to."
+      ],
+      "peasant": [
+        "Howdy. Mind the pump line at the well.",
+        "Rain's coming. Dust says so."
+      ]
+    },
+    "gossip_templates": {
+      "law": [
+        "I've got my eye on {relation_name}. Always have."
+      ],
+      "outlaw": [
+        "{relation_name} owes me a debt. The polite kind, for now."
+      ],
+      "wayfarer": [
+        "Met {relation_name} on the road outside town. Strange company to keep."
+      ]
+    }
+  },
+  "music": {
+    "sandbox": "SandboxCalm",
+    "scenario": "ScenarioAmbient",
+    "event": "EventTension"
+  }
+}

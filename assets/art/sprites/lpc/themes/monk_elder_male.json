@@ -1,0 +1,21 @@
+{
+  "id": "monk_elder_male",
+  "display_name": "Abbot",
+  "tags": [
+    "medieval",
+    "chapel"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male_elderly/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/shoes/basic/male/walk.png",
+    "legs": "legs/pants/thin/walk.png",
+    "torso": "torso/clothes/longsleeve/longsleeve_brown/male/walk.png",
+    "hair": "hair/balding/adult/walk.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

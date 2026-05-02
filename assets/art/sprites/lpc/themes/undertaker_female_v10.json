@@ -1,0 +1,24 @@
+{
+  "id": "undertaker_female_v10",
+  "display_name": "Undertaker (variant 10)",
+  "tags": [
+    "medieval",
+    "chapel"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/thin/walk.png",
+    "legs": "legs/fur/thin/walk.png",
+    "torso": "torso/clothes/longsleeve/longsleeves_cuffed/female/walk.png",
+    "hair": "hair/bangslong/adult/walk.png",
+    "weapon": "weapon/polearm/cane/male/walk/cane.png",
+    "waist": "torso/waist/belt_belly/female/walk.png",
+    "hat": "hat/headband/thick/adult/walk.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

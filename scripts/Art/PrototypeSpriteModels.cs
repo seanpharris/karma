@@ -46,6 +46,12 @@ public enum PrototypeSpriteKind
     PowerCell,
     BoltCutters,
     MagneticGrabber,
+    BackpackBrown,
+    BallisticRound,
+    EnergyCell,
+    StimSpike,
+    DownerHaze,
+    TremorTab,
     PixellabTrialNpc,
     Dallen
 }
@@ -86,6 +92,7 @@ public static class PrototypeSpriteCatalog
     public const string CharacterAtlasPath = "res://assets/art/character.png";
     public const string EngineerPlayerAtlasPath = "res://assets/art/sprites/scifi_engineer_player_sheet.png";
     public const string PlayerV2RealBaseBlackBootsAtlasPath = "res://assets/art/sprites/player_v2/player_real_base_black_boots_32x64_8dir_4row.png";
+    public const string LpcRandomCharacterAtlasPath = "res://assets/art/generated/lpc/random_character_32x64_8dir_4row.png";
     public const string PlayerV2LayeredPreview32x64AtlasPath = "res://assets/art/sprites/player_v2/player_model_32x64_layered_preview.png";
     public const string PlayerV2TrialImportedAtlasPath = "res://assets/art/sprites/player_v2/imported/player_base_body_sheet_32x64_8dir_4row.png";
     public const string PlayerV2Model32x64AtlasPath = "res://assets/art/sprites/player_v2/player_model_32x64_8dir_4row.png";
@@ -141,6 +148,12 @@ public static class PrototypeSpriteCatalog
             StarterItems.PowerCellId => PrototypeSpriteKind.PowerCell,
             StarterItems.BoltCuttersId => PrototypeSpriteKind.BoltCutters,
             StarterItems.MagneticGrabberId => PrototypeSpriteKind.MagneticGrabber,
+            StarterItems.BackpackBrownId => PrototypeSpriteKind.BackpackBrown,
+            StarterItems.BallisticRoundId => PrototypeSpriteKind.BallisticRound,
+            StarterItems.EnergyCellId => PrototypeSpriteKind.EnergyCell,
+            StarterItems.StimSpikeId => PrototypeSpriteKind.StimSpike,
+            StarterItems.DownerHazeId => PrototypeSpriteKind.DownerHaze,
+            StarterItems.TremorTabId => PrototypeSpriteKind.TremorTab,
             _ => PrototypeSpriteKind.WhoopieCushion
         };
     }
@@ -235,6 +248,12 @@ public static class PrototypeSpriteCatalog
                 "power_cell_canister.png"),
             PrototypeSpriteKind.BoltCutters => Tool(PrototypeSpriteKind.BoltCutters, "Bolt Cutters", new Vector2(28f, 18f), new Rect2(1165f, 716f, 165f, 90f)),
             PrototypeSpriteKind.MagneticGrabber => Tool(PrototypeSpriteKind.MagneticGrabber, "Magnetic Grabber", new Vector2(30f, 16f), new Rect2(1370f, 720f, 145f, 82f)),
+            PrototypeSpriteKind.BackpackBrown => Tool(PrototypeSpriteKind.BackpackBrown, "Brown Backpack", new Vector2(24f, 24f), new Rect2(1358f, 166f, 160f, 136f)),
+            PrototypeSpriteKind.BallisticRound => Weapon(PrototypeSpriteKind.BallisticRound, "Ballistic Round", new Vector2(20f, 20f), new Rect2(1308f, 670f, 105f, 130f)),
+            PrototypeSpriteKind.EnergyCell => Tool(PrototypeSpriteKind.EnergyCell, "Energy Cell", new Vector2(22f, 22f), new Rect2(978f, 718f, 105f, 95f)),
+            PrototypeSpriteKind.StimSpike => Tool(PrototypeSpriteKind.StimSpike, "Stim Spike", new Vector2(24f, 18f), new Rect2(722f, 716f, 164f, 92f)),
+            PrototypeSpriteKind.DownerHaze => Tool(PrototypeSpriteKind.DownerHaze, "Downer Haze", new Vector2(22f, 20f), new Rect2(506f, 170f, 160f, 120f)),
+            PrototypeSpriteKind.TremorTab => Tool(PrototypeSpriteKind.TremorTab, "Tremor Tab", new Vector2(22f, 20f), new Rect2(916f, 168f, 148f, 126f)),
             _ => Humanoid(
                 PrototypeSpriteKind.Player,
                 "Unknown",

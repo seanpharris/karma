@@ -25,6 +25,7 @@ public partial class PeerStandInController : Area2D
     private IReadOnlyList<string> _peerStatusEffects = System.Array.Empty<string>();
     private string _peerDuelState = "Duel: none";
     private PlayerAppearanceSelection _lastAppliedAppearance = null;
+    private string _lastAppliedLpcBundleId = string.Empty;
 
     public override void _Ready()
     {
@@ -404,7 +405,7 @@ public partial class PeerStandInController : Area2D
         var peer = snapshot?.Players.FirstOrDefault(player => player.Id == "peer_stand_in");
         if (peer is not null)
         {
-            ApplyAppearance(peer.Appearance);
+            ApplyAppearance(peer);
             GlobalPosition = PlayerController.CalculateWorldPosition(peer.TileX, peer.TileY);
             TopDownDepth.Apply(this);
             _peerHealth = peer.Health;
@@ -420,15 +421,22 @@ public partial class PeerStandInController : Area2D
         }
     }
 
-    private void ApplyAppearance(PlayerAppearanceSelection appearance)
+    private void ApplyAppearance(PlayerSnapshot peer)
     {
-        if (_characterSprite is null || _lastAppliedAppearance == appearance)
+        if (_characterSprite is null || peer is null)
         {
             return;
         }
 
-        _characterSprite.ApplyPlayerAppearanceSelection(appearance);
-        _lastAppliedAppearance = appearance;
+        if (_lastAppliedAppearance == peer.Appearance &&
+            _lastAppliedLpcBundleId == (peer.LpcBundleId ?? string.Empty))
+        {
+            return;
+        }
+
+        WorldRoot.ApplyPlayerSpriteAppearance(_characterSprite, peer);
+        _lastAppliedAppearance = peer.Appearance;
+        _lastAppliedLpcBundleId = peer.LpcBundleId ?? string.Empty;
     }
 
     private static string FormatDuelState(ClientInterestSnapshot snapshot)

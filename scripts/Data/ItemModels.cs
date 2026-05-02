@@ -18,7 +18,8 @@ public enum EquipmentSlot
     None,
     MainHand,
     Body,
-    Trinket
+    Trinket,
+    Backpack
 }
 
 public enum WeaponKind
@@ -26,6 +27,14 @@ public enum WeaponKind
     None,
     Melee,
     Ranged
+}
+
+public enum ItemRarity
+{
+    Common,
+    Uncommon,
+    Rare,
+    Contraband
 }
 
 public sealed record GameItem(
@@ -43,7 +52,15 @@ public sealed record GameItem(
     WeaponKind WeaponKind = WeaponKind.None,
     int StaminaCost = 0,
     int MagazineSize = 0,
-    string AmmoItemId = "");
+    string AmmoItemId = "",
+    int InventoryBoost = 0,
+    int FoodValue = 0,
+    int Durability = 100,
+    int MaxDurability = 100)
+{
+    public ItemRarity Rarity { get; init; } = IsContraband ? ItemRarity.Contraband : ItemRarity.Common;
+    public bool IsBroken => MaxDurability > 0 && Durability <= 0;
+}
 
 public static class StarterItems
 {
@@ -83,6 +100,15 @@ public static class StarterItems
     public const string PowerCellId = "power_cell";
     public const string BoltCuttersId = "bolt_cutters";
     public const string MagneticGrabberId = "magnetic_grabber";
+    public const string BackpackBrownId = "backpack_brown";
+    public const string StimSpikeId = DrugCatalog.StimSpikeId;
+    public const string DownerHazeId = DrugCatalog.DownerHazeId;
+    public const string TremorTabId = DrugCatalog.TremorTabId;
+    public const string BallisticRoundId = "ballistic_round";
+    public const string EnergyCellId = "energy_cell";
+
+    public const int BaseInventorySlots = 12;
+    public const int BackpackBrownInventoryBoost = 8;
 
     public static readonly GameItem WhoopieCushion = new(
         WhoopieCushionId,
@@ -127,8 +153,9 @@ public static class StarterItems
         RationPackId,
         "Ration Pack",
         ItemCategory.Tool,
-        new[] { "helpful", "consumable" },
-        "A compact meal brick that tastes like somebody described soup to a printer.");
+        new[] { "helpful", "consumable", "food" },
+        "A compact meal brick that tastes like somebody described soup to a printer.",
+        FoodValue: 40);
 
     public static readonly GameItem DataChip = new(
         DataChipId,
@@ -331,6 +358,50 @@ public static class StarterItems
         new[] { "utility", "retrieval", "metal" },
         "Retrieves metallic items from a distance.");
 
+    public static readonly GameItem BackpackBrown = new(
+        BackpackBrownId,
+        "Brown Backpack",
+        ItemCategory.Tool,
+        new[] { "utility", "storage" },
+        "A worn leather backpack. Adds room for more loose loot.",
+        EquipmentSlot.Backpack,
+        InventoryBoost: BackpackBrownInventoryBoost);
+
+    public static readonly GameItem StimSpike = new(
+        StimSpikeId,
+        "Stim Spike",
+        ItemCategory.Tool,
+        new[] { "drug", "consumable", "stimulant" },
+        "A fast stimulant with a hard landing.");
+
+    public static readonly GameItem DownerHaze = new(
+        DownerHazeId,
+        "Downer Haze",
+        ItemCategory.Tool,
+        new[] { "drug", "consumable", "sedative" },
+        "A numbing dose that makes pain easier to ignore.");
+
+    public static readonly GameItem TremorTab = new(
+        TremorTabId,
+        "Tremor Tab",
+        ItemCategory.Tool,
+        new[] { "drug", "consumable", "stimulant" },
+        "A twitchy little tablet that borrows energy from later.");
+
+    public static readonly GameItem BallisticRound = new(
+        BallisticRoundId,
+        "Ballistic Round",
+        ItemCategory.Tool,
+        new[] { "ammo", "ballistic" },
+        "A single ballistic round; reloads matching weapons.");
+
+    public static readonly GameItem EnergyCell = new(
+        EnergyCellId,
+        "Energy Cell",
+        ItemCategory.Tool,
+        new[] { "ammo", "energy" },
+        "A charged energy cell; reloads energy weapons.");
+
     public static IReadOnlyList<GameItem> All { get; } = new[]
     {
         WhoopieCushion,
@@ -368,7 +439,13 @@ public static class StarterItems
         ChemInjector,
         PowerCell,
         BoltCutters,
-        MagneticGrabber
+        MagneticGrabber,
+        BackpackBrown,
+        StimSpike,
+        DownerHaze,
+        TremorTab,
+        BallisticRound,
+        EnergyCell
     };
 
     public static GameItem GetById(string id)
@@ -416,6 +493,10 @@ public static class StarterItems
             PowerCellId => PowerCell,
             BoltCuttersId => BoltCutters,
             MagneticGrabberId => MagneticGrabber,
+            BackpackBrownId => BackpackBrown,
+            StimSpikeId => StimSpike,
+            DownerHazeId => DownerHaze,
+            TremorTabId => TremorTab,
             BallisticRoundId => BallisticRound,
             EnergyCellId => EnergyCell,
             _ => null
@@ -423,23 +504,6 @@ public static class StarterItems
 
         return item is not null;
     }
-
-    public const string BallisticRoundId = "ballistic_round";
-    public const string EnergyCellId = "energy_cell";
-
-    public static readonly GameItem BallisticRound = new(
-        BallisticRoundId,
-        "Ballistic Round",
-        ItemCategory.Tool,
-        new[] { "ammo", "ballistic" },
-        "A single ballistic round; reloads matching weapons.");
-
-    public static readonly GameItem EnergyCell = new(
-        EnergyCellId,
-        "Energy Cell",
-        ItemCategory.Tool,
-        new[] { "ammo", "energy" },
-        "A charged energy cell; reloads energy weapons.");
 
     private static GameItem Weapon(
         string id,

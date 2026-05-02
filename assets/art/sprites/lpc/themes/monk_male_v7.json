@@ -1,0 +1,24 @@
+{
+  "id": "monk_male_v7",
+  "display_name": "Monk (variant 7)",
+  "tags": [
+    "medieval",
+    "chapel"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/shoes/ghillies/male/walk.png",
+    "legs": "legs/formal/male/walk.png",
+    "torso": "torso/clothes/longsleeve/longsleeve2_cardigan/male/walk.png",
+    "hair": "hair/afro/adult/walk.png",
+    "weapon": "weapon/magic/simple/foreground/walk/simple.png",
+    "hat": "hat/cloth/hood_sack/adult/walk.png",
+    "beard": "beards/mustache/handlebar/walk.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

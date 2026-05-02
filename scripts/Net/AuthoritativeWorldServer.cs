@@ -21,6 +21,7 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, TilePosition> _initialSpawnByPlayer = new();
     private readonly HashSet<string> _connectedPlayerIds = new();
     private readonly Dictionary<string, string> _pendingPosseInviteByInvitee = new();
+    private readonly Dictionary<string, PosseInfo> _posses = new();
     private readonly Dictionary<string, long> _downedUntilTickByPlayer = new();
     private readonly Dictionary<string, TilePosition> _downedDeathPositionByPlayer = new();
     private readonly Dictionary<string, WorldItemEntity> _worldItems = new();
@@ -34,9 +35,12 @@ public sealed class AuthoritativeWorldServer
     private readonly MatchState _match;
     private GeneratedTileMap _tileMap;
     private long _tick;
+    private long _reputationDecayTickCounter;
+    private long _lastCleanlinessDecayTick;
     private bool _matchRewardsPaid;
     public const long AttackCooldownTicks = 3;
     private const long KarmaBreakGraceTicks = 5;
+    public const long DeathPileGracePeriodTicks = 300;
     public const long DownedCountdownTicks = 120;
     public const int RescueHealAmount = 25;
     public const int ClinicReviveCost = 10;
@@ -52,18 +56,43 @@ public sealed class AuthoritativeWorldServer
     public const int LocalChatMaxMessageLength = 180;
     public const long LocalChatRetainTicks = 240;
     public const int LocalChatMaxRetainedMessages = 80;
+    public const int CleanlinessDecayTickInterval = HungerDecayTickInterval * 2;
+    public const int DirtyStatusThreshold = 25;
+    public const int CombatCleanlinessLoss = 5;
     private readonly Dictionary<string, int> _killsPerPlayer = new();
+    private readonly Dictionary<string, int> _bountiesClaimedPerPlayer = new();
+    private readonly Dictionary<string, int> _rescuesPerformedPerPlayer = new();
     private readonly Dictionary<string, string> _wantedPlayerToIssuerId = new();
     public const int WantedKarmaReward = 10;
     private readonly Dictionary<string, int> _bountyByPlayerId = new();
     public const int BountyKarmaThreshold = -50;
     private readonly Dictionary<string, HashSet<PlayerStatusKind>> _persistentStatusByPlayer = new();
+    private readonly Dictionary<string, Dictionary<string, DrugExposure>> _drugExposureByPlayer = new();
+    private readonly Dictionary<string, Dictionary<string, long>> _drugStatusUntilByPlayer = new();
+    private readonly Dictionary<string, Dictionary<string, long>> _lastDrugWithdrawalTickByPlayer = new();
+    private readonly List<ScheduledCrimeReport> _scheduledCrimeReports = new();
+    // Active dialogue node per (player, npc). Empty = use the procedural
+    // GetChoicesFor path; populated only when the NPC has a DialogueTreeId
+    // and the player has navigated past the root via a dialogue_advance: action.
+    private readonly Dictionary<string, string> _activeDialogueNodeByPlayerNpc = new();
+    private readonly Dictionary<string, string> _dynamicDialogueTextByPlayerNpc = new();
+    private readonly ThemeData _themeData;
+
+    private sealed record ScheduledCrimeReport(
+        long DueTick,
+        string SourceEventId,
+        string SourceEventType,
+        string WitnessNpcId,
+        string SuspectPlayerId,
+        string TargetPlayerId,
+        string LawNpcId);
     public const int ContrabandKarmaDecayPerTick = 1;
     private long _lastContrabandDecayTick;
     private readonly HashSet<string> _readyUpPlayers = new();
     private readonly Dictionary<string, long> _supplyDropExpiryByEntityId = new();
     public const long SupplyDropDefaultExpiryTicks = 300;
     public const int NpcPatrolTickInterval = 5;
+    public const int NpcAmbientDriftChance = 1;
     public const int ClaimScripPerTick = 1;
     public const int PosseQuestBonusScrip = 25;
     private readonly Dictionary<string, string> _downedByPlayerId = new();
@@ -71,9 +100,18 @@ public sealed class AuthoritativeWorldServer
     private readonly Dictionary<string, ShopOffer> _seededOffers = new();
     private readonly HashSet<TilePosition> _lawlessTiles = new();
     private readonly HashSet<string> _inLawlessByPlayer = new();
+    private readonly HashSet<string> _scavengedContainerIds = new();
     private readonly Dictionary<string, HashSet<(int, int)>> _visitedChunksByPlayer = new();
     public const int FogOfWarMinimumRevealRadiusChunks = 1;
     private sealed record DropClaim(string OwnerId, string OwnerName);
+    private sealed record ShopPriceQuote(
+        int BasePrice,
+        int FinalPrice,
+        int KarmaDiscountPercent,
+        int RelationshipModifierPercent,
+        int RelationshipOpinion,
+        int CleanlinessModifierPercent,
+        string Breakdown);
     private sealed record LocalChatMessage(
         string MessageId,
         long Tick,
@@ -85,12 +123,14 @@ public sealed class AuthoritativeWorldServer
         bool SpeakerInsideStructure = false,
         string SpeakerPosseId = "");
 
-    public AuthoritativeWorldServer(GameState state, string worldId, ServerConfig config = null)
+    public AuthoritativeWorldServer(GameState state, string worldId, ServerConfig config = null, string themeId = "")
     {
         _state = state;
         WorldId = worldId;
         Config = config ?? ServerConfig.Prototype4Player;
         Config.Validate();
+        ThemeId = string.IsNullOrWhiteSpace(themeId) ? ThemeRegistry.DefaultThemeId : themeId;
+        _themeData = ThemeDataCatalog.Get(ThemeId);
         _match = new MatchState(Config.MatchDurationSeconds);
         SeedConnectedPlayers();
         SeedStarterNpcs();
@@ -99,6 +139,7 @@ public sealed class AuthoritativeWorldServer
     }
 
     public string WorldId { get; }
+    public string ThemeId { get; }
     public ServerConfig Config { get; }
     public long Tick => _tick;
     public IReadOnlyList<ServerEvent> EventLog => _eventLog;
@@ -110,7 +151,15 @@ public sealed class AuthoritativeWorldServer
     public IReadOnlyList<LocalChatMessageSnapshot> LocalChatLog => _localChatLog
         .Select(message => ToLocalChatSnapshot(message, message.SpeakerPosition))
         .ToArray();
-    public MatchSnapshot Match => _match.Snapshot(_state.GetLeaderboardStanding());
+    public MatchSnapshot Match => _match.Snapshot(_state.GetLeaderboardStanding(), CurrentMatchPhase);
+    public MatchPhase CurrentMatchPhase => CalculateMatchPhase(_tick, Config.MatchPhaseDurationTicks);
+
+    public static MatchPhase CalculateMatchPhase(long tick, int phaseDurationTicks)
+    {
+        var safeDuration = Math.Max(1, phaseDurationTicks);
+        var index = (int)((Math.Max(0, tick) / safeDuration) % 6);
+        return (MatchPhase)index;
+    }
 
     public int GetBounty(string playerId) =>
         _bountyByPlayerId.TryGetValue(playerId, out var bounty) ? bounty : 0;
@@ -141,6 +190,39 @@ public sealed class AuthoritativeWorldServer
                 ["expiryTick"] = (_tick + expiryTicks).ToString()
             });
         return entityId;
+    }
+
+    // Roll a LootTable to materialise a supply drop. Each rolled item becomes
+    // one WorldItemEntity placed in a small grid around the centre tile so
+    // they don't all stack on the same coordinate. Deterministic when called
+    // with the same seed input.
+    public IReadOnlyList<string> ScheduleSupplyDropFromTable(
+        TilePosition position,
+        string lootTableId,
+        long expiryTicks = SupplyDropDefaultExpiryTicks,
+        int seedSalt = 0)
+    {
+        var rolls = RollLootTable(lootTableId, seedSalt);
+        if (rolls.Count == 0) return Array.Empty<string>();
+
+        var spawnedIds = new List<string>(rolls.Count);
+        // Walk a 3-cell radius spiral so multi-item drops don't all overlap.
+        int[] dx = { 0, 1, -1, 0, 0, 1, 1, -1, -1 };
+        int[] dy = { 0, 0, 0, 1, -1, 1, -1, 1, -1 };
+        var slot = 0;
+        foreach (var roll in rolls)
+        {
+            if (!StarterItems.TryGetById(roll.ItemId, out var item)) continue;
+            for (var copy = 0; copy < roll.Quantity; copy++)
+            {
+                var offset = new TilePosition(
+                    position.X + (slot < dx.Length ? dx[slot] : 0),
+                    position.Y + (slot < dy.Length ? dy[slot] : 0));
+                slot++;
+                spawnedIds.Add(ScheduleSupplyDrop(offset, item, expiryTicks));
+            }
+        }
+        return spawnedIds;
     }
 
     public void ApplyStatus(string playerId, PlayerStatusKind kind)
@@ -184,18 +266,40 @@ public sealed class AuthoritativeWorldServer
             return;
         }
 
+        var previousTick = _tick;
         var patrolSteps = (_tick + ticks) / NpcPatrolTickInterval - _tick / NpcPatrolTickInterval;
-        var repDecaySteps = (_tick + ticks) / Config.ReputationDecayTickInterval - _tick / Config.ReputationDecayTickInterval;
         _tick += ticks;
         PruneLocalChatLog();
         DecayHeatMap(ticks);
         FinalizeExpiredDownedPlayers();
         ApplyContrabandDecay();
         ApplySupplyDropExpiry();
+        ApplyDeathPileOwnershipExpiry();
         for (var i = 0; i < patrolSteps; i++) StepNpcPatrols();
-        for (var i = 0; i < repDecaySteps; i++) _state.Factions.Decay();
+        ApplyReputationDecayTicks(ticks);
         ApplyClaimScrip(ticks);
         ApplyStaminaRegen(ticks);
+        ApplyHungerDecay(ticks);
+        ApplyCleanlinessDecay();
+        PruneExpiredDrugStatuses();
+        ApplyDrugWithdrawalTicks(previousTick, _tick);
+        ProcessDueCrimeReports();
+    }
+
+    private void ApplyDeathPileOwnershipExpiry()
+    {
+        foreach (var (entityId, entity) in _worldItems.ToArray())
+        {
+            if (!entity.IsAvailable) continue;
+            if (string.IsNullOrWhiteSpace(entity.DropOwnerId)) continue;
+            if (entity.DropOwnerExpiresTick <= 0 || entity.DropOwnerExpiresTick > _tick) continue;
+            _worldItems[entityId] = entity with
+            {
+                DropOwnerId = string.Empty,
+                DropOwnerName = string.Empty,
+                DropOwnerExpiresTick = 0
+            };
+        }
     }
 
     public void AdvanceMatchTime(int seconds)
@@ -271,7 +375,15 @@ public sealed class AuthoritativeWorldServer
                     _killsPerPlayer.GetValueOrDefault(id));
             })
             .ToArray();
-        return new MatchSummarySnapshot(SnapshotBuilder.LeaderboardFrom(standing), players);
+        var highlights = players.ToDictionary(
+            player => player.Id,
+            player => new PlayerMatchHighlights(
+                Math.Max(0, player.KarmaPeak),
+                Math.Max(0, -player.KarmaFloor),
+                _killsPerPlayer.GetValueOrDefault(player.Id),
+                _bountiesClaimedPerPlayer.GetValueOrDefault(player.Id),
+                _rescuesPerformedPerPlayer.GetValueOrDefault(player.Id)));
+        return new MatchSummarySnapshot(SnapshotBuilder.LeaderboardFrom(standing), players, highlights);
     }
 
     public void SeedWorldItem(
@@ -279,15 +391,22 @@ public sealed class AuthoritativeWorldServer
         GameItem item,
         TilePosition position,
         string dropOwnerId = "",
-        string dropOwnerName = "")
+        string dropOwnerName = "",
+        long dropOwnerExpiresTick = 0)
     {
+        if (!string.IsNullOrWhiteSpace(dropOwnerId) && dropOwnerExpiresTick <= 0)
+        {
+            dropOwnerExpiresTick = _tick + DeathPileGracePeriodTicks;
+        }
+
         _worldItems[entityId] = new WorldItemEntity(
             entityId,
             item,
             position,
             IsAvailable: true,
             dropOwnerId,
-            dropOwnerName);
+            dropOwnerName,
+            dropOwnerExpiresTick);
     }
 
     public void SeedGeneratedWorldContent(GeneratedWorld generatedWorld)
@@ -329,7 +448,7 @@ public sealed class AuthoritativeWorldServer
                 continue;
             }
 
-            _npcs[profile.Id] = new NpcEntity(profile, new TilePosition(placement.X, placement.Y), placement.LocationId);
+            SeedNpc(profile, new TilePosition(placement.X, placement.Y), placement.LocationId);
         }
 
         var odditiesById = generatedWorld.Oddities.ToDictionary(item => item.Id);
@@ -402,12 +521,38 @@ public sealed class AuthoritativeWorldServer
             Integrity: 75);
     }
 
+    public void SeedRestroomStructure(string entityId, TilePosition position, string name = "Restroom")
+    {
+        var definition = StructureArtCatalog.Get(StructureSpriteKind.WoodChestClosed);
+        _worldStructures[entityId] = new WorldStructureEntity(
+            entityId,
+            "restroom",
+            name,
+            "restroom",
+            position,
+            IsVisible: true,
+            IsInteractable: true,
+            InteractionPrompt: $"Press E to use {name}.",
+            InteractionResult: $"{name} can reset Cleanliness.",
+            Integrity: 100);
+    }
+
     public TilePosition GetNpcPosition(string npcId)
     {
         return _npcs.TryGetValue(npcId, out var npc) ? npc.Position : TilePosition.Origin;
     }
 
     public void SeedShopOffer(ShopOffer offer) => _seededOffers[offer.Id] = offer;
+
+    public void SeedNpc(NpcProfile profile, TilePosition position, string locationId = "")
+    {
+        if (profile is null || string.IsNullOrWhiteSpace(profile.Id)) return;
+        _npcs[profile.Id] = new NpcEntity(
+            profile,
+            position,
+            locationId,
+            LpcBundleId: _themeData.PickAppearanceBundle(WorldId, profile.Id));
+    }
 
     public void AssignBuildingInterior(string entityId, BuildingInterior interior)
     {
@@ -512,6 +657,7 @@ public sealed class AuthoritativeWorldServer
         }
 
         _state.RegisterPlayer(playerId, displayName);
+        _state.Players[playerId].SetLpcBundleId(Karma.Art.LpcPlayerAppearanceRegistry.PickBundleId(WorldId, playerId));
         var spawnPosition = AssignInitialSpawnPosition(playerId);
         _state.SetPlayerPosition(playerId, spawnPosition);
         _connectedPlayerIds.Add(playerId);
@@ -535,35 +681,43 @@ public sealed class AuthoritativeWorldServer
     {
         _tick++;
         if (_tick % NpcPatrolTickInterval == 0) StepNpcPatrols();
-        if (_tick % Config.ReputationDecayTickInterval == 0) _state.Factions.Decay();
+        ApplyReputationDecayTicks(1);
 
         if (!_connectedPlayerIds.Contains(intent.PlayerId))
         {
-            return Reject(intent, $"Unknown or disconnected player: {intent.PlayerId}.");
+            var rejected = Reject(intent, $"Unknown or disconnected player: {intent.PlayerId}.");
+            RecordReplayRow(intent, rejected);
+            return rejected;
         }
 
         if (!IsSequenceExempt(intent.Type) &&
             _lastSequenceByPlayer.TryGetValue(intent.PlayerId, out var lastSequence) &&
             intent.Sequence <= lastSequence)
         {
-            return Reject(intent, $"Rejected stale intent {intent.Sequence}; last accepted was {lastSequence}.");
+            var rejected = Reject(intent, $"Rejected stale intent {intent.Sequence}; last accepted was {lastSequence}.");
+            RecordReplayRow(intent, rejected);
+            return rejected;
         }
 
         if (_match.Status == MatchStatus.Finished && !IsPostMatchIntentAllowed(intent.Type))
         {
-            return Reject(intent, $"Match is finished; {intent.Type} is no longer accepted.");
+            var rejected = Reject(intent, $"Match is finished; {intent.Type} is no longer accepted.");
+            RecordReplayRow(intent, rejected);
+            return rejected;
         }
 
         if (_downedUntilTickByPlayer.ContainsKey(intent.PlayerId) && !IsDownedIntentAllowed(intent.Type))
         {
             var remaining = _downedUntilTickByPlayer[intent.PlayerId] - _tick;
-            return Reject(intent, $"Player is downed ({remaining} ticks remaining); only chat is allowed.");
+            var rejected = Reject(intent, $"Player is downed ({remaining} ticks remaining); only chat is allowed.");
+            RecordReplayRow(intent, rejected);
+            return rejected;
         }
 
         if (!IsSequenceExempt(intent.Type))
             _lastSequenceByPlayer[intent.PlayerId] = intent.Sequence;
 
-        return intent.Type switch
+        var result = intent.Type switch
         {
             IntentType.Move => ProcessMove(intent),
             IntentType.Interact => ProcessInteract(intent),
@@ -589,19 +743,42 @@ public sealed class AuthoritativeWorldServer
             IntentType.InvitePosse => ProcessInvitePosse(intent),
             IntentType.AcceptPosse => ProcessAcceptPosse(intent),
             IntentType.LeavePosse => ProcessLeavePosse(intent),
+            IntentType.TransferPosseLeadership => ProcessTransferPosseLeadership(intent),
             IntentType.SendPosseChat => ProcessSendPosseChat(intent),
             IntentType.Rescue => ProcessRescue(intent),
             IntentType.Mount => ProcessMount(intent),
             IntentType.Dismount => ProcessDismount(intent),
+            IntentType.MountBagTransfer => ProcessMountBagTransfer(intent),
             IntentType.IssueWanted => ProcessIssueWanted(intent),
             IntentType.ReadyUp => ProcessReadyUp(intent),
             IntentType.ClaimStation => ProcessClaimStation(intent),
             IntentType.CraftItem => ProcessCraftItem(intent),
             IntentType.SellItem => ProcessSellItem(intent),
             IntentType.Reload => ProcessReload(intent),
+            IntentType.RepairItem => ProcessRepairItem(intent),
             IntentType.StartPosseQuest => ProcessStartPosseQuest(intent),
             _ => Reject(intent, $"Unsupported intent type: {intent.Type}")
         };
+        RecordReplayRow(intent, result);
+        return result;
+    }
+
+    private void RecordReplayRow(ServerIntent intent, ServerProcessResult result)
+    {
+        if (!Config.ReplayEnabled) return;
+
+        var path = string.IsNullOrWhiteSpace(Config.ReplayPath)
+            ? "match_replay.jsonl"
+            : Config.ReplayPath;
+        var snapshot = _state.Players.ContainsKey(intent.PlayerId)
+            ? CreateInterestSnapshot(intent.PlayerId)
+            : null;
+        MatchReplayLog.Append(path, new MatchReplayRow(
+            _tick,
+            intent,
+            result.WasAccepted,
+            result.RejectionReason,
+            snapshot));
     }
 
     private static bool IsPostMatchIntentAllowed(IntentType type)
@@ -737,6 +914,16 @@ public sealed class AuthoritativeWorldServer
             .ToArray();
         var visibleShopOffers = CreateVisibleShopOffers(playerId, interest.VisibleNpcIds, standing);
         var visibleLocalChat = CreateVisibleLocalChat(playerId);
+        var factionStandings = StarterFactions.All
+            .Select(faction => new FactionSnapshot(
+                faction.Id,
+                playerId,
+                _state.Factions.GetReputation(faction.Id, playerId)))
+            .Concat(_state.Factions.Snapshot()
+                .Where(faction => faction.PlayerId == playerId)
+                .Where(faction => StarterFactions.All.All(starter => starter.Id != faction.FactionId)))
+            .OrderBy(faction => faction.FactionId)
+            .ToArray();
         var visibleDuels = _state.Duels.All
             .Where(duel => IsDuelVisibleTo(duel, visiblePlayerIds))
             .OrderBy(duel => duel.Id)
@@ -767,7 +954,8 @@ public sealed class AuthoritativeWorldServer
             interest,
             SnapshotBuilder.PlayersFrom(
                 visiblePlayers, standing, GetStatusEffectsFor,
-                p => _enteredStructureByPlayer.TryGetValue(p.Id, out var s) ? s : string.Empty),
+                p => _enteredStructureByPlayer.TryGetValue(p.Id, out var s) ? s : string.Empty,
+                GetPosseInfoFor),
             visibleNpcs,
             visibleDialogues,
             visibleQuests,
@@ -776,8 +964,9 @@ public sealed class AuthoritativeWorldServer
             visibleStructures,
             visibleShopOffers,
             visibleLocalChat,
+            factionStandings,
             SnapshotBuilder.LeaderboardFrom(standing),
-            _match.Snapshot(standing),
+            _match.Snapshot(standing, CurrentMatchPhase),
             visibleDuels,
             CreateSyncHint(afterTick, visibleMapChunks, events, worldEvents),
             events,
@@ -1068,6 +1257,76 @@ public sealed class AuthoritativeWorldServer
         return ServerProcessResult.Accepted(serverEvent);
     }
 
+    private ServerProcessResult ProcessMountBagTransfer(ServerIntent intent)
+    {
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var player))
+            return Reject(intent, "Unknown player.");
+
+        var mountId = intent.Payload.TryGetValue("mountId", out var payloadMountId)
+            ? payloadMountId
+            : _mountedPlayerToMountId.GetValueOrDefault(intent.PlayerId, string.Empty);
+        if (string.IsNullOrWhiteSpace(mountId))
+            return Reject(intent, "MountBagTransfer requires mountId or an active mount.");
+
+        if (!_mounts.TryGetValue(mountId, out var mount))
+            return Reject(intent, $"Unknown mount: {mountId}.");
+
+        if (mount.OccupantPlayerId != intent.PlayerId &&
+            player.Position.DistanceSquaredTo(mount.Position) > Config.InterestRadiusTiles * Config.InterestRadiusTiles)
+        {
+            return Reject(intent, $"{mount.Name} bag is out of range.");
+        }
+
+        if (!intent.Payload.TryGetValue("itemId", out var itemId) || string.IsNullOrWhiteSpace(itemId))
+            return Reject(intent, "MountBagTransfer requires itemId.");
+
+        var mode = intent.Payload.TryGetValue("mode", out var payloadMode)
+            ? payloadMode.Trim().ToLowerInvariant()
+            : "stash";
+        var bag = (mount.BagItemIds ?? Array.Empty<string>()).ToList();
+
+        if (mode == "stash")
+        {
+            if (bag.Count >= 8)
+                return Reject(intent, $"{mount.Name} bag is full.");
+            if (!_state.TryTakeItem(intent.PlayerId, itemId, out _))
+                return Reject(intent, $"Player does not hold item: {itemId}.");
+            bag.Add(itemId);
+        }
+        else if (mode == "take")
+        {
+            if (!bag.Remove(itemId))
+                return Reject(intent, $"{mount.Name} bag does not contain item: {itemId}.");
+            if (!StarterItems.TryGetById(itemId, out var item))
+                return Reject(intent, $"Unknown bag item: {itemId}.");
+            if (!_state.TryAddItem(intent.PlayerId, item))
+            {
+                bag.Add(itemId);
+                return Reject(intent, $"Inventory is full ({player.Inventory.Count}/{player.MaxInventorySlots}).");
+            }
+        }
+        else
+        {
+            return Reject(intent, "MountBagTransfer mode must be stash or take.");
+        }
+
+        _mounts[mountId] = mount with { BagItemIds = bag.ToArray() };
+
+        var serverEvent = AppendEvent(
+            "mount_bag_transfer",
+            $"{intent.PlayerId} {mode}d {itemId} {(mode == "stash" ? "in" : "from")} {mount.Name}.",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["mountId"] = mountId,
+                ["itemId"] = itemId,
+                ["mode"] = mode,
+                ["bagCount"] = bag.Count.ToString()
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
     private ServerProcessResult ProcessSetAppearance(ServerIntent intent)
     {
         if (!_state.Players.TryGetValue(intent.PlayerId, out var player))
@@ -1080,7 +1339,9 @@ public sealed class AuthoritativeWorldServer
             ReadPayloadOrDefault(intent.Payload, "skinLayerId", player.Appearance.SkinLayerId),
             ReadPayloadOrDefault(intent.Payload, "hairLayerId", player.Appearance.HairLayerId),
             ReadPayloadOrDefault(intent.Payload, "outfitLayerId", player.Appearance.OutfitLayerId),
-            ReadPayloadOrDefault(intent.Payload, "heldToolLayerId", player.Appearance.HeldToolLayerId));
+            ReadPayloadOrDefault(intent.Payload, "heldToolLayerId", player.Appearance.HeldToolLayerId),
+            ReadPayloadOrDefault(intent.Payload, "pantsLayerId", player.Appearance.PantsLayerId),
+            ReadPayloadOrDefault(intent.Payload, "shirtLayerId", player.Appearance.ShirtLayerId));
         try
         {
             PlayerV2LayerManifest.LoadDefault().CreateAppearance(selection);
@@ -1103,7 +1364,9 @@ public sealed class AuthoritativeWorldServer
                 ["skinLayerId"] = updated.SkinLayerId,
                 ["hairLayerId"] = updated.HairLayerId,
                 ["outfitLayerId"] = updated.OutfitLayerId,
-                ["heldToolLayerId"] = updated.HeldToolLayerId
+                ["heldToolLayerId"] = updated.HeldToolLayerId,
+                ["pantsLayerId"] = updated.PantsLayerId,
+                ["shirtLayerId"] = updated.ShirtLayerId
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -1201,7 +1464,7 @@ public sealed class AuthoritativeWorldServer
             }
             else
             {
-                var droppedItemCount = DropInventory(playerId).Count;
+                var droppedItemCount = DropInventory(playerId).Count + DropDownedPlayerLoot(playerId).Count;
                 AwardTrophyToScorer(playerId);
                 _state.TriggerKarmaBreak(playerId);
                 _wantedPlayerToIssuerId.Remove(playerId);
@@ -1255,6 +1518,30 @@ public sealed class AuthoritativeWorldServer
                 _combatHeatByChunk.Remove(key);
             else
                 _combatHeatByChunk[key] = remaining;
+        }
+    }
+
+    private void ApplyReputationDecayTicks(long ticks)
+    {
+        if (ticks <= 0)
+            return;
+
+        _reputationDecayTickCounter += ticks;
+        while (_reputationDecayTickCounter >= Config.ReputationDecayTickInterval)
+        {
+            _reputationDecayTickCounter -= Config.ReputationDecayTickInterval;
+            DecayFactionReputationOnce();
+        }
+    }
+
+    private void DecayFactionReputationOnce()
+    {
+        foreach (var standing in _state.Factions.Snapshot())
+        {
+            if (standing.Reputation > 2)
+                _state.Factions.Apply(standing.FactionId, standing.PlayerId, -1);
+            else if (standing.Reputation < -2)
+                _state.Factions.Apply(standing.FactionId, standing.PlayerId, 1);
         }
     }
 
@@ -1327,10 +1614,67 @@ public sealed class AuthoritativeWorldServer
     {
         foreach (var (id, npc) in _npcs.ToArray())
         {
-            if (npc.PatrolWaypoints is not { Count: >= 2 }) continue;
-            var nextIndex = (npc.PatrolIndex + 1) % npc.PatrolWaypoints.Count;
-            _npcs[id] = npc with { Position = npc.PatrolWaypoints[nextIndex], PatrolIndex = nextIndex };
+            if (npc.PatrolWaypoints is { Count: >= 2 })
+            {
+                var nextIndex = (npc.PatrolIndex + 1) % npc.PatrolWaypoints.Count;
+                _npcs[id] = npc with { Position = npc.PatrolWaypoints[nextIndex], PatrolIndex = nextIndex };
+                continue;
+            }
+
+            if (!ShouldAmbientDrift(id))
+                continue;
+
+            var anchor = FindAmbientAnchor(npc);
+            if (anchor is null || anchor.Value == npc.Position)
+                continue;
+
+            _npcs[id] = npc with { Position = StepToward(npc.Position, anchor.Value) };
         }
+    }
+
+    private bool ShouldAmbientDrift(string npcId)
+    {
+        return NpcAmbientDriftChance <= 1 ||
+               Math.Abs(HashCode.Combine(WorldId, npcId, _tick)) % NpcAmbientDriftChance == 0;
+    }
+
+    private TilePosition? FindAmbientAnchor(NpcEntity npc)
+    {
+        var category = GetAmbientAnchorCategory(npc.Profile, CurrentMatchPhase);
+        if (string.IsNullOrWhiteSpace(category))
+            return null;
+
+        return _worldStructures.Values
+            .Where(structure => structure.Category.Equals(category, StringComparison.OrdinalIgnoreCase) ||
+                                structure.LocationId.Equals(category, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(structure => structure.Position.DistanceSquaredTo(npc.Position))
+            .ThenBy(structure => structure.EntityId)
+            .Select(structure => (TilePosition?)structure.Position)
+            .FirstOrDefault();
+    }
+
+    private static string GetAmbientAnchorCategory(NpcProfile profile, MatchPhase phase)
+    {
+        var night = phase is MatchPhase.Dusk or MatchPhase.Night;
+        var role = profile.Role ?? string.Empty;
+        if (role.Contains("smith", StringComparison.OrdinalIgnoreCase) ||
+            role.Contains("blacksmith", StringComparison.OrdinalIgnoreCase))
+        {
+            return night ? "tavern" : "smithy";
+        }
+
+        if (role.Contains("guard", StringComparison.OrdinalIgnoreCase) ||
+            role.Contains("captain", StringComparison.OrdinalIgnoreCase))
+        {
+            return night ? "barracks" : "market";
+        }
+
+        if (profile.HasTag(NpcRoleTags.Vendor) ||
+            role.Contains("tavern", StringComparison.OrdinalIgnoreCase) ||
+            role.Contains("merchant", StringComparison.OrdinalIgnoreCase))
+            return night ? "tavern" : "market";
+
+        return night ? "tavern" : "market";
     }
 
     private ServerProcessResult ProcessKarmaAction(ServerIntent intent)
@@ -1399,7 +1743,15 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, $"Interact entity is out of range: {entityId}.");
         }
 
-        var dropOwnerId = entity.DropOwnerId;
+        // Inventory cap check goes BEFORE karma shift so a rejected pickup
+        // doesn't penalise the claimant for an action that didn't land.
+        if (player.Inventory.Count >= player.MaxInventorySlots)
+        {
+            return Reject(intent, $"Inventory is full ({player.Inventory.Count}/{player.MaxInventorySlots}).");
+        }
+
+        var dropOwnershipActive = IsDeathPileOwnershipActive(entity);
+        var dropOwnerId = dropOwnershipActive ? entity.DropOwnerId : string.Empty;
         var dropOwnerName = string.IsNullOrWhiteSpace(entity.DropOwnerName)
             ? dropOwnerId
             : entity.DropOwnerName;
@@ -1455,6 +1807,12 @@ public sealed class AuthoritativeWorldServer
         return ServerProcessResult.Accepted(serverEvent);
     }
 
+    private bool IsDeathPileOwnershipActive(WorldItemEntity entity)
+    {
+        if (entity is null || string.IsNullOrWhiteSpace(entity.DropOwnerId)) return false;
+        return entity.DropOwnerExpiresTick <= 0 || entity.DropOwnerExpiresTick > _tick;
+    }
+
     private ServerProcessResult ProcessStructureInteract(
         ServerIntent intent,
         PlayerState player,
@@ -1474,7 +1832,7 @@ public sealed class AuthoritativeWorldServer
         var action = intent.Payload.TryGetValue("action", out var payloadAction)
             ? payloadAction
             : "inspect";
-        if (action != "inspect" && action != "repair" && action != "sabotage" && action != "enter" && action != "exit")
+        if (action != "inspect" && action != "repair" && action != "sabotage" && action != "enter" && action != "exit" && action != "scavenge" && action != "use")
         {
             return Reject(intent, $"Unknown structure interaction action: {action}.");
         }
@@ -1482,6 +1840,16 @@ public sealed class AuthoritativeWorldServer
         if (action == "enter" || action == "exit")
         {
             return ProcessStructureEntryInteraction(intent, player, structure, action);
+        }
+
+        if (action == "scavenge")
+        {
+            return ProcessContainerScavenge(intent, player, structure);
+        }
+
+        if (structure.Category == "restroom" && action == "use")
+        {
+            return ProcessRestroomUse(intent, player, structure);
         }
 
         if (structure.Category == "station" && action != "inspect")
@@ -1572,6 +1940,7 @@ public sealed class AuthoritativeWorldServer
                 ["playerId"] = intent.PlayerId,
                 ["entityId"] = structure.EntityId,
                 ["structureId"] = structure.StructureId,
+                ["structureCategory"] = structure.Category,
                 ["action"] = action,
                 ["result"] = result,
                 ["integrity"] = nextIntegrity.ToString(),
@@ -1659,6 +2028,107 @@ public sealed class AuthoritativeWorldServer
             });
 
         return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessContainerScavenge(
+        ServerIntent intent,
+        PlayerState player,
+        WorldStructureEntity structure)
+    {
+        if (!IsScavengeContainer(structure))
+        {
+            return Reject(intent, $"Structure cannot be scavenged: {structure.EntityId}.");
+        }
+
+        if (_scavengedContainerIds.Contains(structure.EntityId))
+        {
+            return Reject(intent, $"Container already scavenged: {structure.EntityId}.");
+        }
+
+        var rolls = RollLootTable(
+            LootTableCatalog.ContainerScavengeId,
+            HashCode.Combine(structure.EntityId, intent.PlayerId));
+        if (rolls.Count == 0)
+        {
+            return Reject(intent, $"Container has no loot table entries: {structure.EntityId}.");
+        }
+
+        var knownItemCount = rolls
+            .Where(roll => StarterItems.TryGetById(roll.ItemId, out _))
+            .Sum(roll => roll.Quantity);
+        if (knownItemCount <= 0)
+        {
+            return Reject(intent, $"Container yielded no known items: {structure.EntityId}.");
+        }
+
+        if (player.Inventory.Count + knownItemCount > player.MaxInventorySlots)
+        {
+            return Reject(intent, $"Inventory is full ({player.Inventory.Count}/{player.MaxInventorySlots}).");
+        }
+
+        var addedItemIds = new List<string>();
+        foreach (var roll in rolls)
+        {
+            if (!StarterItems.TryGetById(roll.ItemId, out var item))
+                continue;
+
+            for (var copy = 0; copy < roll.Quantity; copy++)
+            {
+                _state.TryAddItem(intent.PlayerId, item);
+                addedItemIds.Add(item.Id);
+            }
+        }
+
+        _scavengedContainerIds.Add(structure.EntityId);
+        var result = $"Scavenged {structure.Name}: {string.Join(", ", addedItemIds)}.";
+        var serverEvent = AppendEvent(
+            "container_scavenged",
+            $"{intent.PlayerId} scavenged {structure.StructureId}",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["entityId"] = structure.EntityId,
+                ["structureId"] = structure.StructureId,
+                ["lootTableId"] = LootTableCatalog.ContainerScavengeId,
+                ["itemIds"] = string.Join(",", addedItemIds),
+                ["result"] = result
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessRestroomUse(
+        ServerIntent intent,
+        PlayerState player,
+        WorldStructureEntity structure)
+    {
+        player.ResetCleanliness();
+        var serverEvent = AppendEvent(
+            "restroom_used",
+            $"{intent.PlayerId} used {structure.StructureId}",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["entityId"] = structure.EntityId,
+                ["structureId"] = structure.StructureId,
+                ["cleanliness"] = player.Cleanliness.ToString(),
+                ["maxCleanliness"] = player.MaxCleanliness.ToString()
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private static bool IsScavengeContainer(WorldStructureEntity structure)
+    {
+        if (structure.Category == "loot_prop")
+            return true;
+
+        var id = structure.StructureId;
+        return id.Contains("cabinet", StringComparison.OrdinalIgnoreCase)
+            || id.Contains("shelves", StringComparison.OrdinalIgnoreCase)
+            || id.Contains("crate", StringComparison.OrdinalIgnoreCase)
+            || id.Contains("chest", StringComparison.OrdinalIgnoreCase)
+            || id.Contains("tool_box", StringComparison.OrdinalIgnoreCase);
     }
 
     private void ApplyGeneratedStationStateEffect(
@@ -1889,6 +2359,9 @@ public sealed class AuthoritativeWorldServer
         var equippedWeapon = attacker.Equipment.TryGetValue(EquipmentSlot.MainHand, out var weapon) ? weapon : null;
         if (equippedWeapon is not null)
         {
+            if (equippedWeapon.IsBroken)
+                return Reject(intent, $"{equippedWeapon.Name} is broken and needs repair.");
+
             if (equippedWeapon.WeaponKind == WeaponKind.Ranged)
             {
                 if (attacker.CurrentAmmo <= 0)
@@ -1902,6 +2375,7 @@ public sealed class AuthoritativeWorldServer
         }
 
         var attackerInLawless = _lawlessTiles.Contains(attacker.Position);
+        var witnesses = BuildWitnessSet(target.Position, Config.InterestRadiusTiles, intent.PlayerId, targetId);
         var shift = isDuelAttack || attackerInLawless
             ? new KarmaShift(0, KarmaDirection.Neutral,
                 attackerInLawless
@@ -1913,9 +2387,12 @@ public sealed class AuthoritativeWorldServer
                     intent.PlayerId,
                     targetId,
                     new[] { "violent", "harmful", "chaotic" },
-                    $"{attacker.DisplayName} attacked {target.DisplayName} outside a duel."));
+                    $"{attacker.DisplayName} attacked {target.DisplayName} outside a duel."),
+                WitnessKarmaMultiplier(witnesses.Count));
         var damage = 30 + attacker.AttackPower;
         var wentDown = _state.DamagePlayer(intent.PlayerId, targetId, damage, isDuelAttack ? "accepted duel strike" : "server-authorized attack");
+        attacker.SpendCleanliness(CombatCleanlinessLoss);
+        target.SpendCleanliness(CombatCleanlinessLoss);
         _lastAttackTickByPlayer[intent.PlayerId] = _tick;
         if (equippedWeapon is not null)
         {
@@ -1923,7 +2400,10 @@ public sealed class AuthoritativeWorldServer
                 attacker.ConsumeAmmo();
             else if (equippedWeapon.WeaponKind == WeaponKind.Melee)
                 attacker.SpendStamina(equippedWeapon.StaminaCost);
+            _state.WearEquippedItem(intent.PlayerId, EquipmentSlot.MainHand, 1, out _);
         }
+        if (target.Equipment.ContainsKey(EquipmentSlot.Body))
+            _state.WearEquippedItem(targetId, EquipmentSlot.Body, 1, out _);
         AddCombatHeat(attacker.Position);
         if (wentDown)
         {
@@ -1933,6 +2413,7 @@ public sealed class AuthoritativeWorldServer
             _killsPerPlayer[intent.PlayerId] = _killsPerPlayer.GetValueOrDefault(intent.PlayerId) + 1;
             if (_bountyByPlayerId.Remove(targetId, out var bountyAmount) && bountyAmount > 0)
             {
+                _bountiesClaimedPerPlayer[intent.PlayerId] = _bountiesClaimedPerPlayer.GetValueOrDefault(intent.PlayerId) + bountyAmount;
                 _state.AddScrip(intent.PlayerId, bountyAmount);
                 AppendEvent("bounty_claimed",
                     $"{attacker.DisplayName} claimed a {bountyAmount} scrip bounty on {target.DisplayName}.",
@@ -1975,10 +2456,13 @@ public sealed class AuthoritativeWorldServer
                 ["downed"] = wentDown.ToString(),
                 ["duel"] = isDuelAttack.ToString(),
                 ["karmaAmount"] = shift.Amount.ToString(),
+                ["witnessCount"] = witnesses.Count.ToString(),
                 ["targetHealth"] = _state.Players[targetId].Health.ToString(),
                 ["targetMaxHealth"] = _state.Players[targetId].MaxHealth.ToString(),
                 ["downedUntilTick"] = wentDown ? _downedUntilTickByPlayer[targetId].ToString() : "0"
-            });
+            },
+            witnesses);
+        ScheduleCrimeReportsFor(serverEvent);
 
         return ServerProcessResult.Accepted(serverEvent);
     }
@@ -2016,6 +2500,7 @@ public sealed class AuthoritativeWorldServer
         _downedUntilTickByPlayer.Remove(targetId);
         _downedDeathPositionByPlayer.Remove(targetId);
         target.Rescue(RescueHealAmount);
+        _rescuesPerformedPerPlayer[intent.PlayerId] = _rescuesPerformedPerPlayer.GetValueOrDefault(intent.PlayerId) + 1;
 
         var shift = ApplyShift(intent.PlayerId, new KarmaAction(
             intent.PlayerId,
@@ -2037,13 +2522,33 @@ public sealed class AuthoritativeWorldServer
         return ServerProcessResult.Accepted(serverEvent);
     }
 
-    private KarmaShift ApplyShift(string playerId, KarmaAction action)
+    private KarmaShift ApplyShift(string playerId, KarmaAction action, double multiplier = 1.0)
     {
         var before = _state.GetLeaderboardStanding();
-        var shift = _state.ApplyShift(playerId, action);
+        int? overrideAmount = null;
+        if (multiplier < 0.999 || multiplier > 1.001)
+        {
+            var baseAmount = KarmaRules.CalculateShift(action).Amount;
+            overrideAmount = ScaleKarmaAmount(baseAmount, multiplier);
+        }
+        var shift = _state.ApplyShift(playerId, action, overrideAmount);
         EmitTitleChangeEvents(before);
         UpdateBounty(playerId);
         return shift;
+    }
+
+    private static int ScaleKarmaAmount(int amount, double multiplier)
+    {
+        if (amount == 0) return 0;
+        var scaled = (int)Math.Round(Math.Abs(amount) * multiplier, MidpointRounding.AwayFromZero);
+        return Math.Sign(amount) * Math.Max(1, scaled);
+    }
+
+    private static double WitnessKarmaMultiplier(int witnessCount)
+    {
+        if (witnessCount <= 0) return 0.25;
+        if (witnessCount >= 5) return 1.0;
+        return 0.25 + (0.15 * witnessCount);
     }
 
     private void UpdateBounty(string playerId)
@@ -2376,6 +2881,62 @@ public sealed class AuthoritativeWorldServer
         return ServerProcessResult.Accepted(serverEvent);
     }
 
+    private ServerProcessResult ProcessRepairItem(ServerIntent intent)
+    {
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var player))
+            return Reject(intent, "Player state unavailable.");
+
+        var slot = EquipmentSlot.MainHand;
+        if (intent.Payload.TryGetValue("slot", out var slotText) &&
+            !Enum.TryParse(slotText, ignoreCase: true, out slot))
+        {
+            return Reject(intent, $"Unknown equipment slot: {slotText}.");
+        }
+
+        if (!player.Equipment.TryGetValue(slot, out var item))
+            return Reject(intent, $"No item equipped in {slot}.");
+
+        if (item.MaxDurability <= 0)
+            return Reject(intent, $"{item.Name} cannot be repaired.");
+
+        var missing = Math.Max(0, item.MaxDurability - item.Durability);
+        if (missing == 0)
+            return Reject(intent, $"{item.Name} is already fully repaired.");
+
+        if (!IsNearWorkshop(player))
+            return Reject(intent, "RepairItem requires a nearby workshop.");
+
+        var cost = Math.Max(1, (int)Math.Ceiling(missing / 5.0));
+        if (!_state.SpendScrip(intent.PlayerId, cost))
+            return Reject(intent, $"Need {cost} scrip to repair {item.Name}.");
+
+        if (!_state.RepairEquippedItem(intent.PlayerId, slot))
+            return Reject(intent, $"Could not repair {item.Name}.");
+
+        var serverEvent = AppendEvent(
+            "item_repaired",
+            $"{intent.PlayerId} repaired {item.Name}.",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["itemId"] = item.Id,
+                ["slot"] = slot.ToString(),
+                ["cost"] = cost.ToString(),
+                ["durability"] = item.MaxDurability.ToString(),
+                ["maxDurability"] = item.MaxDurability.ToString()
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private bool IsNearWorkshop(PlayerState player)
+    {
+        var rangeSquared = Config.InterestRadiusTiles * Config.InterestRadiusTiles;
+        return _worldStructures.Values.Any(structure =>
+            structure.Category == "workshop" &&
+            player.Position.DistanceSquaredTo(structure.Position) <= rangeSquared);
+    }
+
     private ServerProcessResult ProcessSellItem(ServerIntent intent)
     {
         if (!intent.Payload.TryGetValue("itemId", out var itemId))
@@ -2446,7 +3007,8 @@ public sealed class AuthoritativeWorldServer
         if (!StarterItems.TryGetById(recipe.OutputItemId, out var output))
             return Reject(intent, $"Recipe output item missing: {recipe.OutputItemId}.");
 
-        _state.AddItem(intent.PlayerId, output);
+        if (!_state.TryAddItem(intent.PlayerId, output))
+            return Reject(intent, $"Inventory is full; cannot craft {output.Name}.");
 
         var serverEvent = AppendEvent(
             "item_crafted",
@@ -2467,6 +3029,40 @@ public sealed class AuthoritativeWorldServer
         if (amount <= 0) return;
         foreach (var pid in _connectedPlayerIds)
             if (_state.Players.TryGetValue(pid, out var p)) p.RegenStamina(amount);
+    }
+
+    public const int HungerDecayTickInterval = 600;
+    public const int HungryStatusThreshold = 25;
+    public const int StarvationDamagePerStep = 1;
+
+    private void ApplyHungerDecay(long ticks)
+    {
+        var decaySteps = (int)((_tick + ticks) / HungerDecayTickInterval - _tick / HungerDecayTickInterval);
+        if (decaySteps <= 0) return;
+        foreach (var pid in _connectedPlayerIds)
+        {
+            if (!_state.Players.TryGetValue(pid, out var p)) continue;
+            p.SpendHunger(decaySteps);
+            // Once hunger has bottomed out, each subsequent decay step taxes HP
+            // (slow but persistent). Driver of "eat at least once per match".
+            if (p.Hunger <= 0)
+            {
+                _state.DamagePlayer(pid, pid, StarvationDamagePerStep * decaySteps, "starvation");
+            }
+        }
+    }
+
+    private void ApplyCleanlinessDecay()
+    {
+        var decaySteps = (int)(_tick / CleanlinessDecayTickInterval - _lastCleanlinessDecayTick / CleanlinessDecayTickInterval);
+        _lastCleanlinessDecayTick = _tick;
+        if (decaySteps <= 0) return;
+
+        foreach (var pid in _connectedPlayerIds)
+        {
+            if (_state.Players.TryGetValue(pid, out var p))
+                p.SpendCleanliness(decaySteps);
+        }
     }
 
     private void ApplyClaimScrip(long ticks)
@@ -2500,6 +3096,48 @@ public sealed class AuthoritativeWorldServer
         var stationState = GetStationStateForLocation(npc.LocationId);
         var standing = _state.GetLeaderboardStanding();
         var role = standing.GetRole(playerId, player.Karma.Score);
+
+        // If the NPC is bound to a dialogue tree and the player has advanced
+        // past the root, render that node instead of the procedural choices.
+        if (!string.IsNullOrEmpty(npc.Profile.DialogueTreeId)
+            && DialogueRegistry.TryGet(npc.Profile.DialogueTreeId, out var tree))
+        {
+            var key = DialogueNodeKey(playerId, npcId);
+            var nodeId = _activeDialogueNodeByPlayerNpc.TryGetValue(key, out var stored)
+                ? stored
+                : tree.RootNodeId;
+            var node = tree.Get(nodeId);
+            if (node is not null)
+            {
+                var prompt = node.Text;
+                if (nodeId == tree.RootNodeId)
+                {
+                    var greeting = _themeData.PickGreeting(WorldId, npc.Profile.Id);
+                    if (!string.IsNullOrWhiteSpace(greeting))
+                        prompt = $"{greeting}\n{prompt}";
+                }
+                return new NpcDialogueSnapshot(
+                    npc.Profile.Id,
+                    npc.Profile.Name,
+                    prompt,
+                    DialogueRegistry.BuildChoiceArray(node));
+            }
+
+            if (nodeId == "gossip" &&
+                _dynamicDialogueTextByPlayerNpc.TryGetValue(key, out var gossipText))
+            {
+                return new NpcDialogueSnapshot(
+                    npc.Profile.Id,
+                    npc.Profile.Name,
+                    gossipText,
+                    new[]
+                    {
+                        new NpcDialogueChoice("back_to_root", "Back to business.", $"dialogue_advance:{tree.RootNodeId}"),
+                        new NpcDialogueChoice("close", "Enough gossip.", "dialogue_close")
+                    });
+            }
+        }
+
         return new NpcDialogueSnapshot(
             npc.Profile.Id,
             npc.Profile.Name,
@@ -2507,12 +3145,23 @@ public sealed class AuthoritativeWorldServer
             GetChoicesFor(npc.Profile, stationState, role));
     }
 
+    private static string DialogueNodeKey(string playerId, string npcId) => $"{playerId}::{npcId}";
+
+    public string GetActiveDialogueNodeId(string playerId, string npcId) =>
+        _activeDialogueNodeByPlayerNpc.TryGetValue(DialogueNodeKey(playerId, npcId), out var node)
+            ? node
+            : string.Empty;
+
     private ServerProcessResult ProcessStartDialogue(ServerIntent intent)
     {
         if (!intent.Payload.TryGetValue("npcId", out var npcId))
         {
             return Reject(intent, "StartDialogue intent requires npcId.");
         }
+
+        // Reset any active node so re-opening a dialogue starts at the root.
+        _activeDialogueNodeByPlayerNpc.Remove(DialogueNodeKey(intent.PlayerId, npcId));
+        _dynamicDialogueTextByPlayerNpc.Remove(DialogueNodeKey(intent.PlayerId, npcId));
 
         var dialogue = GetDialogueFor(intent.PlayerId, npcId);
         if (dialogue.Choices.Count == 0)
@@ -2552,6 +3201,74 @@ public sealed class AuthoritativeWorldServer
             !_state.ConsumeItem(intent.PlayerId, choice.RequiredItemId))
         {
             return Reject(intent, $"Dialogue choice requires missing item: {choice.RequiredItemId}.");
+        }
+
+        // Dialogue tree navigation: action ids of the form
+        // `dialogue_advance:<nodeId>` move the player to a new node in the
+        // bound DialogueTree, and `dialogue_close` ends the conversation.
+        // Both bypass the karma / KarmaAction dispatch.
+        const string AdvancePrefix = "dialogue_advance:";
+        if (choice.ActionId == "dialogue_close")
+        {
+            _activeDialogueNodeByPlayerNpc.Remove(DialogueNodeKey(intent.PlayerId, npcId));
+            _dynamicDialogueTextByPlayerNpc.Remove(DialogueNodeKey(intent.PlayerId, npcId));
+            var closeEvent = AppendEvent(
+                "dialogue_closed",
+                $"{intent.PlayerId} closed dialogue with {npcId}",
+                new Dictionary<string, string>
+                {
+                    ["playerId"] = intent.PlayerId,
+                    ["npcId"] = npcId,
+                    ["choiceId"] = choice.Id
+                });
+            return ServerProcessResult.Accepted(closeEvent);
+        }
+
+        if (choice.ActionId.StartsWith(AdvancePrefix, System.StringComparison.Ordinal))
+        {
+            var nextNodeId = choice.ActionId[AdvancePrefix.Length..];
+            if (!_npcs.TryGetValue(npcId, out var advanceNpc) ||
+                string.IsNullOrEmpty(advanceNpc.Profile.DialogueTreeId) ||
+                !DialogueRegistry.TryGet(advanceNpc.Profile.DialogueTreeId, out var advanceTree))
+            {
+                return Reject(intent, $"Dialogue tree not bound for advance: {npcId}.");
+            }
+            if (nextNodeId == "gossip")
+            {
+                var gossip = _themeData.PickGossip(WorldId, npcId);
+                if (string.IsNullOrWhiteSpace(gossip))
+                    gossip = "No gossip worth the candle today.";
+                _dynamicDialogueTextByPlayerNpc[DialogueNodeKey(intent.PlayerId, npcId)] = gossip;
+                _activeDialogueNodeByPlayerNpc[DialogueNodeKey(intent.PlayerId, npcId)] = nextNodeId;
+                var gossipEvent = AppendEvent(
+                    "dialogue_advanced",
+                    $"{intent.PlayerId} advanced to gossip with {npcId}",
+                    new Dictionary<string, string>
+                    {
+                        ["playerId"] = intent.PlayerId,
+                        ["npcId"] = npcId,
+                        ["choiceId"] = choice.Id,
+                        ["nextNodeId"] = nextNodeId
+                    });
+                return ServerProcessResult.Accepted(gossipEvent);
+            }
+            if (advanceTree.Get(nextNodeId) is null)
+            {
+                return Reject(intent, $"Dialogue node not found: {nextNodeId}.");
+            }
+            _activeDialogueNodeByPlayerNpc[DialogueNodeKey(intent.PlayerId, npcId)] = nextNodeId;
+            _dynamicDialogueTextByPlayerNpc.Remove(DialogueNodeKey(intent.PlayerId, npcId));
+            var advanceEvent = AppendEvent(
+                "dialogue_advanced",
+                $"{intent.PlayerId} advanced to {nextNodeId} with {npcId}",
+                new Dictionary<string, string>
+                {
+                    ["playerId"] = intent.PlayerId,
+                    ["npcId"] = npcId,
+                    ["choiceId"] = choice.Id,
+                    ["nextNodeId"] = nextNodeId
+                });
+            return ServerProcessResult.Accepted(advanceEvent);
         }
 
         if (!TryResolveDialogueAction(intent.PlayerId, npcId, choice.ActionId, out var action))
@@ -2907,6 +3624,11 @@ public sealed class AuthoritativeWorldServer
             return ProcessRepairKitUse(intent, item);
         }
 
+        if (DrugCatalog.TryGet(item.Id, out var drug))
+        {
+            return ProcessDrugUse(intent, item, drug);
+        }
+
         if (item.Id == StarterItems.RationPackId)
         {
             return ProcessHealingConsumableUse(intent, item, healing: 10);
@@ -2920,6 +3642,12 @@ public sealed class AuthoritativeWorldServer
         if (item.Slot == EquipmentSlot.None)
         {
             return Reject(intent, $"Item cannot be equipped: {item.Name}.");
+        }
+
+        if (_state.Players.TryGetValue(intent.PlayerId, out var preEquipPlayer) &&
+            preEquipPlayer.Inventory.FirstOrDefault(candidate => candidate.Id == itemId) is { IsBroken: true })
+        {
+            return Reject(intent, $"{item.Name} is broken and needs repair.");
         }
 
         if (!_state.EquipPlayer(intent.PlayerId, itemId))
@@ -2947,6 +3675,183 @@ public sealed class AuthoritativeWorldServer
             });
 
         return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessDrugUse(ServerIntent intent, GameItem item, DrugDefinition drug)
+    {
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var player))
+        {
+            return Reject(intent, $"Unknown player: {intent.PlayerId}.");
+        }
+
+        if (!_state.HasItem(intent.PlayerId, item.Id))
+        {
+            return Reject(intent, $"Player does not have item: {item.Name}.");
+        }
+
+        ApplyDrugEffect(player, drug.OnUse);
+        RecordDrugExposure(player.Id, drug);
+        if (!string.IsNullOrWhiteSpace(drug.OnUse.StatusKind) && drug.OnUse.DurationTicks > 0)
+        {
+            if (!_drugStatusUntilByPlayer.TryGetValue(player.Id, out var statuses))
+            {
+                statuses = new Dictionary<string, long>();
+                _drugStatusUntilByPlayer[player.Id] = statuses;
+            }
+            statuses[drug.OnUse.StatusKind] = _tick + drug.OnUse.DurationTicks;
+        }
+
+        _state.ConsumeItem(intent.PlayerId, item.Id);
+        var serverEvent = AppendEvent(
+            "drug_used",
+            $"{intent.PlayerId} used {drug.Id}",
+            new Dictionary<string, string>
+            {
+                ["playerId"] = intent.PlayerId,
+                ["itemId"] = item.Id,
+                ["drugId"] = drug.Id,
+                ["statusKind"] = drug.OnUse.StatusKind,
+                ["durationTicks"] = drug.OnUse.DurationTicks.ToString(),
+                ["health"] = player.Health.ToString(),
+                ["stamina"] = player.Stamina.ToString(),
+                ["hunger"] = player.Hunger.ToString(),
+                ["karma"] = player.Karma.Score.ToString()
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private void ApplyDrugEffect(PlayerState player, DrugEffect effect)
+    {
+        if (effect.HealAmount > 0)
+        {
+            player.Heal(effect.HealAmount);
+        }
+        else if (effect.HealAmount < 0)
+        {
+            player.ApplyDamage(-effect.HealAmount);
+        }
+
+        if (effect.StaminaDelta > 0)
+            player.RegenStamina(effect.StaminaDelta);
+        else if (effect.StaminaDelta < 0)
+            player.SpendStamina(-effect.StaminaDelta);
+
+        if (effect.HungerDelta > 0)
+            player.RestoreHunger(effect.HungerDelta);
+        else if (effect.HungerDelta < 0)
+            player.SpendHunger(-effect.HungerDelta);
+
+        if (effect.KarmaDelta != 0)
+        {
+            player.ApplyKarma(effect.KarmaDelta);
+            UpdateBounty(player.Id);
+        }
+    }
+
+    private void RecordDrugExposure(string playerId, DrugDefinition drug)
+    {
+        if (!_drugExposureByPlayer.TryGetValue(playerId, out var exposures))
+        {
+            exposures = new Dictionary<string, DrugExposure>();
+            _drugExposureByPlayer[playerId] = exposures;
+        }
+
+        if (!exposures.TryGetValue(drug.Id, out var exposure))
+        {
+            exposure = new DrugExposure();
+            exposures[drug.Id] = exposure;
+        }
+
+        exposure.RecordDose(drug.AddictionLoadPerUse, _tick);
+    }
+
+    private void PruneExpiredDrugStatuses()
+    {
+        foreach (var playerId in _drugStatusUntilByPlayer.Keys.ToArray())
+        {
+            var statuses = _drugStatusUntilByPlayer[playerId];
+            foreach (var statusKind in statuses.Keys.ToArray())
+            {
+                if (_tick >= statuses[statusKind])
+                    statuses.Remove(statusKind);
+            }
+
+            if (statuses.Count == 0)
+                _drugStatusUntilByPlayer.Remove(playerId);
+        }
+    }
+
+    private void ApplyDrugWithdrawalTicks(long previousTick, long currentTick)
+    {
+        if (currentTick <= previousTick)
+            return;
+
+        foreach (var (playerId, exposures) in _drugExposureByPlayer)
+        {
+            if (!_state.Players.TryGetValue(playerId, out var player))
+                continue;
+
+            foreach (var (drugId, exposure) in exposures)
+            {
+                if (!DrugCatalog.TryGet(drugId, out var drug) ||
+                    !exposure.IsAddicted(drug.AddictionThreshold))
+                {
+                    continue;
+                }
+
+                var withdrawalStartTick = exposure.LastDoseTick + drug.WithdrawalGraceTicks + 1;
+                if (currentTick < withdrawalStartTick)
+                    continue;
+
+                var lastAppliedTick = GetLastWithdrawalTick(playerId, drugId);
+                var firstTick = Math.Max(Math.Max(previousTick + 1, withdrawalStartTick), lastAppliedTick + 1);
+                if (firstTick > currentTick)
+                    continue;
+
+                var withdrawalTicks = currentTick - firstTick + 1;
+                ApplyWithdrawalEffect(player, drug.Withdrawal, withdrawalTicks);
+                SetLastWithdrawalTick(playerId, drugId, currentTick);
+            }
+        }
+    }
+
+    private long GetLastWithdrawalTick(string playerId, string drugId)
+    {
+        return _lastDrugWithdrawalTickByPlayer.TryGetValue(playerId, out var byDrug) &&
+               byDrug.TryGetValue(drugId, out var tick)
+            ? tick
+            : 0;
+    }
+
+    private void SetLastWithdrawalTick(string playerId, string drugId, long tick)
+    {
+        if (!_lastDrugWithdrawalTickByPlayer.TryGetValue(playerId, out var byDrug))
+        {
+            byDrug = new Dictionary<string, long>();
+            _lastDrugWithdrawalTickByPlayer[playerId] = byDrug;
+        }
+
+        byDrug[drugId] = tick;
+    }
+
+    private void ApplyWithdrawalEffect(PlayerState player, DrugEffect effect, long withdrawalTicks)
+    {
+        if (withdrawalTicks <= 0)
+            return;
+
+        if (effect.HealAmount < 0)
+            player.ApplyDamage(ScaleWithdrawalPenalty(-effect.HealAmount, withdrawalTicks));
+
+        if (effect.StaminaDelta < 0)
+            player.SpendStamina(ScaleWithdrawalPenalty(-effect.StaminaDelta, withdrawalTicks));
+    }
+
+    private static int ScaleWithdrawalPenalty(int effectAmount, long withdrawalTicks)
+    {
+        var perTick = Math.Max(1, effectAmount / 10);
+        var total = Math.Min((long)int.MaxValue, perTick * withdrawalTicks);
+        return (int)total;
     }
 
     private ServerProcessResult ProcessRepairKitUse(ServerIntent intent, GameItem item)
@@ -3002,7 +3907,12 @@ public sealed class AuthoritativeWorldServer
             return Reject(intent, $"Player does not have item: {item.Name}.");
         }
 
-        if (!_state.HealPlayer(intent.PlayerId, targetId, healing, $"{item.Name} field use"))
+        var healed = _state.HealPlayer(intent.PlayerId, targetId, healing, $"{item.Name} field use");
+        if (item.FoodValue > 0 && _state.Players.TryGetValue(targetId, out var foodTarget))
+        {
+            foodTarget.RestoreHunger(item.FoodValue);
+        }
+        else if (!healed)
         {
             return Reject(intent, $"{item.Name} had no injured target.");
         }
@@ -3050,10 +3960,23 @@ public sealed class AuthoritativeWorldServer
         {
             var rep = _state.Factions.GetReputation(offer.RequiredFactionId, intent.PlayerId);
             if (rep < offer.MinReputation)
-                return Reject(intent, $"Insufficient reputation with {offer.RequiredFactionId}: need {offer.MinReputation}, have {rep}.");
+            {
+                return Reject(intent, FormatFactionStoreDenial(
+                    offer.RequiredFactionId,
+                    offer.MinReputation,
+                    rep));
+            }
         }
 
-        var price = ShopPricing.CalculatePrice(offer, _state.Players[intent.PlayerId], _state.GetLeaderboardStanding());
+        var player = _state.Players[intent.PlayerId];
+        var cleanlinessModifier = CleanlinessPriceModifier(player);
+        if (cleanlinessModifier <= 0)
+        {
+            return Reject(intent, "You reek. Wash, then come back.");
+        }
+
+        var quote = CalculateShopPriceQuote(offer, player, _state.GetLeaderboardStanding());
+        var price = quote.FinalPrice;
         if (!_state.PurchaseItem(intent.PlayerId, item, price))
         {
             return Reject(intent, $"Not enough scrip for offer: {offer.Id}.");
@@ -3070,6 +3993,11 @@ public sealed class AuthoritativeWorldServer
                 ["itemId"] = item.Id,
                 ["basePrice"] = offer.Price.ToString(),
                 ["price"] = price.ToString(),
+                ["cleanlinessPriceModifier"] = quote.CleanlinessModifierPercent.ToString(),
+                ["karmaDiscountPercent"] = quote.KarmaDiscountPercent.ToString(),
+                ["relationshipModifierPercent"] = quote.RelationshipModifierPercent.ToString(),
+                ["relationshipOpinion"] = quote.RelationshipOpinion.ToString(),
+                ["pricingBreakdown"] = quote.Breakdown,
                 ["currency"] = offer.Currency
             });
 
@@ -3270,7 +4198,9 @@ public sealed class AuthoritativeWorldServer
 
     private ServerProcessResult ProcessKarmaBreak(ServerIntent intent)
     {
-        var droppedItemCount = DropInventory(intent.PlayerId).Count;
+        var breakPosition = _state.Players[intent.PlayerId].Position;
+        var witnesses = BuildWitnessSet(breakPosition, Config.InterestRadiusTiles, intent.PlayerId);
+        var droppedItemCount = DropInventory(intent.PlayerId).Count + DropDownedPlayerLoot(intent.PlayerId).Count;
         AwardTrophyToScorer(intent.PlayerId);
         _state.TriggerKarmaBreak(intent.PlayerId);
         _bountyByPlayerId.Remove(intent.PlayerId);
@@ -3286,7 +4216,9 @@ public sealed class AuthoritativeWorldServer
                 ["respawnX"] = _state.Players[intent.PlayerId].Position.X.ToString(),
                 ["respawnY"] = _state.Players[intent.PlayerId].Position.Y.ToString(),
                 ["droppedItemCount"] = droppedItemCount.ToString()
-            });
+            },
+            witnesses);
+        ScheduleCrimeReportsFor(serverEvent);
 
         return ServerProcessResult.Accepted(serverEvent);
     }
@@ -3341,7 +4273,7 @@ public sealed class AuthoritativeWorldServer
     ///                  manipulated via <see cref="ApplyStatus"/> /
     ///                  <see cref="ClearStatus"/> (Poisoned, Burning, etc.).
     /// </summary>
-    private IReadOnlyList<string> GetStatusEffectsFor(PlayerState player)
+    public IReadOnlyList<string> GetStatusEffectsFor(PlayerState player)
     {
         var statuses = new List<string>();
         statuses.AddRange(GetDerivedStatusEffectsFor(player));
@@ -3389,6 +4321,57 @@ public sealed class AuthoritativeWorldServer
         {
             yield return $"Bounty: {bounty}";
         }
+
+        // Hunger crosses two thresholds: <= HungryStatusThreshold tags the
+        // player as Hungry (UI cue + future move-speed debuff hook); == 0
+        // surfaces a Starving status alongside the HP decay applied during
+        // ApplyHungerDecay.
+        if (player.Hunger <= 0)
+        {
+            yield return "Starving";
+        }
+        else if (player.Hunger <= HungryStatusThreshold)
+        {
+            yield return "Hungry";
+        }
+
+        if (player.Cleanliness <= 0)
+        {
+            yield return "Filthy";
+        }
+        else if (player.Cleanliness <= DirtyStatusThreshold)
+        {
+            yield return "Dirty";
+        }
+
+        foreach (var status in GetActiveDrugStatusEffectsFor(player.Id))
+            yield return status;
+    }
+
+    private IEnumerable<string> GetActiveDrugStatusEffectsFor(string playerId)
+    {
+        if (_drugStatusUntilByPlayer.TryGetValue(playerId, out var activeStatuses))
+        {
+            foreach (var (statusKind, expiresAtTick) in activeStatuses)
+            {
+                if (_tick < expiresAtTick)
+                    yield return statusKind;
+            }
+        }
+
+        if (!_drugExposureByPlayer.TryGetValue(playerId, out var exposures))
+            yield break;
+
+        foreach (var (drugId, exposure) in exposures)
+        {
+            if (!DrugCatalog.TryGet(drugId, out var drug))
+                continue;
+            if (exposure.InWithdrawal(drug.AddictionThreshold, drug.WithdrawalGraceTicks, _tick) &&
+                !string.IsNullOrWhiteSpace(drug.Withdrawal.StatusKind))
+            {
+                yield return drug.Withdrawal.StatusKind;
+            }
+        }
     }
 
     private IEnumerable<string> GetPersistentStatusEffectsFor(PlayerState player)
@@ -3427,6 +4410,57 @@ public sealed class AuthoritativeWorldServer
         }
 
         return droppedEntityIds;
+    }
+
+    private IReadOnlyList<string> DropDownedPlayerLoot(string playerId)
+    {
+        if (!_state.Players.TryGetValue(playerId, out var player))
+        {
+            return Array.Empty<string>();
+        }
+
+        return SpawnLootDropsFromTable(
+            LootTableCatalog.DownedPlayerDropsId,
+            player.Position,
+            $"downed_drop_{playerId}",
+            player.Id,
+            player.DisplayName,
+            seedSalt: playerId.GetHashCode());
+    }
+
+    private IReadOnlyList<string> SpawnLootDropsFromTable(
+        string lootTableId,
+        TilePosition position,
+        string entityPrefix,
+        string dropOwnerId = "",
+        string dropOwnerName = "",
+        int seedSalt = 0)
+    {
+        var rolls = RollLootTable(lootTableId, seedSalt);
+        if (rolls.Count == 0) return Array.Empty<string>();
+
+        var spawnedIds = new List<string>();
+        var slot = 0;
+        foreach (var roll in rolls)
+        {
+            if (!StarterItems.TryGetById(roll.ItemId, out var item)) continue;
+            for (var copy = 0; copy < roll.Quantity; copy++)
+            {
+                var offset = GetDropOffset(slot);
+                var dropPosition = new TilePosition(position.X + offset.X, position.Y + offset.Y);
+                var entityId = $"{entityPrefix}_{_tick}_{slot}_{item.Id}";
+                SeedWorldItem(entityId, item, dropPosition, dropOwnerId, dropOwnerName);
+                spawnedIds.Add(entityId);
+                slot++;
+            }
+        }
+        return spawnedIds;
+    }
+
+    private IReadOnlyList<LootRollResult> RollLootTable(string lootTableId, int seedSalt = 0)
+    {
+        var rng = new Random(HashCode.Combine(WorldId, _tick, lootTableId, seedSalt));
+        return LootTableCatalog.Roll(lootTableId, rng);
     }
 
     private ServerProcessResult ProcessInvitePosse(ServerIntent intent)
@@ -3468,6 +4502,7 @@ public sealed class AuthoritativeWorldServer
         {
             _state.SetPlayerTeam(intent.PlayerId, posseId);
         }
+        EnsurePosseInfo(posseId, intent.PlayerId);
 
         _pendingPosseInviteByInvitee[targetId] = posseId;
 
@@ -3498,6 +4533,7 @@ public sealed class AuthoritativeWorldServer
 
         _pendingPosseInviteByInvitee.Remove(intent.PlayerId);
         _state.SetPlayerTeam(intent.PlayerId, posseId);
+        EnsurePosseInfo(posseId, intent.PlayerId);
 
         var memberCount = _state.Players.Values.Count(p => p.HasTeam && p.TeamId == posseId);
 
@@ -3525,6 +4561,19 @@ public sealed class AuthoritativeWorldServer
         _state.ClearPlayerTeamStatus(intent.PlayerId);
 
         var remainingCount = _state.Players.Values.Count(p => p.HasTeam && p.TeamId == posseId);
+        if (remainingCount == 0)
+        {
+            _posses.Remove(posseId);
+        }
+        else if (_posses.TryGetValue(posseId, out var posseInfo) && posseInfo.LeaderId == intent.PlayerId)
+        {
+            var nextLeaderId = _state.Players.Values
+                .Where(p => p.HasTeam && p.TeamId == posseId)
+                .OrderBy(p => p.Id)
+                .Select(p => p.Id)
+                .First();
+            _posses[posseId] = posseInfo with { LeaderId = nextLeaderId };
+        }
         var eventType = remainingCount == 0 ? "posse_disbanded" : "posse_member_left";
 
         var serverEvent = AppendEvent(
@@ -3540,6 +4589,62 @@ public sealed class AuthoritativeWorldServer
             });
 
         return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private ServerProcessResult ProcessTransferPosseLeadership(ServerIntent intent)
+    {
+        if (!intent.Payload.TryGetValue("targetPlayerId", out var targetId) || string.IsNullOrWhiteSpace(targetId))
+        {
+            return Reject(intent, "TransferPosseLeadership requires targetPlayerId payload.");
+        }
+
+        if (!_state.Players.TryGetValue(intent.PlayerId, out var leader) || !leader.HasTeam)
+        {
+            return Reject(intent, "Player must be in a posse to transfer leadership.");
+        }
+
+        var posseInfo = EnsurePosseInfo(leader.TeamId, intent.PlayerId);
+        if (posseInfo.LeaderId != intent.PlayerId)
+        {
+            return Reject(intent, "Only the posse leader can transfer leadership.");
+        }
+
+        if (!_state.Players.TryGetValue(targetId, out var target) || !target.HasTeam || target.TeamId != leader.TeamId)
+        {
+            return Reject(intent, "Target player must be in the same posse.");
+        }
+
+        _posses[leader.TeamId] = posseInfo with { LeaderId = targetId };
+
+        var serverEvent = AppendEvent(
+            "posse_leadership_transferred",
+            $"{leader.DisplayName} transferred posse leadership to {target.DisplayName}.",
+            new Dictionary<string, string>
+            {
+                ["posseId"] = leader.TeamId,
+                ["leaderId"] = targetId,
+                ["previousLeaderId"] = intent.PlayerId
+            });
+
+        return ServerProcessResult.Accepted(serverEvent);
+    }
+
+    private PosseInfo EnsurePosseInfo(string posseId, string leaderId)
+    {
+        if (_posses.TryGetValue(posseId, out var posseInfo))
+        {
+            return posseInfo;
+        }
+
+        posseInfo = new PosseInfo(posseId, PosseNameGenerator.Generate(posseId), leaderId);
+        _posses[posseId] = posseInfo;
+        return posseInfo;
+    }
+
+    private PosseInfo GetPosseInfoFor(PlayerState player)
+    {
+        if (!player.HasTeam) return null;
+        return EnsurePosseInfo(player.TeamId, player.Id);
     }
 
     private ServerProcessResult ProcessSendPosseChat(ServerIntent intent)
@@ -3611,16 +4716,188 @@ public sealed class AuthoritativeWorldServer
     private ServerEvent AppendEvent(
         string eventType,
         string description,
-        IReadOnlyDictionary<string, string> data)
+        IReadOnlyDictionary<string, string> data,
+        IReadOnlyList<string> witnesses = null)
     {
         var serverEvent = new ServerEvent(
             $"{WorldId}:{_tick}:{eventType}",
             WorldId,
             _tick,
             description,
-            data);
+            data,
+            witnesses ?? Array.Empty<string>());
         _eventLog.Add(serverEvent);
         return serverEvent;
+    }
+
+    public IReadOnlyList<string> BuildWitnessSet(TilePosition position, int radiusTiles)
+    {
+        return BuildWitnessSet(position, radiusTiles, Array.Empty<string>());
+    }
+
+    private void ScheduleCrimeReportsFor(ServerEvent serverEvent)
+    {
+        var eventType = ExtractEventType(serverEvent.EventId);
+        if (eventType is not "player_attacked" and not "karma_break")
+            return;
+
+        var suspectPlayerId = serverEvent.Data.TryGetValue("playerId", out var playerId)
+            ? playerId
+            : string.Empty;
+        var targetPlayerId = serverEvent.Data.TryGetValue("targetId", out var targetId)
+            ? targetId
+            : suspectPlayerId;
+
+        var reporter = PickCrimeReporter(serverEvent.Witnesses, targetPlayerId);
+        if (reporter is null)
+            return;
+
+        var lawNpcId = FindNearestLawNpcId(reporter.Value.Position);
+        _scheduledCrimeReports.Add(new ScheduledCrimeReport(
+            serverEvent.Tick + Config.CrimeReportDelayTicks,
+            serverEvent.EventId,
+            eventType,
+            reporter.Value.NpcId,
+            suspectPlayerId,
+            targetPlayerId,
+            lawNpcId));
+    }
+
+    private (string NpcId, TilePosition Position)? PickCrimeReporter(
+        IReadOnlyList<string> witnesses,
+        string targetPlayerId)
+    {
+        var reportPosition = _state.Players.TryGetValue(targetPlayerId, out var target)
+            ? target.Position
+            : TilePosition.Origin;
+        return witnesses
+            .Where(witnessId => _npcs.ContainsKey(witnessId))
+            .Select(witnessId => (NpcId: witnessId, Npc: _npcs[witnessId]))
+            .OrderByDescending(entry => IsLawReportingNpc(entry.Npc.Profile))
+            .ThenBy(entry => entry.Npc.Position.DistanceSquaredTo(reportPosition))
+            .ThenBy(entry => entry.NpcId)
+            .Select(entry => ((string NpcId, TilePosition Position)?)(entry.NpcId, entry.Npc.Position))
+            .FirstOrDefault();
+    }
+
+    private void ProcessDueCrimeReports()
+    {
+        if (_scheduledCrimeReports.Count == 0)
+            return;
+
+        foreach (var report in _scheduledCrimeReports.Where(report => report.DueTick <= _tick).ToArray())
+        {
+            _scheduledCrimeReports.Remove(report);
+            if (!_npcs.TryGetValue(report.WitnessNpcId, out var witness))
+                continue;
+
+            var lawNpcId = string.IsNullOrWhiteSpace(report.LawNpcId)
+                ? FindNearestLawNpcId(witness.Position)
+                : report.LawNpcId;
+            BiasNpcTowardLawNpc(report.WitnessNpcId, lawNpcId);
+
+            AppendEvent(
+                "crime_reported",
+                $"{witness.Profile.Name} reported {report.SourceEventType} to {FormatNpcDisplayName(lawNpcId)}.",
+                new Dictionary<string, string>
+                {
+                    ["witnessNpcId"] = report.WitnessNpcId,
+                    ["lawNpcId"] = lawNpcId,
+                    ["sourceEventId"] = report.SourceEventId,
+                    ["sourceEventType"] = report.SourceEventType,
+                    ["playerId"] = report.SuspectPlayerId,
+                    ["targetId"] = report.TargetPlayerId
+                },
+                new[] { report.WitnessNpcId });
+        }
+    }
+
+    private string FindNearestLawNpcId(TilePosition position)
+    {
+        return _npcs.Values
+            .Where(npc => IsLawReportingNpc(npc.Profile))
+            .OrderBy(npc => npc.Position.DistanceSquaredTo(position))
+            .ThenBy(npc => npc.Profile.Id)
+            .Select(npc => npc.Profile.Id)
+            .FirstOrDefault() ?? string.Empty;
+    }
+
+    private static bool IsLawReportingNpc(NpcProfile profile)
+    {
+        if (profile.IsLawAligned || profile.HasTag(NpcRoleTags.LawAligned))
+            return true;
+
+        var role = profile.Role ?? string.Empty;
+        return role.Contains("captain", StringComparison.OrdinalIgnoreCase) ||
+               role.Contains("magistrate", StringComparison.OrdinalIgnoreCase) ||
+               role.Contains("guard", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void BiasNpcTowardLawNpc(string witnessNpcId, string lawNpcId)
+    {
+        if (string.IsNullOrWhiteSpace(witnessNpcId) ||
+            string.IsNullOrWhiteSpace(lawNpcId) ||
+            !_npcs.TryGetValue(witnessNpcId, out var witness) ||
+            !_npcs.TryGetValue(lawNpcId, out var lawNpc))
+        {
+            return;
+        }
+
+        var nextPosition = StepToward(witness.Position, lawNpc.Position);
+        _npcs[witnessNpcId] = witness with
+        {
+            Position = nextPosition,
+            PatrolWaypoints = new[] { nextPosition, lawNpc.Position },
+            PatrolIndex = 0
+        };
+    }
+
+    private static TilePosition StepToward(TilePosition from, TilePosition to)
+    {
+        var dx = Math.Sign(to.X - from.X);
+        var dy = Math.Sign(to.Y - from.Y);
+        return new TilePosition(from.X + dx, from.Y + dy);
+    }
+
+    private string FormatNpcDisplayName(string npcId)
+    {
+        return _npcs.TryGetValue(npcId, out var npc) ? npc.Profile.Name : "the watch";
+    }
+
+    private static string ExtractEventType(string eventId)
+    {
+        if (string.IsNullOrWhiteSpace(eventId))
+            return string.Empty;
+        var index = eventId.LastIndexOf(':');
+        return index >= 0 && index + 1 < eventId.Length
+            ? eventId[(index + 1)..]
+            : eventId;
+    }
+
+    private IReadOnlyList<string> BuildWitnessSet(TilePosition position, int radiusTiles, params string[] excludedIds)
+    {
+        var excluded = excludedIds.ToHashSet();
+        var radiusSquared = radiusTiles * radiusTiles;
+        var witnesses = new SortedSet<string>(StringComparer.Ordinal);
+
+        foreach (var playerId in _connectedPlayerIds)
+        {
+            if (excluded.Contains(playerId)) continue;
+            if (_state.Players.TryGetValue(playerId, out var player) &&
+                player.Position.DistanceSquaredTo(position) <= radiusSquared)
+            {
+                witnesses.Add(playerId);
+            }
+        }
+
+        foreach (var (npcId, npc) in _npcs)
+        {
+            if (excluded.Contains(npcId)) continue;
+            if (npc.Position.DistanceSquaredTo(position) <= radiusSquared)
+                witnesses.Add(npcId);
+        }
+
+        return witnesses.ToArray();
     }
 
     private static bool TryReadInt(
@@ -4003,7 +5280,8 @@ public sealed class AuthoritativeWorldServer
             entity.Position.X,
             entity.Position.Y,
             entity.DropOwnerId,
-            entity.DropOwnerName);
+            entity.DropOwnerName,
+            entity.DropOwnerExpiresTick);
     }
 
     private static WorldStructureSnapshot ToSnapshot(WorldStructureEntity entity)
@@ -4029,20 +5307,118 @@ public sealed class AuthoritativeWorldServer
             entity.Interior?.Height ?? 0);
     }
 
-    private static ShopOfferSnapshot ToSnapshot(ShopOffer offer, PlayerState player, LeaderboardStanding standing)
+    private ShopOfferSnapshot ToSnapshot(ShopOffer offer, PlayerState player, LeaderboardStanding standing)
     {
         var item = StarterItems.GetById(offer.ItemId);
-        var price = ShopPricing.CalculatePrice(offer, player, standing);
+        var quote = CalculateShopPriceQuote(offer, player, standing);
         return new ShopOfferSnapshot(
             offer.Id,
             offer.VendorNpcId,
             item.Id,
             item.Name,
             item.Category,
-            price,
+            quote.FinalPrice,
             offer.Currency,
             offer.RequiredFactionId,
-            offer.MinReputation);
+            offer.MinReputation,
+            quote.BasePrice,
+            quote.Breakdown);
+    }
+
+    private static int CleanlinessPriceModifier(PlayerState player)
+    {
+        if (player is null) return 100;
+        if (player.Cleanliness <= 0) return 0;
+        return player.Cleanliness <= DirtyStatusThreshold ? 120 : 100;
+    }
+
+    private static string FormatFactionStoreDenial(string factionId, int minReputation, int currentReputation)
+    {
+        var factionName = FormatFactionDisplayName(factionId);
+        return $"{factionName} won't sell to you yet (need rep ≥ {minReputation}, you're at {currentReputation})";
+    }
+
+    private static string FormatFactionDisplayName(string factionId)
+    {
+        if (string.IsNullOrWhiteSpace(factionId)) return "This faction";
+        var faction = StarterFactions.All.FirstOrDefault(candidate => candidate.Id == factionId);
+        return faction?.Name ?? factionId;
+    }
+
+    private ShopPriceQuote CalculateShopPriceQuote(ShopOffer offer, PlayerState player, LeaderboardStanding standing)
+    {
+        var karmaDiscount = ShopPricing.CalculateDiscountPercent(player, standing);
+        var afterKarma = ShopPricing.CalculatePrice(offer, player, standing);
+        var relationshipOpinion = _state.Relationships.GetOpinion(offer.VendorNpcId, player.Id);
+        var relationshipModifier = ShopPricing.CalculateRelationshipModifierPercent(relationshipOpinion);
+        var afterRelationship = ShopPricing.ApplySignedModifier(afterKarma, relationshipModifier);
+        var cleanlinessModifier = CleanlinessPriceModifier(player);
+        var finalPrice = ApplyCleanlinessPriceModifier(afterRelationship, cleanlinessModifier);
+        return new ShopPriceQuote(
+            offer.Price,
+            finalPrice,
+            karmaDiscount,
+            relationshipModifier,
+            relationshipOpinion,
+            cleanlinessModifier,
+            FormatShopPricingBreakdown(
+                GetVendorDisplayName(offer.VendorNpcId),
+                offer.Price,
+                finalPrice,
+                karmaDiscount,
+                player.Karma.TierName,
+                relationshipOpinion,
+                relationshipModifier,
+                cleanlinessModifier));
+    }
+
+    private string GetVendorDisplayName(string vendorNpcId)
+    {
+        return _npcs.TryGetValue(vendorNpcId, out var vendor)
+            ? vendor.Profile.Name
+            : FormatNpcDisplayName(vendorNpcId);
+    }
+
+    private static string FormatShopPricingBreakdown(
+        string vendorName,
+        int basePrice,
+        int finalPrice,
+        int karmaDiscountPercent,
+        string karmaTier,
+        int relationshipOpinion,
+        int relationshipModifierPercent,
+        int cleanlinessModifierPercent)
+    {
+        var parts = new List<string>();
+        if (relationshipModifierPercent != 0)
+        {
+            parts.Add($"{FormatSignedPercent(relationshipModifierPercent)} ({RelationshipRules.GetOpinionLabel(relationshipOpinion)})");
+        }
+
+        if (karmaDiscountPercent > 0)
+        {
+            parts.Add($"-{karmaDiscountPercent}% ({karmaTier})");
+        }
+
+        if (cleanlinessModifierPercent != 100)
+        {
+            parts.Add($"+{cleanlinessModifierPercent - 100}% (Dirty)");
+        }
+
+        var modifiers = parts.Count == 0 ? "base price" : string.Join(", ", parts);
+        return $"{vendorName}: {modifiers}. Net price: {finalPrice} scrip (base {basePrice}).";
+    }
+
+    private static string FormatSignedPercent(int percent)
+    {
+        return percent > 0 ? $"+{percent}%" : $"{percent}%";
+    }
+
+    private static int ApplyCleanlinessPriceModifier(int price, int modifierPercent)
+    {
+        if (modifierPercent <= 0) return price;
+        if (modifierPercent == 100) return price;
+        return Math.Max(1, (price * modifierPercent + 99) / 100);
     }
 
     private static MapChunkSnapshot ToSnapshot(GeneratedTileChunk chunk)
@@ -4118,7 +5494,8 @@ public sealed class AuthoritativeWorldServer
             entity.Profile.Role,
             entity.Profile.Faction,
             entity.Position.X,
-            entity.Position.Y);
+            entity.Position.Y,
+            entity.LpcBundleId);
     }
 
     private bool CanReachQuestGiver(string playerId, string questId, out string rejectionReason)
@@ -4356,7 +5733,8 @@ public sealed class AuthoritativeWorldServer
                 new TilePosition(3, 4),
                 new TilePosition(4, 4),
                 new TilePosition(3, 5)
-            });
+            },
+            LpcBundleId: _themeData.PickAppearanceBundle(WorldId, StarterNpcs.Mara.Id));
         _npcs[StarterNpcs.Dallen.Id] = new NpcEntity(
             StarterNpcs.Dallen,
             new TilePosition(6, 4),
@@ -4364,7 +5742,8 @@ public sealed class AuthoritativeWorldServer
             {
                 new TilePosition(6, 4),
                 new TilePosition(7, 4)
-            });
+            },
+            LpcBundleId: _themeData.PickAppearanceBundle(WorldId, StarterNpcs.Dallen.Id));
     }
 
     private void SeedStarterMounts()
@@ -4385,10 +5764,12 @@ public sealed class AuthoritativeWorldServer
 
     private static MountSnapshot ToMountSnapshot(MountEntity mount) =>
         new(mount.EntityId, mount.Name, mount.Position.X, mount.Position.Y,
-            mount.SpeedModifier, mount.IsParked, mount.OccupantPlayerId);
+            mount.SpeedModifier, mount.IsParked, mount.OccupantPlayerId,
+            mount.BagItemIds ?? Array.Empty<string>());
 
     private void SeedStarterStructures()
     {
+        // Greenhouse cluster (kept for backwards compatibility with existing tests)
         SeedWorldStructure(
             "structure_greenhouse_standard",
             StructureArtCatalog.Get(StructureSpriteKind.GreenhouseStandard).Id,
@@ -4401,6 +5782,66 @@ public sealed class AuthoritativeWorldServer
             "structure_greenhouse_grow_rack",
             StructureArtCatalog.Get(StructureSpriteKind.GreenhouseGrowRack).Id,
             new TilePosition(10, 7));
+
+        // Clinic interior near Mara (3,4) — sliced clinic props
+        SeedWorldStructure(
+            "structure_clinic_bed",
+            StructureArtCatalog.Get(StructureSpriteKind.ClinicBed).Id,
+            new TilePosition(2, 5));
+        SeedWorldStructure(
+            "structure_medicine_cabinet",
+            StructureArtCatalog.Get(StructureSpriteKind.MedicineCabinet).Id,
+            new TilePosition(4, 5));
+        SeedWorldStructure(
+            "structure_clinic_door",
+            StructureArtCatalog.Get(StructureSpriteKind.ClinicDoor).Id,
+            new TilePosition(3, 6));
+
+        // Shop / vendor cluster near Dallen (6,4) — sliced supply & shop props
+        SeedWorldStructure(
+            "structure_shop_shelves",
+            StructureArtCatalog.Get(StructureSpriteKind.ShopShelves).Id,
+            new TilePosition(7, 5));
+        SeedWorldStructure(
+            "structure_register_counter",
+            StructureArtCatalog.Get(StructureSpriteKind.RegisterCounter).Id,
+            new TilePosition(6, 5));
+        SeedWorldStructure(
+            "structure_shop_door",
+            StructureArtCatalog.Get(StructureSpriteKind.ShopDoor).Id,
+            new TilePosition(6, 6));
+
+        // Workshop tile cluster — Step 36 crafting integration
+        SeedWorldStructure(
+            "structure_mechanical_workbench",
+            StructureArtCatalog.Get(StructureSpriteKind.MechanicalWorkbench).Id,
+            new TilePosition(12, 5));
+        SeedWorldStructure(
+            "structure_tool_box_open",
+            StructureArtCatalog.Get(StructureSpriteKind.ToolBoxOpen).Id,
+            new TilePosition(13, 5));
+
+        // Public-information cluster
+        SeedWorldStructure(
+            "structure_rumor_board",
+            StructureArtCatalog.Get(StructureSpriteKind.RumorBoardLabeled).Id,
+            new TilePosition(15, 4));
+        SeedWorldStructure(
+            "structure_law_bulletin_board",
+            StructureArtCatalog.Get(StructureSpriteKind.LawBulletinBoardLabeled).Id,
+            new TilePosition(16, 4));
+
+        // Supply drop landing pad — visible target for Step 30
+        SeedWorldStructure(
+            "structure_supply_drop_landing_pad",
+            StructureArtCatalog.Get(StructureSpriteKind.SupplyDropLandingPad).Id,
+            new TilePosition(18, 8));
+
+        // Generator (sabotageable for Step 12 demonstrations)
+        SeedWorldStructure(
+            "structure_generator_pristine",
+            StructureArtCatalog.Get(StructureSpriteKind.GeneratorPristine).Id,
+            new TilePosition(20, 5));
     }
 }
 

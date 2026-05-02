@@ -4,10 +4,10 @@
     "path": "res://assets/art/generated/sliced/location_exteriors/clinic_exterior.png",
     "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
     "source_region": [
-      26,
-      17,
-      204,
-      272
+      10,
+      10,
+      235,
+      320
     ]
   },
   {
@@ -15,10 +15,10 @@
     "path": "res://assets/art/generated/sliced/location_exteriors/shop_kiosk_exterior.png",
     "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
     "source_region": [
-      282,
-      17,
-      204,
-      272
+      266,
+      10,
+      235,
+      320
     ]
   },
   {
@@ -26,10 +26,10 @@
     "path": "res://assets/art/generated/sliced/location_exteriors/bounty_office_exterior.png",
     "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
     "source_region": [
-      538,
-      17,
-      204,
-      272
+      522,
+      10,
+      235,
+      320
     ]
   },
   {
@@ -37,10 +37,10 @@
     "path": "res://assets/art/generated/sliced/location_exteriors/jail_block_exterior.png",
     "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
     "source_region": [
-      794,
-      17,
-      204,
-      272
+      778,
+      10,
+      235,
+      320
     ]
   },
   {
@@ -48,10 +48,10 @@
     "path": "res://assets/art/generated/sliced/location_exteriors/checkpoint_guard_tower.png",
     "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
     "source_region": [
-      26,
-      358,
-      204,
-      272
+      10,
+      345,
+      235,
+      295
     ]
   },
   {
@@ -59,10 +59,10 @@
     "path": "res://assets/art/generated/sliced/location_exteriors/safehouse_tent.png",
     "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
     "source_region": [
-      282,
-      358,
-      204,
-      272
+      266,
+      345,
+      235,
+      295
     ]
   },
   {
@@ -70,10 +70,10 @@
     "path": "res://assets/art/generated/sliced/location_exteriors/repair_garage.png",
     "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
     "source_region": [
-      538,
-      358,
-      204,
-      272
+      522,
+      345,
+      235,
+      295
     ]
   },
   {
@@ -81,10 +81,10 @@
     "path": "res://assets/art/generated/sliced/location_exteriors/greenhouse_dome.png",
     "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
     "source_region": [
-      794,
-      358,
-      204,
-      272
+      778,
+      345,
+      235,
+      295
     ]
   },
   {
@@ -92,10 +92,10 @@
     "path": "res://assets/art/generated/sliced/location_exteriors/posse_camp_rally.png",
     "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
     "source_region": [
-      26,
-      699,
-      204,
-      272
+      10,
+      645,
+      235,
+      270
     ]
   },
   {
@@ -103,10 +103,10 @@
     "path": "res://assets/art/generated/sliced/location_exteriors/faction_request_board_shelter.png",
     "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
     "source_region": [
-      282,
-      699,
-      204,
-      272
+      266,
+      645,
+      235,
+      270
     ]
   },
   {
@@ -114,10 +114,10 @@
     "path": "res://assets/art/generated/sliced/location_exteriors/safehouse_cave_entrance.png",
     "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
     "source_region": [
-      538,
-      699,
-      204,
-      272
+      522,
+      645,
+      235,
+      270
     ]
   },
   {
@@ -125,10 +125,10 @@
     "path": "res://assets/art/generated/sliced/location_exteriors/supply_drop_landing_pad.png",
     "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg",
     "source_region": [
-      794,
-      699,
-      204,
-      272
+      778,
+      645,
+      235,
+      270
     ]
   }
 ]

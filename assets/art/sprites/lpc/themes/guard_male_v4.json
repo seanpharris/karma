@@ -1,0 +1,27 @@
+{
+  "id": "guard_male_v4",
+  "display_name": "Guard (M) (variant 4)",
+  "tags": [
+    "medieval",
+    "law"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/revised/male/walk.png",
+    "legs": "legs/pants/male/walk.png",
+    "torso": "torso/armour/leather/male/walk.png",
+    "hair": "hair/messy1/adult/walk.png",
+    "weapon": "weapon/polearm/spear/walk/foreground.png",
+    "waist": "torso/waist/belt_belly/male/walk.png",
+    "neck": "neck/cravat/male/walk.png",
+    "hat": "hat/helmet/armet/adult/walk.png",
+    "arms": "arms/bracers/male/walk.png",
+    "shoulders": "shoulders/bauldron/male/walk.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

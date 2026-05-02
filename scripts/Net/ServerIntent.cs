@@ -38,16 +38,19 @@ public enum IntentType
     InvitePosse,
     AcceptPosse,
     LeavePosse,
+    TransferPosseLeadership,
     SendPosseChat,
     Rescue,
     Mount,
     Dismount,
+    MountBagTransfer,
     IssueWanted,
     ReadyUp,
     ClaimStation,
     CraftItem,
     SellItem,
     Reload,
+    RepairItem,
     StartPosseQuest
 }
 
@@ -62,7 +65,8 @@ public sealed record ServerEvent(
     string WorldId,
     long Tick,
     string Description,
-    IReadOnlyDictionary<string, string> Data);
+    IReadOnlyDictionary<string, string> Data,
+    IReadOnlyList<string> Witnesses = null);
 
 public sealed record LocalChatMessageSnapshot(
     string MessageId,
@@ -89,7 +93,8 @@ public sealed record WorldItemEntity(
     TilePosition Position,
     bool IsAvailable,
     string DropOwnerId = "",
-    string DropOwnerName = "");
+    string DropOwnerName = "",
+    long DropOwnerExpiresTick = 0);
 
 public sealed record WorldItemSnapshot(
     string EntityId,
@@ -99,7 +104,8 @@ public sealed record WorldItemSnapshot(
     int TileX,
     int TileY,
     string DropOwnerId = "",
-    string DropOwnerName = "");
+    string DropOwnerName = "",
+    long DropOwnerExpiresTick = 0);
 
 public sealed record BuildingInterior(
     int MinX,
@@ -160,7 +166,9 @@ public sealed record ShopOfferSnapshot(
     int Price,
     string Currency,
     string RequiredFactionId = "",
-    int MinReputation = 0);
+    int MinReputation = 0,
+    int BasePrice = 0,
+    string PricingBreakdown = "");
 
 public sealed record MapTileSnapshot(
     int TileX,
@@ -186,7 +194,8 @@ public sealed record NpcEntity(
     string LocationId = "",
     IReadOnlyList<TilePosition>? PatrolWaypoints = null,
     int PatrolIndex = 0,
-    string ResidentStructureEntityId = "");
+    string ResidentStructureEntityId = "",
+    string LpcBundleId = "");
 
 public sealed record MountEntity(
     string EntityId,
@@ -194,7 +203,8 @@ public sealed record MountEntity(
     TilePosition Position,
     float SpeedModifier,
     bool IsParked,
-    string OccupantPlayerId = "");
+    string OccupantPlayerId = "",
+    IReadOnlyList<string> BagItemIds = null);
 
 public sealed record MountSnapshot(
     string EntityId,
@@ -203,7 +213,8 @@ public sealed record MountSnapshot(
     int TileY,
     float SpeedModifier,
     bool IsParked,
-    string OccupantPlayerId);
+    string OccupantPlayerId,
+    IReadOnlyList<string> BagItemIds = null);
 
 public sealed record NpcSnapshot(
     string Id,
@@ -211,7 +222,8 @@ public sealed record NpcSnapshot(
     string Role,
     string Faction,
     int TileX,
-    int TileY);
+    int TileY,
+    string LpcBundleId = "");
 
 public sealed record NpcDialogueChoice(
     string Id,
@@ -248,6 +260,7 @@ public sealed record ClientInterestSnapshot(
     IReadOnlyList<WorldStructureSnapshot> Structures,
     IReadOnlyList<ShopOfferSnapshot> ShopOffers,
     IReadOnlyList<LocalChatMessageSnapshot> LocalChatMessages,
+    IReadOnlyList<FactionSnapshot> Factions,
     LeaderboardSnapshot Leaderboard,
     MatchSnapshot Match,
     IReadOnlyList<Duel> Duels,
@@ -258,5 +271,5 @@ public sealed record ClientInterestSnapshot(
     MatchSummarySnapshot MatchSummary = null)
 {
     public string Summary =>
-        $"{Players.Count} visible players, {Npcs.Count} visible NPCs, {Dialogues.Count} dialogues, {Quests.Count} quests, {MapChunks.Count} map chunks, {WorldItems.Count} visible items, {Structures.Count} visible structures, {ShopOffers.Count} shop offers, {LocalChatMessages.Count} local chat messages, {Duels.Count} duels, {Match.Summary}, {SyncHint.ServerEventCount} server events, {SyncHint.WorldEventCount} world events, {Mounts.Count} mounts";
+        $"{Players.Count} visible players, {Npcs.Count} visible NPCs, {Dialogues.Count} dialogues, {Quests.Count} quests, {MapChunks.Count} map chunks, {WorldItems.Count} visible items, {Structures.Count} visible structures, {ShopOffers.Count} shop offers, {LocalChatMessages.Count} local chat messages, {Factions.Count} faction standings, {Duels.Count} duels, {Match.Summary}, {SyncHint.ServerEventCount} server events, {SyncHint.WorldEventCount} world events, {Mounts.Count} mounts";
 }

@@ -59,4 +59,6 @@ public sealed class WorldEventLog
         var latest = _events.LastOrDefault();
         return latest is null ? "World Events: none" : $"{latest.Type}: {latest.Summary}";
     }
+
+    public void Clear() => _events.Clear();
 }

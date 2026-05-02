@@ -4,10 +4,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/scifi_wall_straight.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      10,
-      15,
-      150,
-      175
+      0,
+      48,
+      170,
+      144
     ]
   },
   {
@@ -15,10 +15,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/scifi_wall_corner.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      180,
-      15,
-      150,
-      175
+      170,
+      48,
+      170,
+      144
     ]
   },
   {
@@ -26,10 +26,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/wood_wall_straight.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      350,
-      15,
-      150,
-      175
+      340,
+      48,
+      170,
+      144
     ]
   },
   {
@@ -37,10 +37,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/wood_wall_corner.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      520,
-      15,
-      150,
-      175
+      510,
+      48,
+      170,
+      144
     ]
   },
   {
@@ -48,10 +48,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/scrap_wall_straight.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      690,
-      15,
-      150,
-      175
+      680,
+      48,
+      170,
+      144
     ]
   },
   {
@@ -59,10 +59,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/scrap_wall_corner.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      860,
-      15,
-      150,
-      175
+      850,
+      48,
+      170,
+      144
     ]
   },
   {
@@ -70,10 +70,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/stone_wall_straight.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      10,
-      270,
-      150,
-      175
+      0,
+      304,
+      170,
+      144
     ]
   },
   {
@@ -81,10 +81,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/stone_wall_corner.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      180,
-      270,
-      150,
-      175
+      170,
+      304,
+      170,
+      144
     ]
   },
   {
@@ -92,10 +92,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/clinic_door.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      350,
-      270,
-      150,
-      175
+      340,
+      304,
+      170,
+      144
     ]
   },
   {
@@ -103,10 +103,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/shop_door.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      520,
-      270,
-      150,
-      175
+      510,
+      304,
+      170,
+      144
     ]
   },
   {
@@ -114,10 +114,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/jail_door.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      690,
-      270,
-      150,
-      175
+      680,
+      304,
+      170,
+      144
     ]
   },
   {
@@ -125,10 +125,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/curtain_door_black_market.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      860,
-      270,
-      150,
-      175
+      850,
+      304,
+      170,
+      144
     ]
   },
   {
@@ -136,10 +136,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/airlock_door_closed.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      10,
-      525,
-      150,
-      175
+      0,
+      544,
+      170,
+      112
     ]
   },
   {
@@ -147,10 +147,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/airlock_door_open.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      180,
-      525,
-      150,
-      175
+      170,
+      544,
+      170,
+      112
     ]
   },
   {
@@ -158,10 +158,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/gate_closed.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      350,
-      525,
-      150,
-      175
+      340,
+      544,
+      170,
+      112
     ]
   },
   {
@@ -169,10 +169,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/gate_open.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      520,
-      525,
-      150,
-      175
+      510,
+      544,
+      170,
+      112
     ]
   },
   {
@@ -180,10 +180,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/window_lit.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      690,
-      525,
-      150,
-      175
+      680,
+      544,
+      170,
+      112
     ]
   },
   {
@@ -191,10 +191,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/window_broken.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      860,
-      525,
-      150,
-      175
+      850,
+      544,
+      170,
+      112
     ]
   },
   {
@@ -202,10 +202,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/fence_straight.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      10,
-      785,
-      150,
-      175
+      0,
+      744,
+      170,
+      80
     ]
   },
   {
@@ -213,10 +213,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/fence_corner.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      180,
-      785,
-      150,
-      175
+      170,
+      744,
+      170,
+      80
     ]
   },
   {
@@ -224,10 +224,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/railing.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      350,
-      785,
-      150,
-      175
+      340,
+      744,
+      170,
+      80
     ]
   },
   {
@@ -235,10 +235,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/barricade.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      520,
-      785,
-      150,
-      175
+      510,
+      744,
+      170,
+      80
     ]
   },
   {
@@ -246,10 +246,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/checkpoint_turnstile.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      690,
-      785,
-      150,
-      175
+      680,
+      744,
+      170,
+      80
     ]
   },
   {
@@ -257,43 +257,10 @@
     "path": "res://assets/art/generated/sliced/modular_walls_doors/archway.png",
     "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
     "source_region": [
-      860,
-      785,
-      150,
-      175
-    ]
-  },
-  {
-    "name": "sign_hanger_blank",
-    "path": "res://assets/art/generated/sliced/modular_walls_doors/sign_hanger_blank.png",
-    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
-    "source_region": [
-      350,
-      845,
-      150,
-      175
-    ]
-  },
-  {
-    "name": "awning",
-    "path": "res://assets/art/generated/sliced/modular_walls_doors/awning.png",
-    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
-    "source_region": [
-      520,
-      845,
-      150,
-      175
-    ]
-  },
-  {
-    "name": "roof_edge",
-    "path": "res://assets/art/generated/sliced/modular_walls_doors/roof_edge.png",
-    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
-    "source_region": [
-      690,
-      845,
-      150,
-      175
+      850,
+      744,
+      170,
+      80
     ]
   }
 ]

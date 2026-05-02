@@ -1,0 +1,48 @@
+{
+  "stem": "body_type_2_sprint",
+  "source": "assets/art/sprites/Neutral_malehumanoid_paper-doll_base_body_bal/body_type_2/sprint",
+  "rotations_source": "assets/art/sprites/Neutral_malehumanoid_paper-doll_base_body_bal/body_type_2/rotations",
+  "direction_order": [
+    "front/down",
+    "front-right",
+    "right",
+    "back-right",
+    "back/up",
+    "back-left",
+    "left",
+    "front-left"
+  ],
+  "direction_columns": {
+    "south": 0,
+    "south-east": 1,
+    "east": 2,
+    "north-east": 3,
+    "north": 4,
+    "north-west": 5,
+    "west": 6,
+    "south-west": 7
+  },
+  "rows": 9,
+  "frame_counts_by_column": [
+    9,
+    9,
+    9,
+    9,
+    5,
+    9,
+    9,
+    9
+  ],
+  "source_tag_by_column": {
+    "0": "animation",
+    "1": "animation",
+    "2": "animation",
+    "3": "animation",
+    "4": "animation",
+    "5": "animation",
+    "6": "animation",
+    "7": "animation"
+  },
+  "contract_path": "assets/art/sprites/player_v2/imported/body_type_2_sprint_32x64_8dir_9row.png",
+  "runtime_path": "assets/art/sprites/player_v2/imported/body_type_2_sprint_32x64_8dir_9row_runtime.png"
+}

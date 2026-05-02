@@ -1,0 +1,107 @@
+{
+  "category": "map_icons",
+  "items": [
+    {
+      "id": "map_marker_quest",
+      "prompt": "medieval map marker, golden exclamation point on a parchment circle, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "map_marker_quest_complete",
+      "prompt": "medieval map marker, golden checkmark on a parchment circle, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "map_marker_vendor",
+      "prompt": "medieval map marker, gold coin on a brown leather circle, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "map_marker_chapel",
+      "prompt": "medieval map marker, white cross on blue circle, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "map_marker_smithy",
+      "prompt": "medieval map marker, crossed hammer and tongs on grey circle, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "map_marker_tavern",
+      "prompt": "medieval map marker, frothing mug on amber circle, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "map_marker_danger",
+      "prompt": "medieval map marker, red skull on dark circle, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "map_marker_player",
+      "prompt": "medieval map marker, blue arrow on parchment circle, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "currency_gold",
+      "prompt": "single medieval gold coin, embossed crown emblem, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "currency_silver",
+      "prompt": "single medieval silver coin, embossed star emblem, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "currency_copper",
+      "prompt": "single medieval copper coin, embossed wheat emblem, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "icon_karma_saint",
+      "prompt": "medieval gold halo with three rays of light, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "icon_karma_scourge",
+      "prompt": "medieval black demon horns with red flames, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "icon_health_heart",
+      "prompt": "medieval red heart with gold rim, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "icon_stamina_lightning",
+      "prompt": "medieval yellow lightning bolt, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "icon_hunger_meat",
+      "prompt": "medieval roasted meat drumstick, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "icon_cleanliness_water",
+      "prompt": "medieval blue water droplet, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    }
+  ]
+}

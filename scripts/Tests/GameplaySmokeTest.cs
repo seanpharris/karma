@@ -33,15 +33,28 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(ResourceLoader.Exists("res://scenes/MainMenu.tscn"), "main menu prototype scene exists");
         ExpectTrue(ResourceLoader.Exists(MainMenuController.GameplayScenePath), "main menu start target gameplay scene exists");
         ExpectTrue(FileAccess.FileExists("res://assets/audio/music/main_menu_theme_placeholder.wav"), "main menu placeholder theme asset exists");
+        ExpectTrue(FileAccess.FileExists(MainMenuController.MenuThemePath), "main menu medieval music asset exists");
+        ExpectTrue(MainMenuController.LoadMenuThemeStream() is not null, "main menu loads the medieval music stream");
         var menuScene = ResourceLoader.Load<PackedScene>("res://scenes/MainMenu.tscn");
         var menuInstance = menuScene.Instantiate<Control>();
+        AddChild(menuInstance);
         ExpectTrue(menuInstance.GetNodeOrNull<Button>("Root/MenuPanel/MenuMargin/MenuButtons/StartButton") is not null, "main menu exposes a start game button");
         ExpectTrue(menuInstance.GetNodeOrNull<Button>("Root/MenuPanel/MenuMargin/MenuButtons/OptionsButton") is not null, "main menu exposes an options button");
         ExpectTrue(menuInstance.GetNodeOrNull<AudioStreamPlayer>("MenuThemePlayer") is not null, "main menu includes a placeholder theme music player");
+        ExpectTrue(
+            menuInstance.GetNode<PanelContainer>("Root/MenuPanel").GetThemeStylebox("panel") is StyleBoxTexture,
+            "main menu panel uses the selected fantasy panel frame");
         ExpectTrue(menuInstance.GetNodeOrNull<Control>("Root/OptionsPanel") is not null, "main menu includes an options panel prototype");
+        ExpectTrue(
+            menuInstance.GetNode<PanelContainer>("Root/OptionsPanel").GetThemeStylebox("panel") is StyleBoxTexture,
+            "options panel uses the selected fantasy panel frame");
+        ExpectTrue(
+            menuInstance.GetNode<PanelContainer>("Root/CreditsPanel").GetThemeStylebox("panel") is StyleBoxTexture,
+            "credits panel uses the selected fantasy panel frame");
         ExpectTrue(menuInstance.GetNodeOrNull<OptionButton>("Root/OptionsPanel/PanelMargin/OptionsContent/VideoGrid/ResolutionOption") is not null, "options menu includes resolution selection");
         ExpectTrue(menuInstance.GetNodeOrNull<Button>("Root/OptionsPanel/PanelMargin/OptionsContent/VideoGrid/DetectResolutionButton") is not null, "options menu includes display resolution detection");
         ExpectTrue(menuInstance.GetNodeOrNull<HSlider>("Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid/MasterVolumeSlider") is not null, "options menu includes audio volume sliders");
+        ExpectTrue(menuInstance.GetNodeOrNull<HSlider>("Root/OptionsPanel/PanelMargin/OptionsContent/AudioGrid/AmbientVolumeSlider") is not null, "options menu exposes the four-bus Ambient slider");
         ExpectTrue(menuInstance.GetNodeOrNull<Button>("Root/OptionsPanel/PanelMargin/OptionsContent/OptionsActions/ApplyOptionsButton") is not null, "options menu includes apply/save action");
         menuInstance.QueueFree();
 
@@ -55,13 +68,29 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/AppearanceSkinLabel") is not null, "appearance panel shows current skin label");
         ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/AppearanceHairLabel") is not null, "appearance panel shows current hair label");
         ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/AppearanceOutfitLabel") is not null, "appearance panel shows current outfit label");
+        ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/AppearancePantsLabel") is not null, "appearance panel shows current pants label");
+        ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/AppearanceShirtLabel") is not null, "appearance panel shows current shirt label");
         ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/AppearancePreviewLabel") is not null, "appearance panel reserves preview copy");
         ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/CycleSkinButton") is not null, "appearance panel includes skin cycling action");
         ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/CycleHairButton") is not null, "appearance panel includes hair cycling action");
         ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/CycleOutfitButton") is not null, "appearance panel includes outfit cycling action");
+        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/CyclePantsButton") is not null, "appearance panel includes pants cycling action");
+        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/CycleShirtButton") is not null, "appearance panel includes shirt cycling action");
         ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/MainMenuButton") is not null, "Escape menu includes main menu action");
         ExpectTrue(hudProbe.GetNodeOrNull<PanelContainer>("HudRoot/DeveloperPanel") is not null, "gameplay HUD includes tilde developer overlay");
-        ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/DeveloperPanel/DeveloperMargin/DeveloperOverlayLabel") is not null, "developer overlay includes detailed character label");
+        ExpectTrue(
+            hudProbe.GetNode<PanelContainer>("HudRoot/DeveloperPanel").GetThemeStylebox("panel") is StyleBoxTexture,
+            "medieval HUD panels use the selected fantasy panel frame");
+        ExpectTrue(HudController.UsesMedievalPanelFrameStyle(UiPaletteRegistry.MedievalThemeId), "medieval theme opts into the fantasy panel frame");
+        ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/DeveloperPanel/DeveloperMargin/DeveloperOverlayContent/DeveloperOverlayLabel") is not null, "developer overlay includes detailed character label");
+        ExpectTrue(hudProbe.GetNodeOrNull<PanelContainer>("HudRoot/DeveloperPanel/DeveloperMargin/DeveloperOverlayContent/MedievalUiArtPreviewPanel") is not null, "developer overlay includes medieval UI art preview panel");
+        var medievalPanelPreview = hudProbe.GetNodeOrNull<TextureRect>("HudRoot/DeveloperPanel/DeveloperMargin/DeveloperOverlayContent/MedievalUiArtPreviewPanel/MedievalUiArtPreviewMargin/MedievalUiArtPreviewContent/MedievalUiArtPreviewRow/PanelPreview/PanelPreviewFrame/PanelTexture");
+        ExpectTrue(medievalPanelPreview is not null, "developer overlay previews a medieval panel frame texture");
+        ExpectTrue(medievalPanelPreview?.Texture is not null, "medieval panel preview loads its raw PNG texture");
+        foreach (var asset in HudController.GetMedievalUiArtPreviewAssets())
+        {
+            ExpectTrue(FileAccess.FileExists(asset.TexturePath), $"medieval UI preview asset exists: {asset.Label}");
+        }
         ExpectTrue(hudProbe.GetNodeOrNull<PanelContainer>("HudRoot/ChatInputPanel") is not null, "gameplay HUD includes local chat input panel");
         ExpectTrue(hudProbe.GetNodeOrNull<LineEdit>("HudRoot/ChatInputPanel/LocalChatInput") is not null, "gameplay HUD includes local chat text entry");
         ExpectFalse(hudProbe.GetNode<PanelContainer>("HudRoot/ChatInputPanel").Visible, "local chat input starts closed");
@@ -71,27 +100,39 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(hudProbe.GetNode<PanelContainer>("HudRoot/ChatInputPanel").Visible, "local chat input can close without sending");
         ExpectEqual("hello station", HudController.NormalizeLocalChatInput(" hello\nstation  "), "local chat input normalizes whitespace");
         ExpectTrue(HudController.FormatAppearanceSummary(PlayerAppearanceSelection.Default).Contains("Medium skin"), "appearance summary formats selected layers");
+        ExpectTrue(HudController.FormatAppearanceSummary(PlayerAppearanceSelection.Default).Contains("Blue pants"), "appearance summary formats pants layer");
+        ExpectTrue(HudController.FormatAppearanceSummary(PlayerAppearanceSelection.Default).Contains("Black shirt"), "appearance summary formats shirt layer");
         ExpectEqual("Skin: Medium", HudController.FormatAppearanceDetailLine("Skin", PlayerAppearanceSelection.Default.SkinLayerId), "appearance panel formats current skin detail line");
+        ExpectEqual("Pants: Blue", HudController.FormatAppearanceDetailLine("Pants", PlayerAppearanceSelection.Default.PantsLayerId), "appearance panel formats current pants detail line");
+        ExpectEqual("Shirt: Black", HudController.FormatAppearanceDetailLine("Shirt", PlayerAppearanceSelection.Default.ShirtLayerId), "appearance panel formats current shirt detail line");
         ExpectEqual("Held tool: none", HudController.FormatAppearanceDetailLine("Held tool", string.Empty), "appearance panel formats empty held tool detail line");
         ExpectEqual("skin_deep_32x64", HudController.BuildAppearanceCyclePayload("skin", PlayerAppearanceSelection.Default)["skinLayerId"], "appearance panel builds skin cycle server payload");
         ExpectEqual("hair_short_blond_32x64", HudController.BuildAppearanceCyclePayload("hair", PlayerAppearanceSelection.Default)["hairLayerId"], "appearance panel builds hair cycle server payload");
         ExpectEqual("hair_short_copper_32x64", HudController.BuildAppearanceCyclePayload("hair", PlayerAppearanceSelection.Default with { HairLayerId = "hair_short_blond_32x64" })["hairLayerId"], "appearance panel cycles through extra hair test layers");
         ExpectEqual("outfit_settler_32x64", HudController.BuildAppearanceCyclePayload("outfit", PlayerAppearanceSelection.Default)["outfitLayerId"], "appearance panel builds outfit cycle server payload");
         ExpectEqual("outfit_medic_32x64", HudController.BuildAppearanceCyclePayload("outfit", PlayerAppearanceSelection.Default with { OutfitLayerId = "outfit_settler_32x64" })["outfitLayerId"], "appearance panel cycles through extra outfit test layers");
+        ExpectEqual("", HudController.BuildAppearanceCyclePayload("pants", PlayerAppearanceSelection.Default)["pantsLayerId"], "appearance panel builds pants cycle server payload");
+        ExpectEqual("", HudController.BuildAppearanceCyclePayload("shirt", PlayerAppearanceSelection.Default)["shirtLayerId"], "appearance panel builds shirt cycle server payload");
         hudProbe.ToggleDeveloperOverlay();
         ExpectTrue(hudProbe.GetNode<PanelContainer>("HudRoot/DeveloperPanel").Visible, "tilde developer overlay can be toggled visible");
         ExpectEqual(0, HudController.WrapDeveloperPageIndex(4), "developer overlay page index wraps forward");
         ExpectEqual(3, HudController.WrapDeveloperPageIndex(-1), "developer overlay page index wraps backward");
         ExpectTrue(HudController.FormatDeveloperOverlay(null, "Perf: test", 2).Contains("Tab cycles pages"), "developer overlay empty state explains page controls");
         ExpectFalse(GetTree().Paused, "Escape menu prototype does not pause the running tree");
+        ExpectTrue(
+            hudProbe.GetNodeOrNull<Button>("HudRoot/MatchSummaryPanel/MatchSummaryContent/ReturnToMainMenuButton") is not null,
+            "match summary panel exposes a return-to-main-menu button");
         hudProbe.QueueFree();
 
         var state = GetNode<GameState>("/root/GameState");
+        ExpectTrue(LpcPlayerAppearanceRegistry.BundleExists(state.LocalPlayer.LpcBundleId), "local player gets a generated LPC bundle");
+        ExpectTrue(LpcPlayerAppearanceRegistry.BundleExists(state.Players["peer_stand_in"].LpcBundleId), "peer stand-in gets a generated LPC bundle");
         state.TriggerKarmaBreak();
         var localSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         ExpectTrue(localSession is not null, "prototype server session autoload is available");
         ExpectTrue(localSession.LastLocalSnapshot.Summary.Contains("visible"), "prototype server session exposes local interest snapshot");
         var localPlayerSnapshot = localSession.LastLocalSnapshot.Players.First(player => player.Id == localSession.LastLocalSnapshot.PlayerId);
+        ExpectTrue(LpcPlayerAppearanceRegistry.BundleExists(localPlayerSnapshot.LpcBundleId), "interest snapshot exposes the local player's generated LPC bundle");
         ExpectFalse(WorldRoot.ShouldRenderRemotePlayer(localSession.LastLocalSnapshot, localPlayerSnapshot), "world renderer does not duplicate the local player avatar");
         ExpectTrue(WorldRoot.ShouldRenderRemotePlayer(localSession.LastLocalSnapshot, localPlayerSnapshot with { Id = "remote_player_preview", DisplayName = "Remote Preview" }), "world renderer can draw dynamic remote player avatars from snapshots");
         ExpectTrue(localSession.LastLocalSnapshot.ShopOffers.Any(), "prototype server session exposes nearby shop offers");
@@ -244,13 +285,13 @@ public partial class GameplaySmokeTest : Node
             PrototypeCharacterSprite.ResolveAnimationName(Vector2.Zero, CardinalDirection.Left),
             "native character sprite preserves last facing direction while idle");
         ExpectEqual(
-            PrototypeCharacterSprite.WalkUpRightAnimation,
+            PrototypeCharacterSprite.WalkRightAnimation,
             PrototypeCharacterSprite.ResolveAnimationName(new Vector2(1f, -1f)),
-            "native character sprite resolves diagonal movement to an eight-way animation when available");
+            "native character sprite resolves diagonal movement to the east/west walk animation");
         ExpectEqual(
-            CharacterFacingDirection.DownLeft,
+            CharacterFacingDirection.Left,
             PrototypeCharacterSprite.ToFacingDirection(new Vector2(-1f, 1f)),
-            "native character sprite tracks diagonal facing direction");
+            "native character sprite resolves diagonal facing to the east/west profile");
         var gridAnimations = PrototypeSpriteCatalog.FourDirectionGridAnimations(Vector2.Zero);
         ExpectEqual(
             new Rect2(0f, 32f, 32f, 32f),
@@ -367,8 +408,8 @@ public partial class GameplaySmokeTest : Node
             ExpectEqual(64, manifestRoot.GetProperty("frameHeight").GetInt32(), "native player v2 manifest declares 64px frame height");
             ExpectEqual(8, manifestRoot.GetProperty("columns").GetInt32(), "native player v2 manifest declares eight direction columns");
             ExpectEqual(4, manifestRoot.GetProperty("rows").GetInt32(), "native player v2 manifest declares four animation rows");
-            ExpectEqual(17, manifestRoot.GetProperty("layers").GetArrayLength(), "native player v2 manifest exposes base, skins, hair, outfit, boots, and overlay layers");
-            ExpectEqual(5, manifestRoot.GetProperty("previewStack").GetArrayLength(), "native player v2 manifest preview stack composes a playable character");
+            ExpectEqual(19, manifestRoot.GetProperty("layers").GetArrayLength(), "native player v2 manifest exposes base, skins, hair, outfit, boots, pants/shirt and overlay layers");
+            ExpectEqual(7, manifestRoot.GetProperty("previewStack").GetArrayLength(), "native player v2 manifest preview stack composes a playable layered character");
             ExpectTrue(
                 manifestRoot.GetProperty("layers").EnumerateArray().Any(layer => layer.GetProperty("id").GetString() == "skin_light_32x64"),
                 "native player v2 manifest exposes swappable light skin layer");
@@ -411,6 +452,8 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(4, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "hair"), "player v2 layer manifest loader exposes hair variants");
         ExpectEqual(4, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "outfit"), "player v2 layer manifest loader exposes outfit variants");
         ExpectEqual(2, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "boots"), "player v2 layer manifest loader exposes boots equipment variants");
+        ExpectEqual(1, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "pants"), "player v2 layer manifest loader exposes pants clothing variants");
+        ExpectEqual(1, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "shirt"), "player v2 layer manifest loader exposes shirt clothing variants");
         ExpectEqual(1, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "backpack"), "player v2 layer manifest loader exposes backpack overlay variants");
         ExpectEqual(1, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "held_tool"), "player v2 layer manifest loader exposes held tool overlay variants");
         ExpectEqual(1, playerV2LayerManifest.Layers.Count(layer => layer.Slot == "weapon"), "player v2 layer manifest loader exposes weapon overlay variants");
@@ -621,6 +664,453 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(75f, HudController.CalculateHealthPercent(75, 100), "health bar percent follows authoritative health");
         ExpectEqual(0f, HudController.CalculateHealthPercent(-5, 100), "health bar percent clamps below zero");
         ExpectEqual(100f, HudController.CalculateHealthPercent(125, 100), "health bar percent clamps above maximum");
+        ExpectEqual("Ammo: 6/12", HudController.FormatAmmo(6, 12), "ammo label formats current and max magazine");
+        ExpectEqual("Ammo: 0/12 (reload)", HudController.FormatAmmo(0, 12), "ammo label flags empty magazine for reload");
+        ExpectEqual("Ammo: --", HudController.FormatAmmo(0, 0), "ammo label shows -- when no magazine is configured");
+        ExpectEqual("Stamina: 80/100", HudController.FormatCombatStamina(80, 100), "combat stamina label formats current and max");
+        ExpectEqual("Stamina: 0/100", HudController.FormatCombatStamina(-5, 100), "combat stamina label clamps below zero");
+        ExpectEqual("Hunger: 100/100", HudController.FormatHunger(100, 100), "hunger label formats full pool");
+        ExpectEqual("Hunger: 50/100 (peckish)", HudController.FormatHunger(50, 100), "hunger label flags peckish at 50%");
+        ExpectEqual("Hunger: 25/100 (hungry)", HudController.FormatHunger(25, 100), "hunger label flags hungry at 25%");
+        ExpectEqual("Hunger: 0/100 (starving)", HudController.FormatHunger(0, 100), "hunger label flags starving at empty");
+
+        // Pause Options panel: percent → dB and linear → dB conversions.
+        ExpectEqual(-80f, HudController.PercentToDb(0.0),
+            "pause master volume: 0% silences (returns -80 dB)");
+        ExpectTrue(Math.Abs(HudController.PercentToDb(100.0) - 0f) < 0.01f,
+            "pause master volume: 100% maps to 0 dB (unity)");
+        ExpectTrue(HudController.PercentToDb(50.0) < 0f && HudController.PercentToDb(50.0) > -10f,
+            "pause master volume: 50% lands between 0 and -10 dB");
+        ExpectEqual(-80f, HudController.LinearToDb(0.0),
+            "pause linear-to-dB silences at 0");
+        ExpectTrue(Math.Abs(HudController.LinearToDb(1.0) - 0f) < 0.01f,
+            "pause linear-to-dB at 1.0 maps to unity");
+
+        // AudioSettings: four-bus mixer state + ConfigFile round-trip.
+        ExpectEqual("Master", Karma.Audio.AudioSettings.MasterBusName,
+            "AudioSettings exposes Master bus name constant");
+        ExpectEqual("Music", Karma.Audio.AudioSettings.MusicBusName,
+            "AudioSettings exposes Music bus name constant");
+        ExpectEqual("SFX", Karma.Audio.AudioSettings.SfxBusName,
+            "AudioSettings exposes SFX bus name constant");
+        ExpectEqual("Ambient", Karma.Audio.AudioSettings.AmbientBusName,
+            "AudioSettings exposes Ambient bus name constant");
+        ExpectEqual(Karma.Audio.AudioSettings.PercentToDb(50.0), HudController.PercentToDb(50.0),
+            "HudController.PercentToDb wraps AudioSettings.PercentToDb");
+        ExpectEqual(100.0, Karma.Audio.AudioSettings.ClampPercent(150.0),
+            "AudioSettings clamps over-100 percentages");
+        ExpectEqual(0.0, Karma.Audio.AudioSettings.ClampPercent(-5.0),
+            "AudioSettings clamps negative percentages");
+        var roundTripConfig = new ConfigFile();
+        Karma.Audio.AudioSettings.MasterVolume = 42;
+        Karma.Audio.AudioSettings.MusicVolume = 17;
+        Karma.Audio.AudioSettings.SfxVolume = 91;
+        Karma.Audio.AudioSettings.AmbientVolume = 8;
+        Karma.Audio.AudioSettings.SaveToConfig(roundTripConfig);
+        Karma.Audio.AudioSettings.MasterVolume = 0;
+        Karma.Audio.AudioSettings.MusicVolume = 0;
+        Karma.Audio.AudioSettings.SfxVolume = 0;
+        Karma.Audio.AudioSettings.AmbientVolume = 0;
+        Karma.Audio.AudioSettings.LoadFromConfig(roundTripConfig);
+        ExpectEqual(42.0, Karma.Audio.AudioSettings.MasterVolume,
+            "AudioSettings round-trips master volume through ConfigFile");
+        ExpectEqual(17.0, Karma.Audio.AudioSettings.MusicVolume,
+            "AudioSettings round-trips music volume through ConfigFile");
+        ExpectEqual(91.0, Karma.Audio.AudioSettings.SfxVolume,
+            "AudioSettings round-trips sfx volume through ConfigFile");
+        ExpectEqual(8.0, Karma.Audio.AudioSettings.AmbientVolume,
+            "AudioSettings round-trips ambient volume through ConfigFile");
+        var emptyConfig = new ConfigFile();
+        Karma.Audio.AudioSettings.MasterVolume = 0;
+        Karma.Audio.AudioSettings.AmbientVolume = 0;
+        Karma.Audio.AudioSettings.LoadFromConfig(emptyConfig);
+        ExpectEqual(Karma.Audio.AudioSettings.DefaultMasterVolume, Karma.Audio.AudioSettings.MasterVolume,
+            "AudioSettings reverts to default master volume when key is missing");
+        ExpectEqual(Karma.Audio.AudioSettings.DefaultAmbientVolume, Karma.Audio.AudioSettings.AmbientVolume,
+            "AudioSettings reverts to default ambient volume when key is missing");
+
+        // Pause menu: each of the four mixer rows builds a labeled slider.
+        ExpectTrue(hudProbe.GetNodeOrNull<HSlider>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/EscapeOptionsPanel/EscapeOptionsMargin/EscapeOptionsContent/MasterVolumeRow/MasterVolumeSlider") is not null,
+            "pause options panel includes Master volume slider");
+        ExpectTrue(hudProbe.GetNodeOrNull<HSlider>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/EscapeOptionsPanel/EscapeOptionsMargin/EscapeOptionsContent/MusicVolumeRow/MusicVolumeSlider") is not null,
+            "pause options panel includes Music volume slider");
+        ExpectTrue(hudProbe.GetNodeOrNull<HSlider>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/EscapeOptionsPanel/EscapeOptionsMargin/EscapeOptionsContent/EffectsVolumeRow/EffectsVolumeSlider") is not null,
+            "pause options panel includes Effects volume slider");
+        ExpectTrue(hudProbe.GetNodeOrNull<HSlider>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/EscapeOptionsPanel/EscapeOptionsMargin/EscapeOptionsContent/AmbientVolumeRow/AmbientVolumeSlider") is not null,
+            "pause options panel includes Ambient volume slider");
+        ExpectTrue(hudProbe.GetNodeOrNull<CheckButton>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/EscapeOptionsPanel/EscapeOptionsMargin/EscapeOptionsContent/CarryStateToggle") is not null,
+            "pause options panel includes carry-state toggle");
+
+        const string carryStateSmokePath = "user://carry_state_smoke.json";
+        var carryPreferenceState = new GameState();
+        carryPreferenceState.SetCarryStateIntoNextRound(true, carryStateSmokePath);
+        var carryPreferenceLoad = new GameState();
+        ExpectTrue(carryPreferenceLoad.LoadCarryStatePreference(carryStateSmokePath),
+            "carry-state preference loads from JSON");
+        ExpectTrue(carryPreferenceLoad.CarryStateIntoNextRound,
+            "carry-state preference round-trips enabled value");
+        carryPreferenceState.SetCarryStateIntoNextRound(false, carryStateSmokePath);
+        ExpectTrue(carryPreferenceLoad.LoadCarryStatePreference(carryStateSmokePath),
+            "carry-state preference reloads disabled JSON");
+        ExpectFalse(carryPreferenceLoad.CarryStateIntoNextRound,
+            "carry-state preference round-trips disabled value");
+
+        var carryRoundState = new GameState();
+        carryRoundState.RegisterPlayer(GameState.LocalPlayerId, "Carry Tester");
+        carryRoundState.Players[GameState.LocalPlayerId].ApplyKarma(18);
+        carryRoundState.Relationships.Apply(StarterNpcs.Mara.Id, GameState.LocalPlayerId, 22);
+        carryRoundState.Factions.Apply(StarterFactions.FreeSettlersId, GameState.LocalPlayerId, 33);
+        carryRoundState.SetCarryStateIntoNextRound(true, carryStateSmokePath);
+        carryRoundState.ResetForNewMatch();
+        ExpectEqual(18, carryRoundState.LocalKarma.Score,
+            "carry-state reset preserves local karma when enabled");
+        ExpectEqual(22, carryRoundState.Relationships.GetOpinion(StarterNpcs.Mara.Id, GameState.LocalPlayerId),
+            "carry-state reset preserves relationships when enabled");
+        ExpectEqual(33, carryRoundState.Factions.GetReputation(StarterFactions.FreeSettlersId, GameState.LocalPlayerId),
+            "carry-state reset preserves faction reputation when enabled");
+
+        // Karma-break impact flash trigger.
+        var noFlashTick = HudController.FindKarmaBreakTriggerTick(
+            System.Array.Empty<ServerEvent>(), "p_a", -1);
+        ExpectEqual(-1L, noFlashTick, "karma-break flash returns -1 when no events");
+
+        var unrelated = new[]
+        {
+            new ServerEvent("player_attacked", "world", 5, string.Empty,
+                new Dictionary<string, string> { ["playerId"] = "p_a", ["targetId"] = "p_b" })
+        };
+        ExpectEqual(-1L,
+            HudController.FindKarmaBreakTriggerTick(unrelated, "p_a", -1),
+            "karma-break flash ignores non-break events");
+
+        var foreignBreak = new[]
+        {
+            new ServerEvent("karma_break", "world", 7, string.Empty,
+                new Dictionary<string, string> { ["playerId"] = "p_other" })
+        };
+        ExpectEqual(-1L,
+            HudController.FindKarmaBreakTriggerTick(foreignBreak, "p_a", -1),
+            "karma-break flash ignores breaks on other players");
+
+        var localBreak = new[]
+        {
+            new ServerEvent("karma_break", "world", 11, string.Empty,
+                new Dictionary<string, string> { ["playerId"] = "p_a" })
+        };
+        ExpectEqual(11L,
+            HudController.FindKarmaBreakTriggerTick(localBreak, "p_a", -1),
+            "karma-break flash triggers on local-player break");
+        ExpectEqual(-1L,
+            HudController.FindKarmaBreakTriggerTick(localBreak, "p_a", 11),
+            "karma-break flash does not re-trigger on the same event");
+
+        var localRespawn = new[]
+        {
+            new ServerEvent("player_respawned", "world", 14, string.Empty,
+                new Dictionary<string, string> { ["playerId"] = "p_a" })
+        };
+        ExpectEqual(14L,
+            HudController.FindKarmaBreakTriggerTick(localRespawn, "p_a", -1),
+            "karma-break flash also triggers on player_respawned for the local player");
+
+        // Contraband detection flash trigger.
+        ExpectEqual(-1L,
+            HudController.FindContrabandFlashTriggerTick(System.Array.Empty<ServerEvent>(), "p_a", -1),
+            "contraband flash returns -1 when no events");
+        var foreignContraband = new[]
+        {
+            new ServerEvent("contraband_detected", "world", 9, string.Empty,
+                new Dictionary<string, string> { ["playerId"] = "p_other" })
+        };
+        ExpectEqual(-1L,
+            HudController.FindContrabandFlashTriggerTick(foreignContraband, "p_a", -1),
+            "contraband flash ignores events for other players");
+        var localContraband = new[]
+        {
+            new ServerEvent("contraband_detected", "world", 23, string.Empty,
+                new Dictionary<string, string> { ["playerId"] = "p_a" })
+        };
+        ExpectEqual(23L,
+            HudController.FindContrabandFlashTriggerTick(localContraband, "p_a", -1),
+            "contraband flash triggers on contraband_detected for the local player");
+        ExpectEqual(-1L,
+            HudController.FindContrabandFlashTriggerTick(localContraband, "p_a", 23),
+            "contraband flash does not re-trigger on the same event tick");
+
+        // Wraith trail VFX: gated on SpeedModifier != 1f.
+        ExpectFalse(
+            WorldRoot.IsWraithTrailActive(null),
+            "wraith trail inactive for null player snapshot");
+        var wraithBaseSnap = new PlayerSnapshot(
+            "p_a", "Normal", 0, "Drifter", 0, "0/0", LeaderboardRole.None, 0, 0, 100, 100, 0,
+            PlayerAppearanceSelection.Default,
+            System.Array.Empty<string>(),
+            new Dictionary<EquipmentSlot, string>(),
+            System.Array.Empty<string>());
+        ExpectFalse(
+            WorldRoot.IsWraithTrailActive(wraithBaseSnap),
+            "wraith trail inactive when SpeedModifier == 1f");
+        var wraithActiveSnap = wraithBaseSnap with { SpeedModifier = 0.7f };
+        ExpectTrue(
+            WorldRoot.IsWraithTrailActive(wraithActiveSnap),
+            "wraith trail active when SpeedModifier diverges from 1f");
+
+        // Wanted poster overlay: gated on StatusEffects containing "Wanted" or a bounty entry.
+        ExpectFalse(
+            WorldRoot.IsWantedOverlayActive(null),
+            "wanted overlay inactive for null snapshot");
+        ExpectFalse(
+            WorldRoot.IsWantedOverlayActive(wraithBaseSnap),
+            "wanted overlay inactive when StatusEffects is empty");
+        var wantedSnap = wraithBaseSnap with { StatusEffects = new[] { "Wanted" } };
+        ExpectTrue(
+            WorldRoot.IsWantedOverlayActive(wantedSnap),
+            "wanted overlay active when StatusEffects includes Wanted");
+        var bountySnap = wraithBaseSnap with { StatusEffects = new[] { "Bounty: 50" } };
+        ExpectTrue(
+            WorldRoot.IsWantedOverlayActive(bountySnap),
+            "wanted overlay active when StatusEffects includes a bounty entry");
+
+        // Audio event catalog: built-in mappings + runtime override + substring fallback.
+        Karma.Audio.AudioEventCatalog.Reset();
+        ExpectTrue(
+            Karma.Audio.AudioEventCatalog.Resolve("karma_break").EndsWith("karma_break_stinger.wav"),
+            "audio catalog resolves built-in karma_break clip");
+        ExpectEqual(string.Empty,
+            Karma.Audio.AudioEventCatalog.Resolve("totally_unknown_event"),
+            "audio catalog returns empty string for unknown event");
+        Karma.Audio.AudioEventCatalog.Register("karma_break", "res://test/override.wav");
+        ExpectEqual("res://test/override.wav",
+            Karma.Audio.AudioEventCatalog.Resolve("karma_break"),
+            "runtime override beats built-in clip");
+        ExpectTrue(
+            Karma.Audio.AudioEventCatalog.Resolve("player_attacked_with_pistol")
+                .EndsWith("hit_thud.wav"),
+            "audio catalog falls back to substring match for compound event ids");
+        Karma.Audio.AudioEventCatalog.Reset();
+        ExpectTrue(
+            Karma.Audio.AudioEventCatalog.Resolve("karma_break").EndsWith("karma_break_stinger.wav"),
+            "audio catalog Reset clears runtime overrides");
+        // Locomotion + body-cue ids registered.
+        ExpectTrue(
+            Karma.Audio.AudioEventCatalog.Resolve("footstep_dirt").EndsWith("footstep_dirt.wav"),
+            "audio catalog resolves footstep_dirt cue");
+        ExpectTrue(
+            Karma.Audio.AudioEventCatalog.Resolve("grunt_pain").EndsWith("grunt_pain.wav"),
+            "audio catalog resolves grunt_pain cue");
+        ExpectTrue(
+            Karma.Audio.AudioEventCatalog.Resolve("sword_swing").EndsWith("sword_swing.wav"),
+            "audio catalog resolves sword_swing cue");
+        // Generated SFX files actually present on disk so playback resolves.
+        ExpectTrue(
+            FileAccess.FileExists("res://assets/audio/sfx/footstep_dirt.wav"),
+            "footstep_dirt.wav baked under assets/audio/sfx");
+        ExpectTrue(
+            FileAccess.FileExists("res://assets/audio/sfx/grunt_pain.wav"),
+            "grunt_pain.wav baked under assets/audio/sfx");
+        ExpectTrue(
+            FileAccess.FileExists("res://assets/audio/sfx/sword_swing.wav"),
+            "sword_swing.wav baked under assets/audio/sfx");
+        ExpectTrue(
+            FileAccess.FileExists("res://assets/audio/sfx/karma_break_stinger.wav"),
+            "karma_break_stinger.wav baked under assets/audio/sfx");
+
+        // Voice bark catalog: per-slot path resolution + event-id mapping.
+        Karma.Audio.VoiceBarkCatalog.Reset();
+        ExpectEqual("res://assets/audio/voice/voice1/ouch.ogg",
+            Karma.Audio.VoiceBarkCatalog.Resolve(Karma.Audio.VoiceSlot.Voice1, Karma.Audio.VoiceBarkCatalog.Ouch),
+            "voice bark catalog resolves Voice1 ouch path");
+        ExpectEqual("res://assets/audio/voice/voice2/ready.ogg",
+            Karma.Audio.VoiceBarkCatalog.Resolve(Karma.Audio.VoiceSlot.Voice2, Karma.Audio.VoiceBarkCatalog.Ready),
+            "voice bark catalog resolves Voice2 ready path");
+        ExpectEqual("res://assets/audio/voice/voice3/laugh.ogg",
+            Karma.Audio.VoiceBarkCatalog.Resolve(Karma.Audio.VoiceSlot.Voice3, Karma.Audio.VoiceBarkCatalog.Laugh),
+            "voice bark catalog resolves Voice3 laugh path");
+        ExpectEqual(string.Empty,
+            Karma.Audio.VoiceBarkCatalog.Resolve(Karma.Audio.VoiceSlot.Voice1, ""),
+            "voice bark catalog returns empty for blank bark id");
+        Karma.Audio.VoiceBarkCatalog.Register(Karma.Audio.VoiceSlot.Voice1, Karma.Audio.VoiceBarkCatalog.Ouch, "res://test/voice_override.ogg");
+        ExpectEqual("res://test/voice_override.ogg",
+            Karma.Audio.VoiceBarkCatalog.Resolve(Karma.Audio.VoiceSlot.Voice1, Karma.Audio.VoiceBarkCatalog.Ouch),
+            "voice bark runtime override beats built-in path");
+        Karma.Audio.VoiceBarkCatalog.Reset();
+        ExpectEqual("res://assets/audio/voice/voice1/ouch.ogg",
+            Karma.Audio.VoiceBarkCatalog.Resolve(Karma.Audio.VoiceSlot.Voice1, Karma.Audio.VoiceBarkCatalog.Ouch),
+            "voice bark Reset clears runtime overrides");
+        ExpectEqual(Karma.Audio.VoiceBarkCatalog.Ouch,
+            Karma.Audio.VoiceBarkCatalog.BarkForEventId("karma_break"),
+            "voice bark catalog maps karma_break event to ouch bark");
+        ExpectEqual(Karma.Audio.VoiceBarkCatalog.Ready,
+            Karma.Audio.VoiceBarkCatalog.BarkForEventId("match_started"),
+            "voice bark catalog maps match_started event to ready bark");
+        ExpectEqual(Karma.Audio.VoiceBarkCatalog.Laugh,
+            Karma.Audio.VoiceBarkCatalog.BarkForEventId("posse_formed"),
+            "voice bark catalog maps posse_formed event to laugh bark");
+        ExpectEqual(Karma.Audio.VoiceBarkCatalog.Laugh,
+            Karma.Audio.VoiceBarkCatalog.BarkForEventId("posse_accepted"),
+            "voice bark catalog maps posse_accepted event to laugh bark");
+        ExpectEqual(string.Empty,
+            Karma.Audio.VoiceBarkCatalog.BarkForEventId("totally_unrelated_event"),
+            "voice bark catalog returns empty for unmapped events");
+
+        // Audio falloff registry: defaults + per-event overrides + reset.
+        Karma.Audio.AudioFalloffRegistry.Reset();
+        var defaultProfile = Karma.Audio.AudioFalloffRegistry.Resolve("totally_unmapped_event");
+        ExpectEqual(8f, defaultProfile.MaxDistanceTiles,
+            "audio falloff defaults to 8-tile max distance");
+        ExpectEqual(5000f, defaultProfile.AttenuationCutoffHz,
+            "audio falloff defaults to 5kHz attenuation cutoff");
+        ExpectEqual(16f, Karma.Audio.AudioFalloffRegistry.Resolve("karma_break").MaxDistanceTiles,
+            "karma_break carries to 16 tiles");
+        ExpectEqual(4f, Karma.Audio.AudioFalloffRegistry.Resolve("purchase_complete").MaxDistanceTiles,
+            "purchase_complete only carries to 4 tiles");
+        ExpectEqual(8f, Karma.Audio.AudioFalloffRegistry.Resolve("door_opened").MaxDistanceTiles,
+            "door_opened uses the 8-tile mid-range profile");
+        ExpectEqual(8f, Karma.Audio.AudioFalloffRegistry.Resolve("door_opened_chapel").MaxDistanceTiles,
+            "compound event id inherits door_opened profile via substring fallback");
+        Karma.Audio.AudioFalloffRegistry.Register(
+            "purchase_complete",
+            new Karma.Audio.AudioFalloffProfile(2f, 3000f));
+        ExpectEqual(2f, Karma.Audio.AudioFalloffRegistry.Resolve("purchase_complete").MaxDistanceTiles,
+            "runtime override beats built-in falloff profile");
+        Karma.Audio.AudioFalloffRegistry.Reset();
+        ExpectEqual(4f, Karma.Audio.AudioFalloffRegistry.Resolve("purchase_complete").MaxDistanceTiles,
+            "reset restores built-in falloff profile");
+        var doorWorldPos = Karma.Audio.PositionalAudioPlayer.TileCenterToWorld(3, 4);
+        ExpectEqual(112f, doorWorldPos.X, "TileCenterToWorld places X at the tile center (3.5 * 32)");
+        ExpectEqual(144f, doorWorldPos.Y, "TileCenterToWorld places Y at the tile center (4.5 * 32)");
+
+        // Ambient bed manager: outdoor → interior → outdoor transitions.
+        ExpectEqual("outdoor",
+            Karma.Audio.AmbientBedManager.CategoryToBedId(""),
+            "blank category resolves to the outdoor bed");
+        ExpectEqual("outdoor",
+            Karma.Audio.AmbientBedManager.CategoryToBedId("dungeon"),
+            "unknown category falls back to the outdoor bed");
+        ExpectEqual("tavern",
+            Karma.Audio.AmbientBedManager.CategoryToBedId("tavern"),
+            "tavern category maps to the tavern bed");
+        ExpectEqual("chapel",
+            Karma.Audio.AmbientBedManager.CategoryToBedId("chapel"),
+            "chapel category maps to the chapel bed");
+        var tavernStructure = new WorldStructureSnapshot(
+            "tavern_001", "tavern", "The Crooked Lantern", "tavern",
+            10, 10, 64, 64, false, "", 100, "ok");
+        var structures = new[] { tavernStructure };
+        ExpectEqual("outdoor",
+            Karma.Audio.AmbientBedManager.PickBedIdFromInterior("", structures),
+            "ambient bed picker returns 'outdoor' when player is not inside");
+        ExpectEqual("tavern",
+            Karma.Audio.AmbientBedManager.PickBedIdFromInterior("tavern_001", structures),
+            "ambient bed picker returns 'tavern' when player is inside the tavern");
+        ExpectEqual("outdoor",
+            Karma.Audio.AmbientBedManager.PickBedIdFromInterior("", structures),
+            "ambient bed picker drops back to 'outdoor' when player exits");
+        ExpectEqual("outdoor",
+            Karma.Audio.AmbientBedManager.PickBedIdFromInterior("missing_id", structures),
+            "ambient bed picker returns 'outdoor' when the structure id isn't visible");
+        ExpectEqual("res://assets/audio/ambient/tavern.ogg",
+            Karma.Audio.AmbientBedManager.ResolveBedPath("tavern"),
+            "ambient bed path resolver builds the canonical path");
+
+        // PlayerState carries a voice slot so per-character casting can drive bark playback.
+        var voiceState = new PlayerState("voice_player", "Voice Player");
+        ExpectEqual(Karma.Audio.VoiceSlot.Voice1, voiceState.VoiceSlot,
+            "PlayerState defaults to VoiceSlot.Voice1");
+        voiceState.SetVoiceSlot(Karma.Audio.VoiceSlot.Voice3);
+        ExpectEqual(Karma.Audio.VoiceSlot.Voice3, voiceState.VoiceSlot,
+            "PlayerState exposes a VoiceSlot setter");
+
+        // Music playlist discovery: walks the music directory in alphabetical
+        // order, skips the main-menu placeholder, accepts mp3 / ogg / wav.
+        ExpectTrue(
+            Karma.Audio.PrototypeMusicPlayer.IsPlayableAudioFile("track.mp3"),
+            "music player accepts mp3 files");
+        ExpectTrue(
+            Karma.Audio.PrototypeMusicPlayer.IsPlayableAudioFile("track.ogg"),
+            "music player accepts ogg files");
+        ExpectTrue(
+            Karma.Audio.PrototypeMusicPlayer.IsPlayableAudioFile("track.wav"),
+            "music player accepts wav files");
+        ExpectFalse(
+            Karma.Audio.PrototypeMusicPlayer.IsPlayableAudioFile("track.import"),
+            "music player rejects .import sidecar files");
+        ExpectFalse(
+            Karma.Audio.PrototypeMusicPlayer.IsPlayableAudioFile("README.md"),
+            "music player rejects non-audio files");
+        var musicFiles = Karma.Audio.PrototypeMusicPlayer.ListPlayableFiles(
+            Karma.Audio.PrototypeMusicPlayer.MusicDirectory);
+        ExpectTrue(
+            musicFiles.Contains(Karma.Audio.PrototypeMusicPlayer.TravellingOnMedievalFileName),
+            "music player playlist includes the verified medieval track");
+        ExpectFalse(
+            musicFiles.Contains(Karma.Audio.PrototypeMusicPlayer.MenuPlaceholderFileName),
+            "music player playlist excludes the main-menu placeholder asset");
+        ExpectTrue(
+            Karma.Audio.PrototypeMusicPlayer.LoadPlayableAudio(Karma.Audio.PrototypeMusicPlayer.MusicDirectory + musicFiles.First()) is not null,
+            "music player loads a raw medieval MP3 file");
+        var orderedMusicFiles = musicFiles.OrderBy(name => name, StringComparer.Ordinal).ToList();
+        ExpectTrue(
+            musicFiles.SequenceEqual(orderedMusicFiles),
+            "music player returns playlist files in alphabetical order so playback is deterministic");
+
+        var lpcPlayerBundles = LpcPlayerAppearanceRegistry.ListBundleIds();
+        ExpectTrue(lpcPlayerBundles.Count > 0, "LPC player appearance registry discovers generated bundles");
+        var pickedLocalLpc = LpcPlayerAppearanceRegistry.PickBundleId("prototype", GameState.LocalPlayerId);
+        ExpectTrue(LpcPlayerAppearanceRegistry.BundleExists(pickedLocalLpc), "LPC player appearance picker returns an existing bundle");
+        ExpectEqual(
+            pickedLocalLpc,
+            LpcPlayerAppearanceRegistry.PickBundleId("prototype", GameState.LocalPlayerId),
+            "LPC player appearance picker is deterministic for the same world/player");
+
+        // Pants and shirt appearance layers (manifest + cycler + payload).
+        var pantsShirtManifest = PlayerV2LayerManifest.LoadDefault();
+        ExpectTrue(
+            pantsShirtManifest.LayerOrder.Contains("pants"),
+            "player v2 manifest layerOrder includes pants slot");
+        ExpectTrue(
+            pantsShirtManifest.LayerOrder.Contains("shirt"),
+            "player v2 manifest layerOrder includes shirt slot");
+        ExpectTrue(
+            pantsShirtManifest.Layers.Any(l => l.Id == "pants_blue_32x64" && l.Slot == "pants"),
+            "manifest registers pants_blue_32x64 in pants slot");
+        ExpectTrue(
+            pantsShirtManifest.Layers.Any(l => l.Id == "shirt_black_32x64" && l.Slot == "shirt"),
+            "manifest registers shirt_black_32x64 in shirt slot");
+
+        ExpectEqual("pants_blue_32x64", PlayerController.CyclePantsLayerId(""),
+            "pants cycler advances from empty to blue pants");
+        ExpectEqual("", PlayerController.CyclePantsLayerId("pants_blue_32x64"),
+            "pants cycler returns to empty (let outfit show)");
+        ExpectEqual("shirt_black_32x64", PlayerController.CycleShirtLayerId(""),
+            "shirt cycler advances from empty to black shirt");
+        ExpectEqual("", PlayerController.CycleShirtLayerId("shirt_black_32x64"),
+            "shirt cycler returns to empty (let outfit show)");
+
+        var emptyPantsShirt = PlayerAppearanceSelection.Default with
+        {
+            PantsLayerId = string.Empty,
+            ShirtLayerId = string.Empty
+        };
+        var pantsPayload = HudController.BuildAppearanceCyclePayload(
+            "pants", emptyPantsShirt);
+        ExpectEqual("pants_blue_32x64", pantsPayload["pantsLayerId"],
+            "appearance pants payload routes through CyclePantsLayerId");
+        var shirtPayload = HudController.BuildAppearanceCyclePayload(
+            "shirt", emptyPantsShirt);
+        ExpectEqual("shirt_black_32x64", shirtPayload["shirtLayerId"],
+            "appearance shirt payload routes through CycleShirtLayerId");
+
+        var psSelection = PlayerAppearanceSelection.Default with
+        {
+            PantsLayerId = "pants_blue_32x64",
+            ShirtLayerId = "shirt_black_32x64"
+        };
+        var psSlots = psSelection.ToLayerIdsBySlot();
+        ExpectEqual("pants_blue_32x64", psSlots["pants"],
+            "appearance selection includes pants slot when set");
+        ExpectEqual("shirt_black_32x64", psSlots["shirt"],
+            "appearance selection includes shirt slot when set");
         ExpectEqual(
             "Combat: none | You ATK:10 DEF:3 | Status: none",
             HudController.FormatCombatLine("Combat: none", 10, 3, System.Array.Empty<string>()),
@@ -629,6 +1119,19 @@ public partial class GameplaySmokeTest : Node
             "Combat: hit | You ATK:10 DEF:3 | Status: Attack Cooldown (2)",
             HudController.FormatCombatLine("Combat: hit", 10, 3, new[] { "Attack Cooldown (2)" }),
             "combat HUD line includes active status effects");
+        var statusStrip = HudController.FormatStatusStrip(new[] { "Poisoned", "Burning", "Dirty", "Attack Cooldown (2)" });
+        ExpectEqual(4, statusStrip.Count,
+            "FormatStatusStrip renders one entry per active status");
+        ExpectTrue(statusStrip.Select(entry => entry.Status).SequenceEqual(new[] { "Attack Cooldown (2)", "Burning", "Dirty", "Poisoned" }),
+            "FormatStatusStrip sorts entries by normalized status id");
+        var medievalPalette = UiPaletteRegistry.Get("medieval");
+        var medievalStatusStrip = HudController.FormatStatusStrip(new[] { "Poisoned", "Burning", "Dirty" }, medievalPalette);
+        ExpectEqual(medievalPalette.Danger, medievalStatusStrip.First(entry => entry.Status == "Burning").Color,
+            "medieval status strip uses palette danger for burning");
+        ExpectEqual(medievalPalette.Success, medievalStatusStrip.First(entry => entry.Status == "Poisoned").Color,
+            "medieval status strip uses palette success for poisoned");
+        ExpectEqual(medievalPalette.DimText, medievalStatusStrip.First(entry => entry.Status == "Dirty").Color,
+            "medieval status strip uses palette dim text for dirty");
         var itemPrompt = ItemText.FormatPickupPrompt(StarterItems.PracticeStick);
         ExpectTrue(itemPrompt.Contains("Power 10"), "item pickup prompt exposes item power");
         ExpectTrue(itemPrompt.Contains("Tags: training, violent"), "item pickup prompt exposes sorted tags");
@@ -646,6 +1149,60 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(inventoryOverlay.Contains("Power 10"), "inventory overlay shows equipped item stats");
         ExpectTrue(inventoryOverlay.Contains("Tool"), "inventory overlay shows item categories");
         ExpectTrue(inventoryOverlay.Contains("I - Close"), "inventory overlay explains close control");
+        var combatLog = HudController.FormatCombatLog(new[]
+        {
+            new ServerEvent("world:1:player_attacked", "world", 1, "Alice struck Bob.", new Dictionary<string, string>()),
+            new ServerEvent("world:2:item_used", "world", 2, "Alice used a tincture.", new Dictionary<string, string>()),
+            new ServerEvent("world:3:posse_chat", "world", 3, "Posse message.", new Dictionary<string, string>()),
+            new ServerEvent("world:4:bounty_claimed", "world", 4, "Bounty claimed.", new Dictionary<string, string>()),
+            new ServerEvent("world:5:item_repaired", "world", 5, "Sword repaired.", new Dictionary<string, string>())
+        });
+        ExpectTrue(combatLog.Contains("-- Combat Log --"), "combat log formatter emits a header");
+        ExpectTrue(combatLog.Contains("[1]"), "combat log formatter includes event ticks");
+        ExpectTrue(combatLog.Contains("player_attacked"), "combat log formatter includes icon chip names");
+        ExpectTrue(combatLog.Contains("Sword repaired."), "combat log formatter includes event summaries");
+        const string firstRunSmokePath = "user://first_run_smoke.json";
+        ExpectTrue(HudController.FormatFirstRunTutorialText().Contains("Welcome to Karma"),
+            "first-run tutorial text introduces Karma");
+        ExpectTrue(HudController.MarkFirstRunTutorialSeen(firstRunSmokePath),
+            "first-run tutorial marker can be written");
+        ExpectTrue(HudController.HasSeenFirstRunTutorial(firstRunSmokePath),
+            "first-run tutorial marker can be read");
+        ExpectEqual(new Color(0.95686275f, 0.9019608f, 0.78039217f), UiPaletteRegistry.Get("medieval").PanelBackground,
+            "UiPaletteRegistry returns the medieval parchment palette");
+        ExpectEqual(new Color(0.12156863f, 0.22745098f, 0.16862746f), UiPaletteRegistry.Get("boarding_school").PanelBackground,
+            "UiPaletteRegistry returns the boarding-school green palette");
+        ExpectEqual(UiPaletteRegistry.Get("western_sci_fi"), UiPaletteRegistry.Get("unknown_theme"),
+            "UiPaletteRegistry falls back gracefully for unknown themes");
+        const string saveSmokePath = "user://prototype_save_smoke.json";
+        var saveState = new GameState();
+        saveState.RegisterPlayer(GameState.LocalPlayerId, "Saver");
+        saveState.AddScrip(GameState.LocalPlayerId, 17);
+        saveState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(9, 8));
+        saveState.AddItem(GameState.LocalPlayerId, StarterItems.RepairKit);
+        saveState.AddItem(GameState.LocalPlayerId, StarterItems.WorkVest);
+        saveState.EquipPlayer(GameState.LocalPlayerId, StarterItems.WorkVestId);
+        saveState.ApplyLocalShift(PrototypeActions.HelpPeer());
+        ExpectTrue(saveState.SaveLocalPlayer(saveSmokePath),
+            "SaveLocalPlayer writes a prototype save file");
+        var loadState = new GameState();
+        ExpectTrue(loadState.LoadLocalPlayer(saveSmokePath),
+            "LoadLocalPlayer reads a prototype save file");
+        ExpectEqual(saveState.LocalPlayer.Karma.Score, loadState.LocalPlayer.Karma.Score,
+            "local save restores karma score");
+        ExpectEqual(saveState.LocalPlayer.Scrip, loadState.LocalPlayer.Scrip,
+            "local save restores scrip");
+        ExpectTrue(loadState.LocalPlayer.Position == new TilePosition(9, 8),
+            "local save restores tile position");
+        ExpectTrue(loadState.LocalPlayer.Inventory.Any(item => item.Id == StarterItems.RepairKitId),
+            "local save restores inventory item ids");
+        ExpectTrue(loadState.LocalPlayer.Equipment.TryGetValue(EquipmentSlot.Body, out var restoredVest) &&
+                   restoredVest.Id == StarterItems.WorkVestId,
+            "local save restores equipped item ids");
+        var scripBeforeEnsureAfterLoad = loadState.LocalPlayer.Scrip;
+        loadState.HasItem(GameState.LocalPlayerId, StarterItems.RepairKitId);
+        ExpectEqual(scripBeforeEnsureAfterLoad, loadState.LocalPlayer.Scrip,
+            "loaded local save does not receive duplicate starter scrip during EnsurePrototypePlayers");
         ExpectEqual(25f, WorldHealthBar.CalculateHealthPercent(25, 100), "world health bar percent follows visible player health");
         var peerPrompt = PeerStandInController.FormatPrompt(
             hasBeenRobbed: true,
@@ -674,6 +1231,9 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             NpcController.FormatQuestPromptLine(QuestStatus.Completed, "Clinic Filters", "Repair Kit", true, 12).Contains("complete"),
             "NPC prompt labels completed quests");
+        ExpectEqual("Meri Brindle • Tavernkeeper • Village Freeholders",
+            HudController.FormatNpcTooltip("Meri Brindle", "Tavernkeeper", "Village Freeholders"),
+            "NPC tooltip formatter renders name, role, and faction");
         ExpectEqual(
             "2 - Attack as duel strike",
             PeerStandInController.FormatAttackLabel(System.Array.Empty<string>(), "Duel: Active"),
@@ -704,6 +1264,16 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(MatchStatus.Running, matchServer.Match.Status, "match transitions to Running once all players are ready");
         ExpectEqual("rival_paragon", matchServer.Match.CurrentSaintId, "running match snapshot exposes current Saint leader");
         ExpectEqual("rival_renegade", matchServer.Match.CurrentScourgeId, "running match snapshot exposes current Scourge leader");
+        ExpectEqual(MatchPhase.Dawn, AuthoritativeWorldServer.CalculateMatchPhase(0, 5),
+            "match phase starts at Dawn");
+        ExpectEqual(MatchPhase.Morning, AuthoritativeWorldServer.CalculateMatchPhase(5, 5),
+            "match phase advances at one phase interval");
+        ExpectEqual(MatchPhase.Night, AuthoritativeWorldServer.CalculateMatchPhase(25, 5),
+            "match phase reaches Night at the sixth interval");
+        ExpectEqual(MatchPhase.Dawn, AuthoritativeWorldServer.CalculateMatchPhase(30, 5),
+            "match phase wraps back to Dawn after Night");
+        ExpectTrue(matchServer.Match.Summary.Contains("Phase Dawn"),
+            "running match HUD summary includes the current phase");
         matchServer.AdvanceMatchTime((30 * 60) - 1);
         ExpectEqual(MatchStatus.Running, matchServer.Match.Status, "match stays running before timer expires");
         var saintScripBeforeMatchEnd = state.Players["rival_paragon"].Scrip;
@@ -925,6 +1495,29 @@ public partial class GameplaySmokeTest : Node
                 entity.DropOwnerId == "grace_target" &&
                 entity.DropOwnerName == "Grace Target"),
             "interest snapshot exposes Karma Break drop ownership");
+        var graceDropSnapshot = graceServer.CreateInterestSnapshot(GameState.LocalPlayerId);
+        var graceDropSnapshotItem = graceDropSnapshot.WorldItems.First(entity => entity.EntityId == karmaBreakDrop.EntityId);
+        ExpectTrue(graceDropSnapshotItem.DropOwnerExpiresTick > graceDropSnapshot.Tick,
+            "interest snapshot exposes Karma Break drop ownership expiry");
+        ExpectTrue(
+            HudController.FormatDeathPileOwnershipPrompt(graceDropSnapshot).Contains("Grace Target's drop ownership expires"),
+            "HUD formats death-pile ownership countdown while standing on another player's pile");
+        ExpectTrue(WorldRoot.DeathPileOwnershipTint(graceDropSnapshotItem, GameState.LocalPlayerId, graceDropSnapshot.Tick).A > 0f,
+            "world item renderer tints active death-pile ownership for other-player drops");
+
+        var expiryState = new GameState();
+        expiryState.RegisterPlayer(GameState.LocalPlayerId, "Expiry Local");
+        expiryState.RegisterPlayer("expiry_owner", "Expiry Owner");
+        expiryState.SetPlayerPosition(GameState.LocalPlayerId, TilePosition.Origin);
+        var expiryServer = new AuthoritativeWorldServer(expiryState, "death-pile-expiry-test");
+        expiryServer.SeedWorldItem("expiry_owned_drop", StarterItems.RepairKit, TilePosition.Origin, "expiry_owner", "Expiry Owner");
+        var expiryBefore = expiryServer.CreateInterestSnapshot(GameState.LocalPlayerId).WorldItems.First(item => item.EntityId == "expiry_owned_drop");
+        ExpectTrue(WorldRoot.IsDeathPileOwnershipActive(expiryBefore, expiryServer.Tick),
+            "death-pile ownership starts active");
+        expiryServer.AdvanceIdleTicks(AuthoritativeWorldServer.DeathPileGracePeriodTicks);
+        var expiryAfter = expiryServer.CreateInterestSnapshot(GameState.LocalPlayerId).WorldItems.First(item => item.EntityId == "expiry_owned_drop");
+        ExpectEqual(string.Empty, expiryAfter.DropOwnerId,
+            "death-pile ownership clears after grace period");
         var localKarmaBeforeClaimingDrop = graceState.LocalKarma.Score;
         var claimedDrop = graceServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
@@ -957,8 +1550,15 @@ public partial class GameplaySmokeTest : Node
                 .Players.First(player => player.Id == "grace_target")
                 .StatusEffects.Any(status => status.Contains("Karma Break Grace")),
             "idle server ticks clear Karma Break grace status");
-        var generatedA = WorldGenerator.Generate(WorldConfig.CreatePrototype());
-        var generatedB = WorldGenerator.Generate(WorldConfig.CreatePrototype());
+        // The boarding-school theme is no longer the default (medieval is); pin
+        // this test block to a boarding-school config explicitly so its art /
+        // tile-zone assertions still validate the boarding-school theme path.
+        var boardingSchoolPrototypeConfig = WorldConfig.CreatePrototype() with
+        {
+            Seed = new WorldSeed(8675309, "Boarding School Prototype", "boarding_school"),
+        };
+        var generatedA = WorldGenerator.Generate(boardingSchoolPrototypeConfig);
+        var generatedB = WorldGenerator.Generate(boardingSchoolPrototypeConfig);
         ExpectEqual(generatedA.Summary, generatedB.Summary, "world generation is deterministic for the same seed");
 
         // ── Step 17: Road/path generation ────────────────────────────────────────
@@ -1115,7 +1715,10 @@ public partial class GameplaySmokeTest : Node
         generatedContentState.RegisterPlayer(GameState.LocalPlayerId, "Generated Content Tester");
         var generatedContentServer = new AuthoritativeWorldServer(generatedContentState, "generated-content-test");
         generatedContentServer.SeedGeneratedWorldContent(generatedA);
-        ExpectEqual(3 + generatedA.Locations.Count + generatedA.StructurePlacements.Count, generatedContentServer.WorldStructures.Count, "server seeds generated station markers and generated structures alongside starter structures");
+        // Starter set: 3 greenhouse + 12 sliced-prop structures (clinic bed/cabinet/door,
+        // shop shelves/counter/door, workbench/toolbox, 2 boards, supply pad, generator).
+        const int starterStructureCount = 15;
+        ExpectEqual(starterStructureCount + generatedA.Locations.Count + generatedA.StructurePlacements.Count, generatedContentServer.WorldStructures.Count, "server seeds generated station markers and generated structures alongside starter structures");
         var firstGeneratedLocation = generatedA.Locations[0];
         generatedContentState.SetPlayerPosition(GameState.LocalPlayerId, new TilePosition(firstGeneratedLocation.X, firstGeneratedLocation.Y));
         var generatedStationSnapshot = generatedContentServer.CreateInterestSnapshot(GameState.LocalPlayerId);
@@ -1337,11 +1940,11 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(PrototypeWanderingNpc.CalculatePatrolTarget(0.0, Vector2.Zero, 80f, horizontalOnly: false).DistanceTo(new Vector2(-80f, -28f)) < 0.01f, "prototype PixelLab trial NPC walker starts on its full patrol route");
         ExpectTrue(PrototypeWanderingNpc.CalculatePatrolTarget(5.0, Vector2.Zero, 80f, horizontalOnly: false).Y > -28f, "prototype PixelLab trial NPC walker includes vertical movement again");
         ExpectEqual(0f, PrototypeWanderingNpc.CalculatePatrolTarget(2.5, Vector2.Zero, 80f).Y, "prototype PixelLab trial NPC still supports horizontal-only patrols for review");
-        ExpectTrue(ServerNpcObject.FormatPrompt("Dallen Venn", "Trader", "Free Settlers").Contains("Faction: Free Settlers"), "server NPC prompt formats faction");
+        ExpectTrue(ServerNpcObject.FormatPrompt("Dallen Venn", "Trader", "Village Freeholders").Contains("Faction: Village Freeholders"), "server NPC prompt formats faction");
         var vendorPrompt = ServerNpcObject.FormatVendorPrompt(
             "Dallen Venn",
             "Trader",
-            "Free Settlers",
+            "Village Freeholders",
             new[]
             {
                 new ShopOfferSnapshot("offer_one", StarterNpcs.Dallen.Id, StarterItems.WhoopieCushionId, "Whoopie Cushion", ItemCategory.Oddity, 7, "scrip"),
@@ -1377,11 +1980,23 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.Rifle27).HasAtlasRegion, "prototype weapon sprite can use weapon atlas art");
         ExpectEqual(PrototypeSpriteCatalog.ToolAtlasPath, PrototypeSpriteCatalog.Get(PrototypeSpriteKind.MultiTool).AtlasPath, "prototype tool sprite records tool atlas path");
         ExpectTrue(PrototypeSpriteCatalog.Get(PrototypeSpriteKind.PortableShield).HasAtlasRegion, "prototype tool sprite can use tool atlas art");
-        ExpectEqual(36, StarterItems.All.Count, "starter item catalog exposes all prototype items");
+        ExpectEqual(42, StarterItems.All.Count, "starter item catalog exposes all prototype items");
         ExpectEqual(
             StarterItems.All.Count,
             StarterItems.All.Select(item => item.Id).Distinct().Count(),
             "starter item catalog ids are unique");
+        ExpectEqual(ItemRarity.Common, StarterItems.RepairKit.Rarity,
+            "non-contraband starter items default to Common rarity");
+        ExpectEqual(ItemRarity.Contraband, StarterItems.ContrabandPackage.Rarity,
+            "contraband starter items derive Contraband rarity from IsContraband");
+        ExpectEqual(100, StarterItems.PracticeStick.Durability,
+            "starter equipment defaults to full durability");
+        ExpectFalse(StarterItems.PracticeStick.IsBroken,
+            "full-durability starter equipment is not broken");
+        ExpectEqual(new Color(0.78f, 0.78f, 0.78f), HudController.InventoryTintForRarity(ItemRarity.Common),
+            "inventory HUD tints Common items gray");
+        ExpectEqual(new Color(1f, 0.36f, 0.34f), HudController.InventoryTintForRarity(ItemRarity.Contraband),
+            "inventory HUD tints Contraband items red");
         foreach (var starterItem in StarterItems.All)
         {
             ExpectTrue(StarterItems.TryGetById(starterItem.Id, out _), $"starter item catalog can resolve {starterItem.Id}");
@@ -1389,6 +2004,28 @@ public partial class GameplaySmokeTest : Node
                 PrototypeSpriteCatalog.Get(PrototypeSpriteCatalog.GetKindForItem(starterItem.Id)).HasAtlasRegion,
                 $"starter item {starterItem.Id} has mapped prototype art");
         }
+
+        ItemArtRegistry.ResetCache();
+        var medievalItemIcons = ItemArtRegistry.ListThemeIcons("medieval");
+        foreach (var icon in medievalItemIcons)
+        {
+            var resolvedIcon = ItemArtRegistry.Get("medieval", icon.ItemId);
+            ExpectTrue(resolvedIcon.HasIcon, $"item art registry resolves medieval icon {icon.ItemId}");
+            ExpectEqual(icon.IconPath, resolvedIcon.IconPath, $"item art registry records medieval icon path for {icon.ItemId}");
+            ExpectTrue(FileAccess.FileExists(resolvedIcon.IconPath), $"item art registry path exists for {icon.ItemId}");
+        }
+        ExpectFalse(ItemArtRegistry.Get("medieval", "missing_test_item_icon").HasIcon, "item art registry reports missing theme icons for atlas fallback");
+        if (FileAccess.FileExists("res://assets/art/themes/medieval/items/flamethrower.png"))
+        {
+            ExpectTrue(ItemArtRegistry.Get("medieval", StarterItems.FlameThrowerId).HasIcon, "item art registry resolves compact medieval icon aliases");
+        }
+
+        ExpectEqual(PrototypeSpriteKind.BackpackBrown, PrototypeSpriteCatalog.GetKindForItem(StarterItems.BackpackBrownId), "prototype sprite catalog maps backpack art");
+        ExpectEqual(PrototypeSpriteKind.BallisticRound, PrototypeSpriteCatalog.GetKindForItem(StarterItems.BallisticRoundId), "prototype sprite catalog maps ballistic round art");
+        ExpectEqual(PrototypeSpriteKind.EnergyCell, PrototypeSpriteCatalog.GetKindForItem(StarterItems.EnergyCellId), "prototype sprite catalog maps energy cell art");
+        ExpectEqual(PrototypeSpriteKind.StimSpike, PrototypeSpriteCatalog.GetKindForItem(StarterItems.StimSpikeId), "prototype sprite catalog maps stim spike art");
+        ExpectEqual(PrototypeSpriteKind.DownerHaze, PrototypeSpriteCatalog.GetKindForItem(StarterItems.DownerHazeId), "prototype sprite catalog maps downer haze art");
+        ExpectEqual(PrototypeSpriteKind.TremorTab, PrototypeSpriteCatalog.GetKindForItem(StarterItems.TremorTabId), "prototype sprite catalog maps tremor tab art");
 
         ExpectEqual(new Vector2(500f, 180f), WorldRoot.CalculateCatalogShowcasePosition(0), "catalog showcase starts inside the compact prototype map");
         ExpectEqual(new Vector2(500f + (6 * 48f), 180f), WorldRoot.CalculateCatalogShowcasePosition(6), "catalog showcase fills a row before wrapping");
@@ -1458,7 +2095,7 @@ public partial class GameplaySmokeTest : Node
             PrototypeSpriteCatalog.GetKindForItem(StarterItems.PortableTerminalId),
             "prototype sprite catalog maps interactible object visuals");
         ExpectEqual(5, generatedA.Locations.Count, "small world generates prototype location count");
-        ExpectEqual(12, generatedA.Npcs.Count, "prototype target players generate starter NPC population");
+        ExpectEqual(10, generatedA.Npcs.Count, "prototype target players generate focused small-world NPC population");
         ExpectTrue(generatedA.Oddities.Any(item => item.Id == StarterItems.DeflatedBalloonId), "generated world includes absurd oddities");
         ExpectTrue(generatedA.Oddities.Any(item => item.Id == StarterItems.PortableTerminalId), "generated world includes interactible prototype objects");
         ExpectTrue(StarterItems.TryGetById(StarterItems.FilterCoreId, out var filterCore) && filterCore.Tags.Contains("quest"), "starter item catalog includes quest objects");
@@ -1627,7 +2264,7 @@ public partial class GameplaySmokeTest : Node
         var helpMara = state.ApplyLocalShift(PrototypeActions.HelpMara());
         ExpectTrue(helpMara.Amount > 0, "helping Mara ascends karma");
         ExpectTrue(state.Relationships.GetOpinion(StarterNpcs.Mara.Id, GameState.LocalPlayerId) > 0, "helping Mara improves Mara relationship");
-        ExpectTrue(state.Factions.GetReputation(StarterFactions.FreeSettlersId, GameState.LocalPlayerId) > 0, "helping Mara improves Free Settlers faction reputation");
+        ExpectTrue(state.Factions.GetReputation(StarterFactions.FreeSettlersId, GameState.LocalPlayerId) > 0, "helping Mara improves Village Freeholders faction reputation");
         state.ApplyLocalShift(PrototypeActions.HelpPeer());
         ExpectTrue(state.LocalPerks.Any(perk => perk.Id == PerkCatalog.CalmingPresenceId), "positive karma unlocks Calming Presence");
 
@@ -2827,6 +3464,52 @@ public partial class GameplaySmokeTest : Node
             paragonState.Players[GameState.LocalPlayerId],
             paragonState.GetLeaderboardStanding());
         ExpectTrue(paragonShopPrice < testOffer.Price, "Paragon Favor reduces shop purchase price");
+        ExpectEqual(-10, ShopPricing.CalculateRelationshipModifierPercent(25),
+            "friendly vendor relationship grants a shop discount modifier");
+        ExpectEqual(25, ShopPricing.CalculateRelationshipModifierPercent(-55),
+            "hostile vendor relationship applies a shop price surcharge");
+        ExpectEqual(18, ShopPricing.ApplySignedModifier(20, -10),
+            "signed shop modifier applies friendly discounts");
+        ExpectEqual(25, ShopPricing.ApplySignedModifier(20, 25),
+            "signed shop modifier applies hostile surcharges");
+        ExpectTrue(
+            HudController.FormatShopPricingTooltip(new ShopOfferSnapshot(
+                "tooltip_friendly",
+                StarterNpcs.Dallen.Id,
+                StarterItems.RepairKitId,
+                "Repair Kit",
+                ItemCategory.Tool,
+                18,
+                "scrip",
+                BasePrice: 20,
+                PricingBreakdown: "Garrick: -10% (Friendly). Net price: 18 scrip (base 20)."))
+                .Contains("-10% (Friendly)"),
+            "shop pricing tooltip formatter surfaces friendly relationship discounts");
+        ExpectTrue(
+            HudController.FormatShopPricingTooltip(new ShopOfferSnapshot(
+                "tooltip_hostile",
+                StarterNpcs.Dallen.Id,
+                StarterItems.RepairKitId,
+                "Repair Kit",
+                ItemCategory.Tool,
+                25,
+                "scrip",
+                BasePrice: 20,
+                PricingBreakdown: "Garrick: +25% (Hostile). Net price: 25 scrip (base 20)."))
+                .Contains("+25% (Hostile)"),
+            "shop pricing tooltip formatter surfaces hostile relationship surcharges");
+        ExpectTrue(
+            HudController.FormatShopPricingTooltip(new ShopOfferSnapshot(
+                "tooltip_base",
+                StarterNpcs.Dallen.Id,
+                StarterItems.RepairKitId,
+                "Repair Kit",
+                ItemCategory.Tool,
+                20,
+                "scrip",
+                BasePrice: 20))
+                .Contains("Net price: 20 scrip"),
+            "shop pricing tooltip formatter falls back to base and net prices");
 
         var paragonFlatQuestDef = new QuestDefinition(
             "paragon_bonus_test",
@@ -2941,6 +3624,21 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(posseState.Players["beta"].HasTeam, "beta is in a posse after accepting");
         ExpectEqual(posseState.Players["alpha"].TeamId, posseState.Players["beta"].TeamId,
             "both players share the same posse after acceptance");
+        var posseFormationSnapshot = posseServer.CreateInterestSnapshot("alpha");
+        var alphaPosseSnapshot = posseFormationSnapshot.Players.First(player => player.Id == "alpha");
+        var betaPosseSnapshot = posseFormationSnapshot.Players.First(player => player.Id == "beta");
+        ExpectTrue(!string.IsNullOrWhiteSpace(alphaPosseSnapshot.PosseName), "posse name is generated on formation");
+        ExpectEqual(alphaPosseSnapshot.PosseName, betaPosseSnapshot.PosseName,
+            "posse name sticks across member snapshots");
+        ExpectEqual("alpha", alphaPosseSnapshot.PosseLeaderId, "inviter becomes the initial posse leader");
+
+        var leadershipTransfer = posseServer.ProcessIntent(new ServerIntent(
+            "alpha", 3, IntentType.TransferPosseLeadership,
+            new System.Collections.Generic.Dictionary<string, string> { ["targetPlayerId"] = "beta" }));
+        ExpectTrue(leadershipTransfer.WasAccepted, "TransferPosseLeadership is accepted for the current leader");
+        var transferredSnapshot = posseServer.CreateInterestSnapshot("beta");
+        ExpectEqual("beta", transferredSnapshot.Players.First(player => player.Id == "beta").PosseLeaderId,
+            "posse leadership transfer is reflected in snapshots");
 
         // AcceptPosse with no pending invite rejected
         var noInviteAccept = posseServer.ProcessIntent(new ServerIntent(
@@ -2993,19 +3691,25 @@ public partial class GameplaySmokeTest : Node
             System.Array.Empty<string>(),
             new System.Collections.Generic.Dictionary<EquipmentSlot, string>(),
             System.Array.Empty<string>(),
-            "posse_p1");
+            "posse_p1",
+            PosseName: "Amber Wolves",
+            PosseLeaderId: "p1");
         var posseP2 = new PlayerSnapshot("p2", "Bob", -12, "Outlaw", 1, "prog",
             LeaderboardRole.None, 0, 0, 75, 100, 20,
             PlayerAppearanceSelection.Default,
             System.Array.Empty<string>(),
             new System.Collections.Generic.Dictionary<EquipmentSlot, string>(),
             System.Array.Empty<string>(),
-            "posse_p1");
+            "posse_p1",
+            PosseName: "Amber Wolves",
+            PosseLeaderId: "p1");
         var possePanel = HudController.FormatPossePanel(new[] { posseP1, posseP2 }, "p1");
+        ExpectTrue(possePanel.Contains("Amber Wolves"), "FormatPossePanel surfaces the posse name");
         ExpectTrue(possePanel.Contains("Alice"), "FormatPossePanel lists member Alice");
         ExpectTrue(possePanel.Contains("Bob"), "FormatPossePanel lists member Bob");
         ExpectTrue(possePanel.Contains("90/100"), "FormatPossePanel shows member health");
         ExpectTrue(possePanel.Contains("(you)"), "FormatPossePanel marks local player");
+        ExpectTrue(possePanel.Contains("(leader)"), "FormatPossePanel marks the posse leader");
         ExpectTrue(possePanel.Contains("+40"), "FormatPossePanel shows member karma");
 
         var posseInviteEvent = new ServerEvent("world:1:posse_invite_sent", "world", 1,
@@ -3317,6 +4021,23 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(snapAfterMount is not null, "interest snapshot includes mount after mount intent");
         ExpectEqual("ai_rider", snapAfterMount?.OccupantPlayerId ?? "", "snapshot reports occupant after mount");
 
+        // Mount bag transfer persists on the mount across dismount/remount.
+        rideState.AddItem("ai_rider", StarterItems.RationPack);
+        var stashBag = rideServer.ProcessIntent(new ServerIntent("ai_rider", 2, IntentType.MountBagTransfer,
+            new Dictionary<string, string>
+            {
+                ["mountId"] = "mount_hover_1",
+                ["itemId"] = StarterItems.RationPackId,
+                ["mode"] = "stash"
+            }));
+        ExpectTrue(stashBag.WasAccepted, "MountBagTransfer stashes a held item");
+        ExpectFalse(rideState.Players["ai_rider"].Inventory.Any(i => i.Id == StarterItems.RationPackId),
+            "stashed mount bag item leaves player inventory");
+        ExpectTrue(rideServer.Mounts["mount_hover_1"].BagItemIds.Contains(StarterItems.RationPackId),
+            "stashed item persists in mount bag state");
+        var mountBagHud = HudController.FormatMountBag(rideServer.CreateInterestSnapshot("ai_rider").Mounts.First(m => m.EntityId == "mount_hover_1"));
+        ExpectTrue(mountBagHud.Contains("Ration Pack x1"), "HUD formats mount bag contents");
+
         // HUD formats player_mounted event
         var mountedHud = HudController.FormatLatestServerEvent(new[] { mountResult.Event });
         ExpectTrue(mountedHud.Contains("Ace") && mountedHud.Contains("Hover Scooter"), "HUD formats player_mounted event with rider name and mount name");
@@ -3326,7 +4047,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(karmaAfterMount > 0, "mounting ascends rider karma");
 
         // Double mount is rejected
-        var doubleMountIntent = new ServerIntent("ai_rider", 2, IntentType.Mount,
+        var doubleMountIntent = new ServerIntent("ai_rider", 3, IntentType.Mount,
             new Dictionary<string, string> { ["mountId"] = "mount_hover_1" });
         ExpectFalse(rideServer.ProcessIntent(doubleMountIntent).WasAccepted, "mount rejected when player is already mounted");
 
@@ -3336,25 +4057,43 @@ public partial class GameplaySmokeTest : Node
         ExpectFalse(rideServer.ProcessIntent(occupiedMountIntent).WasAccepted, "mount rejected when vehicle is already occupied");
 
         // Dismount
-        var dismountIntent = new ServerIntent("ai_rider", 3, IntentType.Dismount,
+        var dismountIntent = new ServerIntent("ai_rider", 4, IntentType.Dismount,
             new Dictionary<string, string>());
         var dismountResult = rideServer.ProcessIntent(dismountIntent);
         ExpectTrue(dismountResult.WasAccepted, "Dismount intent accepted when player is mounted");
         ExpectTrue(rideServer.Mounts["mount_hover_1"].IsParked, "mount is parked again after dismount");
         ExpectTrue(string.IsNullOrWhiteSpace(rideServer.Mounts["mount_hover_1"].OccupantPlayerId), "mount has no occupant after dismount");
+        ExpectTrue(rideServer.Mounts["mount_hover_1"].BagItemIds.Contains(StarterItems.RationPackId),
+            "mount bag contents persist after dismount");
+
+        var remountResult = rideServer.ProcessIntent(new ServerIntent("ai_rider", 5, IntentType.Mount,
+            new Dictionary<string, string> { ["mountId"] = "mount_hover_1" }));
+        ExpectTrue(remountResult.WasAccepted, "rider can remount after dismount");
+        var takeBag = rideServer.ProcessIntent(new ServerIntent("ai_rider", 6, IntentType.MountBagTransfer,
+            new Dictionary<string, string>
+            {
+                ["mountId"] = "mount_hover_1",
+                ["itemId"] = StarterItems.RationPackId,
+                ["mode"] = "take"
+            }));
+        ExpectTrue(takeBag.WasAccepted, "MountBagTransfer takes an item from the bag");
+        ExpectTrue(rideState.Players["ai_rider"].Inventory.Any(i => i.Id == StarterItems.RationPackId),
+            "taken mount bag item enters player inventory");
+        rideServer.ProcessIntent(new ServerIntent("ai_rider", 7, IntentType.Dismount,
+            new Dictionary<string, string>()));
 
         // HUD formats player_dismounted event
         var dismountedHud = HudController.FormatLatestServerEvent(new[] { dismountResult.Event });
         ExpectTrue(dismountedHud.Contains("Ace") && dismountedHud.Contains("Hover Scooter"), "HUD formats player_dismounted event with rider name and mount name");
 
         // Dismount while not mounted is rejected
-        var badDismountIntent = new ServerIntent("ai_rider", 4, IntentType.Dismount,
+        var badDismountIntent = new ServerIntent("ai_rider", 8, IntentType.Dismount,
             new Dictionary<string, string>());
         ExpectFalse(rideServer.ProcessIntent(badDismountIntent).WasAccepted, "dismount rejected when player is not mounted");
 
         // Mount out of range is rejected
         rideState.SetPlayerPosition("ai_rider", new TilePosition(50, 50));
-        var farMountIntent = new ServerIntent("ai_rider", 5, IntentType.Mount,
+        var farMountIntent = new ServerIntent("ai_rider", 9, IntentType.Mount,
             new Dictionary<string, string> { ["mountId"] = "mount_hover_1" });
         ExpectFalse(rideServer.ProcessIntent(farMountIntent).WasAccepted, "mount rejected when mount is out of interest radius");
 
@@ -3501,9 +4240,16 @@ public partial class GameplaySmokeTest : Node
         ExpectEqual(7, heroEntry?.FinalKarma ?? -1, "MatchSummary records final karma");
         ExpectEqual(7, heroEntry?.KarmaPeak ?? -1, "MatchSummary records karma peak");
         ExpectTrue((heroEntry?.KarmaFloor ?? 1) <= 7, "MatchSummary records karma floor");
+        ExpectTrue(msSummary.Highlights.TryGetValue("al_hero", out var heroHighlights),
+            "MatchSummary includes per-player highlights");
+        ExpectEqual(7, heroHighlights?.MostKarmaGained ?? -1,
+            "MatchSummary highlights record most karma gained from peak");
         var villainEntry = msSummary.Players.FirstOrDefault(p => p.Id == "al_villain");
         ExpectTrue(villainEntry is not null, "MatchSummary includes villain player");
         ExpectTrue((villainEntry?.FinalKarma ?? 0) < 0, "MatchSummary records villain negative karma");
+        ExpectTrue(msSummary.Highlights.TryGetValue("al_villain", out var villainHighlights) &&
+                   villainHighlights.MostKarmaLost > 0,
+            "MatchSummary highlights record most karma lost from floor");
 
         // Kill counter
         msState.SetPlayerPosition("al_hero", TilePosition.Origin);
@@ -3525,11 +4271,14 @@ public partial class GameplaySmokeTest : Node
         var killSummary = msKillServer.CreateInterestSnapshot("al_hero").MatchSummary;
         var killHeroEntry = killSummary?.Players.FirstOrDefault(p => p.Id == "al_hero");
         ExpectTrue((killHeroEntry?.Kills ?? 0) >= 1, "MatchSummary counts kills when attacker downs a player");
+        ExpectTrue(killSummary?.Highlights["al_hero"].LongestSpree >= 1,
+            "MatchSummary highlights include kill spree count");
 
         // HUD formatter
         var hudSummary = HudController.FormatMatchSummary(msSummary);
         ExpectTrue(hudSummary.Contains("Match Over"), "FormatMatchSummary shows match-over header");
         ExpectTrue(hudSummary.Contains("Hero"), "FormatMatchSummary includes player names");
+        ExpectTrue(hudSummary.Contains("highlights"), "FormatMatchSummary includes highlight rows");
         ExpectTrue(HudController.FormatMatchSummary(null).Contains("progress"), "FormatMatchSummary handles null gracefully");
 
         // ── Step 24: Warden perk + IssueWanted intent ─────────────────────────────
@@ -4021,10 +4770,46 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(patrolServer.Npcs[StarterNpcs.Mara.Id].PatrolWaypoints?.Count == 3,
             "Mara ships with a default 3-tile patrol route");
 
+        var driftConfig = new ServerConfig(
+            MaxPlayers: 2,
+            TargetPlayers: 1,
+            Scale: WorldScale.Small,
+            TickRate: 20,
+            InterestRadiusTiles: 32,
+            CombatRangeTiles: 2,
+            ChunkSizeTiles: ServerConfig.DefaultChunkSizeTiles,
+            MatchDurationSeconds: ServerConfig.DefaultMatchDurationSeconds,
+            MatchPhaseDurationTicks: 5);
+        var driftState = new GameState();
+        driftState.RegisterPlayer("drift_observer", "Observer");
+        driftState.SetPlayerPosition("drift_observer", new TilePosition(10, 0));
+        var driftServer = new AuthoritativeWorldServer(driftState, "ambient-drift-test", driftConfig);
+        driftServer.SeedWorldStructure("drift_smithy", "Smithy", "smithy", TilePosition.Origin);
+        driftServer.SeedWorldStructure("drift_tavern", "Tavern", "tavern", new TilePosition(20, 0));
+        var driftSmith = new NpcProfile(
+            "drift_smith",
+            "Drift Smith",
+            "Village Blacksmith",
+            "steady",
+            "Village Freeholders",
+            "a hot forge",
+            "none",
+            Array.Empty<string>(),
+            Array.Empty<string>());
+        driftServer.AdvanceIdleTicks(25);
+        driftServer.SeedNpc(driftSmith, new TilePosition(20, 0));
+        var smithyAnchor = TilePosition.Origin;
+        var midnightDistance = driftServer.GetNpcPosition("drift_smith").DistanceSquaredTo(smithyAnchor);
+        driftServer.AdvanceIdleTicks(15);
+        var noonDistance = driftServer.GetNpcPosition("drift_smith").DistanceSquaredTo(smithyAnchor);
+        ExpectEqual(MatchPhase.Noon, driftServer.CurrentMatchPhase,
+            "ambient drift test reaches Noon after phase transition");
+        ExpectTrue(noonDistance < midnightDistance,
+            "blacksmith ambient drift moves closer to smithy at Noon than at midnight");
+
         // ── Step 32: Reputation decay ─────────────────────────────────────────────
-        // Faction standings drift toward 0 by 1 per ReputationDecayTickInterval ticks.
-        // Decay fires for each interval boundary crossed in AdvanceIdleTicks and each
-        // intent tick when _tick % ReputationDecayTickInterval == 0.
+        // Faction standings drift toward 0 by 1 per ReputationDecayTickInterval
+        // ticks, then stop inside a +/-2 dead band.
 
         var repState = new GameState();
         repState.RegisterPlayer("rd_player", "Rep Player");
@@ -4043,26 +4828,26 @@ public partial class GameplaySmokeTest : Node
         foreach (var repPid in repServer.ConnectedPlayerIds)
             repServer.ProcessIntent(new ServerIntent(repPid, 1, IntentType.ReadyUp, new Dictionary<string, string>()));
 
-        repState.Factions.Apply(StarterFactions.FreeSettlersId, "rd_player", 10);
-        ExpectEqual(10, repState.Factions.GetReputation(StarterFactions.FreeSettlersId, "rd_player"),
+        repState.Factions.Apply(StarterFactions.FreeSettlersId, "rd_player", 50);
+        ExpectEqual(50, repState.Factions.GetReputation(StarterFactions.FreeSettlersId, "rd_player"),
             "reputation set to 10 before decay");
 
         repServer.AdvanceIdleTicks(5);
-        ExpectEqual(9, repState.Factions.GetReputation(StarterFactions.FreeSettlersId, "rd_player"),
+        ExpectEqual(49, repState.Factions.GetReputation(StarterFactions.FreeSettlersId, "rd_player"),
             "positive reputation decays by 1 per interval");
 
-        repServer.AdvanceIdleTicks(45);
-        ExpectEqual(0, repState.Factions.GetReputation(StarterFactions.FreeSettlersId, "rd_player"),
-            "reputation decays to 0 after enough intervals");
+        repServer.AdvanceIdleTicks(500);
+        ExpectEqual(2, repState.Factions.GetReputation(StarterFactions.FreeSettlersId, "rd_player"),
+            "positive reputation decay stops at the +2 dead band");
 
-        repState.Factions.Apply(StarterFactions.FreeSettlersId, "rd_player", -6);
+        repState.Factions.Apply(StarterFactions.FreeSettlersId, "rd_player", -8);
         repServer.AdvanceIdleTicks(5);
         ExpectEqual(-5, repState.Factions.GetReputation(StarterFactions.FreeSettlersId, "rd_player"),
             "negative reputation decays toward 0 by 1 per interval");
 
         repServer.AdvanceIdleTicks(25);
-        ExpectEqual(0, repState.Factions.GetReputation(StarterFactions.FreeSettlersId, "rd_player"),
-            "negative reputation decays fully to 0");
+        ExpectEqual(-2, repState.Factions.GetReputation(StarterFactions.FreeSettlersId, "rd_player"),
+            "negative reputation decay stops at the -2 dead band");
 
         // ── Step 33: Faction store gating ────────────────────────────────────────
         // PurchaseItem is rejected when player reputation with RequiredFactionId is
@@ -4076,7 +4861,7 @@ public partial class GameplaySmokeTest : Node
         foreach (var sgPid in gateServer.ConnectedPlayerIds)
             gateServer.ProcessIntent(new ServerIntent(sgPid, 1, IntentType.ReadyUp, new Dictionary<string, string>()));
 
-        // Create a gated offer that requires reputation 20 with Free Settlers
+        // Create a gated offer that requires reputation 20 with Village Freeholders
         var gatedOffer = new ShopOffer(
             "sg_gated_offer",
             StarterNpcs.Dallen.Id,
@@ -4098,11 +4883,88 @@ public partial class GameplaySmokeTest : Node
         var sgNoRepResult = gateServer.ProcessIntent(new ServerIntent("ag_buyer", 2, IntentType.PurchaseItem,
             new Dictionary<string, string> { ["offerId"] = gatedOffer.Id }));
         ExpectTrue(!sgNoRepResult.WasAccepted, "PurchaseItem rejected when player has no faction reputation");
+        ExpectTrue(
+            sgNoRepResult.Event.Data["reason"].Contains("Village Freeholders won't sell to you yet (need rep ≥ 20, you're at 0)"),
+            "faction-gated purchase rejection names the faction and required reputation");
+        ExpectTrue(
+            HudController.FormatLatestServerEvent(new[] { sgNoRepResult.Event }).Contains("Village Freeholders won't sell"),
+            "HUD rejected-intent text surfaces faction store denial");
+        var gatedOfferSnapshot = new ShopOfferSnapshot(
+            gatedOffer.Id,
+            gatedOffer.VendorNpcId,
+            gatedOffer.ItemId,
+            StarterItems.MediPatch.Name,
+            StarterItems.MediPatch.Category,
+            gatedOffer.Price,
+            gatedOffer.Currency,
+            gatedOffer.RequiredFactionId,
+            gatedOffer.MinReputation);
+        ExpectTrue(HudController.IsShopOfferFactionLocked(gatedOfferSnapshot, 0), "HUD marks faction-gated shop rows locked below required reputation");
+        ExpectFalse(HudController.IsShopOfferFactionLocked(gatedOfferSnapshot, 20), "HUD unlocks faction-gated shop rows at required reputation");
+        ExpectEqual(
+            "Village Freeholders won't sell to you yet (need rep ≥ 20, you're at 0)",
+            HudController.FormatFactionStoreDenial(StarterFactions.FreeSettlersId, 20, 0),
+            "HUD formats faction store denial prompt");
 
         gateState.Factions.Apply(StarterFactions.FreeSettlersId, "ag_buyer", 20);
         var sgWithRepResult = gateServer.ProcessIntent(new ServerIntent("ag_buyer", 3, IntentType.PurchaseItem,
             new Dictionary<string, string> { ["offerId"] = gatedOffer.Id }));
         ExpectTrue(sgWithRepResult.WasAccepted, "PurchaseItem accepted when player meets MinReputation");
+        gateState.Relationships.Apply(StarterNpcs.Dallen.Id, "ag_buyer", 25);
+        var friendlyShopOffer = gateServer.CreateInterestSnapshot("ag_buyer")
+            .ShopOffers.First(offer => offer.OfferId == StarterShopCatalog.DallenRepairKitOfferId);
+        ExpectTrue(friendlyShopOffer.PricingBreakdown.Contains("-10% (Friendly)"),
+            "shop offer snapshot carries relationship pricing breakdown");
+        ExpectTrue(friendlyShopOffer.Price < friendlyShopOffer.BasePrice,
+            "friendly vendor relationship lowers the visible shop price");
+
+        var cleanShopState = new GameState();
+        cleanShopState.RegisterPlayer("ah_clean_buyer", "Clean Buyer");
+        cleanShopState.RegisterPlayer("ai_dirty_buyer", "Dirty Buyer");
+        cleanShopState.RegisterPlayer("aj_filthy_buyer", "Filthy Buyer");
+        cleanShopState.SetPlayerPosition("ah_clean_buyer", new TilePosition(6, 4));
+        cleanShopState.SetPlayerPosition("ai_dirty_buyer", new TilePosition(6, 4));
+        cleanShopState.SetPlayerPosition("aj_filthy_buyer", new TilePosition(6, 4));
+        cleanShopState.AddScrip("ah_clean_buyer", 100);
+        cleanShopState.AddScrip("ai_dirty_buyer", 100);
+        cleanShopState.AddScrip("aj_filthy_buyer", 100);
+        cleanShopState.Players["ai_dirty_buyer"].SpendCleanliness(75);
+        cleanShopState.Players["aj_filthy_buyer"].SpendCleanliness(100);
+        var cleanShopServer = new AuthoritativeWorldServer(cleanShopState, "clean-shop-test");
+        var cleanShopSeq = 1;
+        foreach (var csPid in cleanShopServer.ConnectedPlayerIds)
+            cleanShopServer.ProcessIntent(new ServerIntent(csPid, cleanShopSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+
+        var cleanShopBuy = cleanShopServer.ProcessIntent(new ServerIntent("ah_clean_buyer", cleanShopSeq++,
+            IntentType.PurchaseItem,
+            new Dictionary<string, string> { ["offerId"] = StarterShopCatalog.DallenWhoopieCushionOfferId }));
+        ExpectTrue(cleanShopBuy.WasAccepted,
+            "Clean player can buy from a shopkeeper at normal price");
+        ExpectEqual("7", cleanShopBuy.Event.Data["price"],
+            "Clean shop purchase keeps the normal final price");
+
+        var dirtyOffer = cleanShopServer.CreateInterestSnapshot("ai_dirty_buyer").ShopOffers
+            .FirstOrDefault(offer => offer.OfferId == StarterShopCatalog.DallenWhoopieCushionOfferId);
+        ExpectEqual(9, dirtyOffer?.Price ?? 0,
+            "Dirty shop snapshot shows the cleanliness price markup");
+        var dirtyScripBefore = cleanShopState.Players["ai_dirty_buyer"].Scrip;
+        var dirtyShopBuy = cleanShopServer.ProcessIntent(new ServerIntent("ai_dirty_buyer", cleanShopSeq++,
+            IntentType.PurchaseItem,
+            new Dictionary<string, string> { ["offerId"] = StarterShopCatalog.DallenWhoopieCushionOfferId }));
+        ExpectTrue(dirtyShopBuy.WasAccepted,
+            "Dirty player can buy from a shopkeeper with a markup");
+        ExpectEqual("9", dirtyShopBuy.Event.Data["price"],
+            "Dirty shop purchase applies the cleanliness markup to final price");
+        ExpectEqual(dirtyScripBefore - 9, cleanShopState.Players["ai_dirty_buyer"].Scrip,
+            "Dirty shop purchase debits the marked-up cost");
+
+        var filthyShopBuy = cleanShopServer.ProcessIntent(new ServerIntent("aj_filthy_buyer", cleanShopSeq++,
+            IntentType.PurchaseItem,
+            new Dictionary<string, string> { ["offerId"] = StarterShopCatalog.DallenWhoopieCushionOfferId }));
+        ExpectFalse(filthyShopBuy.WasAccepted,
+            "Filthy player is refused by shopkeepers");
+        ExpectEqual("You reek. Wash, then come back.", filthyShopBuy.RejectionReason,
+            "Filthy shop rejection explains cleanliness refusal");
 
         // ── Step 34: Station claim intent ─────────────────────────────────────────
         // A player in a posse can ClaimStation to flag a structure.  Posse members
@@ -4203,7 +5065,9 @@ public partial class GameplaySmokeTest : Node
 
         var crState = new GameState();
         crState.RegisterPlayer("aa_crafter", "Crafter");
-        crState.SetPlayerPosition("aa_crafter", TilePosition.Origin);
+        // Far from default starter workbench (which sits near (12,5)) so the
+        // "no workshop in range" branch can be exercised cleanly.
+        crState.SetPlayerPosition("aa_crafter", new TilePosition(120, 120));
         crState.AddItem("aa_crafter", StarterItems.MultiTool);
         crState.AddItem("aa_crafter", StarterItems.DataChip);
         var crServer = new AuthoritativeWorldServer(crState, "craft-test");
@@ -4216,8 +5080,8 @@ public partial class GameplaySmokeTest : Node
             new Dictionary<string, string> { ["recipeId"] = StarterRecipes.RepairKitFromPartsId }));
         ExpectTrue(!crNoWorkshop.WasAccepted, "CraftItem rejected when no workshop is in range");
 
-        // Seed a workshop structure
-        crServer.SeedWorldStructure("cr_workshop", "Workbench", "workshop", TilePosition.Origin);
+        // Seed a workshop structure adjacent to the player's far-away position
+        crServer.SeedWorldStructure("cr_workshop", "Workbench", "workshop", new TilePosition(120, 120));
 
         // Without ingredients — first eat MultiTool to be missing it
         var crWithIngredients = crServer.ProcessIntent(new ServerIntent("aa_crafter", crSeq++, IntentType.CraftItem,
@@ -4251,7 +5115,11 @@ public partial class GameplaySmokeTest : Node
             StarterRecipes.FlashlightFromTerminalId,
             StarterRecipes.StunBatonFromStickId,
             StarterRecipes.GrapplingHookFromToolsId,
-            StarterRecipes.ContrabandPackageFromFlowerId
+            StarterRecipes.ContrabandPackageFromFlowerId,
+            StarterRecipes.LongSwordFromIronId,
+            StarterRecipes.ShortBowFromYewId,
+            StarterRecipes.HealingTinctureFromHerbsId,
+            StarterRecipes.LockpickSetFromWireId
         };
         foreach (var rid in recipeIds)
         {
@@ -4265,8 +5133,41 @@ public partial class GameplaySmokeTest : Node
                 ExpectTrue(StarterItems.TryGetById(ingredient, out _),
                     $"recipe {rid} ingredient {ingredient} resolves via StarterItems");
         }
-        ExpectEqual(8, StarterRecipes.All.Count,
-            "starter recipe set has 2 original + 6 new entries");
+        ExpectTrue(StarterRecipes.All
+                .First(recipe => recipe.Id == StarterRecipes.BallisticRoundFromScrapId)
+                .IngredientItemIds.Contains(StarterItems.ApologyFlowerId),
+            "medieval arrow recipe includes a feather stand-in ingredient");
+        ExpectTrue(StarterRecipes.All
+                .First(recipe => recipe.Id == StarterRecipes.FlashlightFromTerminalId)
+                .IngredientItemIds.Contains(StarterItems.WorkVestId),
+            "medieval torch recipe includes a cloth stand-in ingredient");
+        ExpectEqual(12, StarterRecipes.All.Count,
+            "starter recipe set has medieval base recipes plus 4 new entries");
+
+        // Starter quest pack coverage: the expanded medieval quests keep their
+        // giver ids tied to real themed NPC roster entries.
+        var questTheme = ThemeDataCatalog.Get("medieval");
+        var medievalQuestIds = new[]
+        {
+            StarterQuests.GarrickBladeOrderId,
+            StarterQuests.MeriCellarStockId,
+            StarterQuests.CaldenChapelTitheId,
+            StarterQuests.WaceBarracksWatchId,
+            StarterQuests.YsoltHerbalRemedyId
+        };
+        foreach (var questId in medievalQuestIds)
+        {
+            var quest = StarterQuests.All.First(definition => definition.Id == questId);
+            ExpectTrue(questTheme.NpcRoster.ContainsKey(quest.GiverNpcId),
+                $"medieval quest {questId} giver resolves to theme NPC roster");
+            ExpectTrue(quest.RequiredItemIds.Count > 0,
+                $"medieval quest {questId} requires at least one item");
+            foreach (var requiredItemId in quest.RequiredItemIds)
+                ExpectTrue(StarterItems.TryGetById(requiredItemId, out _),
+                    $"medieval quest {questId} required item {requiredItemId} resolves via StarterItems");
+        }
+        ExpectEqual(6, StarterQuests.All.Count,
+            "starter quest set has original clinic quest plus medieval quest pack");
 
         // ── Step 37: Posse shared quest module ────────────────────────────────────
         // PosseQuestModule produces a multi-step quest assigned to a posse.
@@ -4863,6 +5764,835 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(wrMeleeState.Players["aa_brawler"].Stamina > staminaAfterDrain,
             "Stamina regenerates during AdvanceIdleTicks");
 
+        // Equipment durability: equipped items preserve per-instance durability,
+        // wear on attack, reject while broken, and can be repaired near a workshop.
+        var durState = new GameState();
+        durState.RegisterPlayer("aa_smith", "Smith");
+        durState.RegisterPlayer("ab_target", "Target");
+        durState.SetPlayerPosition("aa_smith", new TilePosition(12, 5));
+        durState.SetPlayerPosition("ab_target", new TilePosition(12, 5));
+        durState.AddItem("aa_smith", StarterItems.PracticeStick with { Durability = 1, MaxDurability = 100 });
+        durState.AddScrip("aa_smith", 25);
+        var durServer = new AuthoritativeWorldServer(durState, "durability-test");
+        var durSeq = 1;
+        foreach (var durPid in durServer.ConnectedPlayerIds)
+            durServer.ProcessIntent(new ServerIntent(durPid, durSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        durServer.ProcessIntent(new ServerIntent("aa_smith", durSeq++, IntentType.UseItem,
+            new Dictionary<string, string> { ["itemId"] = StarterItems.PracticeStickId }));
+
+        var durAttack = durServer.ProcessIntent(new ServerIntent("aa_smith", durSeq++, IntentType.Attack,
+            new Dictionary<string, string> { ["targetId"] = "ab_target" }));
+        ExpectTrue(durAttack.WasAccepted, "Attack accepted with a 1-durability weapon");
+        ExpectEqual(0, durState.Players["aa_smith"].Equipment[EquipmentSlot.MainHand].Durability,
+            "Successful attack wears weapon durability down to 0");
+
+        durServer.AdvanceIdleTicks(AuthoritativeWorldServer.AttackCooldownTicks);
+        var brokenAttack = durServer.ProcessIntent(new ServerIntent("aa_smith", durSeq++, IntentType.Attack,
+            new Dictionary<string, string> { ["targetId"] = "ab_target" }));
+        ExpectFalse(brokenAttack.WasAccepted, "Attack rejected when equipped weapon is broken");
+
+        var scripBeforeRepair = durState.Players["aa_smith"].Scrip;
+        var repairResult = durServer.ProcessIntent(new ServerIntent("aa_smith", durSeq++, IntentType.RepairItem,
+            new Dictionary<string, string> { ["slot"] = EquipmentSlot.MainHand.ToString() }));
+        ExpectTrue(repairResult.WasAccepted, "RepairItem accepted near a workshop");
+        ExpectEqual(100, durState.Players["aa_smith"].Equipment[EquipmentSlot.MainHand].Durability,
+            "RepairItem restores equipped item durability");
+        ExpectTrue(durState.Players["aa_smith"].Scrip < scripBeforeRepair,
+            "RepairItem deducts scrip based on missing durability");
+        ExpectEqual("100/100",
+            HudController.FormatDurability(durState.Players["aa_smith"].Equipment, EquipmentSlot.MainHand),
+            "HUD formats equipped weapon durability");
+
+        // PlayerSnapshot now surfaces ammo/stamina/weapon kind for HUD readout.
+        var gunSnaps = SnapshotBuilder.PlayersFrom(gunState.Players, new LeaderboardStanding(string.Empty, string.Empty, 0, string.Empty, string.Empty, 0));
+        var gunnerSnap = gunSnaps.First(p => p.Id == "aa_gunner");
+        ExpectEqual(WeaponKind.Ranged, gunnerSnap.EquippedWeaponKind,
+            "PlayerSnapshot.EquippedWeaponKind reflects an equipped ranged weapon");
+        ExpectTrue(gunnerSnap.MaxAmmo > 0,
+            "PlayerSnapshot.MaxAmmo is non-zero when a ranged weapon is equipped");
+        ExpectEqual(gunState.Players["aa_gunner"].CurrentAmmo, gunnerSnap.CurrentAmmo,
+            "PlayerSnapshot.CurrentAmmo mirrors authoritative state");
+        ExpectEqual(gunState.Players["aa_gunner"].Stamina, gunnerSnap.Stamina,
+            "PlayerSnapshot.Stamina mirrors authoritative state");
+        ExpectEqual(gunState.Players["aa_gunner"].MaxStamina, gunnerSnap.MaxStamina,
+            "PlayerSnapshot.MaxStamina mirrors authoritative state");
+
+        var meleeSnaps = SnapshotBuilder.PlayersFrom(wrMeleeState.Players, new LeaderboardStanding(string.Empty, string.Empty, 0, string.Empty, string.Empty, 0));
+        var brawlerSnap = meleeSnaps.First(p => p.Id == "aa_brawler");
+        ExpectEqual(WeaponKind.Melee, brawlerSnap.EquippedWeaponKind,
+            "PlayerSnapshot.EquippedWeaponKind reflects an equipped melee weapon");
+        ExpectEqual(0, brawlerSnap.MaxAmmo,
+            "PlayerSnapshot.MaxAmmo is zero for melee equip");
+
+        // Backpack equipment slot expands inventory capacity.
+        var bpState = new GameState();
+        bpState.RegisterPlayer("aa_porter", "Porter");
+        ExpectEqual(StarterItems.BaseInventorySlots,
+            bpState.Players["aa_porter"].MaxInventorySlots,
+            "Player without a backpack uses BaseInventorySlots");
+        var bpServer = new AuthoritativeWorldServer(bpState, "backpack-test");
+        var bpSeq = 1;
+        foreach (var bpPid in bpServer.ConnectedPlayerIds)
+            bpServer.ProcessIntent(new ServerIntent(bpPid, bpSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        bpState.AddItem("aa_porter", StarterItems.BackpackBrown);
+        bpServer.ProcessIntent(new ServerIntent("aa_porter", bpSeq++, IntentType.UseItem,
+            new Dictionary<string, string> { ["itemId"] = StarterItems.BackpackBrownId }));
+        ExpectEqual(StarterItems.BaseInventorySlots + StarterItems.BackpackBrownInventoryBoost,
+            bpState.Players["aa_porter"].MaxInventorySlots,
+            "Equipping a backpack adds InventoryBoost to MaxInventorySlots");
+        var bpSnap = SnapshotBuilder.PlayersFrom(bpState.Players,
+                new LeaderboardStanding(string.Empty, string.Empty, 0, string.Empty, string.Empty, 0))
+            .First(p => p.Id == "aa_porter");
+        ExpectEqual(bpState.Players["aa_porter"].MaxInventorySlots, bpSnap.MaxInventorySlots,
+            "PlayerSnapshot.MaxInventorySlots mirrors authoritative state");
+
+        // Hunger system: starts at 100, decays during idle ticks, food restores it.
+        var hngState = new GameState();
+        hngState.RegisterPlayer("aa_eater", "Eater");
+        ExpectEqual(100, hngState.Players["aa_eater"].Hunger,
+            "Player starts at full hunger (100)");
+        var hngServer = new AuthoritativeWorldServer(hngState, "hunger-test");
+        var hngSeq = 1;
+        foreach (var hngPid in hngServer.ConnectedPlayerIds)
+            hngServer.ProcessIntent(new ServerIntent(hngPid, hngSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+
+        // Idle long enough for hunger to decay by at least 1.
+        hngServer.AdvanceIdleTicks(AuthoritativeWorldServer.HungerDecayTickInterval);
+        ExpectTrue(hngState.Players["aa_eater"].Hunger < 100,
+            "Hunger decays after HungerDecayTickInterval idle ticks");
+
+        // Drain hunger manually then eat ration — should restore.
+        hngState.Players["aa_eater"].SpendHunger(60);
+        var hungerBeforeFood = hngState.Players["aa_eater"].Hunger;
+        hngState.AddItem("aa_eater", StarterItems.RationPack);
+        hngServer.ProcessIntent(new ServerIntent("aa_eater", hngSeq++, IntentType.UseItem,
+            new Dictionary<string, string> { ["itemId"] = StarterItems.RationPackId }));
+        ExpectTrue(hngState.Players["aa_eater"].Hunger > hungerBeforeFood,
+            "Eating a ration pack restores hunger");
+
+        // Snapshot surfaces hunger.
+        var hngSnap = SnapshotBuilder.PlayersFrom(hngState.Players,
+                new LeaderboardStanding(string.Empty, string.Empty, 0, string.Empty, string.Empty, 0))
+            .First(p => p.Id == "aa_eater");
+        ExpectEqual(hngState.Players["aa_eater"].Hunger, hngSnap.Hunger,
+            "PlayerSnapshot.Hunger mirrors authoritative state");
+        ExpectEqual(100, hngSnap.MaxHunger,
+            "PlayerSnapshot.MaxHunger surfaces the configured pool");
+
+        // Hunger threshold triggers Hungry status; Starving + HP decay at 0.
+        var hungryStatusState = new GameState();
+        hungryStatusState.RegisterPlayer("aa_hungry", "Hungry");
+        var hungryServer = new AuthoritativeWorldServer(hungryStatusState, "hungry-status-test");
+        var hsSeq = 1;
+        foreach (var pid in hungryServer.ConnectedPlayerIds)
+            hungryServer.ProcessIntent(new ServerIntent(pid, hsSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        // Drain hunger below the Hungry threshold.
+        hungryStatusState.Players["aa_hungry"].SpendHunger(80);
+        var hungryStatuses = hungryServer.GetStatusEffectsFor(hungryStatusState.Players["aa_hungry"]);
+        ExpectTrue(hungryStatuses.Contains("Hungry"),
+            "Hungry status appears when hunger is at/below threshold");
+        ExpectFalse(hungryStatuses.Contains("Starving"),
+            "Starving does not appear before hunger reaches 0");
+
+        // Drop hunger to 0; status flips to Starving and starvation deals damage on decay.
+        hungryStatusState.Players["aa_hungry"].SpendHunger(100);
+        var starvingStatuses = hungryServer.GetStatusEffectsFor(hungryStatusState.Players["aa_hungry"]);
+        ExpectTrue(starvingStatuses.Contains("Starving"),
+            "Starving status appears when hunger reaches 0");
+        ExpectFalse(starvingStatuses.Contains("Hungry"),
+            "Starving replaces Hungry once at 0");
+
+        var hpBeforeStarve = hungryStatusState.Players["aa_hungry"].Health;
+        hungryServer.AdvanceIdleTicks(AuthoritativeWorldServer.HungerDecayTickInterval);
+        ExpectTrue(hungryStatusState.Players["aa_hungry"].Health < hpBeforeStarve,
+            "Starving player loses HP on hunger decay tick");
+
+        var hungerSpeedStanding = new LeaderboardStanding(string.Empty, string.Empty, 0, string.Empty, string.Empty, 0);
+        var hungrySpeedPlayer = new PlayerState("aa_hungry_speed", "Hungry Speed");
+        hungrySpeedPlayer.SpendHunger(75);
+        var hungrySpeed = SnapshotBuilder.CalculateSpeedModifier(hungrySpeedPlayer, hungerSpeedStanding);
+        var starvingSpeedPlayer = new PlayerState("aa_starving_speed", "Starving Speed");
+        starvingSpeedPlayer.SpendHunger(100);
+        var starvingSpeed = SnapshotBuilder.CalculateSpeedModifier(starvingSpeedPlayer, hungerSpeedStanding);
+        var wraithSpeedPlayer = new PlayerState("aa_wraith_speed", "Wraith Speed");
+        wraithSpeedPlayer.ApplyKarma(-PerkCatalog.WraithThreshold);
+        wraithSpeedPlayer.ApplyDamage(80);
+        var wraithSpeed = SnapshotBuilder.CalculateSpeedModifier(
+            wraithSpeedPlayer,
+            new LeaderboardStanding(string.Empty, string.Empty, 0, wraithSpeedPlayer.Id, wraithSpeedPlayer.DisplayName, wraithSpeedPlayer.Karma.Score));
+        ExpectTrue(starvingSpeed < hungrySpeed,
+            "Starving speed modifier is lower than Hungry");
+        ExpectTrue(hungrySpeed < wraithSpeed,
+            "Hungry speed modifier is lower than low-HP Wraith");
+        ExpectEqual(0.85f, hungrySpeed,
+            "Hungry speed modifier is 0.85");
+        ExpectEqual(0.6f, starvingSpeed,
+            "Starving speed modifier is 0.6");
+
+        // Cleanliness/restroom mechanic: slower idle decay, combat drop, restroom reset.
+        var cleanState = new GameState();
+        cleanState.RegisterPlayer("aa_clean", "Clean");
+        cleanState.SetPlayerPosition("aa_clean", TilePosition.Origin);
+        var cleanServer = new AuthoritativeWorldServer(cleanState, "cleanliness-test");
+        var cleanSeq = 1;
+        foreach (var pid in cleanServer.ConnectedPlayerIds)
+            cleanServer.ProcessIntent(new ServerIntent(pid, cleanSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        ExpectEqual(100, cleanState.Players["aa_clean"].Cleanliness,
+            "Player starts at full cleanliness (100)");
+        cleanServer.AdvanceIdleTicks(AuthoritativeWorldServer.CleanlinessDecayTickInterval);
+        ExpectTrue(cleanState.Players["aa_clean"].Cleanliness < 100,
+            "Cleanliness decays after CleanlinessDecayTickInterval idle ticks");
+        cleanState.Players["aa_clean"].SpendCleanliness(100);
+        var filthyStatuses = cleanServer.GetStatusEffectsFor(cleanState.Players["aa_clean"]);
+        ExpectTrue(filthyStatuses.Contains("Filthy"),
+            "Filthy status appears at zero cleanliness");
+        cleanState.Players["aa_clean"].ResetCleanliness();
+        cleanState.Players["aa_clean"].SpendCleanliness(75);
+        var dirtyStatuses = cleanServer.GetStatusEffectsFor(cleanState.Players["aa_clean"]);
+        ExpectTrue(dirtyStatuses.Contains("Dirty"),
+            "Dirty status appears at/below cleanliness threshold");
+        ExpectFalse(dirtyStatuses.Contains("Filthy"),
+            "Dirty does not include Filthy before cleanliness reaches zero");
+
+        var combatCleanState = new GameState();
+        combatCleanState.RegisterPlayer("aa_clean_attacker", "Clean Attacker");
+        combatCleanState.RegisterPlayer("aa_clean_target", "Clean Target");
+        combatCleanState.SetPlayerPosition("aa_clean_attacker", TilePosition.Origin);
+        combatCleanState.SetPlayerPosition("aa_clean_target", TilePosition.Origin);
+        var combatCleanServer = new AuthoritativeWorldServer(combatCleanState, "combat-cleanliness-test");
+        var combatCleanSeq = 1;
+        foreach (var pid in combatCleanServer.ConnectedPlayerIds)
+            combatCleanServer.ProcessIntent(new ServerIntent(pid, combatCleanSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        var attackerCleanBefore = combatCleanState.Players["aa_clean_attacker"].Cleanliness;
+        var targetCleanBefore = combatCleanState.Players["aa_clean_target"].Cleanliness;
+        var cleanAttack = combatCleanServer.ProcessIntent(new ServerIntent("aa_clean_attacker", combatCleanSeq++,
+            IntentType.Attack,
+            new Dictionary<string, string> { ["targetId"] = "aa_clean_target" }));
+        ExpectTrue(cleanAttack.WasAccepted,
+            "combat cleanliness test attack is accepted");
+        ExpectEqual(attackerCleanBefore - AuthoritativeWorldServer.CombatCleanlinessLoss,
+            combatCleanState.Players["aa_clean_attacker"].Cleanliness,
+            "Attacker cleanliness drops after a hit");
+        ExpectEqual(targetCleanBefore - AuthoritativeWorldServer.CombatCleanlinessLoss,
+            combatCleanState.Players["aa_clean_target"].Cleanliness,
+            "Target cleanliness drops after a hit");
+
+        cleanServer.SeedRestroomStructure("structure_test_restroom", TilePosition.Origin);
+        var restroomUse = cleanServer.ProcessIntent(new ServerIntent("aa_clean", cleanSeq++,
+            IntentType.Interact,
+            new Dictionary<string, string>
+            {
+                ["entityId"] = "structure_test_restroom",
+                ["action"] = "use"
+            }));
+        ExpectTrue(restroomUse.WasAccepted,
+            "restroom use interaction is accepted");
+        ExpectEqual(100, cleanState.Players["aa_clean"].Cleanliness,
+            "Restroom use resets cleanliness to full");
+        ExpectFalse(cleanServer.GetStatusEffectsFor(cleanState.Players["aa_clean"]).Any(status => status == "Dirty" || status == "Filthy"),
+            "Restroom reset clears cleanliness-derived statuses");
+
+        // Witness propagation: attack events carry nearby witnesses and scale
+        // karma impact up toward full value when the act is public.
+        var noWitnessState = new GameState();
+        noWitnessState.RegisterPlayer("aa_shadow", "Shadow");
+        noWitnessState.RegisterPlayer("aa_target_shadow", "Target Shadow");
+        noWitnessState.SetPlayerPosition("aa_shadow", new TilePosition(100, 100));
+        noWitnessState.SetPlayerPosition("aa_target_shadow", new TilePosition(100, 100));
+        var noWitnessServer = new AuthoritativeWorldServer(noWitnessState, "no-witness-test");
+        var noWitnessSeq = 1;
+        foreach (var pid in noWitnessServer.ConnectedPlayerIds)
+            noWitnessServer.ProcessIntent(new ServerIntent(pid, noWitnessSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        var noWitnessAttack = noWitnessServer.ProcessIntent(new ServerIntent("aa_shadow", noWitnessSeq++,
+            IntentType.Attack,
+            new Dictionary<string, string> { ["targetId"] = "aa_target_shadow" }));
+        ExpectTrue(noWitnessAttack.WasAccepted,
+            "no-witness attack is accepted");
+        ExpectEqual(0, noWitnessAttack.Event.Witnesses.Count,
+            "attack far from players/NPCs records no witnesses");
+        var noWitnessKarma = noWitnessState.Players["aa_shadow"].Karma.Score;
+
+        var publicWitnessState = new GameState();
+        publicWitnessState.RegisterPlayer("aa_public", "Public");
+        publicWitnessState.RegisterPlayer("aa_target_public", "Target Public");
+        publicWitnessState.SetPlayerPosition("aa_public", TilePosition.Origin);
+        publicWitnessState.SetPlayerPosition("aa_target_public", TilePosition.Origin);
+        var publicWitnessServer = new AuthoritativeWorldServer(publicWitnessState, "public-witness-test");
+        for (var i = 0; i < 5; i++)
+        {
+            publicWitnessServer.SeedNpc(new NpcProfile(
+                $"witness_npc_{i}",
+                $"Witness {i}",
+                "Witness",
+                "watchful",
+                "Village",
+                string.Empty,
+                string.Empty,
+                System.Array.Empty<string>(),
+                System.Array.Empty<string>()),
+                TilePosition.Origin);
+        }
+        var publicWitnessSeq = 1;
+        foreach (var pid in publicWitnessServer.ConnectedPlayerIds)
+            publicWitnessServer.ProcessIntent(new ServerIntent(pid, publicWitnessSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        var publicAttack = publicWitnessServer.ProcessIntent(new ServerIntent("aa_public", publicWitnessSeq++,
+            IntentType.Attack,
+            new Dictionary<string, string> { ["targetId"] = "aa_target_public" }));
+        ExpectTrue(publicAttack.WasAccepted,
+            "public attack is accepted");
+        ExpectTrue(publicAttack.Event.Witnesses.Count >= 5,
+            "public attack records nearby NPC witnesses");
+        ExpectEqual(publicAttack.Event.Witnesses.Count.ToString(), publicAttack.Event.Data["witnessCount"],
+            "attack event data mirrors witness count");
+        ExpectTrue(publicWitnessState.Players["aa_public"].Karma.Score < noWitnessKarma,
+            "attack near 5+ witnesses has a larger negative karma swing than an unwitnessed attack");
+
+        var crimeState = new GameState();
+        crimeState.RegisterPlayer("aa_criminal", "Criminal");
+        crimeState.RegisterPlayer("aa_victim", "Victim");
+        crimeState.SetPlayerPosition("aa_criminal", TilePosition.Origin);
+        crimeState.SetPlayerPosition("aa_victim", TilePosition.Origin);
+        var crimeServer = new AuthoritativeWorldServer(crimeState, "crime-report-test");
+        var guardWitness = new NpcProfile(
+            "guard_reporter",
+            "Guard Reporter",
+            "Guard",
+            "stern",
+            "Crown Garrison",
+            "a clear report",
+            "keeps a spare whistle",
+            Array.Empty<string>(),
+            Array.Empty<string>(),
+            IsLawAligned: true,
+            Tags: new[] { NpcRoleTags.LawAligned });
+        var captainReceiver = new NpcProfile(
+            "captain_receiver",
+            "Captain Receiver",
+            "Captain",
+            "steady",
+            "Crown Garrison",
+            "reports",
+            "none",
+            Array.Empty<string>(),
+            Array.Empty<string>(),
+            IsLawAligned: true,
+            Tags: new[] { NpcRoleTags.LawAligned });
+        crimeServer.SeedNpc(guardWitness, new TilePosition(1, 0));
+        crimeServer.SeedNpc(captainReceiver, new TilePosition(5, 0));
+        var crimeSeq = 1;
+        foreach (var pid in crimeServer.ConnectedPlayerIds)
+            crimeServer.ProcessIntent(new ServerIntent(pid, crimeSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        var witnessedCrime = crimeServer.ProcessIntent(new ServerIntent("aa_criminal", crimeSeq++,
+            IntentType.Attack,
+            new Dictionary<string, string> { ["targetId"] = "aa_victim" }));
+        ExpectTrue(witnessedCrime.WasAccepted,
+            "witnessed crime attack is accepted");
+        ExpectTrue(witnessedCrime.Event.Witnesses.Contains("guard_reporter"),
+            "law-aligned NPC is recorded in the attack witness set");
+        crimeServer.AdvanceIdleTicks(crimeServer.Config.CrimeReportDelayTicks);
+        var crimeReport = crimeServer.EventLog.LastOrDefault(serverEvent => serverEvent.EventId.Contains("crime_reported"));
+        ExpectTrue(crimeReport is not null,
+            "crime_reported event fires after the configured report delay");
+        ExpectEqual("guard_reporter", crimeReport?.Data["witnessNpcId"] ?? "",
+            "crime_reported event cites the reporting witness NPC");
+        ExpectEqual("player_attacked", crimeReport?.Data["sourceEventType"] ?? "",
+            "crime_reported event links back to the attack event type");
+
+        // Drug registry server wiring: a registered drug item applies an
+        // on-use status, expires after its duration, then enters withdrawal
+        // once cumulative exposure crosses the addiction threshold.
+        var drugState = new GameState();
+        drugState.RegisterPlayer("aa_doser", "Doser");
+        var drugServer = new AuthoritativeWorldServer(drugState, "drug-status-test");
+        var drugSeq = 1;
+        foreach (var pid in drugServer.ConnectedPlayerIds)
+            drugServer.ProcessIntent(new ServerIntent(pid, drugSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        drugState.Players["aa_doser"].SpendStamina(75);
+        drugState.AddItem("aa_doser", StarterItems.StimSpike);
+        drugState.AddItem("aa_doser", StarterItems.StimSpike);
+        drugState.AddItem("aa_doser", StarterItems.StimSpike);
+
+        for (var dose = 0; dose < 3; dose++)
+        {
+            var drugResult = drugServer.ProcessIntent(new ServerIntent("aa_doser", drugSeq++, IntentType.UseItem,
+                new Dictionary<string, string> { ["itemId"] = StarterItems.StimSpikeId }));
+            ExpectTrue(drugResult.WasAccepted, $"Stim Spike dose {dose + 1} is accepted by UseItem");
+        }
+
+        ExpectTrue(drugState.Players["aa_doser"].Stamina > 25,
+            "Stim Spike applies its stamina delta on use");
+        var drugOnUseStatuses = drugServer.GetStatusEffectsFor(drugState.Players["aa_doser"]);
+        ExpectTrue(drugOnUseStatuses.Contains("Energised"),
+            "Stim Spike on-use status appears after use");
+
+        drugServer.AdvanceIdleTicks(600);
+        var drugExpiredStatuses = drugServer.GetStatusEffectsFor(drugState.Players["aa_doser"]);
+        ExpectFalse(drugExpiredStatuses.Contains("Energised"),
+            "Stim Spike on-use status expires after DurationTicks");
+
+        var staminaBeforeWithdrawal = drugState.Players["aa_doser"].Stamina;
+        drugServer.AdvanceIdleTicks(1201);
+        var drugWithdrawalStatuses = drugServer.GetStatusEffectsFor(drugState.Players["aa_doser"]);
+        ExpectTrue(drugWithdrawalStatuses.Contains("Crashing"),
+            "Stim Spike withdrawal status appears after addiction grace expires");
+        ExpectTrue(drugState.Players["aa_doser"].Stamina < staminaBeforeWithdrawal,
+            "Stim Spike withdrawal applies a stamina penalty during idle ticks");
+
+        var downerState = new GameState();
+        downerState.RegisterPlayer("aa_downer", "Downer");
+        var downerServer = new AuthoritativeWorldServer(downerState, "downer-withdrawal-test");
+        var downerSeq = 1;
+        foreach (var pid in downerServer.ConnectedPlayerIds)
+            downerServer.ProcessIntent(new ServerIntent(pid, downerSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        downerState.AddItem("aa_downer", StarterItems.DownerHaze);
+        downerState.AddItem("aa_downer", StarterItems.DownerHaze);
+        for (var dose = 0; dose < 2; dose++)
+        {
+            var downerResult = downerServer.ProcessIntent(new ServerIntent("aa_downer", downerSeq++, IntentType.UseItem,
+                new Dictionary<string, string> { ["itemId"] = StarterItems.DownerHazeId }));
+            ExpectTrue(downerResult.WasAccepted, $"Downer Haze dose {dose + 1} is accepted by UseItem");
+        }
+
+        var hpBeforeDownerWithdrawal = downerState.Players["aa_downer"].Health;
+        downerServer.AdvanceIdleTicks(1501);
+        var downerWithdrawalStatuses = downerServer.GetStatusEffectsFor(downerState.Players["aa_downer"]);
+        ExpectTrue(downerWithdrawalStatuses.Contains("Twitchy"),
+            "Downer Haze withdrawal status appears after addiction grace expires");
+        ExpectTrue(downerState.Players["aa_downer"].Health < hpBeforeDownerWithdrawal,
+            "Downer Haze withdrawal applies an HP penalty during idle ticks");
+
+        // Loot drop table registry: built-in lookup, deterministic roll with seeded RNG,
+        // qty range, runtime override, unknown table → empty result.
+        LootTableCatalog.Reset();
+        ExpectTrue(LootTableCatalog.TryGet(LootTableCatalog.SupplyDropCommonId, out var supplyTable),
+            "loot catalog resolves built-in supply_drop_common table");
+        ExpectTrue(supplyTable.Entries.Count > 0,
+            "supply_drop_common table has at least one entry");
+        ExpectFalse(LootTableCatalog.TryGet("totally_unknown_table", out _),
+            "loot catalog returns false for unknown table id");
+        ExpectEqual(0,
+            LootTableCatalog.Roll("totally_unknown_table", new System.Random(1)).Count,
+            "loot catalog roll on unknown table returns empty list");
+
+        var seededRoll = LootTableCatalog.Roll(
+            LootTableCatalog.SupplyDropCommonId, new System.Random(42));
+        ExpectTrue(seededRoll.Count >= 1 && seededRoll.Count <= supplyTable.Rolls,
+            "supply_drop_common roll yields between 1 and Rolls items with a seeded RNG");
+        var seededRollAgain = LootTableCatalog.Roll(
+            LootTableCatalog.SupplyDropCommonId, new System.Random(42));
+        ExpectEqual(seededRoll.Count, seededRollAgain.Count,
+            "loot rolls are deterministic across identical seeds");
+        for (var i = 0; i < seededRoll.Count; i++)
+        {
+            ExpectEqual(seededRoll[i].ItemId, seededRollAgain[i].ItemId,
+                $"loot roll item-id at index {i} matches across identical seeds");
+            ExpectEqual(seededRoll[i].Quantity, seededRollAgain[i].Quantity,
+                $"loot roll quantity at index {i} matches across identical seeds");
+        }
+
+        var ammoRoll = LootTableCatalog.Roll(
+            LootTableCatalog.SupplyDropAmmoId, new System.Random(7));
+        ExpectTrue(ammoRoll.All(r =>
+                r.ItemId == StarterItems.BallisticRoundId
+                || r.ItemId == StarterItems.EnergyCellId),
+            "supply_drop_ammo only rolls ballistic / energy entries");
+        ExpectTrue(ammoRoll.All(r => r.Quantity >= 2),
+            "supply_drop_ammo respects MinQuantity ≥ 2");
+
+        // Runtime override: register a single-entry table and confirm it resolves.
+        LootTableCatalog.Register(new LootTable("test_override",
+            new[] { new LootTableEntry("ration_pack", Weight: 1, MinQuantity: 5, MaxQuantity: 5) },
+            Rolls: 1));
+        var overrideRoll = LootTableCatalog.Roll("test_override", new System.Random(0));
+        ExpectEqual(1, overrideRoll.Count, "registered override table rolls once");
+        ExpectEqual("ration_pack", overrideRoll[0].ItemId,
+            "registered override entry yields its item id");
+        ExpectEqual(5, overrideRoll[0].Quantity,
+            "registered override entry honours fixed quantity");
+        LootTableCatalog.Reset();
+        ExpectFalse(LootTableCatalog.TryGet("test_override", out _),
+            "loot catalog Reset clears runtime overrides");
+
+        // Dialogue tree DSL: built-in tree, traversal, choice-array adapter.
+        DialogueRegistry.Reset();
+        ExpectTrue(DialogueRegistry.TryGet(DialogueRegistry.MaraClinicTreeId, out var maraTree),
+            "dialogue registry resolves built-in mara_clinic_default tree");
+        ExpectTrue(maraTree.Root is not null,
+            "mara_clinic_default tree exposes a Root node");
+        ExpectEqual(3, maraTree.Root.Choices.Count,
+            "mara_clinic_default root offers three choices");
+        var acceptedNode = maraTree.Get("accepted");
+        ExpectTrue(acceptedNode is not null && acceptedNode.Choices.Count == 1,
+            "accepted node has a single closing choice");
+        ExpectTrue(acceptedNode.Choices[0].Terminates,
+            "accepted close choice terminates dialogue");
+        ExpectFalse(DialogueRegistry.TryGet("totally_unknown_tree", out _),
+            "dialogue registry returns false for unknown tree id");
+        ExpectTrue(maraTree.Get("not_a_node") is null,
+            "tree.Get returns null for unknown node id");
+
+        var legacyChoices = DialogueRegistry.BuildChoiceArray(maraTree.Root);
+        ExpectEqual(3, legacyChoices.Count,
+            "BuildChoiceArray projects all root choices");
+        var advanceChoice = legacyChoices.First(c => c.Id == "ask_about_supplies");
+        ExpectEqual("dialogue_advance:supplies", advanceChoice.ActionId,
+            "non-action choice projects next node into ActionId");
+        var actionChoice = DialogueRegistry.BuildChoiceArray(maraTree.Get("accepted"))[0];
+        ExpectEqual("help_mara", actionChoice.ActionId,
+            "explicit ActionId is preserved by the adapter");
+        ExpectTrue(DialogueRegistry.TryGet(DialogueRegistry.DallenShopkeeperTreeId, out var dallenTree),
+            "dialogue registry resolves built-in dallen_shopkeeper_default tree");
+        ExpectTrue(dallenTree.Root.Choices.Any(choice => choice.Id == "browse_wares") &&
+                   dallenTree.Root.Choices.Any(choice => choice.Id == "ask_about_mara") &&
+                   dallenTree.Root.Choices.Any(choice => choice.Id == "leave"),
+            "Dallen tree branches between wares, Mara, and leave");
+
+        // Runtime override: register a tiny tree and confirm it resolves.
+        DialogueRegistry.Register(new DialogueTree(
+            Id: "test_tree",
+            RootNodeId: "start",
+            Nodes: new Dictionary<string, DialogueNode>
+            {
+                ["start"] = new DialogueNode("start", "hi", new[]
+                {
+                    new DialogueChoice("ok", "ok", Terminates: true)
+                })
+            }));
+        ExpectTrue(DialogueRegistry.TryGet("test_tree", out var customTree),
+            "runtime-registered dialogue tree resolves");
+        ExpectEqual("ok", customTree.Root.Choices[0].Id,
+            "registered tree's root has the expected choice id");
+        DialogueRegistry.Reset();
+        ExpectFalse(DialogueRegistry.TryGet("test_tree", out _),
+            "dialogue registry Reset clears runtime overrides");
+
+        // NPC profile carries a DialogueTreeId field (currently empty for
+        // legacy NPCs; the walker only engages once a tree is bound).
+        ExpectEqual(string.Empty, StarterNpcs.Mara.DialogueTreeId,
+            "Mara's DialogueTreeId is unset by default — legacy procedural choices win");
+        ExpectEqual(DialogueRegistry.DallenShopkeeperTreeId, StarterNpcs.Dallen.DialogueTreeId,
+            "Dallen is bound to the shopkeeper dialogue tree");
+        // Verify the registry+walker pieces still work in isolation.
+        ExpectTrue(DialogueRegistry.TryGet(DialogueRegistry.MaraClinicTreeId, out var registryTree),
+            "registry resolves the built-in mara_clinic_default tree");
+        ExpectTrue(registryTree.Root.Choices.Count > 0,
+            "registered tree exposes branching choices at the root");
+
+        var dallenState = new GameState();
+        dallenState.RegisterPlayer("aa_dallen_talker", "Dallen Talker");
+        var dallenServer = new AuthoritativeWorldServer(dallenState, "dallen-dialogue-test");
+        dallenState.SetPlayerPosition("aa_dallen_talker", dallenServer.GetNpcPosition(StarterNpcs.Dallen.Id));
+        var dallenSeq = 1;
+        foreach (var pid in dallenServer.ConnectedPlayerIds)
+            dallenServer.ProcessIntent(new ServerIntent(pid, dallenSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        var dallenDialogue = dallenServer.GetDialogueFor("aa_dallen_talker", StarterNpcs.Dallen.Id);
+        ExpectTrue(dallenDialogue.Choices.Any(choice => choice.ActionId == "dialogue_advance:wares"),
+            "Dallen root dialogue advances to wares node");
+        ExpectTrue(dallenDialogue.Choices.Any(choice => choice.ActionId == "dialogue_advance:mara"),
+            "Dallen root dialogue advances to Mara node");
+        var dallenStart = dallenServer.ProcessIntent(new ServerIntent("aa_dallen_talker", dallenSeq++,
+            IntentType.StartDialogue,
+            new Dictionary<string, string> { ["npcId"] = StarterNpcs.Dallen.Id }));
+        ExpectTrue(dallenStart.WasAccepted,
+            "server starts Dallen tree dialogue");
+        var dallenAskMara = dallenServer.ProcessIntent(new ServerIntent("aa_dallen_talker", dallenSeq++,
+            IntentType.SelectDialogueChoice,
+            new Dictionary<string, string>
+            {
+                ["npcId"] = StarterNpcs.Dallen.Id,
+                ["choiceId"] = "ask_about_mara"
+            }));
+        ExpectTrue(dallenAskMara.WasAccepted,
+            "server advances Dallen dialogue to Mara branch");
+        ExpectEqual("mara", dallenServer.GetActiveDialogueNodeId("aa_dallen_talker", StarterNpcs.Dallen.Id),
+            "Dallen dialogue walker stores Mara node");
+        var dallenBack = dallenServer.ProcessIntent(new ServerIntent("aa_dallen_talker", dallenSeq++,
+            IntentType.SelectDialogueChoice,
+            new Dictionary<string, string>
+            {
+                ["npcId"] = StarterNpcs.Dallen.Id,
+                ["choiceId"] = "back_to_root"
+            }));
+        ExpectTrue(dallenBack.WasAccepted,
+            "server walks Dallen dialogue back to root");
+        ExpectEqual("root", dallenServer.GetActiveDialogueNodeId("aa_dallen_talker", StarterNpcs.Dallen.Id),
+            "Dallen dialogue walker returns to root");
+        var dallenLeave = dallenServer.ProcessIntent(new ServerIntent("aa_dallen_talker", dallenSeq++,
+            IntentType.SelectDialogueChoice,
+            new Dictionary<string, string>
+            {
+                ["npcId"] = StarterNpcs.Dallen.Id,
+                ["choiceId"] = "leave"
+            }));
+        ExpectTrue(dallenLeave.WasAccepted,
+            "server closes Dallen dialogue from root leave choice");
+        ExpectEqual(string.Empty, dallenServer.GetActiveDialogueNodeId("aa_dallen_talker", StarterNpcs.Dallen.Id),
+            "Dallen dialogue close clears active node");
+
+        // Medieval theme data: load roster/interactions, pick deterministic
+        // appearance bundles, surface bundle ids, and inject greeting/gossip.
+        var medievalTheme = ThemeDataCatalog.Get("medieval");
+        ExpectTrue(medievalTheme.NpcRoster.Count >= 50,
+            "medieval theme loader reads the NPC roster");
+        var pickA = medievalTheme.PickAppearanceBundle("theme-world", "blacksmith_garrick");
+        var pickB = medievalTheme.PickAppearanceBundle("theme-world", "blacksmith_garrick");
+        ExpectEqual(pickA, pickB,
+            "medieval theme appearance pick is deterministic for same world/npc");
+        ExpectTrue(!string.IsNullOrWhiteSpace(pickA),
+            "medieval theme appearance pick yields an LPC bundle id");
+
+        DialogueRegistry.Register(new DialogueTree(
+            Id: "theme_test_tree",
+            RootNodeId: "root",
+            Nodes: new Dictionary<string, DialogueNode>
+            {
+                ["root"] = new DialogueNode("root", "Theme root.", new[]
+                {
+                    new DialogueChoice("gossip", "Any gossip?", NextNodeId: "gossip"),
+                    new DialogueChoice("close", "Leave.", Terminates: true)
+                })
+            }));
+        var themeState = new GameState();
+        themeState.RegisterPlayer("aa_theme_talker", "Theme Talker");
+        themeState.SetPlayerPosition("aa_theme_talker", TilePosition.Origin);
+        var themeServer = new AuthoritativeWorldServer(themeState, "theme-world");
+        var themeNpc = new NpcProfile(
+            "blacksmith_garrick",
+            "Garrick the Smith",
+            "Village Blacksmith",
+            "gruff",
+            "village_freeholders",
+            "stolen tools",
+            "knows a secret",
+            System.Array.Empty<string>(),
+            System.Array.Empty<string>(),
+            DialogueTreeId: "theme_test_tree");
+        themeServer.SeedNpc(themeNpc, TilePosition.Origin);
+        var themeSnapshot = themeServer.CreateInterestSnapshot("aa_theme_talker");
+        ExpectEqual(pickA,
+            themeSnapshot.Npcs.First(npc => npc.Id == "blacksmith_garrick").LpcBundleId,
+            "NpcSnapshot surfaces deterministic medieval LPC bundle id");
+        var themeDialogue = themeServer.GetDialogueFor("aa_theme_talker", "blacksmith_garrick");
+        ExpectTrue(themeDialogue.Prompt.Contains("Theme root.") && themeDialogue.Prompt.Contains('\n'),
+            "theme greeting is prepended to bound NPC root dialogue");
+        var themeGossip = themeServer.ProcessIntent(new ServerIntent("aa_theme_talker", 1,
+            IntentType.SelectDialogueChoice,
+            new Dictionary<string, string>
+            {
+                ["npcId"] = "blacksmith_garrick",
+                ["choiceId"] = "gossip"
+            }));
+        ExpectTrue(themeGossip.WasAccepted,
+            "theme gossip dialogue advance is accepted");
+        var gossipDialogue = themeServer.GetDialogueFor("aa_theme_talker", "blacksmith_garrick");
+        ExpectTrue(!gossipDialogue.Prompt.Contains("No gossip worth the candle"),
+            "theme gossip uses relationship-driven template text");
+        DialogueRegistry.Reset();
+
+        // Supply drop materialised from a loot table.
+        var lootDropState = new GameState();
+        lootDropState.RegisterPlayer("aa_dropper", "Dropper");
+        var lootDropServer = new AuthoritativeWorldServer(lootDropState, "loot-drop-test");
+        var loot1 = lootDropServer.ScheduleSupplyDropFromTable(
+            new TilePosition(50, 50),
+            LootTableCatalog.SupplyDropAmmoId,
+            seedSalt: 1);
+        ExpectTrue(loot1.Count > 0,
+            "ScheduleSupplyDropFromTable spawns at least one entity from supply_drop_ammo");
+        ExpectTrue(loot1.All(id => lootDropServer.WorldItems.ContainsKey(id)),
+            "spawned supply drop entities are registered in WorldItems");
+        ExpectTrue(loot1.All(id =>
+            {
+                var ent = lootDropServer.WorldItems[id];
+                return ent.Item.Id == StarterItems.BallisticRoundId
+                    || ent.Item.Id == StarterItems.EnergyCellId;
+            }),
+            "supply_drop_ammo only spawns ballistic / energy items");
+        ExpectTrue(lootDropServer.EventLog.Any(e =>
+            e.EventId.Contains("supply_drop_spawned")),
+            "supply_drop_spawned event fires for table-driven drops");
+
+        // Unknown loot table → empty result, no entities created.
+        var lootDropPreCount = lootDropServer.WorldItems.Count;
+        var loot2 = lootDropServer.ScheduleSupplyDropFromTable(
+            new TilePosition(60, 60), "totally_unknown_table");
+        ExpectEqual(0, loot2.Count,
+            "unknown loot table id yields no supply drop entities");
+        ExpectEqual(lootDropPreCount, lootDropServer.WorldItems.Count,
+            "unknown loot table does not mutate WorldItems");
+
+        // Downed-player table drops are generated from downed_player_drops,
+        // separate from legacy loose-inventory drops.
+        var downedDropState = new GameState();
+        downedDropState.RegisterPlayer("aa_downed_loot", "Downed Loot");
+        var downedDropServer = new AuthoritativeWorldServer(downedDropState, "downed-loot-test");
+        var downedSeq = 1;
+        foreach (var pid in downedDropServer.ConnectedPlayerIds)
+            downedDropServer.ProcessIntent(new ServerIntent(pid, downedSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        downedDropServer.ProcessIntent(new ServerIntent("aa_downed_loot", downedSeq++, IntentType.KarmaBreak,
+            new Dictionary<string, string>()));
+        var downedDropIds = downedDropServer.WorldItems.Values
+            .Where(entity => entity.EntityId.StartsWith("downed_drop_aa_downed_loot"))
+            .Select(entity => entity.Item.Id)
+            .ToArray();
+        ExpectTrue(downedDropIds.Length > 0,
+            "Karma Break spawns downed-player loot table drops");
+        var downedAllowed = LootTableCatalog.All[LootTableCatalog.DownedPlayerDropsId]
+            .Entries.Select(entry => entry.ItemId)
+            .ToHashSet();
+        ExpectTrue(downedDropIds.All(downedAllowed.Contains),
+            "downed-player table drops only items from downed_player_drops");
+
+        // Scavengeable containers roll container_scavenge directly into inventory.
+        var scavengeState = new GameState();
+        scavengeState.RegisterPlayer("aa_scavenger", "Scavenger");
+        scavengeState.SetPlayerPosition("aa_scavenger", TilePosition.Origin);
+        var scavengeServer = new AuthoritativeWorldServer(scavengeState, "container-scavenge-test");
+        scavengeServer.SeedWorldStructure(
+            "structure_test_scavenge_chest",
+            StructureArtCatalog.Get(StructureSpriteKind.LockedMetalChest).Id,
+            TilePosition.Origin);
+        var scavengeSeq = 1;
+        foreach (var pid in scavengeServer.ConnectedPlayerIds)
+            scavengeServer.ProcessIntent(new ServerIntent(pid, scavengeSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        var scavengeResult = scavengeServer.ProcessIntent(new ServerIntent("aa_scavenger", scavengeSeq++,
+            IntentType.Interact,
+            new Dictionary<string, string>
+            {
+                ["entityId"] = "structure_test_scavenge_chest",
+                ["action"] = "scavenge"
+            }));
+        ExpectTrue(scavengeResult.WasAccepted,
+            "container scavenge interaction is accepted");
+        ExpectEqual(LootTableCatalog.ContainerScavengeId, scavengeResult.Event.Data["lootTableId"],
+            "container scavenge event reports container_scavenge table");
+        var scavengeAllowed = LootTableCatalog.All[LootTableCatalog.ContainerScavengeId]
+            .Entries.Select(entry => entry.ItemId)
+            .ToHashSet();
+        ExpectTrue(scavengeState.Players["aa_scavenger"].Inventory.Count > 0,
+            "container scavenge adds loot to inventory");
+        ExpectTrue(scavengeState.Players["aa_scavenger"].Inventory.All(item => scavengeAllowed.Contains(item.Id)),
+            "container scavenge samples only items from container_scavenge");
+        var scavengeAgain = scavengeServer.ProcessIntent(new ServerIntent("aa_scavenger", scavengeSeq++,
+            IntentType.Interact,
+            new Dictionary<string, string>
+            {
+                ["entityId"] = "structure_test_scavenge_chest",
+                ["action"] = "scavenge"
+            }));
+        ExpectFalse(scavengeAgain.WasAccepted,
+            "container scavenge rejects repeat looting of the same container");
+
+        // Match replay log: record a short intent stream and reconstruct the
+        // same post-intent snapshot stream from the sidecar file.
+        var replayPath = System.IO.Path.Combine(
+            System.IO.Path.GetTempPath(),
+            $"karma_replay_smoke_{System.Guid.NewGuid():N}.jsonl");
+        var replayState = new GameState();
+        replayState.RegisterPlayer("aa_replay", "Replay");
+        var replayConfig = ServerConfig.Prototype4Player with
+        {
+            ReplayEnabled = true,
+            ReplayPath = replayPath
+        };
+        var replayServer = new AuthoritativeWorldServer(replayState, "replay-test", replayConfig);
+        var expectedReplaySnapshots = new List<ClientInterestSnapshot>();
+        for (var i = 1; i <= 10; i++)
+        {
+            var replayIntent = new ServerIntent("aa_replay", i, IntentType.Move,
+                new Dictionary<string, string>
+                {
+                    ["x"] = i.ToString(),
+                    ["y"] = "0"
+                });
+            var replayResult = replayServer.ProcessIntent(replayIntent);
+            ExpectTrue(replayResult.WasAccepted,
+                $"replay test move {i} is accepted");
+            expectedReplaySnapshots.Add(replayServer.CreateInterestSnapshot("aa_replay"));
+        }
+        var replayRows = MatchReplayLog.Load(replayPath);
+        ExpectEqual(10, replayRows.Count,
+            "Replay log records one row per processed intent");
+        ExpectTrue(replayRows.All(row => row.WasAccepted),
+            "Replay rows preserve intent acceptance");
+        var reconstructedSnapshots = MatchReplayLog.ReconstructSnapshots(replayPath);
+        ExpectEqual(10, reconstructedSnapshots.Count,
+            "Replay loader reconstructs the snapshot stream");
+        for (var i = 0; i < reconstructedSnapshots.Count; i++)
+        {
+            ExpectEqual(expectedReplaySnapshots[i].Tick, reconstructedSnapshots[i].Tick,
+                $"Replay snapshot {i} preserves tick");
+            ExpectEqual(expectedReplaySnapshots[i].Players.First(p => p.Id == "aa_replay").TileX,
+                reconstructedSnapshots[i].Players.First(p => p.Id == "aa_replay").TileX,
+                $"Replay snapshot {i} preserves player X");
+            ExpectEqual(expectedReplaySnapshots[i].Players.First(p => p.Id == "aa_replay").TileY,
+                reconstructedSnapshots[i].Players.First(p => p.Id == "aa_replay").TileY,
+                $"Replay snapshot {i} preserves player Y");
+        }
+        if (System.IO.File.Exists(replayPath))
+            System.IO.File.Delete(replayPath);
+
+        // Inventory cap: pickup rejects when player is at MaxInventorySlots.
+        var capState = new GameState();
+        capState.RegisterPlayer("aa_hoarder", "Hoarder");
+        capState.SetPlayerPosition("aa_hoarder", new TilePosition(10, 10));
+        // Force the player up to MaxInventorySlots using the unchecked AddItem.
+        for (var i = 0; i < StarterItems.BaseInventorySlots; i++)
+            capState.Players["aa_hoarder"].AddItem(StarterItems.RationPack);
+        ExpectFalse(capState.Players["aa_hoarder"].TryAddItem(StarterItems.MediPatch),
+            "TryAddItem rejects when inventory is at MaxInventorySlots");
+
+        var capServer = new AuthoritativeWorldServer(capState, "cap-test");
+        var capSeq = 1;
+        foreach (var pid in capServer.ConnectedPlayerIds)
+            capServer.ProcessIntent(new ServerIntent(pid, capSeq++, IntentType.ReadyUp, new Dictionary<string, string>()));
+        var dropId = capServer.ScheduleSupplyDrop(new TilePosition(10, 10), StarterItems.MediPatch);
+        var fullPickup = capServer.ProcessIntent(new ServerIntent("aa_hoarder", capSeq++,
+            IntentType.Interact,
+            new Dictionary<string, string> { ["entityId"] = dropId }));
+        ExpectFalse(fullPickup.WasAccepted,
+            "Pickup rejected when player inventory is full");
+        ExpectTrue(fullPickup.RejectionReason.Contains("Inventory is full"),
+            "Pickup rejection mentions full inventory");
+
+        // Equipping a backpack should expand cap and let the next pickup succeed.
+        capState.Players["aa_hoarder"].AddItem(StarterItems.BackpackBrown);
+        capServer.ProcessIntent(new ServerIntent("aa_hoarder", capSeq++, IntentType.UseItem,
+            new Dictionary<string, string> { ["itemId"] = StarterItems.BackpackBrownId }));
+        var dropId2 = capServer.ScheduleSupplyDrop(new TilePosition(10, 10), StarterItems.MediPatch);
+        var roomyPickup = capServer.ProcessIntent(new ServerIntent("aa_hoarder", capSeq++,
+            IntentType.Interact,
+            new Dictionary<string, string> { ["entityId"] = dropId2 }));
+        ExpectTrue(roomyPickup.WasAccepted,
+            "Pickup accepted after backpack expands MaxInventorySlots");
+
+        // Server-side dialogue walker: tree state machine in isolation.
+        // Mara is intentionally NOT bound to the tree (legacy choices still
+        // win for her), so end-to-end assertions go through the registry
+        // and node traversal directly. `GetActiveDialogueNodeId` defaults
+        // to empty for any (player, npc) pair that hasn't advanced.
+        var dlgState = new GameState();
+        dlgState.RegisterPlayer("aa_talker", "Talker");
+        var dlgServer = new AuthoritativeWorldServer(dlgState, "dialogue-walker-test");
+        ExpectEqual(string.Empty,
+            dlgServer.GetActiveDialogueNodeId("aa_talker", "any_npc"),
+            "GetActiveDialogueNodeId returns empty when no advance has occurred");
+
+        // Tree node traversal end-to-end: root → advance choice → supplies node.
+        if (DialogueRegistry.TryGet(DialogueRegistry.MaraClinicTreeId, out var walkerTree))
+        {
+            var rootChoices = DialogueRegistry.BuildChoiceArray(walkerTree.Root);
+            var walkerAdvance = rootChoices.First(c => c.Id == "ask_about_supplies");
+            ExpectTrue(walkerAdvance.ActionId.StartsWith("dialogue_advance:"),
+                "branching choice projects ActionId as dialogue_advance:<node>");
+            var supplies = walkerTree.Get("supplies");
+            ExpectTrue(supplies is not null && supplies.Choices.Count >= 2,
+                "supplies node has at least back-to-root + close choices");
+            var closeChoice = walkerTree.Get("accepted").Choices[0];
+            ExpectEqual("help_mara", closeChoice.ActionId,
+                "accepted node's close choice carries its legacy ActionId through the tree");
+        }
+
         // Sliced atlas props are registered in StructureArtCatalog and point at
         // the right sliced-PNG path so runtime can load them without a slicing
         // pass at game-startup.
@@ -5127,6 +6857,50 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(HudController.FormatBountyLeaderboard(System.Array.Empty<PlayerSnapshot>())
                 .Contains("none active"),
             "FormatBountyLeaderboard reports 'none active' when no bounties exist");
+        var bountyBoard = HudController.FormatBountyBoard(blFakePlayers.Concat(new[]
+        {
+            new PlayerSnapshot("ad_wanted", "WantedPlayer", 0, "Unmarked", 0, "", LeaderboardRole.None,
+                0, 0, 100, 100, 0, PlayerAppearanceSelection.Default,
+                System.Array.Empty<string>(), new Dictionary<EquipmentSlot, string>(),
+                new[] { "Wanted", "Bounty: 25" })
+        }));
+        ExpectTrue(bountyBoard.Contains("HighBounty") && bountyBoard.Contains("75 scrip"),
+            "FormatBountyBoard lists bounty rows with scrip amount");
+        ExpectTrue(bountyBoard.Contains("WantedPlayer") && bountyBoard.Contains("Wanted"),
+            "FormatBountyBoard marks wanted players");
+
+        var factionPanel = HudController.FormatFactionPanel(new[]
+        {
+            new FactionSnapshot(StarterFactions.FreeSettlersId, "aa_faction", 52),
+            new FactionSnapshot(StarterFactions.CivicRepairGuildId, "aa_faction", -12),
+            new FactionSnapshot(StarterFactions.BackroomMerchantsId, "aa_faction", -70)
+        }, "aa_faction");
+        ExpectTrue(factionPanel.Contains("Village Freeholders") && factionPanel.Contains("Loyal"),
+            "FormatFactionPanel shows loyal standings for positive high reputation");
+        ExpectTrue(factionPanel.Contains("Civic Repair Guild") && factionPanel.Contains("Wary"),
+            "FormatFactionPanel shows wary standings for negative reputation");
+        ExpectTrue(factionPanel.Contains("Backroom Merchants") && factionPanel.Contains("Hostile"),
+            "FormatFactionPanel shows hostile standings for very negative reputation");
+        ExpectEqual("Neutral", HudController.FormatFactionMood(0),
+            "FormatFactionMood labels zero reputation neutral");
+
+        ExpectTrue(HudController.FormatQuestLog(Array.Empty<QuestSnapshot>()).Contains("no active quests"),
+            "FormatQuestLog reports empty active quest list");
+        var questLog = HudController.FormatQuestLog(new[]
+        {
+            new QuestSnapshot(StarterQuests.MaraClinicFiltersId, QuestStatus.Active, 12, 0, 3, "Pick up a repair kit."),
+            new QuestSnapshot(StarterQuests.GarrickBladeOrderId, QuestStatus.Active, 15, 2, 3, "Return to Garrick."),
+            new QuestSnapshot(StarterQuests.MeriCellarStockId, QuestStatus.Completed, 10, 1, 1, string.Empty),
+            new QuestSnapshot("unknown_side_job", QuestStatus.Active, 4, 0, 0, string.Empty)
+        });
+        ExpectTrue(questLog.Contains("Clinic Filters") && questLog.Contains("[1/3]"),
+            "FormatQuestLog shows starter quest title and first step counter");
+        ExpectTrue(questLog.Contains("Blade for the Watch") && questLog.Contains("[3/3]"),
+            "FormatQuestLog shows final multi-step counter");
+        ExpectTrue(questLog.Contains("unknown_side_job") && questLog.Contains("Ready to complete"),
+            "FormatQuestLog falls back for unknown single-step quests");
+        ExpectFalse(questLog.Contains("Cellar Stock"),
+            "FormatQuestLog omits completed quests");
 
         // Hotbar formatter renders 9 slots; equipped slot is starred.
         var hbEmpty = HudController.FormatHotbar(System.Array.Empty<GameItem>(), -1);
@@ -5155,6 +6929,18 @@ public partial class GameplaySmokeTest : Node
             "FindEquippedHotbarIndex locates the MainHand item by id");
         ExpectEqual(-1, HudController.FindEquippedHotbarIndex(hbInv, new Dictionary<EquipmentSlot, GameItem>()),
             "FindEquippedHotbarIndex returns -1 when nothing is equipped");
+        var hbBindings = new Dictionary<int, string>();
+        HudController.BindHotbarSlot(hbBindings, 2, StarterItems.RationPackId);
+        ExpectEqual(StarterItems.RationPackId,
+            HudController.ResolveHotbarSlotItemId(hbBindings, 2, hbInv),
+            "hotbar binding map resolves slot to bound item id");
+        var hbBoundBar = HudController.FormatHotbar(hbInv, -1, hbBindings);
+        ExpectTrue(hbBoundBar.Contains("Ration"),
+            "FormatHotbar renders bound item in its assigned slot");
+        HudController.BindHotbarSlot(hbBindings, 2, string.Empty);
+        ExpectEqual(string.Empty,
+            HudController.ResolveHotbarSlotItemId(hbBindings, 2, hbInv),
+            "empty hotbar binding clears the assigned slot");
 
         // Shop bubble rebuilds button rows on refresh — one button per visible
         // offer (browse) or per inventory item (sell), plus a Close button.

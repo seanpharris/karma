@@ -22,6 +22,15 @@ public sealed class InterestSnapshotCache
     public int KnownChunkCount => _chunkRevisions.Count;
     public IReadOnlyDictionary<string, int> ChunkRevisions => _chunkRevisions;
 
+    public void Reset()
+    {
+        _chunkRevisions.Clear();
+        LastSnapshot = null;
+        LastAppliedTick = 0;
+        LastVisibleMapRevision = 0;
+        LastApplyResult = new(0, false, 0, 0, 0, 0);
+    }
+
     public InterestSnapshotApplyResult Apply(ClientInterestSnapshot snapshot)
     {
         var visibleChunkKeys = snapshot.MapChunks

@@ -1,0 +1,24 @@
+{
+  "id": "beggar_male_v10",
+  "display_name": "Beggar (variant 10)",
+  "tags": [
+    "medieval",
+    "wild"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male_elderly/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk.png",
+    "legs": "legs/fur/male/walk.png",
+    "torso": "torso/clothes/longsleeve/longsleeves_cuffed/male/walk.png",
+    "hair": "hair/bangslong/adult/walk.png",
+    "weapon": "weapon/blunt/club/club.png",
+    "waist": "torso/waist/belt_belly/male/walk.png",
+    "hat": "hat/headband/thick/adult/walk.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

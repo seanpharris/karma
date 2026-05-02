@@ -7,6 +7,7 @@ using Karma.Core;
 using Karma.Data;
 using Karma.Net;
 using Karma.Player;
+using Karma.UI;
 
 namespace Karma.Tests;
 
@@ -73,7 +74,7 @@ public partial class InGameEventPrototype : Node2D
             OffsetLeft = -456f,
             OffsetTop = 16f,
             OffsetRight = -16f,
-            OffsetBottom = 285f
+            OffsetBottom = 430f
         };
         layer.AddChild(panel);
         var root = new VBoxContainer();
@@ -103,7 +104,12 @@ public partial class InGameEventPrototype : Node2D
         root.AddChild(row3);
         AddButton(row3, "Mount", LoadMount);
         AddButton(row3, "Quest", LoadQuestDialogue);
-        AddButton(row3, "Restart", RestartScenario);
+        AddButton(row3, "Systems", LoadSystemsSampler);
+        var row4 = new HBoxContainer();
+        root.AddChild(row4);
+        AddButton(row4, "Bounty", LoadBountyBoard);
+        AddButton(row4, "Clean", LoadCleanlinessShop);
+        AddButton(row4, "Restart", RestartScenario);
         _objectiveLabel = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
         root.AddChild(_objectiveLabel);
         _logLabel = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
@@ -303,6 +309,53 @@ public partial class InGameEventPrototype : Node2D
         AddLog("Walk to Mara and press E to start dialogue and the clinic filter quest.");
     }
 
+    private void LoadSystemsSampler()
+    {
+        _scenario = "Systems Sampler";
+        ResetLocalPlayer(new Vector2(96f, 128f));
+        CreateServer("ingame-systems-sampler", 45);
+        _state.AddItem(GameState.LocalPlayerId, StarterItems.StimSpike);
+        _state.AddItem(GameState.LocalPlayerId, StarterItems.StimSpike);
+        _state.AddItem(GameState.LocalPlayerId, StarterItems.StimSpike);
+        _state.AddItem(GameState.LocalPlayerId, StarterItems.ContrabandPackage);
+        _state.LocalPlayer.SpendHunger(80);
+        _state.LocalPlayer.SpendCleanliness(80);
+        _state.ApplyFactionReputation(StarterFactions.FreeSettlersId, GameState.LocalPlayerId, 34);
+        AddBoxMarker("systems_status", "Statuses\nHUD strip", new TilePosition(3, 4), new Color(0.38f, 0.32f, 0.56f));
+        AddBoxMarker("systems_phase", "Time Phase\nadvance", new TilePosition(8, 4), new Color(0.3f, 0.42f, 0.5f));
+        ReadyAllPlayers();
+        AddLog("Sampler loads hunger, dirty, contraband rarity, and faction reputation. Press E to use a stimulant.");
+    }
+
+    private void LoadBountyBoard()
+    {
+        _scenario = "Bounty Board";
+        ResetLocalPlayer(new Vector2(96f, 128f));
+        _state.RegisterPlayer("bounty_outlaw_proto", "Board Outlaw");
+        _state.SetPlayerPosition("bounty_outlaw_proto", new TilePosition(5, 4));
+        CreateServer("ingame-bounty-board", 45);
+        _state.LocalPlayer.ApplyKarma(Math.Max(PerkCatalog.WardenThreshold - _state.LocalPlayer.Karma.Score, 0));
+        _server.SeedWorldStructure("prototype_notice_board", "Notice Board", "notice-board", new TilePosition(7, 4));
+        AddPlayerMarker("bounty_outlaw_proto", "Board Outlaw\nissue wanted", new Color(0.85f, 0.25f, 0.18f));
+        AddBoxMarker("prototype_notice_board", "Notice Board\nbounties", new TilePosition(7, 4), new Color(0.55f, 0.42f, 0.18f));
+        ReadyAllPlayers();
+        AddLog("Walk to the outlaw and press E to issue Wanted, then check the board summary.");
+    }
+
+    private void LoadCleanlinessShop()
+    {
+        _scenario = "Cleanliness Shop";
+        ResetLocalPlayer(new Vector2(96f, 128f));
+        CreateServer("ingame-cleanliness-shop", 45);
+        _server.SeedRestroomStructure("prototype_bath_house", new TilePosition(9, 4), "Bath House");
+        _state.LocalPlayer.AddScrip(100);
+        _state.LocalPlayer.SpendCleanliness(80);
+        AddBoxMarker("clean_shop", "Dallen Shop\nDirty pricing", new TilePosition(6, 4), new Color(0.18f, 0.38f, 0.45f));
+        AddBoxMarker("prototype_bath_house", "Bath House\nwash", new TilePosition(9, 4), new Color(0.2f, 0.52f, 0.62f));
+        ReadyAllPlayers();
+        AddLog("Dirty status is active. Press E near the shop to buy at the higher price.");
+    }
+
     private void ResetLocalPlayer(Vector2 worldPosition)
     {
         _player.GlobalPosition = worldPosition;
@@ -350,6 +403,15 @@ public partial class InGameEventPrototype : Node2D
                 break;
             case "Quest + Dialogue":
                 InteractQuestDialogue();
+                break;
+            case "Systems Sampler":
+                InteractSystemsSampler();
+                break;
+            case "Bounty Board":
+                InteractBountyBoard();
+                break;
+            case "Cleanliness Shop":
+                InteractCleanlinessShop();
                 break;
         }
         RefreshOverlay();
@@ -639,21 +701,28 @@ public partial class InGameEventPrototype : Node2D
                     AddLog("Get closer to your posse friend first.");
                     return;
                 }
-                Send(GameState.LocalPlayerId, IntentType.InvitePosse, new Dictionary<string, string> { ["targetId"] = "posse_friend_proto" });
+                Send(GameState.LocalPlayerId, IntentType.InvitePosse, new Dictionary<string, string> { ["targetPlayerId"] = "posse_friend_proto" });
                 _step++;
                 AddLog("Posse invite sent. Press E to accept as the friend.");
                 return;
             case 1:
                 Send("posse_friend_proto", IntentType.AcceptPosse, new Dictionary<string, string>());
                 _step++;
-                AddLog("Friend joined the posse. Press E to send posse chat.");
+                var posseSnapshot = _server.CreateInterestSnapshot(GameState.LocalPlayerId);
+                var posseName = posseSnapshot.Players.FirstOrDefault(p => p.Id == GameState.LocalPlayerId)?.PosseName ?? "your posse";
+                AddLog($"Friend joined {posseName}. Press E to transfer leadership.");
                 return;
             case 2:
+                Send(GameState.LocalPlayerId, IntentType.TransferPosseLeadership, new Dictionary<string, string> { ["targetPlayerId"] = "posse_friend_proto" });
+                _step++;
+                AddLog("Leadership transferred to your friend. Press E to send posse chat.");
+                return;
+            case 3:
                 Send(GameState.LocalPlayerId, IntentType.SendPosseChat, new Dictionary<string, string> { ["text"] = "Prototype posse check-in." });
                 _step++;
                 AddLog("Posse chat recorded. Press E to leave/disband.");
                 return;
-            case 3:
+            case 4:
                 Send("posse_friend_proto", IntentType.LeavePosse, new Dictionary<string, string>());
                 Send(GameState.LocalPlayerId, IntentType.LeavePosse, new Dictionary<string, string>());
                 _step++;
@@ -757,10 +826,125 @@ public partial class InGameEventPrototype : Node2D
                 var entanglementId = _state.Entanglements.All.LastOrDefault()?.Id ?? string.Empty;
                 Send(GameState.LocalPlayerId, IntentType.ExposeEntanglement, new Dictionary<string, string> { ["entanglementId"] = entanglementId });
                 _step++;
-                AddLog("Entanglement exposure recorded.");
+                AddLog("Entanglement exposure recorded. Press E near Dallen to sample the new dialogue tree gossip.");
+                return;
+            case 6:
+                if (ToTile(_player.GlobalPosition).DistanceSquaredTo(new TilePosition(6, 4)) > 9)
+                {
+                    AddLog("Walk closer to Dallen first.");
+                    return;
+                }
+                Send(GameState.LocalPlayerId, IntentType.StartDialogue, new Dictionary<string, string> { ["npcId"] = StarterNpcs.Dallen.Id });
+                Send(GameState.LocalPlayerId, IntentType.SelectDialogueChoice, new Dictionary<string, string>
+                {
+                    ["npcId"] = StarterNpcs.Dallen.Id,
+                    ["choiceId"] = "ask_about_mara"
+                });
+                _step++;
+                AddLog("Dallen dialogue tree advanced into the gossip branch.");
                 return;
             default:
                 AddLog("Quest/dialogue prototype complete.");
+                return;
+        }
+    }
+
+    private void InteractSystemsSampler()
+    {
+        switch (_step)
+        {
+            case 0:
+                Send(GameState.LocalPlayerId, IntentType.UseItem, new Dictionary<string, string> { ["itemId"] = StarterItems.StimSpikeId });
+                Send(GameState.LocalPlayerId, IntentType.UseItem, new Dictionary<string, string> { ["itemId"] = StarterItems.StimSpikeId });
+                Send(GameState.LocalPlayerId, IntentType.UseItem, new Dictionary<string, string> { ["itemId"] = StarterItems.StimSpikeId });
+                _step++;
+                AddLog("Stim Spike used; status strip should show the drug effect. Press E to advance time into withdrawal/phase changes.");
+                return;
+            case 1:
+                var graceTicks = DrugCatalog.TryGet(StarterItems.StimSpikeId, out var stim)
+                    ? stim.WithdrawalGraceTicks
+                    : 1800;
+                _server.AdvanceIdleTicks(graceTicks + 5);
+                _server.AdvanceMatchTime(12);
+                _step++;
+                AddLog("Time advanced: phase, hunger, cleanliness, and withdrawal statuses refresh in the overlay.");
+                return;
+            default:
+                AddLog("Systems sampler complete.");
+                return;
+        }
+    }
+
+    private void InteractBountyBoard()
+    {
+        switch (_step)
+        {
+            case 0:
+                if (!IsLocalNear("bounty_outlaw_proto", 4))
+                {
+                    AddLog("Get closer to the Board Outlaw first.");
+                    return;
+                }
+                Send(GameState.LocalPlayerId, IntentType.IssueWanted, new Dictionary<string, string> { ["targetId"] = "bounty_outlaw_proto" });
+                _step++;
+                AddLog("Wanted issued. Walk to the Notice Board and press E to inspect the bounty board.");
+                return;
+            case 1:
+                if (ToTile(_player.GlobalPosition).DistanceSquaredTo(new TilePosition(7, 4)) > 9)
+                {
+                    AddLog("Walk closer to the Notice Board first.");
+                    return;
+                }
+                Send(GameState.LocalPlayerId, IntentType.Interact, new Dictionary<string, string>
+                {
+                    ["entityId"] = "prototype_notice_board",
+                    ["action"] = "inspect"
+                });
+                _step++;
+                AddLog(HudController.FormatBountyBoard(_server.CreateInterestSnapshot(GameState.LocalPlayerId).Players));
+                return;
+            default:
+                AddLog("Bounty board prototype complete.");
+                return;
+        }
+    }
+
+    private void InteractCleanlinessShop()
+    {
+        switch (_step)
+        {
+            case 0:
+                if (ToTile(_player.GlobalPosition).DistanceSquaredTo(new TilePosition(6, 4)) > 9)
+                {
+                    AddLog("Walk closer to Dallen's shop marker first.");
+                    return;
+                }
+                Send(GameState.LocalPlayerId, IntentType.PurchaseItem, new Dictionary<string, string> { ["offerId"] = StarterShopCatalog.DallenRationPackOfferId });
+                _state.LocalPlayer.SpendCleanliness(100);
+                _step++;
+                AddLog("Dirty purchase used the higher price. You are now Filthy; press E to see shop refusal.");
+                return;
+            case 1:
+                Send(GameState.LocalPlayerId, IntentType.PurchaseItem, new Dictionary<string, string> { ["offerId"] = StarterShopCatalog.DallenRationPackOfferId });
+                _step++;
+                AddLog("Filthy shop refusal recorded. Walk to the Bath House and press E to wash.");
+                return;
+            case 2:
+                if (ToTile(_player.GlobalPosition).DistanceSquaredTo(new TilePosition(9, 4)) > 9)
+                {
+                    AddLog("Walk closer to the Bath House first.");
+                    return;
+                }
+                Send(GameState.LocalPlayerId, IntentType.Interact, new Dictionary<string, string>
+                {
+                    ["entityId"] = "prototype_bath_house",
+                    ["action"] = "use"
+                });
+                _step++;
+                AddLog("Cleanliness restored; shop pricing returns to normal.");
+                return;
+            default:
+                AddLog("Cleanliness shop prototype complete.");
                 return;
         }
     }
@@ -785,7 +969,10 @@ public partial class InGameEventPrototype : Node2D
         _sequenceByPlayer.TryGetValue(playerId, out var previous);
         var next = previous + 1;
         _sequenceByPlayer[playerId] = next;
-        return _server.ProcessIntent(new ServerIntent(playerId, next, type, payload));
+        var result = _server.ProcessIntent(new ServerIntent(playerId, next, type, payload));
+        if (!result.WasAccepted)
+            AddLog($"{type} rejected: {result.RejectionReason}");
+        return result;
     }
 
     private void AddPlayerMarker(string playerId, string label, Color color)
@@ -902,6 +1089,15 @@ public partial class InGameEventPrototype : Node2D
             case "Quest + Dialogue":
                 LoadQuestDialogue();
                 break;
+            case "Systems Sampler":
+                LoadSystemsSampler();
+                break;
+            case "Bounty Board":
+                LoadBountyBoard();
+                break;
+            case "Cleanliness Shop":
+                LoadCleanlinessShop();
+                break;
         }
     }
 
@@ -917,13 +1113,33 @@ public partial class InGameEventPrototype : Node2D
         if (_objectiveLabel is null || _server is null)
             return;
         var snapshot = _server.CreateInterestSnapshot(GameState.LocalPlayerId);
+        var local = snapshot.Players.FirstOrDefault(p => p.Id == GameState.LocalPlayerId);
         var summary = snapshot.MatchSummary is null
             ? "Match summary: not finished yet"
             : "Summary: " + string.Join(", ", snapshot.MatchSummary.Players.Select(p => $"{p.DisplayName} {p.FinalKarma}"));
+        var statuses = local is null
+            ? "Statuses: --"
+            : "Statuses: " + string.Join(", ", HudController.FormatStatusStrip(local.StatusEffects).Select(entry => entry.Status));
+        if (statuses == "Statuses: ")
+            statuses = "Statuses: none";
+        var posse = local is null || string.IsNullOrWhiteSpace(local.PosseId)
+            ? "Posse: none"
+            : HudController.FormatPossePanel(snapshot.Players, GameState.LocalPlayerId).Split('\n').FirstOrDefault() ?? "Posse: active";
+        var bountyBoard = HudController.FormatBountyBoard(snapshot.Players).Split('\n').FirstOrDefault() ?? "Bounty board: none active";
+        var factions = HudController.FormatFactionPanel(snapshot.Factions, GameState.LocalPlayerId).Split('\n').Skip(1).FirstOrDefault() ?? "Factions: --";
+        var questLog = HudController.FormatQuestLog(snapshot.Quests).Split('\n').FirstOrDefault() ?? "Quest log: --";
+        var rarityLine = "Inventory rarity: " + string.Join(", ",
+            _state.Inventory
+                .GroupBy(item => item.Rarity)
+                .OrderBy(group => group.Key)
+                .Select(group => $"{group.Key} x{group.Count()}"));
+        if (rarityLine == "Inventory rarity: ")
+            rarityLine = "Inventory rarity: empty";
         _objectiveLabel.Text =
             $"Scenario: {_scenario}\n" +
             "Controls: WASD move, Shift sprint, mouse wheel zoom, E interact\n" +
-            $"Match: {_server.Match.Status} | Events: {_server.EventLog.Count}\n" +
+            $"Match: {_server.Match.Status} | Phase: {snapshot.Match.Phase} | Events: {_server.EventLog.Count}\n" +
+            $"{statuses}\n{posse}\n{bountyBoard}\n{factions}\n{questLog}\n{rarityLine}\n" +
             summary;
         var recentEvents = string.Join("\n", _server.EventLog.TakeLast(4).Select(e => $"- {e.EventId}: {e.Description}"));
         _logLabel.Text = string.Join("\n", _log) + "\n\nRecent server events:\n" + recentEvents;

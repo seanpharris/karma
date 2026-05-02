@@ -13,7 +13,7 @@ public sealed record WorldConfig(
     {
         var baseConfig = FromServerConfig(
             "local-prototype",
-            new WorldSeed(8675309, "Boarding School Prototype", "boarding_school"),
+            new WorldSeed(8675309, "Medieval Prototype", "medieval"),
             ServerConfig.Prototype4Player);
         return baseConfig with
         {

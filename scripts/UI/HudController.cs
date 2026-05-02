@@ -13,6 +13,16 @@ namespace Karma.UI;
 public partial class HudController : CanvasLayer
 {
     public const string MainMenuScenePath = "res://scenes/MainMenu.tscn";
+    public const string FirstRunTutorialPath = "user://first_run.json";
+    public const string MedievalPanelFramePath = "res://assets/art/third_party/kenney_fantasy_ui_borders/preview/panel_frame_000.png";
+    public sealed record StatusStripEntry(string Status, string Glyph, Color Color);
+    public sealed record UiArtPreviewAsset(string Label, string TexturePath, Vector2 PreviewSize);
+    private static readonly UiArtPreviewAsset[] MedievalUiArtPreviewAssets =
+    {
+        new("Panel", MedievalPanelFramePath, new Vector2(64, 64)),
+        new("Border", "res://assets/art/third_party/kenney_fantasy_ui_borders/preview/panel_border_020.png", new Vector2(64, 64)),
+        new("Divider", "res://assets/art/third_party/kenney_fantasy_ui_borders/preview/divider_004.png", new Vector2(128, 48))
+    };
     private GameState _gameState = null!;
     private Label _karmaLabel = new();
     private Label _eventLabel = new();
@@ -23,6 +33,24 @@ public partial class HudController : CanvasLayer
     private Label _staminaLabel = new();
     private Label _healthLabel = new();
     private ProgressBar _healthBar = new();
+    private HBoxContainer _statusStrip = new();
+    private Label _ammoLabel = new();
+    private Label _combatStaminaLabel = new();
+    private Label _hungerLabel = new();
+    private HSlider _pauseMasterVolumeSlider;
+    private HSlider _pauseMusicVolumeSlider;
+    private HSlider _pauseEffectsVolumeSlider;
+    private HSlider _pauseAmbientVolumeSlider;
+    private Label _pauseMasterVolumeLabel;
+    private Label _pauseMusicVolumeLabel;
+    private Label _pauseEffectsVolumeLabel;
+    private Label _pauseAmbientVolumeLabel;
+    private ColorRect _karmaBreakFlash = new();
+    private long _lastKarmaBreakFlashTick = -1;
+    private ColorRect _contrabandFlash = new();
+    private long _lastContrabandFlashTick = -1;
+    private long _lastVoiceBarkTick = -1;
+    private AudioStreamPlayer _eventStingerPlayer;
     private Label _inventoryLabel = new();
     private Label _leaderboardLabel = new();
     private Label _perksLabel = new();
@@ -43,8 +71,11 @@ public partial class HudController : CanvasLayer
     private int _lastSnapshotCount;
     private PanelContainer _promptPanel = new();
     private Label _promptLabel = new();
+    private PanelContainer _npcTooltipPanel = new();
+    private Label _npcTooltipLabel = new();
     private PanelContainer _inventoryPanel = new();
     private Label _inventoryOverlayLabel = new();
+    private VBoxContainer _inventoryRowsContainer = new();
     private PanelContainer _shopPanel = new();
     private VBoxContainer _shopContainer = new();
     private Label _shopHeaderLabel = new();
@@ -59,12 +90,25 @@ public partial class HudController : CanvasLayer
     private NpcDialogueSnapshot _lastDialogueSnapshot;
     private PanelContainer _hotbarPanel = new();
     private Label _hotbarLabel = new();
+    private HBoxContainer _hotbarSlotsContainer = new();
+    private readonly Dictionary<int, string> _hotbarBindings = new();
     private PanelContainer _minimapPanel = new();
     private Label _minimapLabel = new();
     private PanelContainer _bountyPanel = new();
     private Label _bountyLabel = new();
+    private PanelContainer _bountyBoardPanel = new();
+    private Label _bountyBoardLabel = new();
+    private PanelContainer _factionPanel = new();
+    private Label _factionPanelLabel = new();
+    private PanelContainer _questLogPanel = new();
+    private Label _questLogLabel = new();
     private PanelContainer _matchSummaryPanel = new();
     private Label _matchSummaryLabel = new();
+    private PanelContainer _combatLogPanel = new();
+    private ScrollContainer _combatLogScroll = new();
+    private Label _combatLogLabel = new();
+    private PanelContainer _mountBagPanel = new();
+    private Label _mountBagLabel = new();
     private PanelContainer _developerPanel = new();
     private Label _developerOverlayLabel = new();
     private int _developerPageIndex;
@@ -78,27 +122,38 @@ public partial class HudController : CanvasLayer
     private Button _backToMenuButton = new();
     private Button _quitButton = new();
     private Button _closeEscapeOptionsButton = new();
+    private CheckButton _carryStateToggle = new();
     private Control _appearancePanel = new();
     private Label _appearanceSummaryLabel = new();
     private Label _appearanceSkinLabel = new();
     private Label _appearanceHairLabel = new();
     private Label _appearanceOutfitLabel = new();
+    private Label _appearancePantsLabel = new();
+    private Label _appearanceShirtLabel = new();
     private Label _appearanceToolLabel = new();
     private Label _appearancePreviewLabel = new();
     private Button _cycleSkinButton = new();
     private Button _cycleHairButton = new();
     private Button _cycleOutfitButton = new();
+    private Button _cyclePantsButton = new();
+    private Button _cycleShirtButton = new();
     private Button _closeAppearanceButton = new();
     private Label _posseLabel = new();
     private PanelContainer _possePanel = new();
+    private PanelContainer _tutorialOverlay = new();
+    private Label _tutorialLabel = new();
+    private string _firstRunTutorialMarkerPath = FirstRunTutorialPath;
     private string _lastCombatText = "Combat: none";
     private IReadOnlyList<string> _lastStatusEffects = System.Array.Empty<string>();
 
     public override void _Ready()
     {
         BuildUi();
+        ShowFirstRunTutorial();
 
         _gameState = GetNode<GameState>("/root/GameState");
+        _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
+        ApplyUiPalette(ResolveActiveThemeId());
         _gameState.KarmaChanged += OnKarmaChanged;
         _gameState.KarmaEvent += OnKarmaEvent;
         _gameState.InventoryChanged += OnInventoryChanged;
@@ -117,12 +172,15 @@ public partial class HudController : CanvasLayer
         _cycleSkinButton.Pressed += () => CycleAppearanceLayer("skin");
         _cycleHairButton.Pressed += () => CycleAppearanceLayer("hair");
         _cycleOutfitButton.Pressed += () => CycleAppearanceLayer("outfit");
+        _cyclePantsButton.Pressed += () => CycleAppearanceLayer("pants");
+        _cycleShirtButton.Pressed += () => CycleAppearanceLayer("shirt");
         _closeAppearanceButton.Pressed += HideAppearancePanel;
         _backToMenuButton.Pressed += ReturnToMainMenu;
         _quitButton.Pressed += () => GetTree().Quit();
         _closeEscapeOptionsButton.Pressed += HideEscapeOptions;
+        _carryStateToggle.Toggled += OnCarryStateToggleChanged;
+        _carryStateToggle.ButtonPressed = _gameState.CarryStateIntoNextRound;
         _chatInput.TextSubmitted += OnChatInputSubmitted;
-        _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         if (_serverSession is not null)
         {
             _serverSession.LocalSnapshotChanged += OnLocalSnapshotChanged;
@@ -199,6 +257,14 @@ public partial class HudController : CanvasLayer
             return;
         }
 
+        if (_tutorialOverlay.Visible &&
+            (key.Keycode == Key.Enter || key.Keycode == Key.KpEnter || key.Keycode == Key.Escape))
+        {
+            DismissFirstRunTutorial();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
         if (_chatInputPanel.Visible)
         {
             if (key.Keycode == Key.Escape)
@@ -249,6 +315,20 @@ public partial class HudController : CanvasLayer
         {
             TogglePossePanel();
             GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        if (key.Keycode == Key.J)
+        {
+            ToggleQuestLogPanel();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        if (key.Keycode == Key.L)
+        {
+            ToggleCombatLogPanel();
+            GetViewport().SetInputAsHandled();
         }
     }
 
@@ -261,6 +341,38 @@ public partial class HudController : CanvasLayer
     public void HidePrompt()
     {
         _promptPanel.Visible = false;
+    }
+
+    public void ShowFirstRunTutorial(string markerPath = FirstRunTutorialPath)
+    {
+        _firstRunTutorialMarkerPath = string.IsNullOrWhiteSpace(markerPath) ? FirstRunTutorialPath : markerPath;
+        _tutorialLabel.Text = FormatFirstRunTutorialText();
+        _tutorialOverlay.Visible = !HasSeenFirstRunTutorial(_firstRunTutorialMarkerPath);
+    }
+
+    public void DismissFirstRunTutorial()
+    {
+        _tutorialOverlay.Visible = false;
+        MarkFirstRunTutorialSeen(_firstRunTutorialMarkerPath);
+    }
+
+    public static string FormatFirstRunTutorialText()
+    {
+        return "Welcome to Karma. WASD/arrows to move, E to interact, T to chat, J for quest log, Esc for menu.";
+    }
+
+    public static bool HasSeenFirstRunTutorial(string markerPath = FirstRunTutorialPath)
+    {
+        return !string.IsNullOrWhiteSpace(markerPath) && FileAccess.FileExists(markerPath);
+    }
+
+    public static bool MarkFirstRunTutorialSeen(string markerPath = FirstRunTutorialPath)
+    {
+        if (string.IsNullOrWhiteSpace(markerPath)) return false;
+        using var marker = FileAccess.Open(markerPath, FileAccess.ModeFlags.Write);
+        if (marker is null) return false;
+        marker.StoreString("{\"seen\":true}");
+        return true;
     }
 
     public void ToggleInventoryOverlay()
@@ -286,9 +398,32 @@ public partial class HudController : CanvasLayer
     public string ShopVendorNpcId => _shopVendorNpcId;
     public bool ShopSellMode => _shopSellMode;
 
+    public void OpenMountBag(MountSnapshot mount)
+    {
+        _mountBagLabel.Text = FormatMountBag(mount);
+        _mountBagPanel.Visible = true;
+    }
+
+    public void CloseMountBag()
+    {
+        _mountBagPanel.Visible = false;
+    }
+
+    public void OpenBountyBoard()
+    {
+        _bountyBoardLabel.Text = FormatBountyBoard(_lastSnapshot?.Players ?? System.Array.Empty<PlayerSnapshot>());
+        _bountyBoardPanel.Visible = true;
+    }
+
+    public void CloseBountyBoard()
+    {
+        _bountyBoardPanel.Visible = false;
+    }
+
     private void RefreshShopOverlay()
     {
         if (!_shopPanel.Visible || _gameState is null) return;
+        var activeThemeId = ResolveActiveThemeId();
         foreach (var child in _shopRowsContainer.GetChildren())
             child.QueueFree();
 
@@ -302,7 +437,14 @@ public partial class HudController : CanvasLayer
             {
                 var capturedIndex = i;
                 var item = inventory[i];
-                var button = new Button { Text = $"{item.Name}" };
+                var button = new Button { CustomMinimumSize = new Vector2(240, 38) };
+                AddItemButtonContent(
+                    button,
+                    activeThemeId,
+                    item.Id,
+                    item.Name,
+                    new Vector2(32f, 32f),
+                    InventoryTintForRarity(item.Rarity));
                 button.Pressed += () => SellInventoryRow(capturedIndex);
                 _shopRowsContainer.AddChild(button);
             }
@@ -318,10 +460,29 @@ public partial class HudController : CanvasLayer
             {
                 var capturedOfferId = offer.OfferId;
                 var canAfford = _gameState.LocalScrip >= offer.Price;
+                var factionReputation = GetFactionReputation(
+                    _lastSnapshot?.Factions,
+                    _lastSnapshot?.PlayerId ?? string.Empty,
+                    offer.RequiredFactionId);
+                var factionLocked = IsShopOfferFactionLocked(offer, factionReputation);
                 var rep = offer.MinReputation > 0 ? $" [req {offer.MinReputation}]" : "";
-                var label = $"{offer.ItemName}  {offer.Price} {offer.Currency}{rep}";
-                if (!canAfford) label += " — insufficient";
-                var button = new Button { Text = label, Disabled = !canAfford };
+                var lockPrefix = factionLocked ? "🔒 " : string.Empty;
+                var label = $"{lockPrefix}{offer.ItemName}  {offer.Price} {offer.Currency}{rep}";
+                if (!canAfford && !factionLocked) label += " — insufficient";
+                var button = new Button { Disabled = !canAfford && !factionLocked, CustomMinimumSize = new Vector2(260, 38) };
+                var pricingTooltip = FormatShopPricingTooltip(offer);
+                if (factionLocked)
+                {
+                    button.TooltipText = FormatFactionStoreDenial(
+                        offer.RequiredFactionId,
+                        offer.MinReputation,
+                        factionReputation) + (string.IsNullOrWhiteSpace(pricingTooltip) ? string.Empty : $"\n{pricingTooltip}");
+                }
+                else
+                {
+                    button.TooltipText = pricingTooltip;
+                }
+                AddItemButtonContent(button, activeThemeId, offer.ItemId, label, new Vector2(32f, 32f));
                 button.Pressed += () => BuyShopOffer(capturedOfferId);
                 _shopRowsContainer.AddChild(button);
             }
@@ -454,6 +615,71 @@ public partial class HudController : CanvasLayer
         SetPossePanelVisible(!_possePanel.Visible);
     }
 
+    public void ToggleQuestLogPanel()
+    {
+        SetQuestLogPanelVisible(!_questLogPanel.Visible);
+    }
+
+    public void ToggleCombatLogPanel()
+    {
+        SetCombatLogPanelVisible(!_combatLogPanel.Visible);
+    }
+
+    public void SetCombatLogPanelVisible(bool visible)
+    {
+        _combatLogPanel.Visible = visible;
+        if (visible)
+        {
+            RefreshCombatLogPanel(_lastSnapshot?.ServerEvents ?? System.Array.Empty<ServerEvent>());
+        }
+    }
+
+    public void SetQuestLogPanelVisible(bool visible)
+    {
+        _questLogPanel.Visible = visible;
+        if (visible)
+        {
+            RefreshQuestLogPanel();
+        }
+    }
+
+    private void RefreshQuestLogPanel()
+    {
+        _questLogLabel.Text = FormatQuestLog(_lastSnapshot?.Quests ?? System.Array.Empty<QuestSnapshot>());
+    }
+
+    private void RefreshCombatLogPanel(IReadOnlyList<ServerEvent> serverEvents)
+    {
+        _combatLogLabel.Text = FormatCombatLog(serverEvents);
+        CallDeferred(nameof(ScrollCombatLogToBottom));
+    }
+
+    private void ScrollCombatLogToBottom()
+    {
+        if (_combatLogScroll is null) return;
+        _combatLogScroll.ScrollVertical = (int)_combatLogScroll.GetVScrollBar().MaxValue;
+    }
+
+    private void RefreshStatusStrip(IReadOnlyList<string> statusEffects)
+    {
+        foreach (var child in _statusStrip.GetChildren())
+            child.QueueFree();
+
+        foreach (var entry in FormatStatusStrip(statusEffects, UiPaletteRegistry.Get(ResolveActiveThemeId())))
+        {
+            var label = new Label
+            {
+                Text = entry.Glyph,
+                TooltipText = entry.Status,
+                CustomMinimumSize = new Vector2(22, 22),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            label.AddThemeColorOverride("font_color", entry.Color);
+            _statusStrip.AddChild(label);
+        }
+    }
+
     public void SetPossePanelVisible(bool visible)
     {
         _possePanel.Visible = visible;
@@ -472,6 +698,27 @@ public partial class HudController : CanvasLayer
         }
 
         _posseLabel.Text = FormatPossePanel(_lastSnapshot.Players, _lastSnapshot.PlayerId);
+    }
+
+    private void RefreshFactionPanel(ClientInterestSnapshot snapshot)
+    {
+        _factionPanelLabel.Text = FormatFactionPanel(snapshot?.Factions, snapshot?.PlayerId ?? string.Empty);
+    }
+
+    private void RefreshNpcTooltip(ClientInterestSnapshot snapshot)
+    {
+        var text = FormatNpcApproachTooltip(snapshot, 2);
+        _npcTooltipLabel.Text = text;
+        _npcTooltipPanel.Visible = !string.IsNullOrWhiteSpace(text);
+    }
+
+    private void RefreshDeathPileOwnershipPrompt(ClientInterestSnapshot snapshot)
+    {
+        var prompt = FormatDeathPileOwnershipPrompt(snapshot);
+        if (!string.IsNullOrWhiteSpace(prompt))
+        {
+            ShowPrompt(prompt);
+        }
     }
 
     public void ShowStamina(string staminaText)
@@ -558,6 +805,11 @@ public partial class HudController : CanvasLayer
         return ((index % pageCount) + pageCount) % pageCount;
     }
 
+    public static IReadOnlyList<UiArtPreviewAsset> GetMedievalUiArtPreviewAssets()
+    {
+        return MedievalUiArtPreviewAssets;
+    }
+
     public void ToggleEscapeMenu()
     {
         SetEscapeMenuVisible(!_escapeMenuPanel.Visible);
@@ -580,8 +832,104 @@ public partial class HudController : CanvasLayer
     private void ShowEscapeOptions()
     {
         HideAppearancePanel();
+        LoadPauseAudioSettings();
+        ApplyPauseAudioSettings();
+        if (_gameState is not null && _carryStateToggle is not null)
+        {
+            _carryStateToggle.ButtonPressed = _gameState.CarryStateIntoNextRound;
+        }
         _escapeOptionsPanel.Visible = true;
-        _escapeMenuStatusLabel.Text = "Options are live-menu placeholders; gameplay keeps running.";
+        _escapeMenuStatusLabel.Text = "Audio sliders save to options.cfg and apply live; gameplay keeps running.";
+    }
+
+    private void OnCarryStateToggleChanged(bool enabled)
+    {
+        _gameState?.SetCarryStateIntoNextRound(enabled);
+        _escapeMenuStatusLabel.Text = enabled
+            ? "Next round will carry karma, relationships, and faction reputation."
+            : "Next round will start with fresh karma, relationships, and faction reputation.";
+    }
+
+    private void BuildPauseVolumeRow(VBoxContainer parent, string title, out HSlider slider, out Label valueLabel)
+    {
+        var row = new HBoxContainer { Name = $"{title}VolumeRow" };
+        row.AddThemeConstantOverride("separation", 8);
+        var titleLabel = new Label { Text = $"{title} volume", CustomMinimumSize = new Vector2(140, 0) };
+        slider = new HSlider
+        {
+            Name = $"{title}VolumeSlider",
+            MinValue = 0,
+            MaxValue = 100,
+            Step = 1,
+            Value = 80,
+            CustomMinimumSize = new Vector2(220, 0)
+        };
+        valueLabel = new Label { Text = "80%", CustomMinimumSize = new Vector2(56, 0), HorizontalAlignment = HorizontalAlignment.Right };
+        row.AddChild(titleLabel);
+        row.AddChild(slider);
+        row.AddChild(valueLabel);
+        parent.AddChild(row);
+        slider.ValueChanged += _ =>
+        {
+            RefreshPauseVolumeLabels();
+            ApplyPauseAudioSettings();
+            SavePauseAudioSettings();
+        };
+    }
+
+    private void RefreshPauseVolumeLabels()
+    {
+        if (_pauseMasterVolumeLabel is null) return;
+        _pauseMasterVolumeLabel.Text = $"{Math.Round(_pauseMasterVolumeSlider.Value)}%";
+        _pauseMusicVolumeLabel.Text = $"{Math.Round(_pauseMusicVolumeSlider.Value)}%";
+        _pauseEffectsVolumeLabel.Text = $"{Math.Round(_pauseEffectsVolumeSlider.Value)}%";
+        _pauseAmbientVolumeLabel.Text = $"{Math.Round(_pauseAmbientVolumeSlider.Value)}%";
+    }
+
+    private void LoadPauseAudioSettings()
+    {
+        if (_pauseMasterVolumeSlider is null) return;
+        Karma.Audio.AudioSettings.LoadFromDisk(MainMenuController.OptionsPath);
+        _pauseMasterVolumeSlider.Value = Karma.Audio.AudioSettings.MasterVolume;
+        _pauseMusicVolumeSlider.Value = Karma.Audio.AudioSettings.MusicVolume;
+        _pauseEffectsVolumeSlider.Value = Karma.Audio.AudioSettings.SfxVolume;
+        _pauseAmbientVolumeSlider.Value = Karma.Audio.AudioSettings.AmbientVolume;
+        RefreshPauseVolumeLabels();
+    }
+
+    private void SavePauseAudioSettings()
+    {
+        if (_pauseMasterVolumeSlider is null) return;
+        SyncPauseSlidersToAudioSettings();
+        Karma.Audio.AudioSettings.SaveToDisk(MainMenuController.OptionsPath);
+    }
+
+    private void ApplyPauseAudioSettings()
+    {
+        if (_pauseMasterVolumeSlider is null) return;
+        SyncPauseSlidersToAudioSettings();
+        Karma.Audio.AudioSettings.EnsureBusesExist();
+        Karma.Audio.AudioSettings.ApplyToAudioServer();
+
+        // PrototypeMusicPlayer sits on the Music bus, so AudioSettings owns
+        // the live slider gain for every gameplay music source.
+    }
+
+    private void SyncPauseSlidersToAudioSettings()
+    {
+        Karma.Audio.AudioSettings.MasterVolume = _pauseMasterVolumeSlider.Value;
+        Karma.Audio.AudioSettings.MusicVolume = _pauseMusicVolumeSlider.Value;
+        Karma.Audio.AudioSettings.SfxVolume = _pauseEffectsVolumeSlider.Value;
+        Karma.Audio.AudioSettings.AmbientVolume = _pauseAmbientVolumeSlider.Value;
+    }
+
+    public static float PercentToDb(double percent) => Karma.Audio.AudioSettings.PercentToDb(percent);
+
+    public static float LinearToDb(double linear)
+    {
+        var clamped = Math.Clamp(linear, 0.0, 1.0);
+        if (clamped <= 0.001) return -80f;
+        return (float)(20.0 * Math.Log10(clamped));
     }
 
     private void HideEscapeOptions()
@@ -637,12 +985,21 @@ public partial class HudController : CanvasLayer
         _appearanceSkinLabel.Text = FormatAppearanceDetailLine("Skin", appearance.SkinLayerId);
         _appearanceHairLabel.Text = FormatAppearanceDetailLine("Hair", appearance.HairLayerId);
         _appearanceOutfitLabel.Text = FormatAppearanceDetailLine("Outfit", appearance.OutfitLayerId);
+        _appearancePantsLabel.Text = FormatAppearanceDetailLine("Pants", appearance.PantsLayerId);
+        _appearanceShirtLabel.Text = FormatAppearanceDetailLine("Shirt", appearance.ShirtLayerId);
         _appearanceToolLabel.Text = FormatAppearanceDetailLine("Held tool", appearance.HeldToolLayerId);
         _appearancePreviewLabel.Text = "Preview: live on your character; thumbnails will plug into this panel as variants grow.";
     }
 
     private void ReturnToMainMenu()
     {
+        // Wipe per-match state on the GameState autoload so the next
+        // match the player starts begins fresh, not inheriting this
+        // round's scrip / inventory / quests / karma.
+        var gameState = GetNodeOrNull<GameState>("/root/GameState");
+        gameState?.ResetForNewMatch();
+        var serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
+        serverSession?.RestartForNewMatch();
         GetTree().ChangeSceneToFile(MainMenuScenePath);
     }
 
@@ -754,6 +1111,96 @@ public partial class HudController : CanvasLayer
             ShowPercentage = false
         };
         root.AddChild(_healthBar);
+
+        _statusStrip = new HBoxContainer
+        {
+            Name = "StatusStrip",
+            OffsetLeft = 526,
+            OffsetTop = 68,
+            OffsetRight = 820,
+            OffsetBottom = 96
+        };
+        root.AddChild(_statusStrip);
+
+        _ammoLabel = new Label
+        {
+            OffsetLeft = 300,
+            OffsetTop = 92,
+            OffsetRight = 520,
+            OffsetBottom = 114,
+            Text = string.Empty,
+            Visible = false
+        };
+        root.AddChild(_ammoLabel);
+
+        _combatStaminaLabel = new Label
+        {
+            OffsetLeft = 300,
+            OffsetTop = 116,
+            OffsetRight = 520,
+            OffsetBottom = 138,
+            Text = string.Empty,
+            Visible = false
+        };
+        root.AddChild(_combatStaminaLabel);
+
+        _hungerLabel = new Label
+        {
+            OffsetLeft = 300,
+            OffsetTop = 140,
+            OffsetRight = 520,
+            OffsetBottom = 162,
+            Text = string.Empty,
+            Visible = false
+        };
+        root.AddChild(_hungerLabel);
+
+        _karmaBreakFlash = new ColorRect
+        {
+            Name = "KarmaBreakFlash",
+            Color = new Color(1f, 1f, 1f, 0f),
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+            AnchorRight = 1f,
+            AnchorBottom = 1f
+        };
+        root.AddChild(_karmaBreakFlash);
+
+        _contrabandFlash = new ColorRect
+        {
+            Name = "ContrabandFlash",
+            Color = new Color(1f, 0.15f, 0.15f, 0f),
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+            AnchorRight = 1f,
+            AnchorBottom = 1f
+        };
+        root.AddChild(_contrabandFlash);
+
+        _eventStingerPlayer = new AudioStreamPlayer
+        {
+            Name = "EventStingerPlayer",
+            Bus = "Master"
+        };
+        root.AddChild(_eventStingerPlayer);
+
+        _npcTooltipPanel = new PanelContainer
+        {
+            Name = "NpcTooltipPanel",
+            OffsetLeft = 420,
+            OffsetTop = 16,
+            OffsetRight = 860,
+            OffsetBottom = 52,
+            Visible = false
+        };
+        root.AddChild(_npcTooltipPanel);
+
+        _npcTooltipLabel = new Label
+        {
+            Name = "NpcTooltipLabel",
+            Text = string.Empty,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        _npcTooltipPanel.AddChild(_npcTooltipLabel);
 
         _inventoryLabel = new Label
         {
@@ -932,12 +1379,18 @@ public partial class HudController : CanvasLayer
         };
         root.AddChild(_inventoryPanel);
 
+        var inventoryContent = new VBoxContainer();
+        _inventoryPanel.AddChild(inventoryContent);
+
         _inventoryOverlayLabel = new Label
         {
             AutowrapMode = TextServer.AutowrapMode.WordSmart,
             Text = "Inventory"
         };
-        _inventoryPanel.AddChild(_inventoryOverlayLabel);
+        inventoryContent.AddChild(_inventoryOverlayLabel);
+
+        _inventoryRowsContainer = new VBoxContainer();
+        inventoryContent.AddChild(_inventoryRowsContainer);
 
         _shopPanel = new PanelContainer
         {
@@ -994,11 +1447,17 @@ public partial class HudController : CanvasLayer
         };
         root.AddChild(_hotbarPanel);
 
+        var hotbarContent = new VBoxContainer();
+        _hotbarPanel.AddChild(hotbarContent);
+
         _hotbarLabel = new Label
         {
             Text = FormatHotbar(System.Array.Empty<GameItem>(), -1)
         };
-        _hotbarPanel.AddChild(_hotbarLabel);
+        hotbarContent.AddChild(_hotbarLabel);
+
+        _hotbarSlotsContainer = new HBoxContainer();
+        hotbarContent.AddChild(_hotbarSlotsContainer);
 
         _minimapPanel = new PanelContainer
         {
@@ -1031,8 +1490,72 @@ public partial class HudController : CanvasLayer
         };
         _bountyPanel.AddChild(_bountyLabel);
 
+        _bountyBoardPanel = new PanelContainer
+        {
+            Name = "BountyBoardPanel",
+            OffsetLeft = 360,
+            OffsetTop = 180,
+            OffsetRight = 860,
+            OffsetBottom = 420,
+            Visible = false
+        };
+        root.AddChild(_bountyBoardPanel);
+
+        _bountyBoardLabel = new Label
+        {
+            Name = "BountyBoardLabel",
+            Text = "Bounty board: none active",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart
+        };
+        _bountyBoardPanel.AddChild(_bountyBoardLabel);
+
+        _factionPanel = new PanelContainer
+        {
+            Name = "FactionPanel",
+            OffsetLeft = 1100,
+            OffsetTop = 376,
+            OffsetRight = 1280,
+            OffsetBottom = 520
+        };
+        root.AddChild(_factionPanel);
+
+        _factionPanelLabel = new Label
+        {
+            Name = "FactionPanelLabel",
+            Text = "Factions: --",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart
+        };
+        _factionPanel.AddChild(_factionPanelLabel);
+
+        _questLogPanel = new PanelContainer
+        {
+            Name = "QuestLogPanel",
+            OffsetLeft = 530,
+            OffsetTop = 184,
+            OffsetRight = 900,
+            OffsetBottom = 356,
+            Visible = false
+        };
+        root.AddChild(_questLogPanel);
+
+        var questLogMargin = new MarginContainer { Name = "QuestLogPanelMargin" };
+        questLogMargin.AddThemeConstantOverride("margin_left", 12);
+        questLogMargin.AddThemeConstantOverride("margin_top", 8);
+        questLogMargin.AddThemeConstantOverride("margin_right", 12);
+        questLogMargin.AddThemeConstantOverride("margin_bottom", 8);
+        _questLogPanel.AddChild(questLogMargin);
+
+        _questLogLabel = new Label
+        {
+            Name = "QuestLogPanelLabel",
+            Text = "Quest log: no active quests",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart
+        };
+        questLogMargin.AddChild(_questLogLabel);
+
         _matchSummaryPanel = new PanelContainer
         {
+            Name = "MatchSummaryPanel",
             OffsetLeft = 200,
             OffsetTop = 220,
             OffsetRight = 1080,
@@ -1041,16 +1564,358 @@ public partial class HudController : CanvasLayer
         };
         root.AddChild(_matchSummaryPanel);
 
+        var matchSummaryContent = new VBoxContainer
+        {
+            Name = "MatchSummaryContent"
+        };
+        matchSummaryContent.AddThemeConstantOverride("separation", 8);
+        _matchSummaryPanel.AddChild(matchSummaryContent);
+
         _matchSummaryLabel = new Label
         {
+            Name = "MatchSummaryLabel",
             Text = "Match in progress.",
-            AutowrapMode = TextServer.AutowrapMode.WordSmart
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            SizeFlagsVertical = Control.SizeFlags.ExpandFill
         };
-        _matchSummaryPanel.AddChild(_matchSummaryLabel);
+        matchSummaryContent.AddChild(_matchSummaryLabel);
 
+        var returnToMenuButton = new Button
+        {
+            Name = "ReturnToMainMenuButton",
+            Text = "Return to Main Menu",
+            CustomMinimumSize = new Vector2(220, 34)
+        };
+        returnToMenuButton.Pressed += ReturnToMainMenu;
+        matchSummaryContent.AddChild(returnToMenuButton);
+
+        BuildCombatLogPanel(root);
+        BuildMountBagPanel(root);
         BuildPossePanel(root);
         BuildDeveloperOverlay(root);
         BuildEscapeMenu(root);
+        BuildFirstRunTutorialOverlay(root);
+    }
+
+    private void BuildCombatLogPanel(Control root)
+    {
+        _combatLogPanel = new PanelContainer
+        {
+            Name = "CombatLogPanel",
+            OffsetLeft = 700,
+            OffsetTop = 420,
+            OffsetRight = 1264,
+            OffsetBottom = 704,
+            Visible = false
+        };
+        root.AddChild(_combatLogPanel);
+
+        _combatLogScroll = new ScrollContainer
+        {
+            Name = "CombatLogScroll",
+            HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled,
+            VerticalScrollMode = ScrollContainer.ScrollMode.Auto
+        };
+        _combatLogPanel.AddChild(_combatLogScroll);
+
+        _combatLogLabel = new Label
+        {
+            Name = "CombatLogLabel",
+            Text = "Combat log: quiet",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart
+        };
+        _combatLogScroll.AddChild(_combatLogLabel);
+    }
+
+    private void BuildMountBagPanel(Control root)
+    {
+        _mountBagPanel = new PanelContainer
+        {
+            Name = "MountBagPanel",
+            OffsetLeft = 760,
+            OffsetTop = 200,
+            OffsetRight = 1060,
+            OffsetBottom = 380,
+            Visible = false
+        };
+        root.AddChild(_mountBagPanel);
+
+        _mountBagLabel = new Label
+        {
+            Name = "MountBagLabel",
+            Text = "Mount bag: empty",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart
+        };
+        _mountBagPanel.AddChild(_mountBagLabel);
+    }
+
+    private string ResolveActiveThemeId()
+    {
+        return string.IsNullOrWhiteSpace(_serverSession?.ActiveThemeId)
+            ? UiPaletteRegistry.MedievalThemeId
+            : _serverSession.ActiveThemeId;
+    }
+
+    private void ApplyUiPalette(string themeId)
+    {
+        var root = GetNodeOrNull<Control>("HudRoot");
+        if (root is null) return;
+        ApplyUiPalette(root, themeId);
+    }
+
+    public static void ApplyUiPalette(Control root, string themeId)
+    {
+        if (root is null) return;
+        ApplyUiPaletteRecursive(root, UiPaletteRegistry.Get(themeId), themeId);
+    }
+
+    public static void ApplyUiPalette(Control root, UiPalette palette)
+    {
+        if (root is null || palette is null) return;
+        ApplyUiPaletteRecursive(root, palette, string.Empty);
+    }
+
+    private static void ApplyUiPaletteRecursive(Control control, UiPalette palette, string themeId)
+    {
+        switch (control)
+        {
+            case PanelContainer panel:
+                panel.AddThemeStyleboxOverride("panel", CreatePanelStyle(palette, themeId));
+                break;
+            case Button button:
+                ApplyButtonPalette(button, palette);
+                break;
+            case Label label:
+                label.AddThemeColorOverride("font_color", palette.Text);
+                label.AddThemeColorOverride("font_shadow_color", palette.DimText with { A = 0.35f });
+                break;
+            case LineEdit lineEdit:
+                lineEdit.AddThemeColorOverride("font_color", palette.Text);
+                lineEdit.AddThemeColorOverride("font_placeholder_color", palette.DimText);
+                break;
+            case ProgressBar progress:
+                progress.AddThemeColorOverride("font_color", palette.Text);
+                break;
+        }
+
+        foreach (var child in control.GetChildren())
+        {
+            if (child is Control childControl)
+                ApplyUiPaletteRecursive(childControl, palette, themeId);
+        }
+    }
+
+    private static StyleBox CreatePanelStyle(UiPalette palette, string themeId = "")
+    {
+        if (UsesMedievalPanelFrameStyle(themeId))
+        {
+            var medievalStyle = CreateMedievalPanelFrameStyle();
+            if (medievalStyle is not null)
+                return medievalStyle;
+        }
+
+        return CreateFlatPanelStyle(palette);
+    }
+
+    public static bool UsesMedievalPanelFrameStyle(string themeId)
+    {
+        return string.Equals(themeId, UiPaletteRegistry.MedievalThemeId, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static StyleBoxTexture CreateMedievalPanelFrameStyle()
+    {
+        var texture = AtlasTextureLoader.Load(MedievalPanelFramePath, forceImageLoad: true);
+        if (texture is null)
+            return null;
+
+        return new StyleBoxTexture
+        {
+            Texture = texture,
+            TextureMarginLeft = 9,
+            TextureMarginTop = 9,
+            TextureMarginRight = 9,
+            TextureMarginBottom = 9,
+            ContentMarginLeft = 14,
+            ContentMarginTop = 12,
+            ContentMarginRight = 14,
+            ContentMarginBottom = 12,
+            DrawCenter = true
+        };
+    }
+
+    private static StyleBoxFlat CreateFlatPanelStyle(UiPalette palette)
+    {
+        var style = new StyleBoxFlat
+        {
+            BgColor = palette.PanelBackground,
+            BorderColor = palette.PanelBorder,
+            BorderWidthLeft = 2,
+            BorderWidthTop = 2,
+            BorderWidthRight = 2,
+            BorderWidthBottom = 2,
+            CornerRadiusTopLeft = 6,
+            CornerRadiusTopRight = 6,
+            CornerRadiusBottomRight = 6,
+            CornerRadiusBottomLeft = 6,
+            ContentMarginLeft = 8,
+            ContentMarginTop = 6,
+            ContentMarginRight = 8,
+            ContentMarginBottom = 6
+        };
+        return style;
+    }
+
+    private static void ApplyButtonPalette(Button button, UiPalette palette)
+    {
+        button.AddThemeColorOverride("font_color", palette.Text);
+        button.AddThemeColorOverride("font_hover_color", palette.Text);
+        button.AddThemeColorOverride("font_pressed_color", palette.PanelBackground);
+        button.AddThemeStyleboxOverride("normal", CreateButtonStyle(palette.PanelBackground, palette.PanelBorder));
+        button.AddThemeStyleboxOverride("hover", CreateButtonStyle(palette.Accent, palette.PanelBorder));
+        button.AddThemeStyleboxOverride("pressed", CreateButtonStyle(palette.Accent, palette.Accent));
+    }
+
+    private static StyleBoxFlat CreateButtonStyle(Color background, Color border)
+    {
+        return new StyleBoxFlat
+        {
+            BgColor = background,
+            BorderColor = border,
+            BorderWidthLeft = 1,
+            BorderWidthTop = 1,
+            BorderWidthRight = 1,
+            BorderWidthBottom = 1,
+            CornerRadiusTopLeft = 4,
+            CornerRadiusTopRight = 4,
+            CornerRadiusBottomRight = 4,
+            CornerRadiusBottomLeft = 4,
+            ContentMarginLeft = 8,
+            ContentMarginTop = 5,
+            ContentMarginRight = 8,
+            ContentMarginBottom = 5
+        };
+    }
+
+    private static void AddItemButtonContent(
+        Button button,
+        string themeId,
+        string itemId,
+        string labelText,
+        Vector2 iconSize,
+        Color? labelTint = null)
+    {
+        if (button is null) return;
+        button.Text = string.Empty;
+
+        var content = new HBoxContainer
+        {
+            Name = "ItemButtonContent",
+            AnchorRight = 1f,
+            AnchorBottom = 1f,
+            OffsetLeft = 6f,
+            OffsetTop = 2f,
+            OffsetRight = -6f,
+            OffsetBottom = -2f,
+            Alignment = BoxContainer.AlignmentMode.Begin,
+            MouseFilter = Control.MouseFilterEnum.Ignore
+        };
+        content.AddThemeConstantOverride("separation", 6);
+
+        content.AddChild(CreateItemIconRect(themeId, itemId, iconSize));
+
+        var label = new Label
+        {
+            Name = "ItemButtonLabel",
+            Text = string.IsNullOrWhiteSpace(labelText) ? "--" : labelText,
+            VerticalAlignment = VerticalAlignment.Center,
+            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+            MouseFilter = Control.MouseFilterEnum.Ignore
+        };
+        if (labelTint.HasValue)
+        {
+            label.AddThemeColorOverride("font_color", labelTint.Value);
+            label.AddThemeColorOverride("font_hover_color", labelTint.Value);
+        }
+
+        content.AddChild(label);
+        button.AddChild(content);
+    }
+
+    private static TextureRect CreateItemIconRect(string themeId, string itemId, Vector2 size)
+    {
+        return new TextureRect
+        {
+            Name = "ItemIcon",
+            Texture = CreateItemIconTexture(themeId, itemId),
+            CustomMinimumSize = size,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+            MouseFilter = Control.MouseFilterEnum.Ignore
+        };
+    }
+
+    private static Texture2D CreateItemIconTexture(string themeId, string itemId)
+    {
+        if (string.IsNullOrWhiteSpace(itemId))
+        {
+            return null;
+        }
+
+        var themedArt = ItemArtRegistry.Get(themeId, itemId);
+        if (themedArt.HasIcon)
+        {
+            var iconTexture = AtlasTextureLoader.Load(themedArt.IconPath, removeDarkBackground: true);
+            if (iconTexture is not null)
+            {
+                return iconTexture;
+            }
+        }
+
+        var definition = PrototypeSpriteCatalog.Get(PrototypeSpriteCatalog.GetKindForItem(itemId));
+        var texture = AtlasTextureLoader.Load(definition.AtlasPath, removeDarkBackground: true);
+        if (texture is null)
+        {
+            return null;
+        }
+
+        return definition.HasAtlasRegion
+            ? PrototypeAtlasSprite.CreateAtlasTexture(texture, definition)
+            : texture;
+    }
+
+    private void BuildFirstRunTutorialOverlay(Control root)
+    {
+        _tutorialOverlay = new PanelContainer
+        {
+            Name = "FirstRunTutorialOverlay",
+            AnchorLeft = 0.5f,
+            AnchorTop = 0.5f,
+            AnchorRight = 0.5f,
+            AnchorBottom = 0.5f,
+            OffsetLeft = -260,
+            OffsetTop = -72,
+            OffsetRight = 260,
+            OffsetBottom = 72,
+            Visible = false
+        };
+        root.AddChild(_tutorialOverlay);
+
+        var margin = new MarginContainer { Name = "FirstRunTutorialMargin" };
+        margin.AddThemeConstantOverride("margin_left", 16);
+        margin.AddThemeConstantOverride("margin_top", 12);
+        margin.AddThemeConstantOverride("margin_right", 16);
+        margin.AddThemeConstantOverride("margin_bottom", 12);
+        _tutorialOverlay.AddChild(margin);
+
+        _tutorialLabel = new Label
+        {
+            Name = "FirstRunTutorialLabel",
+            Text = FormatFirstRunTutorialText(),
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        margin.AddChild(_tutorialLabel);
     }
 
     private void BuildPossePanel(Control root)
@@ -1102,13 +1967,133 @@ public partial class HudController : CanvasLayer
         margin.AddThemeConstantOverride("margin_bottom", 12);
         _developerPanel.AddChild(margin);
 
+        var content = new VBoxContainer
+        {
+            Name = "DeveloperOverlayContent"
+        };
+        content.AddThemeConstantOverride("separation", 10);
+        margin.AddChild(content);
+
+        content.AddChild(BuildMedievalUiArtPreviewPanel());
+
         _developerOverlayLabel = new Label
         {
             Name = "DeveloperOverlayLabel",
             Text = "Developer overlay: waiting for snapshot",
-            AutowrapMode = TextServer.AutowrapMode.WordSmart
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            SizeFlagsVertical = Control.SizeFlags.ExpandFill
         };
-        margin.AddChild(_developerOverlayLabel);
+        content.AddChild(_developerOverlayLabel);
+    }
+
+    private static PanelContainer BuildMedievalUiArtPreviewPanel()
+    {
+        var previewPanel = new PanelContainer
+        {
+            Name = "MedievalUiArtPreviewPanel",
+            CustomMinimumSize = new Vector2(0, 126)
+        };
+
+        var panelStyle = new StyleBoxFlat
+        {
+            BgColor = new Color(0.08f, 0.075f, 0.065f, 0.94f),
+            BorderColor = new Color(0.42f, 0.36f, 0.25f, 1f),
+            BorderWidthLeft = 1,
+            BorderWidthTop = 1,
+            BorderWidthRight = 1,
+            BorderWidthBottom = 1,
+            CornerRadiusTopLeft = 4,
+            CornerRadiusTopRight = 4,
+            CornerRadiusBottomRight = 4,
+            CornerRadiusBottomLeft = 4
+        };
+        previewPanel.AddThemeStyleboxOverride("panel", panelStyle);
+
+        var margin = new MarginContainer { Name = "MedievalUiArtPreviewMargin" };
+        margin.AddThemeConstantOverride("margin_left", 10);
+        margin.AddThemeConstantOverride("margin_top", 8);
+        margin.AddThemeConstantOverride("margin_right", 10);
+        margin.AddThemeConstantOverride("margin_bottom", 8);
+        previewPanel.AddChild(margin);
+
+        var content = new VBoxContainer { Name = "MedievalUiArtPreviewContent" };
+        content.AddThemeConstantOverride("separation", 6);
+        margin.AddChild(content);
+
+        var title = new Label
+        {
+            Name = "MedievalUiArtPreviewLabel",
+            Text = "Medieval UI candidates"
+        };
+        title.AddThemeColorOverride("font_color", new Color(0.9f, 0.82f, 0.62f, 1f));
+        content.AddChild(title);
+
+        var row = new HBoxContainer { Name = "MedievalUiArtPreviewRow" };
+        row.AddThemeConstantOverride("separation", 10);
+        content.AddChild(row);
+
+        foreach (var asset in MedievalUiArtPreviewAssets)
+        {
+            row.AddChild(BuildMedievalUiArtPreviewSample(asset));
+        }
+
+        return previewPanel;
+    }
+
+    private static VBoxContainer BuildMedievalUiArtPreviewSample(UiArtPreviewAsset asset)
+    {
+        var sample = new VBoxContainer
+        {
+            Name = $"{asset.Label}Preview",
+            CustomMinimumSize = new Vector2(92, 0)
+        };
+        sample.AddThemeConstantOverride("separation", 4);
+
+        var frame = new PanelContainer
+        {
+            Name = $"{asset.Label}PreviewFrame",
+            CustomMinimumSize = new Vector2(92, 64)
+        };
+        var frameStyle = new StyleBoxFlat
+        {
+            BgColor = new Color(0.015f, 0.014f, 0.012f, 1f),
+            BorderColor = new Color(0.22f, 0.19f, 0.15f, 1f),
+            BorderWidthLeft = 1,
+            BorderWidthTop = 1,
+            BorderWidthRight = 1,
+            BorderWidthBottom = 1,
+            CornerRadiusTopLeft = 3,
+            CornerRadiusTopRight = 3,
+            CornerRadiusBottomRight = 3,
+            CornerRadiusBottomLeft = 3,
+            ContentMarginLeft = 6,
+            ContentMarginTop = 6,
+            ContentMarginRight = 6,
+            ContentMarginBottom = 6
+        };
+        frame.AddThemeStyleboxOverride("panel", frameStyle);
+        sample.AddChild(frame);
+
+        frame.AddChild(new TextureRect
+        {
+            Name = $"{asset.Label}Texture",
+            Texture = AtlasTextureLoader.Load(asset.TexturePath, forceImageLoad: true),
+            CustomMinimumSize = asset.PreviewSize,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+            MouseFilter = Control.MouseFilterEnum.Ignore
+        });
+
+        var label = new Label
+        {
+            Name = $"{asset.Label}Label",
+            Text = asset.Label,
+            HorizontalAlignment = HorizontalAlignment.Center
+        };
+        label.AddThemeColorOverride("font_color", new Color(0.82f, 0.76f, 0.62f, 1f));
+        sample.AddChild(label);
+
+        return sample;
     }
 
     private void BuildEscapeMenu(Control root)
@@ -1187,14 +2172,27 @@ public partial class HudController : CanvasLayer
         optionsMargin.AddChild(optionsContent);
         optionsContent.AddChild(new Label
         {
-            Text = "Options quick panel",
+            Text = "Audio",
             HorizontalAlignment = HorizontalAlignment.Center
         });
         optionsContent.AddChild(new Label
         {
-            Text = "Audio/video/control settings will reuse the main menu options model here. This overlay does not pause the match timer.",
+            Text = "Adjustments persist via the same options.cfg the main menu writes. This overlay does not pause the match timer.",
             AutowrapMode = TextServer.AutowrapMode.WordSmart
         });
+
+        BuildPauseVolumeRow(optionsContent, "Master", out _pauseMasterVolumeSlider, out _pauseMasterVolumeLabel);
+        BuildPauseVolumeRow(optionsContent, "Music", out _pauseMusicVolumeSlider, out _pauseMusicVolumeLabel);
+        BuildPauseVolumeRow(optionsContent, "Effects", out _pauseEffectsVolumeSlider, out _pauseEffectsVolumeLabel);
+        BuildPauseVolumeRow(optionsContent, "Ambient", out _pauseAmbientVolumeSlider, out _pauseAmbientVolumeLabel);
+
+        _carryStateToggle = new CheckButton
+        {
+            Name = "CarryStateToggle",
+            Text = "Carry karma + relationships + faction rep into next round"
+        };
+        optionsContent.AddChild(_carryStateToggle);
+
         _closeEscapeOptionsButton = new Button
         {
             Name = "CloseOptionsButton",
@@ -1234,6 +2232,8 @@ public partial class HudController : CanvasLayer
         _appearanceSkinLabel = new Label { Name = "AppearanceSkinLabel", Text = "Skin: default" };
         _appearanceHairLabel = new Label { Name = "AppearanceHairLabel", Text = "Hair: default" };
         _appearanceOutfitLabel = new Label { Name = "AppearanceOutfitLabel", Text = "Outfit: default" };
+        _appearancePantsLabel = new Label { Name = "AppearancePantsLabel", Text = "Pants: default" };
+        _appearanceShirtLabel = new Label { Name = "AppearanceShirtLabel", Text = "Shirt: default" };
         _appearanceToolLabel = new Label { Name = "AppearanceToolLabel", Text = "Held tool: none" };
         _appearancePreviewLabel = new Label
         {
@@ -1244,15 +2244,21 @@ public partial class HudController : CanvasLayer
         appearanceContent.AddChild(_appearanceSkinLabel);
         appearanceContent.AddChild(_appearanceHairLabel);
         appearanceContent.AddChild(_appearanceOutfitLabel);
+        appearanceContent.AddChild(_appearancePantsLabel);
+        appearanceContent.AddChild(_appearanceShirtLabel);
         appearanceContent.AddChild(_appearanceToolLabel);
         appearanceContent.AddChild(_appearancePreviewLabel);
         _cycleSkinButton = new Button { Name = "CycleSkinButton", Text = "Cycle skin (V)" };
         _cycleHairButton = new Button { Name = "CycleHairButton", Text = "Cycle hair (B)" };
         _cycleOutfitButton = new Button { Name = "CycleOutfitButton", Text = "Cycle outfit (N)" };
+        _cyclePantsButton = new Button { Name = "CyclePantsButton", Text = "Cycle pants (M)" };
+        _cycleShirtButton = new Button { Name = "CycleShirtButton", Text = "Cycle shirt (H)" };
         _closeAppearanceButton = new Button { Name = "CloseAppearanceButton", Text = "Back" };
         appearanceContent.AddChild(_cycleSkinButton);
         appearanceContent.AddChild(_cycleHairButton);
         appearanceContent.AddChild(_cycleOutfitButton);
+        appearanceContent.AddChild(_cyclePantsButton);
+        appearanceContent.AddChild(_cycleShirtButton);
         appearanceContent.AddChild(_closeAppearanceButton);
     }
 
@@ -1281,7 +2287,20 @@ public partial class HudController : CanvasLayer
     {
         if (_gameState is null || _hotbarLabel is null) return;
         var equipped = FindEquippedHotbarIndex(_gameState.Inventory, _gameState.LocalPlayer?.Equipment);
-        _hotbarLabel.Text = FormatHotbar(_gameState.Inventory, equipped);
+        _hotbarLabel.Text = FormatHotbar(_gameState.Inventory, equipped, _hotbarBindings);
+        if (_hotbarSlotsContainer is null) return;
+        foreach (var child in _hotbarSlotsContainer.GetChildren())
+            child.QueueFree();
+        var activeThemeId = ResolveActiveThemeId();
+        for (var i = 0; i < HotbarSlots; i++)
+        {
+            var item = ResolveHotbarSlotItem(_gameState.Inventory, _hotbarBindings, i);
+            var slot = new HotbarDropSlot(this, i, item, activeThemeId)
+            {
+                CustomMinimumSize = new Vector2(82, 34)
+            };
+            _hotbarSlotsContainer.AddChild(slot);
+        }
     }
 
     private void OnLeaderboardChanged(string leaderboardText)
@@ -1343,12 +2362,19 @@ public partial class HudController : CanvasLayer
             if (localPlayer is not null)
             {
                 SetHealth(localPlayer.Health, localPlayer.MaxHealth);
+                SetAmmoFromSnapshot(localPlayer);
+                SetCombatStaminaFromSnapshot(localPlayer);
+                SetHungerFromSnapshot(localPlayer);
                 _lastStatusEffects = localPlayer.StatusEffects;
                 RenderCombatLine(GetNode<GameState>("/root/GameState"));
+                RefreshStatusStrip(localPlayer.StatusEffects);
             }
 
             _eventLabel.Text = FormatLatestServerEvent(snapshot.ServerEvents);
             UpdateEventIcon(snapshot.ServerEvents);
+            MaybeTriggerKarmaBreakFlash(snapshot.ServerEvents, snapshot.PlayerId);
+            MaybeTriggerContrabandFlash(snapshot.ServerEvents, snapshot.PlayerId);
+            MaybeTriggerVoiceBarks(snapshot.ServerEvents, snapshot.PlayerId);
             _chatLabel.Text = FormatLocalChatSummary(snapshot.LocalChatMessages);
             if (_appearancePanel.Visible)
             {
@@ -1360,15 +2386,40 @@ public partial class HudController : CanvasLayer
                 RefreshPossePanel();
             }
 
+            if (_questLogPanel.Visible)
+            {
+                RefreshQuestLogPanel();
+            }
+
+            if (_combatLogPanel.Visible)
+            {
+                RefreshCombatLogPanel(snapshot.ServerEvents);
+            }
+
+            if (_mountBagPanel.Visible)
+            {
+                var mounted = snapshot.Mounts.FirstOrDefault(m => m.OccupantPlayerId == snapshot.PlayerId);
+                if (mounted is not null)
+                    _mountBagLabel.Text = FormatMountBag(mounted);
+            }
+
             if (_shopPanel.Visible)
             {
                 RefreshShopOverlay();
+            }
+
+            if (_bountyBoardPanel.Visible)
+            {
+                _bountyBoardLabel.Text = FormatBountyBoard(snapshot.Players);
             }
 
             var combatRange = serverSession.Server.Config.CombatRangeTiles;
             _targetLabel.Text = FormatAttackTargetLine(snapshot, snapshot.PlayerId, combatRange);
             _minimapLabel.Text = FormatMinimap(snapshot, snapshot.PlayerId, radiusTiles: 6);
             _bountyLabel.Text = FormatBountyLeaderboard(snapshot);
+            RefreshFactionPanel(snapshot);
+            RefreshNpcTooltip(snapshot);
+            RefreshDeathPileOwnershipPrompt(snapshot);
 
             // Match summary appears when the match has finished and the server
             // has populated MatchSummarySnapshot (which CreateInterestSnapshot
@@ -1405,6 +2456,75 @@ public partial class HudController : CanvasLayer
         return $"Health: {clampedHealth}/{safeMax}";
     }
 
+    private void SetAmmoFromSnapshot(PlayerSnapshot localPlayer)
+    {
+        if (localPlayer.EquippedWeaponKind == WeaponKind.Ranged)
+        {
+            _ammoLabel.Text = FormatAmmo(localPlayer.CurrentAmmo, localPlayer.MaxAmmo);
+            _ammoLabel.Visible = true;
+        }
+        else
+        {
+            _ammoLabel.Visible = false;
+        }
+    }
+
+    private void SetCombatStaminaFromSnapshot(PlayerSnapshot localPlayer)
+    {
+        if (localPlayer.MaxStamina > 0)
+        {
+            _combatStaminaLabel.Text = FormatCombatStamina(localPlayer.Stamina, localPlayer.MaxStamina);
+            _combatStaminaLabel.Visible = true;
+        }
+        else
+        {
+            _combatStaminaLabel.Visible = false;
+        }
+    }
+
+    public static string FormatAmmo(int currentAmmo, int maxAmmo)
+    {
+        var safeMax = Mathf.Max(0, maxAmmo);
+        var clamped = Mathf.Clamp(currentAmmo, 0, safeMax);
+        return safeMax == 0
+            ? "Ammo: --"
+            : clamped == 0
+                ? $"Ammo: {clamped}/{safeMax} (reload)"
+                : $"Ammo: {clamped}/{safeMax}";
+    }
+
+    public static string FormatCombatStamina(int stamina, int maxStamina)
+    {
+        var safeMax = Mathf.Max(1, maxStamina);
+        var clamped = Mathf.Clamp(stamina, 0, safeMax);
+        return $"Stamina: {clamped}/{safeMax}";
+    }
+
+    private void SetHungerFromSnapshot(PlayerSnapshot localPlayer)
+    {
+        if (localPlayer.MaxHunger > 0)
+        {
+            _hungerLabel.Text = FormatHunger(localPlayer.Hunger, localPlayer.MaxHunger);
+            _hungerLabel.Visible = true;
+        }
+        else
+        {
+            _hungerLabel.Visible = false;
+        }
+    }
+
+    public static string FormatHunger(int hunger, int maxHunger)
+    {
+        var safeMax = Mathf.Max(1, maxHunger);
+        var clamped = Mathf.Clamp(hunger, 0, safeMax);
+        var ratio = clamped / (float)safeMax;
+        var label = ratio <= 0.0f ? " (starving)"
+            : ratio <= 0.25f ? " (hungry)"
+            : ratio <= 0.5f ? " (peckish)"
+            : string.Empty;
+        return $"Hunger: {clamped}/{safeMax}{label}";
+    }
+
     public static float CalculateHealthPercent(int health, int maxHealth)
     {
         var safeMax = Mathf.Max(1, maxHealth);
@@ -1417,6 +2537,43 @@ public partial class HudController : CanvasLayer
         return statusEffects is null || statusEffects.Count == 0
             ? "Status: none"
             : $"Status: {string.Join(", ", statusEffects.Take(3))}";
+    }
+
+    public static IReadOnlyList<StatusStripEntry> FormatStatusStrip(IReadOnlyList<string> statusEffects)
+    {
+        return FormatStatusStrip(statusEffects, UiPaletteRegistry.Get(UiPaletteRegistry.WesternSciFiThemeId));
+    }
+
+    public static IReadOnlyList<StatusStripEntry> FormatStatusStrip(IReadOnlyList<string> statusEffects, UiPalette palette)
+    {
+        return (statusEffects ?? System.Array.Empty<string>())
+            .Where(status => !string.IsNullOrWhiteSpace(status))
+            .Distinct()
+            .OrderBy(NormalizeStatusId)
+            .Select(status => new StatusStripEntry(status, "●", StatusColorFor(status, palette)))
+            .ToArray();
+    }
+
+    private static string NormalizeStatusId(string status)
+    {
+        var index = status.IndexOf('(');
+        return (index >= 0 ? status[..index] : status).Trim().ToLowerInvariant();
+    }
+
+    private static Color StatusColorFor(string status, UiPalette palette)
+    {
+        palette ??= UiPaletteRegistry.Get(UiPaletteRegistry.WesternSciFiThemeId);
+        return NormalizeStatusId(status) switch
+        {
+            "burning" => palette.Danger,
+            "chilled" => palette.Accent,
+            "poisoned" => palette.Success,
+            "silenced" => palette.DimText,
+            "hungry" or "starving" => palette.Accent,
+            "dirty" or "filthy" => palette.DimText,
+            "crashing" or "twitchy" or "sluggish" => palette.Accent,
+            _ => palette.Text
+        };
     }
 
     public static string FormatCombatLine(
@@ -1439,6 +2596,117 @@ public partial class HudController : CanvasLayer
     public static string FormatBountyLeaderboard(ClientInterestSnapshot snapshot, int topN = 5) =>
         FormatBountyLeaderboard(snapshot?.Players ?? (IEnumerable<PlayerSnapshot>)System.Array.Empty<PlayerSnapshot>(), topN);
 
+    public static string FormatFactionPanel(IReadOnlyList<FactionSnapshot> factions, string playerId)
+    {
+        if (factions is null || factions.Count == 0) return "Factions: none";
+
+        var displayNames = StarterFactions.All.ToDictionary(faction => faction.Id, faction => faction.Name);
+        var rows = factions
+            .Where(faction => string.IsNullOrWhiteSpace(playerId) || faction.PlayerId == playerId)
+            .GroupBy(faction => faction.FactionId)
+            .Select(group => group.OrderByDescending(faction => Math.Abs(faction.Reputation)).First())
+            .OrderBy(faction => displayNames.TryGetValue(faction.FactionId, out var name) ? name : faction.FactionId)
+            .ToList();
+        if (rows.Count == 0) return "Factions: none";
+
+        var lines = new List<string> { "-- Factions --" };
+        foreach (var faction in rows)
+        {
+            var name = displayNames.TryGetValue(faction.FactionId, out var displayName)
+                ? displayName
+                : faction.FactionId;
+            lines.Add($"{name} {faction.Reputation:+#;-#;0} {FormatFactionMood(faction.Reputation)}");
+        }
+
+        return string.Join('\n', lines);
+    }
+
+    public static string FormatFactionMood(int reputation) => reputation switch
+    {
+        <= -50 => "Hostile",
+        < 0 => "Wary",
+        >= 50 => "Loyal",
+        > 0 => "Friendly",
+        _ => "Neutral"
+    };
+
+    public static bool IsShopOfferFactionLocked(ShopOfferSnapshot offer, int currentReputation)
+    {
+        if (offer is null) return false;
+        if (offer.MinReputation <= 0 || string.IsNullOrWhiteSpace(offer.RequiredFactionId)) return false;
+        return currentReputation < offer.MinReputation;
+    }
+
+    public static string FormatFactionStoreDenial(string factionId, int minReputation, int currentReputation)
+    {
+        var factionName = FormatFactionDisplayName(factionId);
+        return $"{factionName} won't sell to you yet (need rep ≥ {minReputation}, you're at {currentReputation})";
+    }
+
+    public static string FormatFactionDisplayName(string factionId)
+    {
+        if (string.IsNullOrWhiteSpace(factionId)) return "This faction";
+        var faction = StarterFactions.All.FirstOrDefault(candidate => candidate.Id == factionId);
+        return faction?.Name ?? factionId;
+    }
+
+    public static string FormatShopPricingTooltip(ShopOfferSnapshot offer)
+    {
+        if (offer is null)
+        {
+            return string.Empty;
+        }
+
+        if (!string.IsNullOrWhiteSpace(offer.PricingBreakdown))
+        {
+            return offer.PricingBreakdown;
+        }
+
+        var basePrice = offer.BasePrice > 0 ? offer.BasePrice : offer.Price;
+        return $"Net price: {offer.Price} {offer.Currency} (base {basePrice}).";
+    }
+
+    private static int GetFactionReputation(IReadOnlyList<FactionSnapshot> factions, string playerId, string factionId)
+    {
+        if (string.IsNullOrWhiteSpace(factionId) || factions is null)
+        {
+            return 0;
+        }
+
+        return factions
+            .Where(faction => faction.FactionId == factionId)
+            .Where(faction => string.IsNullOrWhiteSpace(playerId) || faction.PlayerId == playerId)
+            .Select(faction => faction.Reputation)
+            .DefaultIfEmpty(0)
+            .First();
+    }
+
+    public static string FormatQuestLog(IReadOnlyList<QuestSnapshot> quests)
+    {
+        var active = (quests ?? System.Array.Empty<QuestSnapshot>())
+            .Where(quest => quest.Status == QuestStatus.Active)
+            .OrderBy(quest => FormatQuestName(quest.Id))
+            .ToList();
+        if (active.Count == 0)
+            return "Quest log: no active quests";
+
+        var lines = new List<string> { "-- Quest Log --" };
+        foreach (var quest in active)
+        {
+            var title = FormatQuestName(quest.Id);
+            var counter = quest.TotalSteps > 0
+                ? $"{Math.Clamp(quest.CurrentStep + 1, 1, quest.TotalSteps)}/{quest.TotalSteps}"
+                : "1/1";
+            var step = string.IsNullOrWhiteSpace(quest.CurrentStepDescription)
+                ? "Ready to complete"
+                : quest.CurrentStepDescription;
+            lines.Add($"{title} [{counter}]");
+            lines.Add($"  {step}");
+        }
+
+        return string.Join('\n', lines);
+    }
+
     public static string FormatBountyLeaderboard(IEnumerable<PlayerSnapshot> players, int topN = 5)
     {
         if (players is null) return "Bounties: --";
@@ -1452,6 +2720,31 @@ public partial class HudController : CanvasLayer
         var lines = new List<string> { "-- Top Bounties --" };
         foreach (var (player, bounty) in entries)
             lines.Add($"  {player.DisplayName,-16} {bounty} scrip");
+        return string.Join('\n', lines);
+    }
+
+    public static string FormatBountyBoard(IEnumerable<PlayerSnapshot> players, int topN = 8)
+    {
+        if (players is null) return "Bounty board: none active";
+        var entries = players
+            .Select(player => (
+                player,
+                bounty: player.StatusEffects.Sum(ParseBountyAmount),
+                wanted: player.StatusEffects.Any(status => status == "Wanted")))
+            .Where(entry => entry.wanted || entry.bounty > 0)
+            .OrderByDescending(entry => entry.bounty)
+            .ThenBy(entry => entry.player.DisplayName)
+            .Take(topN)
+            .ToList();
+        if (entries.Count == 0) return "Bounty board: none active";
+
+        var lines = new List<string> { "-- Bounty Board --" };
+        foreach (var entry in entries)
+        {
+            var warrant = entry.wanted ? "Wanted" : "Bounty";
+            lines.Add($"{entry.player.DisplayName}: {warrant} {entry.bounty} scrip");
+        }
+
         return string.Join('\n', lines);
     }
 
@@ -1482,15 +2775,141 @@ public partial class HudController : CanvasLayer
         return $"Target: {target.DisplayName} ({target.Health}/{target.MaxHealth} HP, {dist}t)";
     }
 
+    public static string FormatNpcApproachTooltip(ClientInterestSnapshot snapshot, int rangeTiles = 2)
+    {
+        if (snapshot is null) return string.Empty;
+        var local = snapshot.Players.FirstOrDefault(player => player.Id == snapshot.PlayerId);
+        if (local is null) return string.Empty;
+
+        var rangeSq = rangeTiles * rangeTiles;
+        var npc = snapshot.Npcs
+            .Select(candidate => (
+                candidate,
+                distanceSq: ((candidate.TileX - local.TileX) * (candidate.TileX - local.TileX)) +
+                            ((candidate.TileY - local.TileY) * (candidate.TileY - local.TileY))))
+            .Where(entry => entry.distanceSq <= rangeSq)
+            .OrderBy(entry => entry.distanceSq)
+            .ThenBy(entry => entry.candidate.Id)
+            .Select(entry => entry.candidate)
+            .FirstOrDefault();
+        return npc is null ? string.Empty : FormatNpcTooltip(npc.Name, npc.Role, npc.Faction);
+    }
+
+    public static string FormatNpcTooltip(string name, string role, string faction)
+    {
+        var safeName = string.IsNullOrWhiteSpace(name) ? "Unknown" : name.Trim();
+        var safeRole = string.IsNullOrWhiteSpace(role) ? "Unknown" : role.Trim();
+        var safeFaction = string.IsNullOrWhiteSpace(faction) ? "Unaffiliated" : faction.Trim();
+        return $"{safeName} • {safeRole} • {safeFaction}";
+    }
+
+    public static string FormatDeathPileOwnershipPrompt(ClientInterestSnapshot snapshot)
+    {
+        if (snapshot is null)
+        {
+            return string.Empty;
+        }
+
+        var local = snapshot.Players.FirstOrDefault(player => player.Id == snapshot.PlayerId);
+        if (local is null)
+        {
+            return string.Empty;
+        }
+
+        var pile = snapshot.WorldItems
+            .Where(item => item.TileX == local.TileX && item.TileY == local.TileY)
+            .Where(item => !string.IsNullOrWhiteSpace(item.DropOwnerId))
+            .Where(item => item.DropOwnerExpiresTick <= 0 || item.DropOwnerExpiresTick > snapshot.Tick)
+            .OrderBy(item => item.DropOwnerId == snapshot.PlayerId ? 0 : 1)
+            .ThenBy(item => item.EntityId)
+            .FirstOrDefault();
+        if (pile is null)
+        {
+            return string.Empty;
+        }
+
+        var remainingTicks = pile.DropOwnerExpiresTick <= 0
+            ? 0
+            : Math.Max(0, pile.DropOwnerExpiresTick - snapshot.Tick);
+        return pile.DropOwnerId == snapshot.PlayerId
+            ? $"Drop ownership expires in {remainingTicks} ticks."
+            : $"{pile.DropOwnerName}'s drop ownership expires in {remainingTicks} ticks.";
+    }
+
     public const int HotbarSlots = 9;
 
+    private sealed partial class InventoryDragRow : Button
+    {
+        private readonly string _itemId;
+        private readonly string _dragLabel;
+
+        public InventoryDragRow(GameItem item, string themeId)
+        {
+            _itemId = item?.Id ?? string.Empty;
+            _dragLabel = string.IsNullOrWhiteSpace(item?.Name) ? "Item" : item.Name;
+            TooltipText = item is null ? "Drag item" : $"Drag {item.Name}";
+            if (item is not null)
+            {
+                var tint = InventoryTintForRarity(item.Rarity);
+                AddThemeColorOverride("font_color", tint);
+                AddThemeColorOverride("font_hover_color", tint);
+                AddItemButtonContent(this, themeId, item.Id, item.Name, new Vector2(32f, 32f), tint);
+            }
+        }
+
+        public override Variant _GetDragData(Vector2 atPosition)
+        {
+            if (string.IsNullOrWhiteSpace(_itemId))
+                return default;
+
+            SetDragPreview(new Label { Text = _dragLabel });
+            return _itemId;
+        }
+    }
+
+    private sealed partial class HotbarDropSlot : Button
+    {
+        private readonly HudController _hud;
+        private readonly int _slotIndex;
+
+        public HotbarDropSlot(HudController hud, int slotIndex, GameItem item, string themeId)
+        {
+            _hud = hud;
+            _slotIndex = slotIndex;
+            var label = item is null ? $"{slotIndex + 1}: --" : $"{slotIndex + 1}: {Trim(item.Name, 8)}";
+            TooltipText = item is null
+                ? $"Drop an inventory item to bind slot {slotIndex + 1}"
+                : $"Slot {slotIndex + 1}: {item.Name}";
+            AddItemButtonContent(this, themeId, item?.Id ?? string.Empty, label, new Vector2(24f, 24f));
+        }
+
+        public override bool _CanDropData(Vector2 atPosition, Variant data)
+        {
+            return data.VariantType == Variant.Type.String && !string.IsNullOrWhiteSpace(data.AsString());
+        }
+
+        public override void _DropData(Vector2 atPosition, Variant data)
+        {
+            _hud?.BindHotbarSlot(_slotIndex, data.AsString());
+        }
+    }
+
     public static string FormatHotbar(IReadOnlyList<GameItem> inventory, int equippedIndex)
+    {
+        return FormatHotbar(inventory, equippedIndex, null);
+    }
+
+    public static string FormatHotbar(
+        IReadOnlyList<GameItem> inventory,
+        int equippedIndex,
+        IReadOnlyDictionary<int, string> bindings)
     {
         var sb = new System.Text.StringBuilder();
         for (var i = 0; i < HotbarSlots; i++)
         {
             if (i > 0) sb.Append("  ");
-            var name = i < inventory.Count ? Trim(inventory[i].Name, 8) : "—";
+            var item = ResolveHotbarSlotItem(inventory, bindings, i);
+            var name = item is not null ? Trim(item.Name, 8) : "—";
             var marker = i == equippedIndex ? "*" : " ";
             sb.Append($"[{i + 1}{marker}{name}]");
         }
@@ -1510,6 +2929,56 @@ public partial class HudController : CanvasLayer
         for (var i = 0; i < inventory.Count; i++)
             if (inventory[i].Id == equipped.Id) return i;
         return -1;
+    }
+
+    public IReadOnlyDictionary<int, string> HotbarBindings => _hotbarBindings;
+
+    public void BindHotbarSlot(int slotIndex, string itemId)
+    {
+        BindHotbarSlot(_hotbarBindings, slotIndex, itemId);
+        RefreshHotbar();
+    }
+
+    public string ResolveHotbarSlotItemId(int slotIndex, IReadOnlyList<GameItem> inventory)
+    {
+        return ResolveHotbarSlotItemId(_hotbarBindings, slotIndex, inventory);
+    }
+
+    public static void BindHotbarSlot(IDictionary<int, string> bindings, int slotIndex, string itemId)
+    {
+        if (bindings is null) return;
+        if (slotIndex < 0 || slotIndex >= HotbarSlots) return;
+        bindings[slotIndex] = itemId ?? string.Empty;
+    }
+
+    public static string ResolveHotbarSlotItemId(
+        IReadOnlyDictionary<int, string> bindings,
+        int slotIndex,
+        IReadOnlyList<GameItem> inventory)
+    {
+        var item = ResolveHotbarSlotItem(inventory, bindings, slotIndex);
+        return item?.Id ?? string.Empty;
+    }
+
+    private static GameItem ResolveHotbarSlotItem(
+        IReadOnlyList<GameItem> inventory,
+        IReadOnlyDictionary<int, string> bindings,
+        int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= HotbarSlots || inventory is null)
+            return null;
+
+        if (bindings is not null && bindings.TryGetValue(slotIndex, out var boundItemId))
+        {
+            if (string.IsNullOrWhiteSpace(boundItemId))
+                return null;
+
+            var bound = inventory.FirstOrDefault(item => item.Id == boundItemId);
+            if (bound is not null)
+                return bound;
+        }
+
+        return slotIndex < inventory.Count ? inventory[slotIndex] : null;
     }
 
     public static string FormatShopBubble(IReadOnlyList<ShopOfferSnapshot> offers, string vendorNpcId, int playerScrip)
@@ -1594,9 +3063,67 @@ public partial class HudController : CanvasLayer
         var scourge = string.IsNullOrEmpty(summary.Winners.ScourgePlayerId) ? "none" : summary.Winners.ScourgeName;
         var header = $"Match Over — Saint: {saint} | Scourge: {scourge}";
         var rows = summary.Players
-            .Select(p => $"  {p.DisplayName}: karma {p.FinalKarma:+#;-#;0} (peak {p.KarmaPeak:+#;-#;0} / floor {p.KarmaFloor:+#;-#;0}) quests {p.QuestsCompleted} kills {p.Kills}")
+            .Select(p =>
+            {
+                var highlight = summary.Highlights is not null && summary.Highlights.TryGetValue(p.Id, out var h)
+                    ? $" | highlights +{h.MostKarmaGained}/-{h.MostKarmaLost} spree {h.LongestSpree} bounty {h.BountyClaimed} rescues {h.RescuesPerformed}"
+                    : string.Empty;
+                return $"  {p.DisplayName}: karma {p.FinalKarma:+#;-#;0} (peak {p.KarmaPeak:+#;-#;0} / floor {p.KarmaFloor:+#;-#;0}) quests {p.QuestsCompleted} kills {p.Kills}{highlight}";
+            })
             .ToArray();
         return rows.Length == 0 ? header : $"{header}\n{string.Join("\n", rows)}";
+    }
+
+    public static string FormatCombatLog(IReadOnlyList<ServerEvent> serverEvents, int maxRows = 20)
+    {
+        var events = (serverEvents ?? System.Array.Empty<ServerEvent>())
+            .TakeLast(Math.Max(1, maxRows))
+            .ToArray();
+        if (events.Length == 0)
+            return "Combat log: quiet";
+
+        var lines = new List<string> { "-- Combat Log --" };
+        foreach (var serverEvent in events)
+        {
+            var iconName = ResolveEventIconName(serverEvent.EventId);
+            var icon = string.IsNullOrWhiteSpace(iconName) ? "event" : iconName;
+            lines.Add($"[{serverEvent.Tick}] {icon}: {FormatCombatLogSummary(serverEvent)}");
+        }
+
+        return string.Join("\n", lines);
+    }
+
+    private static string FormatCombatLogSummary(ServerEvent serverEvent)
+    {
+        if (serverEvent is null) return "event";
+        if (!string.IsNullOrWhiteSpace(serverEvent.Description))
+            return serverEvent.Description;
+        return string.IsNullOrWhiteSpace(serverEvent.EventId) ? "event" : serverEvent.EventId;
+    }
+
+    public static string FormatMountBag(MountSnapshot mount)
+    {
+        if (mount is null)
+            return "Mount bag: no mount";
+
+        var itemIds = mount.BagItemIds ?? System.Array.Empty<string>();
+        var lines = new List<string>
+        {
+            $"{mount.Name} Bag ({itemIds.Count}/8)"
+        };
+        if (itemIds.Count == 0)
+        {
+            lines.Add("empty");
+            return string.Join("\n", lines);
+        }
+
+        foreach (var group in itemIds.GroupBy(id => id).OrderBy(group => StarterItems.GetById(group.Key).Name))
+        {
+            var item = StarterItems.GetById(group.Key);
+            lines.Add($"{item.Name} x{group.Count()}");
+        }
+
+        return string.Join("\n", lines);
     }
 
     /// <summary>
@@ -1605,6 +3132,124 @@ public partial class HudController : CanvasLayer
     /// The sliced atlas lives at res://assets/art/generated/sliced/prototype_ui_icons/
     /// and provides 36 icons keyed by event-name fragments.
     /// </summary>
+    private void MaybeTriggerKarmaBreakFlash(IReadOnlyList<ServerEvent> serverEvents, string localPlayerId)
+    {
+        var triggerTick = FindKarmaBreakTriggerTick(serverEvents, localPlayerId, _lastKarmaBreakFlashTick);
+        if (triggerTick < 0) return;
+
+        _lastKarmaBreakFlashTick = triggerTick;
+        _karmaBreakFlash.Color = new Color(1f, 1f, 1f, 0.6f);
+        var tween = CreateTween();
+        tween.TweenProperty(_karmaBreakFlash, "color:a", 0f, 0.9f);
+        PlayEventStinger("karma_break");
+    }
+
+    // Resolve an audio clip via AudioEventCatalog and play it through the
+    // shared stinger AudioStreamPlayer. Silently no-ops when the resolved
+    // path is empty or the file isn't on disk yet — the catalog is the seam,
+    // not the asset. Once SOUND_NEEDED.md deliveries land, drop the clips
+    // at the registered paths and they play automatically.
+    public void PlayEventStinger(string eventId)
+    {
+        if (_eventStingerPlayer is null) return;
+        var path = Karma.Audio.AudioEventCatalog.Resolve(eventId);
+        if (string.IsNullOrEmpty(path) || !FileAccess.FileExists(path)) return;
+        var stream = ResourceLoader.Load<AudioStream>(path);
+        if (stream is null) return;
+        _eventStingerPlayer.Stream = stream;
+        _eventStingerPlayer.Play();
+    }
+
+    private void MaybeTriggerVoiceBarks(IReadOnlyList<ServerEvent> serverEvents, string localPlayerId)
+    {
+        if (_eventStingerPlayer is null || serverEvents is null || serverEvents.Count == 0)
+        {
+            return;
+        }
+
+        for (var i = serverEvents.Count - 1; i >= 0; i--)
+        {
+            var ev = serverEvents[i];
+            if (ev.Tick <= _lastVoiceBarkTick) continue;
+            if (!EventConcernsLocalPlayer(ev, localPlayerId)) continue;
+
+            var barkId = Karma.Audio.VoiceBarkCatalog.BarkForEventId(ev.EventId);
+            if (string.IsNullOrEmpty(barkId)) continue;
+
+            _lastVoiceBarkTick = ev.Tick;
+            PlayVoiceBark(Karma.Audio.VoiceSlot.Voice1, barkId);
+            return;
+        }
+    }
+
+    private void PlayVoiceBark(Karma.Audio.VoiceSlot slot, string barkId)
+    {
+        var path = Karma.Audio.VoiceBarkCatalog.Resolve(slot, barkId);
+        if (string.IsNullOrEmpty(path) || !FileAccess.FileExists(path)) return;
+        var stream = ResourceLoader.Load<AudioStream>(path);
+        if (stream is null) return;
+        _eventStingerPlayer.Stream = stream;
+        _eventStingerPlayer.Play();
+    }
+
+    private static bool EventConcernsLocalPlayer(ServerEvent serverEvent, string localPlayerId)
+    {
+        if (string.IsNullOrEmpty(localPlayerId)) return true;
+        if (serverEvent.Witnesses is not null && serverEvent.Witnesses.Contains(localPlayerId)) return true;
+        if (serverEvent.Data is null || serverEvent.Data.Count == 0) return true;
+        return serverEvent.Data.Values.Any(value => value == localPlayerId);
+    }
+
+    public static long FindKarmaBreakTriggerTick(
+        IReadOnlyList<ServerEvent> serverEvents,
+        string localPlayerId,
+        long lastTriggerTick)
+    {
+        if (serverEvents is null || serverEvents.Count == 0 || string.IsNullOrEmpty(localPlayerId))
+            return -1;
+        for (var i = serverEvents.Count - 1; i >= 0; i--)
+        {
+            var ev = serverEvents[i];
+            if (ev.Tick <= lastTriggerTick) continue;
+            if (!ev.EventId.Contains("karma_break") && !ev.EventId.Contains("player_respawned")) continue;
+            var subjectId = ev.Data.TryGetValue("playerId", out var pid) ? pid : string.Empty;
+            if (subjectId != localPlayerId) continue;
+            return ev.Tick;
+        }
+        return -1;
+    }
+
+    private void MaybeTriggerContrabandFlash(IReadOnlyList<ServerEvent> serverEvents, string localPlayerId)
+    {
+        var triggerTick = FindContrabandFlashTriggerTick(serverEvents, localPlayerId, _lastContrabandFlashTick);
+        if (triggerTick < 0) return;
+
+        _lastContrabandFlashTick = triggerTick;
+        _contrabandFlash.Color = new Color(1f, 0.15f, 0.15f, 0.45f);
+        var tween = CreateTween();
+        tween.TweenProperty(_contrabandFlash, "color:a", 0f, 0.6f);
+        PlayEventStinger("contraband_detected");
+    }
+
+    public static long FindContrabandFlashTriggerTick(
+        IReadOnlyList<ServerEvent> serverEvents,
+        string localPlayerId,
+        long lastTriggerTick)
+    {
+        if (serverEvents is null || serverEvents.Count == 0 || string.IsNullOrEmpty(localPlayerId))
+            return -1;
+        for (var i = serverEvents.Count - 1; i >= 0; i--)
+        {
+            var ev = serverEvents[i];
+            if (ev.Tick <= lastTriggerTick) continue;
+            if (!ev.EventId.Contains("contraband_detected")) continue;
+            var subjectId = ev.Data.TryGetValue("playerId", out var pid) ? pid : string.Empty;
+            if (subjectId != localPlayerId) continue;
+            return ev.Tick;
+        }
+        return -1;
+    }
+
     private void UpdateEventIcon(IReadOnlyList<ServerEvent> serverEvents)
     {
         if (_eventIcon is null) return;
@@ -1619,8 +3264,7 @@ public partial class HudController : CanvasLayer
             _eventIcon.Texture = null;
             return;
         }
-        var texture = ResourceLoader.Load<Texture2D>(path);
-        _eventIcon.Texture = texture;
+        _eventIcon.Texture = AtlasTextureLoader.Load(path);
     }
 
     public static string ResolveEventIconPath(string eventId)
@@ -2073,13 +3717,13 @@ public partial class HudController : CanvasLayer
 
         return string.Join(" ", layerId
             .Split('_', StringSplitOptions.RemoveEmptyEntries)
-            .Where(part => part != "skin" && part != "hair" && part != "outfit" && part != "tool" && part != "32x64")
+            .Where(part => part != "skin" && part != "hair" && part != "outfit" && part != "pants" && part != "shirt" && part != "tool" && part != "32x64")
             .Select(part => char.ToUpperInvariant(part[0]) + part[1..]));
     }
 
     public static string FormatAppearanceSummary(PlayerAppearanceSelection appearance)
     {
-        return $"Appearance: {FormatAppearanceLayerName(appearance.SkinLayerId)} skin | {FormatAppearanceLayerName(appearance.HairLayerId)} hair | {FormatAppearanceLayerName(appearance.OutfitLayerId)} outfit | {FormatAppearanceLayerName(appearance.HeldToolLayerId)} tool";
+        return $"Appearance: {FormatAppearanceLayerName(appearance.SkinLayerId)} skin | {FormatAppearanceLayerName(appearance.HairLayerId)} hair | {FormatAppearanceLayerName(appearance.OutfitLayerId)} outfit | {FormatAppearanceLayerName(appearance.PantsLayerId)} pants | {FormatAppearanceLayerName(appearance.ShirtLayerId)} shirt | {FormatAppearanceLayerName(appearance.HeldToolLayerId)} tool";
     }
 
     public static string FormatAppearanceDetailLine(string label, string layerId)
@@ -2095,6 +3739,8 @@ public partial class HudController : CanvasLayer
             "skin" => new Dictionary<string, string> { ["skinLayerId"] = PlayerController.CycleSkinLayerId(current.SkinLayerId) },
             "hair" => new Dictionary<string, string> { ["hairLayerId"] = PlayerController.CycleHairLayerId(current.HairLayerId) },
             "outfit" => new Dictionary<string, string> { ["outfitLayerId"] = PlayerController.CycleOutfitLayerId(current.OutfitLayerId) },
+            "pants" => new Dictionary<string, string> { ["pantsLayerId"] = PlayerController.CyclePantsLayerId(current.PantsLayerId) },
+            "shirt" => new Dictionary<string, string> { ["shirtLayerId"] = PlayerController.CycleShirtLayerId(current.ShirtLayerId) },
             _ => new Dictionary<string, string>()
         };
     }
@@ -2106,8 +3752,9 @@ public partial class HudController : CanvasLayer
 
     private static string FormatQuestName(string questId)
     {
-        return questId == Karma.Data.StarterQuests.MaraClinicFiltersId
-            ? Karma.Data.StarterQuests.MaraClinicFilters.Title
+        var quest = StarterQuests.All.FirstOrDefault(candidate => candidate.Id == questId);
+        return quest is not null
+            ? quest.Title
             : string.IsNullOrWhiteSpace(questId) ? "quest" : questId;
     }
 
@@ -2185,6 +3832,18 @@ public partial class HudController : CanvasLayer
             _gameState.Inventory,
             _gameState.LocalScrip,
             _gameState.LocalPlayer.Equipment);
+        if (_inventoryRowsContainer is null) return;
+        foreach (var child in _inventoryRowsContainer.GetChildren())
+            child.QueueFree();
+        var activeThemeId = ResolveActiveThemeId();
+        for (var i = 0; i < _gameState.Inventory.Count; i++)
+        {
+            var item = _gameState.Inventory[i];
+            _inventoryRowsContainer.AddChild(new InventoryDragRow(item, activeThemeId)
+            {
+                CustomMinimumSize = new Vector2(220, 38)
+            });
+        }
     }
 
     public static string FormatInventoryOverlay(
@@ -2203,6 +3862,7 @@ public partial class HudController : CanvasLayer
         lines.Add($"Main Hand: {FormatEquipped(equipment, EquipmentSlot.MainHand)}");
         lines.Add($"Body: {FormatEquipped(equipment, EquipmentSlot.Body)}");
         lines.Add($"Trinket: {FormatEquipped(equipment, EquipmentSlot.Trinket)}");
+        lines.Add($"Weapon Durability: {FormatDurability(equipment, EquipmentSlot.MainHand)}");
         lines.Add(string.Empty);
         lines.Add("Items:");
 
@@ -2228,6 +3888,17 @@ public partial class HudController : CanvasLayer
         return string.Join("\n", lines);
     }
 
+    public static Color InventoryTintForRarity(ItemRarity rarity)
+    {
+        return rarity switch
+        {
+            ItemRarity.Uncommon => new Color(0.36f, 0.86f, 0.45f),
+            ItemRarity.Rare => new Color(0.38f, 0.64f, 1f),
+            ItemRarity.Contraband => new Color(1f, 0.36f, 0.34f),
+            _ => new Color(0.78f, 0.78f, 0.78f)
+        };
+    }
+
     public static string FormatPossePanel(IReadOnlyList<PlayerSnapshot> players, string localPlayerId)
     {
         var localPlayer = players?.FirstOrDefault(player => player.Id == localPlayerId);
@@ -2238,14 +3909,20 @@ public partial class HudController : CanvasLayer
 
         var posseId = localPlayer.PosseId;
         var members = players.Where(player => player.PosseId == posseId).OrderBy(player => player.DisplayName).ToArray();
-        var label = posseId.StartsWith("posse_") ? posseId[6..] : posseId;
+        var label = string.IsNullOrWhiteSpace(localPlayer.PosseName)
+            ? (posseId.StartsWith("posse_") ? posseId[6..] : posseId)
+            : localPlayer.PosseName;
+        var leaderId = string.IsNullOrWhiteSpace(localPlayer.PosseLeaderId)
+            ? string.Empty
+            : localPlayer.PosseLeaderId;
 
         var lines = new List<string> { $"Posse [{label}] — {members.Length} member{(members.Length == 1 ? "" : "s")}" };
         foreach (var member in members)
         {
             var self = member.Id == localPlayerId ? " (you)" : string.Empty;
+            var leader = member.Id == leaderId ? " (leader)" : string.Empty;
             var karmaSign = member.Karma >= 0 ? "+" : string.Empty;
-            lines.Add($"{member.DisplayName}{self}: {karmaSign}{member.Karma} | HP {member.Health}/{member.MaxHealth}");
+            lines.Add($"{member.DisplayName}{self}{leader}: {karmaSign}{member.Karma} | HP {member.Health}/{member.MaxHealth}");
         }
 
         lines.Add("P — close");
@@ -2441,5 +4118,17 @@ public partial class HudController : CanvasLayer
         return equipment is not null && equipment.TryGetValue(slot, out var item)
             ? $"{item.Name} [{ItemText.FormatSummary(item)}]"
             : "empty";
+    }
+
+    public static string FormatDurability(
+        IReadOnlyDictionary<EquipmentSlot, GameItem> equipment,
+        EquipmentSlot slot)
+    {
+        if (equipment is null || !equipment.TryGetValue(slot, out var item))
+            return "empty";
+        if (item.MaxDurability <= 0)
+            return "n/a";
+        var marker = item.IsBroken ? " broken" : string.Empty;
+        return $"{item.Durability}/{item.MaxDurability}{marker}";
     }
 }

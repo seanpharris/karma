@@ -18,7 +18,11 @@ public sealed record ServerConfig(
     int CombatRangeTiles,
     int ChunkSizeTiles,
     int MatchDurationSeconds,
-    int ReputationDecayTickInterval = 10)
+    int ReputationDecayTickInterval = 600,
+    int CrimeReportDelayTicks = 200,
+    int MatchPhaseDurationTicks = 6000,
+    bool ReplayEnabled = false,
+    string ReplayPath = "")
 {
     public const int AbsoluteMaxPlayers = 100;
     public const int DefaultMatchDurationSeconds = 30 * 60;
@@ -83,6 +87,11 @@ public sealed record ServerConfig(
         if (MatchDurationSeconds < 1)
         {
             throw new InvalidOperationException("MatchDurationSeconds must be positive.");
+        }
+
+        if (MatchPhaseDurationTicks < 1)
+        {
+            throw new InvalidOperationException("MatchPhaseDurationTicks must be positive.");
         }
     }
 }

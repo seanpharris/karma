@@ -1,0 +1,24 @@
+{
+  "id": "priest_male_v9",
+  "display_name": "Priest (variant 9)",
+  "tags": [
+    "medieval",
+    "chapel"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/sandals/male/walk.png",
+    "legs": "legs/leggings/male/walk.png",
+    "torso": "torso/clothes/longsleeve/longsleeve2_vneck/male/walk.png",
+    "hair": "hair/bangslong/adult/walk.png",
+    "weapon": "weapon/magic/simple/foreground/walk/simple.png",
+    "neck": "neck/jabot/male/walk.png",
+    "beard": "beards/beard/basic/walk.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

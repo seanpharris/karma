@@ -9,8 +9,19 @@ public enum MatchStatus
     Finished
 }
 
+public enum MatchPhase
+{
+    Dawn,
+    Morning,
+    Noon,
+    Afternoon,
+    Dusk,
+    Night
+}
+
 public sealed record MatchSnapshot(
     MatchStatus Status,
+    MatchPhase Phase,
     int DurationSeconds,
     int ElapsedSeconds,
     string CurrentSaintId,
@@ -32,7 +43,7 @@ public sealed record MatchSnapshot(
     {
         MatchStatus.Lobby => "Lobby: waiting for players to ready up",
         MatchStatus.Finished => $"Match complete: Saint {SaintWinnerName} ({SaintWinnerScore:+#;-#;0}) | Scourge {ScourgeWinnerName} ({ScourgeWinnerScore:+#;-#;0})",
-        _ => $"Match: {FormatTime(RemainingSeconds)} | Saint {CurrentSaintName} ({CurrentSaintScore:+#;-#;0}) | Scourge {CurrentScourgeName} ({CurrentScourgeScore:+#;-#;0})"
+        _ => $"Match: {FormatTime(RemainingSeconds)} | Phase {Phase} | Saint {CurrentSaintName} ({CurrentSaintScore:+#;-#;0}) | Scourge {CurrentScourgeName} ({CurrentScourgeScore:+#;-#;0})"
     };
 
     private static string FormatTime(int seconds)
@@ -79,7 +90,7 @@ public sealed class MatchState
         _winners = SnapshotBuilder.LeaderboardFrom(standing);
     }
 
-    public MatchSnapshot Snapshot(LeaderboardStanding currentStanding)
+    public MatchSnapshot Snapshot(LeaderboardStanding currentStanding, MatchPhase phase = MatchPhase.Dawn)
     {
         var leaders = SnapshotBuilder.LeaderboardFrom(currentStanding);
         var winners = Status == MatchStatus.Finished
@@ -87,6 +98,7 @@ public sealed class MatchState
             : leaders;
         return new MatchSnapshot(
             Status,
+            phase,
             _durationSeconds,
             _elapsedSeconds,
             leaders.SaintPlayerId,

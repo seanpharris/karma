@@ -1,0 +1,114 @@
+{
+  "category": "structures",
+  "force": true,
+  "items": [
+    {
+      "id": "wooden_door",
+      "prompt": "medieval studded wooden door, iron hinges and band, top-down inventory icon, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "iron_door",
+      "prompt": "medieval iron-banded heavy door, riveted, dark wood center, top-down inventory icon, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "notice_board",
+      "prompt": "medieval cork notice board on wooden post, parchment papers nailed to it, top-down inventory icon, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "wooden_sign",
+      "prompt": "medieval wooden hanging shop sign with iron bracket, weathered wood, top-down inventory icon, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "chest",
+      "prompt": "medieval wooden treasure chest, iron-banded, brass lock, slightly open, top-down inventory icon, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "crate",
+      "prompt": "medieval wooden shipping crate with rope handles, dark planks, top-down inventory icon, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "barrel",
+      "prompt": "medieval wooden ale barrel with iron bands, light wood, top-down inventory icon, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "anvil_block",
+      "prompt": "medieval blacksmith iron anvil on wooden stump, scarred from hammering, top-down inventory icon, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "bell_stand",
+      "prompt": "medieval bronze hand bell on stone pedestal with rope tassel, top-down inventory icon, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "stone_cross",
+      "prompt": "medieval weathered stone celtic cross gravestone with carvings, top-down inventory icon, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "tombstone",
+      "prompt": "medieval stone gravestone, simple rounded top, weathered text, moss growth, top-down inventory icon, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "clay_pot",
+      "prompt": "medieval clay storage pot, terracotta, simple geometric pattern, top-down inventory icon, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "ceramic_urn",
+      "prompt": "medieval glazed ceramic urn, blue and white pattern, narrow neck, top-down inventory icon, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "stone_pedestal",
+      "prompt": "medieval carved stone pedestal column, ornate base, top-down inventory icon, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "statue",
+      "prompt": "medieval stone statue of robed figure, weathered, ivy growing, top-down inventory icon, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "stone_wall",
+      "prompt": "medieval stone block wall section, mortared blocks, weathered, top-down view, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "stone_arch",
+      "prompt": "medieval stone gateway arch, two columns supporting curved top, top-down view, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "stone_stairs",
+      "prompt": "medieval stone staircase steps, weathered, mossy, top-down view, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    }
+  ]
+}

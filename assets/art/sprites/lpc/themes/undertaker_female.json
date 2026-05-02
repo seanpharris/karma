@@ -1,0 +1,21 @@
+{
+  "id": "undertaker_female",
+  "display_name": "Undertaker",
+  "tags": [
+    "medieval",
+    "chapel"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/shoes/basic/male/walk.png",
+    "legs": "legs/skirts/slit/thin/walk.png",
+    "torso": "torso/clothes/longsleeve/longsleeve_brown/female/walk.png",
+    "hair": "hair/long/adult/walk.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

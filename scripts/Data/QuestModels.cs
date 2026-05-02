@@ -122,6 +122,18 @@ public sealed class QuestLedger
         }
     }
 
+    // Wipe all quest progress and re-seed the ledger from the given
+    // definitions. Used by GameState.ResetForNewMatch so a fresh round
+    // doesn't inherit completed/active quests from the previous one.
+    public void Reset(IEnumerable<QuestDefinition> definitions)
+    {
+        _quests.Clear();
+        foreach (var definition in definitions)
+        {
+            _quests[definition.Id] = new QuestState(definition);
+        }
+    }
+
     public string FormatActiveSummary()
     {
         var active = _quests.Values
@@ -160,6 +172,11 @@ public sealed class QuestLedger
 public static class StarterQuests
 {
     public const string MaraClinicFiltersId = "mara_clinic_filters";
+    public const string GarrickBladeOrderId = "garrick_blade_order";
+    public const string MeriCellarStockId = "meri_cellar_stock";
+    public const string CaldenChapelTitheId = "calden_chapel_tithe";
+    public const string WaceBarracksWatchId = "wace_barracks_watch";
+    public const string YsoltHerbalRemedyId = "ysolt_herbal_remedy";
 
     public static readonly QuestDefinition MaraClinicFilters = new(
         MaraClinicFiltersId,
@@ -170,8 +187,58 @@ public static class StarterQuests
         Core.PrototypeActions.HelpMaraId,
         ScripReward: 12);
 
+    public static readonly QuestDefinition GarrickBladeOrder = new(
+        GarrickBladeOrderId,
+        "Blade for the Watch",
+        "blacksmith_garrick",
+        "Garrick can finish a watch blade if someone brings serviceable tools and scrap.",
+        new[] { StarterItems.MultiToolId, StarterItems.BoltCuttersId },
+        "deliver_garrick_blade_parts",
+        ScripReward: 15);
+
+    public static readonly QuestDefinition MeriCellarStock = new(
+        MeriCellarStockId,
+        "Cellar Stock",
+        "tavernkeep_meri",
+        "Meri needs travel rations and a flask to keep the tavern fed through market day.",
+        new[] { StarterItems.RationPackId, StarterItems.ChemInjectorId },
+        "deliver_meri_cellar_stock",
+        ScripReward: 10);
+
+    public static readonly QuestDefinition CaldenChapelTithe = new(
+        CaldenChapelTitheId,
+        "Chapel Tithe",
+        "priest_calden",
+        "Father Calden asks for a token of peace and clean supplies for the almshouse.",
+        new[] { StarterItems.ApologyFlowerId, StarterItems.RepairKitId },
+        "deliver_calden_tithe",
+        ScripReward: 12);
+
+    public static readonly QuestDefinition WaceBarracksWatch = new(
+        WaceBarracksWatchId,
+        "Barracks Watch",
+        "captain_wace",
+        "Captain Wace wants a torch and sturdy vest before assigning the evening patrol.",
+        new[] { StarterItems.FlashlightId, StarterItems.WorkVestId },
+        "deliver_wace_watch_kit",
+        ScripReward: 14);
+
+    public static readonly QuestDefinition YsoltHerbalRemedy = new(
+        YsoltHerbalRemedyId,
+        "Herbal Remedy",
+        "herbalist_ysolt",
+        "Ysolt can brew a remedy for the sick if the right tincture reaches her hut.",
+        new[] { StarterItems.MediPatchId, StarterItems.RationPackId },
+        "deliver_ysolt_remedy",
+        ScripReward: 13);
+
     public static IReadOnlyList<QuestDefinition> All { get; } = new[]
     {
-        MaraClinicFilters
+        MaraClinicFilters,
+        GarrickBladeOrder,
+        MeriCellarStock,
+        CaldenChapelTithe,
+        WaceBarracksWatch,
+        YsoltHerbalRemedy
     };
 }

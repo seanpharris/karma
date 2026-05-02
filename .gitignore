@@ -1,11 +1,13 @@
 .godot/
 .import/
+*.import
 export.cfg
 export_presets.cfg
 *.translation
 
 bin/
 obj/
+build/
 .vs/
 .vscode/
 .venv/
@@ -23,6 +25,7 @@ debug/*.txt
 debug/**/*.json
 debug/**/*.png
 debug/**/*.txt
+tools/last_test_output.txt
 
 # Sprite pipeline generated assets
 input_raw/*
@@ -31,3 +34,6 @@ output_sprites/*
 !output_sprites/.gitkeep
 output_sheets/*
 !output_sheets/.gitkeep
+
+# Raw LPC source art is too large to vendor directly; commit generated runtime bundles instead.
+assets/art/sprites/lpc/spritesheets/

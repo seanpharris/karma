@@ -1,0 +1,24 @@
+{
+  "id": "miner_male_v9",
+  "display_name": "Miner (variant 9)",
+  "tags": [
+    "medieval",
+    "peasant"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/sandals/male/walk.png",
+    "legs": "legs/leggings/male/walk.png",
+    "torso": "torso/clothes/longsleeve/longsleeve2_vneck/male/walk.png",
+    "hair": "hair/bangs/adult/walk.png",
+    "weapon": "weapon/blunt/club/club.png",
+    "neck": "neck/jabot/male/walk.png",
+    "beard": "beards/beard/basic/walk.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

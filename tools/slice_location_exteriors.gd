@@ -1,15 +1,21 @@
 extends SceneTree
 
 # Slice karma_priority_location_exteriors_atlas (1024x1024, 4x3 = 12 cells).
-# Building exteriors. Row 2 has number labels under icons (9-12); we use a
-# tighter ICON_PORTION to skip those labels.
+# Building exteriors. Rows 0-1 unlabeled (icons fill cell); row 2 has number
+# labels at bottom ("9. POSSE CAMP/RALLY POINT" etc.) — its slice height is
+# trimmed to exclude the label band.
 
 const COLS := 4
 const ROWS := 3
-const ICON_PORTION := 0.80
+const ICON_W_PORTION := 0.92
 
 const SOURCE := "res://assets/art/generated/priority_static_atlases/karma_priority_location_exteriors_atlas.jpg"
 const OUT_DIR := "res://assets/art/generated/sliced/location_exteriors"
+
+# Per-row Y_TOPS and HEIGHTS (in source pixels). Row 2's height stops at the
+# top of the number-label band (around y=915).
+const ROW_Y_TOPS := [10, 345, 645]
+const ROW_HEIGHTS := [320, 295, 270]
 
 const NAMES := [
 	["clinic_exterior", "shop_kiosk_exterior", "bounty_office_exterior", "jail_block_exterior"],
@@ -24,18 +30,16 @@ func _initialize() -> void:
 		quit(1)
 		return
 	var cell_w: int = atlas.get_width() / COLS
-	var cell_h: int = atlas.get_height() / ROWS
-	var icon_w: int = int(cell_w * ICON_PORTION)
-	var icon_h: int = int(cell_h * ICON_PORTION)
+	var icon_w: int = int(cell_w * ICON_W_PORTION)
 	var x_inset: int = (cell_w - icon_w) / 2
-	var y_inset: int = int(cell_h * 0.05)
 
 	var manifest_entries: Array = []
 	for row in range(ROWS):
+		var y: int = ROW_Y_TOPS[row]
+		var icon_h: int = ROW_HEIGHTS[row]
 		for col in range(COLS):
 			var name: String = NAMES[row][col]
 			var x: int = col * cell_w + x_inset
-			var y: int = row * cell_h + y_inset
 			var icon := atlas.get_region(Rect2i(x, y, icon_w, icon_h))
 			var out_path := OUT_DIR + "/" + name + ".png"
 			if icon.save_png(out_path) != OK:

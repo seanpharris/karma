@@ -16,9 +16,26 @@ public partial class PrototypeServerSession : Node
     private int _snapshotsRefreshed;
 
     public AuthoritativeWorldServer Server => _server;
+    public string ActiveThemeId => _server?.ThemeId ?? string.Empty;
     public InterestSnapshotCache LocalSnapshotCache => _localSnapshotCache;
     public ClientInterestSnapshot LastLocalSnapshot { get; private set; }
     public int SnapshotsRefreshed => _snapshotsRefreshed;
+
+    // Tear down the current authoritative server and snapshot cache so
+    // a second match started after a Main-Menu return runs against
+    // fresh state. Mirrors GameState.ResetForNewMatch.
+    public void RestartForNewMatch(string themeId = "")
+    {
+        _server = new AuthoritativeWorldServer(_state, "local-prototype", ServerConfig.Prototype4Player, themeId);
+        _localSnapshotCache.Reset();
+        _matchSecondAccumulator = 0;
+        _snapshotsRefreshed = 0;
+        _nextSequenceByPlayer.Clear();
+        var emptyPayload = new System.Collections.Generic.Dictionary<string, string>();
+        foreach (var playerId in _server.ConnectedPlayerIds.ToArray())
+            Send(playerId, IntentType.ReadyUp, emptyPayload);
+        RefreshLocalSnapshot();
+    }
 
     [Signal]
     public delegate void LocalSnapshotChangedEventHandler(string snapshotSummary);

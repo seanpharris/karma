@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://scripts/Art/PrototypeSprite.cs" id="7_proto_sprite"]
 [ext_resource type="Script" path="res://scripts/Art/PrototypeCharacterSprite.cs" id="8_character_sprite"]
 [ext_resource type="Script" path="res://scripts/Art/PrototypeAtlasSprite.cs" id="9_atlas_sprite"]
+[ext_resource type="Script" path="res://scripts/Audio/PrototypeMusicPlayer.cs" id="10_music"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_player"]
 radius = 12.0
@@ -265,3 +266,8 @@ shape = SubResource("CircleShape2D_peer")
 
 [node name="Hud" type="CanvasLayer" parent="."]
 script = ExtResource("4_hud")
+
+[node name="PrototypeMusic" type="Node" parent="."]
+script = ExtResource("10_music")
+MusicTheme = 0
+Volume = 0.4

@@ -52,3 +52,26 @@ From WSL, the known-good commands are:
 '/mnt/c/Program Files/dotnet/dotnet.exe' build Karma.csproj
 '/mnt/c/Users/pharr/Downloads/Godot_v4.6.2-stable_mono_win64/Godot_v4.6.2-stable_mono_win64/Godot_v4.6.2-stable_mono_win64_console.exe' --headless --path "C:\Users\pharr\code\karma" "res://scenes/TestHarness.tscn"
 ```
+
+## Windows exports
+
+The player-facing build exports as its own executable:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\export-main-game.ps1
+```
+
+Output: `build\windows\main\Karma.exe`
+
+The direct gameplay prototype remains separate:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\export-prototype-game.ps1
+```
+
+Output: `build\windows\prototype\KarmaPrototype.exe`
+
+Both scripts create the local, ignored `export_presets.cfg` from
+`tools\export_presets.template.cfg` if needed.
+The raw LPC source tree is kept out of Godot exports; runtime character bundles
+come from `assets\art\generated\lpc_npcs`.

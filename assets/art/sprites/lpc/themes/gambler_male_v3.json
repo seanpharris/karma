@@ -1,0 +1,21 @@
+{
+  "id": "gambler_male_v3",
+  "display_name": "Gambler (variant 3)",
+  "tags": [
+    "medieval",
+    "outlaw"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk.png",
+    "legs": "legs/pants/thin/walk.png",
+    "torso": "torso/clothes/longsleeve/longsleeve_brown/male/walk.png",
+    "hair": "hair/balding/adult/walk.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

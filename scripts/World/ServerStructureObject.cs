@@ -44,7 +44,19 @@ public partial class ServerStructureObject : Area2D
                 ["entityId"] = EntityId,
                 ["action"] = action
             });
+        if (result.WasAccepted &&
+            result.Event.Data.TryGetValue("structureCategory", out var category) &&
+            IsBountyBoardCategory(category))
+        {
+            _hud?.OpenBountyBoard();
+        }
+
         _hud?.ShowPrompt(result.WasAccepted ? result.Event.Data["result"] : result.RejectionReason);
+    }
+
+    private static bool IsBountyBoardCategory(string category)
+    {
+        return category is "notice-board" or "broadcast-tower";
     }
 
     private static string ResolveAction(InputEvent @event)

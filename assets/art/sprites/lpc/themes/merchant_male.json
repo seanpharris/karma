@@ -1,0 +1,21 @@
+{
+  "id": "merchant_male",
+  "display_name": "Travelling Merchant",
+  "tags": [
+    "medieval",
+    "wayfarer"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk.png",
+    "legs": "legs/pants/thin/walk.png",
+    "torso": "torso/clothes/longsleeve/longsleeve_brown/male/walk.png",
+    "hair": "hair/buzzcut/adult/walk.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

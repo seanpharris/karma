@@ -1,0 +1,25 @@
+{
+  "id": "pilgrim_female_v6",
+  "display_name": "Pilgrim (F) (variant 6)",
+  "tags": [
+    "medieval",
+    "wayfarer",
+    "chapel"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/shoes/basic/thin/walk.png",
+    "legs": "legs/pantaloons/thin/walk.png",
+    "torso": "torso/clothes/longsleeve/longsleeve2_buttoned/female/walk.png",
+    "hair": "hair/curly_long/adult/walk.png",
+    "weapon": "weapon/polearm/cane/male/walk/cane.png",
+    "waist": "torso/waist/belt_leather/female/walk.png",
+    "neck": "neck/cravat/female/walk.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

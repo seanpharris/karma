@@ -1,0 +1,25 @@
+{
+  "id": "bandit_male_v7",
+  "display_name": "Bandit (variant 7)",
+  "tags": [
+    "medieval",
+    "outlaw",
+    "melee"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/shoes/ghillies/male/walk.png",
+    "legs": "legs/pantaloons/male/walk.png",
+    "torso": "torso/chainmail/male/walk.png",
+    "hair": "hair/unkempt/adult/walk.png",
+    "weapon": "weapon/sword/arming/universal/fg/walk/silver.png",
+    "hat": "hat/helmet/bascinet/adult/walk.png",
+    "beard": "beards/mustache/handlebar/walk.png"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

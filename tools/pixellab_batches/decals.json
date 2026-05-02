@@ -1,0 +1,53 @@
+{
+  "category": "decals",
+  "items": [
+    {
+      "id": "decal_blood_splatter",
+      "prompt": "small dark red blood splatter pattern on dirt ground, drops and smear, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "decal_footprints_dirt",
+      "prompt": "two muddy boot footprints in dirt, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "decal_hay_pile",
+      "prompt": "small loose hay pile, scattered straw, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "decal_scorch_mark",
+      "prompt": "black scorch burn mark on ground, ash residue, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "decal_water_puddle",
+      "prompt": "small reflective water puddle on muddy ground, ripples, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "decal_loose_stones",
+      "prompt": "scattered small grey stones on ground, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "decal_leaves",
+      "prompt": "scattered fallen leaves on ground, brown and orange, top-down view, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "decal_market_rug",
+      "prompt": "small medieval woven market rug, red and gold pattern, top-down view, transparent background, pixel art",
+      "width": 64,
+      "height": 32
+    }
+  ]
+}
