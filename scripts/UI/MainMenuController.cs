@@ -533,41 +533,48 @@ public partial class MainMenuController : Control
 
     private void BuildOptionsOverlay()
     {
-        _optionsOverlay = MakeParchmentPanel("OptionsOverlay", "Options");
+        _optionsOverlay = MakeKarmaPanel("OptionsOverlay", "Options");
         _overlayLayer.AddChild(_optionsOverlay);
         var content = (VBoxContainer)_optionsOverlay.GetMeta("content");
 
+        content.AddChild(MenuTheme.MakeSectionHeading("Video"));
+
         var videoGrid = new GridContainer { Columns = 2 };
-        videoGrid.AddThemeConstantOverride("h_separation", 16);
-        videoGrid.AddThemeConstantOverride("v_separation", 8);
+        videoGrid.AddThemeConstantOverride("h_separation", 20);
+        videoGrid.AddThemeConstantOverride("v_separation", 10);
         content.AddChild(videoGrid);
 
-        videoGrid.AddChild(new Label { Text = "Resolution" });
+        videoGrid.AddChild(MenuTheme.MakeBodyLabel("Resolution"));
         _resolutionOption = new OptionButton();
+        MenuTheme.StyleOptionButton(_resolutionOption);
         videoGrid.AddChild(_resolutionOption);
 
-        videoGrid.AddChild(new Label { Text = "Fullscreen" });
+        videoGrid.AddChild(MenuTheme.MakeBodyLabel("Fullscreen"));
         _fullscreenToggle = new CheckButton();
+        MenuTheme.StyleCheckButton(_fullscreenToggle);
         videoGrid.AddChild(_fullscreenToggle);
 
-        videoGrid.AddChild(new Label { Text = "VSync" });
+        videoGrid.AddChild(MenuTheme.MakeBodyLabel("VSync"));
         _vsyncToggle = new CheckButton();
+        MenuTheme.StyleCheckButton(_vsyncToggle);
         videoGrid.AddChild(_vsyncToggle);
 
         var detectRow = new HBoxContainer();
-        var detectButton = new Button { Text = "Detect display" };
+        detectRow.AddThemeConstantOverride("separation", 12);
+        var detectButton = new Button { Text = "Detect Display" };
+        MenuTheme.StyleButton(detectButton);
         detectButton.Pressed += DetectAndSelectCurrentResolution;
         detectRow.AddChild(detectButton);
-        _detectedResolutionLabel = new Label { Text = string.Empty };
-        _detectedResolutionLabel.AddThemeColorOverride("font_color", new Color(0.7f, 0.6f, 0.4f));
+        _detectedResolutionLabel = MenuTheme.MakeSubtleLabel(string.Empty);
         detectRow.AddChild(_detectedResolutionLabel);
         content.AddChild(detectRow);
 
-        content.AddChild(MakeDivider());
+        content.AddChild(MenuTheme.MakeDivider());
+        content.AddChild(MenuTheme.MakeSectionHeading("Audio"));
 
         var audioGrid = new GridContainer { Columns = 3 };
-        audioGrid.AddThemeConstantOverride("h_separation", 16);
-        audioGrid.AddThemeConstantOverride("v_separation", 8);
+        audioGrid.AddThemeConstantOverride("h_separation", 20);
+        audioGrid.AddThemeConstantOverride("v_separation", 10);
         content.AddChild(audioGrid);
 
         (_masterVolumeSlider, _masterVolumeLabel) = AddVolumeRow(audioGrid, "Master");
@@ -584,14 +591,16 @@ public partial class MainMenuController : Control
             };
         }
 
-        content.AddChild(MakeDivider());
+        content.AddChild(MenuTheme.MakeDivider());
 
-        var actions = new HBoxContainer();
-        actions.AddThemeConstantOverride("separation", 12);
+        var actions = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
+        actions.AddThemeConstantOverride("separation", 16);
         var apply = new Button { Text = "Apply" };
+        MenuTheme.StyleButton(apply);
         apply.Pressed += ApplyAndSaveOptions;
         actions.AddChild(apply);
         var close = new Button { Text = "Close (Esc)" };
+        MenuTheme.StyleButton(close);
         close.Pressed += HideOverlays;
         actions.AddChild(close);
         content.AddChild(actions);
@@ -605,28 +614,24 @@ public partial class MainMenuController : Control
 
     private static (HSlider slider, Label label) AddVolumeRow(GridContainer grid, string name)
     {
-        grid.AddChild(new Label { Text = name });
+        grid.AddChild(MenuTheme.MakeBodyLabel(name));
         var slider = new HSlider
         {
             MinValue = 0, MaxValue = 100, Step = 1, Value = 80,
-            CustomMinimumSize = new Vector2(220, 24),
+            CustomMinimumSize = new Vector2(240, 20),
             SizeFlagsHorizontal = SizeFlags.ExpandFill
         };
+        MenuTheme.StyleSlider(slider);
         grid.AddChild(slider);
-        var label = new Label { Text = "80%", CustomMinimumSize = new Vector2(56, 0) };
+        var label = MenuTheme.MakeSubtleLabel("80%");
+        label.CustomMinimumSize = new Vector2(56, 0);
         grid.AddChild(label);
         return (slider, label);
     }
 
-    private static Control MakeDivider()
-    {
-        var sep = new ColorRect { Color = new Color(0.6f, 0.5f, 0.3f, 0.4f), CustomMinimumSize = new Vector2(0, 1) };
-        return sep;
-    }
-
     private void BuildCreditsOverlay()
     {
-        _creditsOverlay = MakeParchmentPanel("CreditsOverlay", "Credits");
+        _creditsOverlay = MakeKarmaPanel("CreditsOverlay", "Credits");
         _overlayLayer.AddChild(_creditsOverlay);
         var content = (VBoxContainer)_creditsOverlay.GetMeta("content");
 
@@ -642,43 +647,38 @@ public partial class MainMenuController : Control
             "Press Esc to return."
         })
         {
-            var label = new Label { Text = line, HorizontalAlignment = HorizontalAlignment.Center };
-            label.AddThemeFontSizeOverride("font_size", 16);
+            var label = MenuTheme.MakeBodyLabel(line);
+            label.HorizontalAlignment = HorizontalAlignment.Center;
             content.AddChild(label);
         }
 
+        var actions = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
         var close = new Button { Text = "Close (Esc)" };
+        MenuTheme.StyleButton(close);
         close.Pressed += HideOverlays;
-        content.AddChild(close);
+        actions.AddChild(close);
+        content.AddChild(actions);
     }
 
-    private static PanelContainer MakeParchmentPanel(string name, string title)
+    // Karma-styled overlay panel: dark navy with metallic gold border,
+    // matches the painted menu buttons + KARMA title.
+    private static PanelContainer MakeKarmaPanel(string name, string title)
     {
         var panel = new PanelContainer
         {
             Name = name,
             AnchorLeft = 0.5f, AnchorTop = 0.5f, AnchorRight = 0.5f, AnchorBottom = 0.5f,
-            OffsetLeft = -360, OffsetRight = 360, OffsetTop = -260, OffsetBottom = 260,
+            OffsetLeft = -380, OffsetRight = 380, OffsetTop = -290, OffsetBottom = 290,
             Visible = false
         };
-        var style = new StyleBoxFlat
-        {
-            BgColor = new Color(0.93f, 0.86f, 0.7f, 0.96f),
-            BorderColor = new Color(0.45f, 0.32f, 0.18f),
-            BorderWidthLeft = 3, BorderWidthRight = 3, BorderWidthTop = 3, BorderWidthBottom = 3,
-            CornerRadiusTopLeft = 8, CornerRadiusTopRight = 8, CornerRadiusBottomLeft = 8, CornerRadiusBottomRight = 8,
-            ContentMarginLeft = 24, ContentMarginRight = 24, ContentMarginTop = 18, ContentMarginBottom = 18
-        };
-        panel.AddThemeStyleboxOverride("panel", style);
+        panel.AddThemeStyleboxOverride("panel", MenuTheme.MakePanelStyle());
 
         var content = new VBoxContainer { Name = "Content" };
-        content.AddThemeConstantOverride("separation", 10);
+        content.AddThemeConstantOverride("separation", 12);
         panel.AddChild(content);
 
-        var heading = new Label { Text = title, HorizontalAlignment = HorizontalAlignment.Center };
-        heading.AddThemeFontSizeOverride("font_size", 24);
-        heading.AddThemeColorOverride("font_color", new Color(0.32f, 0.18f, 0.08f));
-        content.AddChild(heading);
+        content.AddChild(MenuTheme.MakeTitle(title));
+        content.AddChild(MenuTheme.MakeDivider());
 
         panel.SetMeta("content", content);
         return panel;
