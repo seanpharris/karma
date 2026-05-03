@@ -28,21 +28,16 @@ public partial class MainMenuController : Control
     // (left, top, right, bottom) in 0..1 over the image bounds. Tuned
     // by eye to overlap the painted buttons. Adjust if the splash
     // re-renders or moves the buttons.
+    // Tuned for the 4-button splash variant of karma_menu_mockup.png
+    // (1536×1024, MULTIVERSE removed). Buttons are stacked closer than
+    // the 5-button version: ~10% center-to-center, 8% tall.
     private static readonly (string Id, string Label, Rect2 Bounds)[] ButtonLayout =
     {
-        ("play",    "PLAY",    new Rect2(0.39f, 0.495f, 0.22f, 0.072f)),
-        // MULTIVERSE removed — the painted button still appears in the
-        // splash but is non-interactive. A blocker rect (see
-        // BuildPaintedMultiverseCover) softly dims the painted artwork
-        // so it reads as decorative rather than clickable.
-        ("options", "OPTIONS", new Rect2(0.39f, 0.650f, 0.22f, 0.072f)),
-        ("credits", "CREDITS", new Rect2(0.39f, 0.728f, 0.22f, 0.072f)),
-        ("quit",    "QUIT",    new Rect2(0.39f, 0.806f, 0.22f, 0.072f))
+        ("play",    "PLAY",    new Rect2(0.39f, 0.500f, 0.22f, 0.082f)),
+        ("options", "OPTIONS", new Rect2(0.39f, 0.605f, 0.22f, 0.082f)),
+        ("credits", "CREDITS", new Rect2(0.39f, 0.708f, 0.22f, 0.082f)),
+        ("quit",    "QUIT",    new Rect2(0.39f, 0.804f, 0.22f, 0.082f))
     };
-
-    // Bounds of the painted MULTIVERSE button. Used by
-    // BuildPaintedMultiverseCover to dim out the leftover artwork.
-    private static readonly Rect2 PaintedMultiverseBounds = new(0.37f, 0.572f, 0.26f, 0.072f);
 
     // Title shimmer rect (over the painted "KARMA" letters).
     private static readonly Rect2 TitleRect = new(0.20f, 0.04f, 0.60f, 0.21f);
@@ -309,8 +304,6 @@ public partial class MainMenuController : Control
     {
         if (_stageFrame is null) return;
 
-        BuildPaintedMultiverseCover();
-
         var transparent = new StyleBoxEmpty();
         var pillTexture = MakePillGlow(256, 80, softness: 1.4f);
         foreach (var (id, label, bounds) in ButtonLayout)
@@ -372,22 +365,6 @@ public partial class MainMenuController : Control
         _buttons["options"].Pressed += ShowOptions;
         _buttons["credits"].Pressed += ShowCredits;
         _buttons["quit"].Pressed += QuitGame;
-    }
-
-    // The MULTIVERSE button is painted into the splash but no longer
-    // wired. Drop a soft dark veil over the painted area so it reads
-    // as decorative / disabled rather than something the player should
-    // try to click.
-    private void BuildPaintedMultiverseCover()
-    {
-        var veil = new ColorRect
-        {
-            Name = "PaintedMultiverseVeil",
-            Color = new Color(0, 0, 0, 0.55f),
-            MouseFilter = MouseFilterEnum.Ignore
-        };
-        AnchorRect(veil, PaintedMultiverseBounds);
-        _stageFrame.AddChild(veil);
     }
 
     private static Color GlowTint(string buttonId) => buttonId switch
