@@ -4,7 +4,7 @@
 [ext_resource type="Script" path="res://scripts/Player/PlayerController.cs" id="2_player"]
 [ext_resource type="Script" path="res://scripts/Art/PrototypeCharacterSprite.cs" id="3_sprite"]
 [ext_resource type="Script" path="res://scripts/UI/HudController.cs" id="4_hud"]
-[ext_resource type="Script" path="res://scripts/Audio/PrototypeMusicPlayer.cs" id="5_music"]
+[ext_resource type="Script" path="res://scripts/Audio/MusicPlayer.cs" id="5_music"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_player"]
 radius = 12.0

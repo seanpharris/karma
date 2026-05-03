@@ -1055,30 +1055,33 @@ public partial class GameplaySmokeTest : Node
         // Music playlist discovery: walks the music directory in alphabetical
         // order, skips the main-menu placeholder, accepts mp3 / ogg / wav.
         ExpectTrue(
-            Karma.Audio.PrototypeMusicPlayer.IsPlayableAudioFile("track.mp3"),
+            Karma.Audio.MusicPlayer.IsPlayableAudioFile("track.mp3"),
             "music player accepts mp3 files");
         ExpectTrue(
-            Karma.Audio.PrototypeMusicPlayer.IsPlayableAudioFile("track.ogg"),
+            Karma.Audio.MusicPlayer.IsPlayableAudioFile("track.ogg"),
             "music player accepts ogg files");
         ExpectTrue(
-            Karma.Audio.PrototypeMusicPlayer.IsPlayableAudioFile("track.wav"),
+            Karma.Audio.MusicPlayer.IsPlayableAudioFile("track.wav"),
             "music player accepts wav files");
         ExpectFalse(
-            Karma.Audio.PrototypeMusicPlayer.IsPlayableAudioFile("track.import"),
+            Karma.Audio.MusicPlayer.IsPlayableAudioFile("track.import"),
             "music player rejects .import sidecar files");
         ExpectFalse(
-            Karma.Audio.PrototypeMusicPlayer.IsPlayableAudioFile("README.md"),
+            Karma.Audio.MusicPlayer.IsPlayableAudioFile("README.md"),
             "music player rejects non-audio files");
-        var musicFiles = Karma.Audio.PrototypeMusicPlayer.ListPlayableFiles(
-            Karma.Audio.PrototypeMusicPlayer.MusicDirectory);
-        ExpectTrue(
-            musicFiles.Contains(Karma.Audio.PrototypeMusicPlayer.TravellingOnMedievalFileName),
-            "music player playlist includes the verified medieval track");
+        var musicFiles = Karma.Audio.MusicPlayer.ListPlayableFiles(
+            Karma.Audio.MusicPlayer.MusicDirectory);
         ExpectFalse(
-            musicFiles.Contains(Karma.Audio.PrototypeMusicPlayer.MenuPlaceholderFileName),
-            "music player playlist excludes the main-menu placeholder asset");
+            musicFiles.Contains(Karma.Audio.MusicPlayer.TravellingOnMedievalFileName),
+            "gameplay playlist excludes the menu's travelling-on-medieval theme");
+        ExpectFalse(
+            musicFiles.Contains(Karma.Audio.MusicPlayer.MenuPlaceholderFileName),
+            "gameplay playlist excludes the main-menu placeholder asset");
         ExpectTrue(
-            Karma.Audio.PrototypeMusicPlayer.LoadPlayableAudio(Karma.Audio.PrototypeMusicPlayer.MusicDirectory + musicFiles.First()) is not null,
+            musicFiles.Count > 0,
+            "gameplay playlist has at least one medieval track");
+        ExpectTrue(
+            Karma.Audio.MusicPlayer.LoadPlayableAudio(Karma.Audio.MusicPlayer.MusicDirectory + musicFiles.First()) is not null,
             "music player loads a raw medieval MP3 file");
         var orderedMusicFiles = musicFiles.OrderBy(name => name, StringComparer.Ordinal).ToList();
         ExpectTrue(

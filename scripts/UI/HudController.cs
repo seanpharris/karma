@@ -952,7 +952,7 @@ public partial class HudController : CanvasLayer
         Karma.Audio.AudioSettings.EnsureBusesExist();
         Karma.Audio.AudioSettings.ApplyToAudioServer();
 
-        // PrototypeMusicPlayer sits on the Music bus, so AudioSettings owns
+        // MusicPlayer sits on the Music bus, so AudioSettings owns
         // the live slider gain for every gameplay music source.
     }
 

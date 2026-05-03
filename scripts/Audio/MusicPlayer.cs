@@ -5,12 +5,12 @@ using Godot;
 namespace Karma.Audio;
 
 // Background music for the gameplay scenes. When playable audio files are
-// present in `assets/audio/music/` the player walks them as a sequential
+// present in MusicDirectory the player walks them as a sequential
 // playlist — each track plays in full, then advances; the playlist loops
 // once the last track ends. When the directory is empty (or only carries
-// the main-menu placeholder) it falls back to procedurally-synthesized
-// per-Theme samples so prototype scenes always have *something* to hear.
-public partial class PrototypeMusicPlayer : Node
+// the main-menu theme) it falls back to procedurally-synthesized
+// per-Theme samples so scenes always have *something* to hear.
+public partial class MusicPlayer : Node
 {
     public enum Theme
     {
@@ -22,14 +22,10 @@ public partial class PrototypeMusicPlayer : Node
         ScenarioAmbient
     }
 
-    public const string MusicDirectory = "res://assets/audio/music/";
-    // The menu controller owns this asset; never queue it into the gameplay playlist.
+    public const string MusicDirectory = "res://assets/audio/music/themes/medieval/";
+    // The menu controller owns these — never queue them into the gameplay playlist.
     public const string MenuPlaceholderFileName = "main_menu_theme_placeholder.wav";
     public const string TravellingOnMedievalFileName = "kaazoom-travelling-on-medieval-celtic-rpg-game-music-434717.mp3";
-    public static readonly string[] VerifiedMusicFileNames =
-    {
-        TravellingOnMedievalFileName
-    };
 
     [Export] public Theme MusicTheme { get; set; } = Theme.SandboxCalm;
     [Export] public float Volume { get; set; } = 0.45f;
@@ -47,7 +43,7 @@ public partial class PrototypeMusicPlayer : Node
     {
         _player = new AudioStreamPlayer
         {
-            Name = "PrototypeMusicStreamPlayer",
+            Name = "MusicStreamPlayer",
             Bus = AudioSettings.MusicBusName,
             VolumeDb = LinearToDb(Volume)
         };
@@ -108,9 +104,11 @@ public partial class PrototypeMusicPlayer : Node
         var filtered = new List<string>();
         foreach (var name in raw)
         {
+            // Menu owns its own theme; skip both the placeholder and the
+            // travelling-on-medieval track so gameplay doesn't double up.
             if (string.Equals(name, MenuPlaceholderFileName, StringComparison.Ordinal)) continue;
+            if (string.Equals(name, TravellingOnMedievalFileName, StringComparison.Ordinal)) continue;
             if (!IsPlayableAudioFile(name)) continue;
-            if (Array.IndexOf(VerifiedMusicFileNames, name) < 0) continue;
             filtered.Add(name);
         }
         filtered.Sort(StringComparer.Ordinal);
