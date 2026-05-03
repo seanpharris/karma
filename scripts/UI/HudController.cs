@@ -850,7 +850,8 @@ public partial class HudController : CanvasLayer
 
     public void ToggleEscapeMenu()
     {
-        SetEscapeMenuVisible(!_escapeMenuPanel.Visible);
+        var anyOpen = _escapeMenuPanel.Visible || _escapeOptionsPanel.Visible || _appearancePanel.Visible;
+        SetEscapeMenuVisible(!anyOpen);
     }
 
     public void HideEscapeMenu()
@@ -860,20 +861,28 @@ public partial class HudController : CanvasLayer
 
     public void SetEscapeMenuVisible(bool visible)
     {
-        _escapeMenuPanel.Visible = visible;
-        if (!visible)
+        if (visible)
         {
-            HideEscapeOptions();
+            // Always open onto the pause main view; sub-panels stay hidden.
+            _escapeOptionsPanel.Visible = false;
+            _appearancePanel.Visible = false;
+            _escapeMenuPanel.Visible = true;
+        }
+        else
+        {
+            _escapeMenuPanel.Visible = false;
+            _escapeOptionsPanel.Visible = false;
+            _appearancePanel.Visible = false;
         }
     }
 
     private void ShowEscapeOptions()
     {
-        HideAppearancePanel();
         LoadPauseAudioSettings();
         ApplyPauseAudioSettings();
+        _appearancePanel.Visible = false;
+        _escapeMenuPanel.Visible = false;
         _escapeOptionsPanel.Visible = true;
-        _escapeMenuStatusLabel.Text = "Audio sliders save to options.cfg and apply live; gameplay keeps running.";
     }
 
     private void BuildPauseVolumeRow(VBoxContainer parent, string title, out HSlider slider, out Label valueLabel)
@@ -965,22 +974,26 @@ public partial class HudController : CanvasLayer
 
     private void HideEscapeOptions()
     {
+        // "Back" returns to the pause main view rather than closing pause.
         _escapeOptionsPanel.Visible = false;
-        HideAppearancePanel();
-        _escapeMenuStatusLabel.Text = "Menu open. Prototype world is still running.";
+        _appearancePanel.Visible = false;
+        _escapeMenuPanel.Visible = true;
     }
 
     public void ShowAppearancePanel()
     {
         _escapeOptionsPanel.Visible = false;
+        _escapeMenuPanel.Visible = false;
         _appearancePanel.Visible = true;
         RefreshAppearancePanel();
-        _escapeMenuStatusLabel.Text = "Appearance changes are routed through the authoritative prototype server.";
     }
 
     public void HideAppearancePanel()
     {
+        // "Back" returns to the pause main view rather than closing pause.
         _appearancePanel.Visible = false;
+        _escapeOptionsPanel.Visible = false;
+        if (_escapeMenuPanel is not null) _escapeMenuPanel.Visible = true;
     }
 
     public bool CycleAppearanceLayer(string slot)
@@ -2185,10 +2198,17 @@ public partial class HudController : CanvasLayer
         _escapeOptionsPanel = new PanelContainer
         {
             Name = "EscapeOptionsPanel",
+            OffsetLeft = 390,
+            OffsetTop = 120,
+            OffsetRight = 890,
+            OffsetBottom = 620,
             Visible = false
         };
         _escapeOptionsPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakePanelStyle());
-        content.AddChild(_escapeOptionsPanel);
+        _escapeOptionsPanel.SetMeta(PaletteOptOutMeta, true);
+        // Sibling of the pause panel, not a child — clicking Options
+        // swaps views (hides pause, shows this) instead of expanding it.
+        root.AddChild(_escapeOptionsPanel);
 
         var optionsContent = new VBoxContainer { Name = "EscapeOptionsContent" };
         optionsContent.AddThemeConstantOverride("separation", 10);
@@ -2218,10 +2238,15 @@ public partial class HudController : CanvasLayer
         _appearancePanel = new PanelContainer
         {
             Name = "AppearancePanel",
+            OffsetLeft = 390,
+            OffsetTop = 120,
+            OffsetRight = 890,
+            OffsetBottom = 620,
             Visible = false
         };
         _appearancePanel.AddThemeStyleboxOverride("panel", MenuTheme.MakePanelStyle());
-        content.AddChild(_appearancePanel);
+        _appearancePanel.SetMeta(PaletteOptOutMeta, true);
+        root.AddChild(_appearancePanel);
 
         var appearanceContent = new VBoxContainer { Name = "AppearanceContent" };
         appearanceContent.AddThemeConstantOverride("separation", 10);
