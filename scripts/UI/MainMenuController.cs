@@ -24,6 +24,11 @@ public partial class MainMenuController : Control
     public const string MenuThemePath = PrototypeMusicPlayer.MusicDirectory + PrototypeMusicPlayer.TravellingOnMedievalFileName;
     public const string SplashTexturePath = "res://assets/art/main_menu/karma_menu_mockup.png";
 
+    // Debug flag: when true, button hover glows render at idle so
+    // their placement is visible without mousing over each. Flip
+    // back to false before merging.
+    private const bool AlwaysShowHoverGlows = true;
+
     // Image is 1536x1024. These rects are normalized to that aspect:
     // (left, top, right, bottom) in 0..1 over the image bounds. Tuned
     // by eye to overlap the painted buttons. Adjust if the splash
@@ -40,7 +45,7 @@ public partial class MainMenuController : Control
         ("play",    "PLAY",    new Rect2(0.39f, 0.505f, 0.22f, 0.082f)),
         ("options", "OPTIONS", new Rect2(0.39f, 0.600f, 0.22f, 0.082f)),
         ("credits", "CREDITS", new Rect2(0.39f, 0.708f, 0.22f, 0.082f)),
-        ("quit",    "QUIT",    new Rect2(0.39f, 0.803f, 0.22f, 0.082f))
+        ("quit",    "QUIT",    new Rect2(0.39f, 0.793f, 0.22f, 0.082f))
     };
 
     // Title shimmer rect (over the painted "KARMA" letters).
@@ -340,16 +345,21 @@ public partial class MainMenuController : Control
                 Texture = pillTexture,
                 StretchMode = TextureRect.StretchModeEnum.Scale,
                 ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-                Modulate = new Color(GlowTint(id), 0f),
+                // Debug: glow visible at idle so the click rect
+                // placement shows without hovering. Reset to 0f to
+                // restore the hover-only behaviour.
+                Modulate = new Color(GlowTint(id), AlwaysShowHoverGlows ? 0.55f : 0f),
                 MouseFilter = MouseFilterEnum.Ignore
             };
             // Anchor the glow slightly larger than the button rect so
-            // the halo bleeds around the painted edges.
+            // the halo bleeds around the painted edges. Vertical
+            // padding kept tight (10% per side) so the glow doesn't
+            // bleed visibly into the dark cliff area below QUIT.
             var glowBounds = new Rect2(
                 bounds.Position.X - bounds.Size.X * 0.08f,
-                bounds.Position.Y - bounds.Size.Y * 0.20f,
+                bounds.Position.Y - bounds.Size.Y * 0.10f,
                 bounds.Size.X * 1.16f,
-                bounds.Size.Y * 1.40f);
+                bounds.Size.Y * 1.20f);
             AnchorRect(glow, glowBounds);
             _imageFrame.AddChild(glow);
             glow.PivotOffset = glow.Size * 0.5f;
@@ -404,7 +414,8 @@ public partial class MainMenuController : Control
         // doesn't drift out from under the cursor on hover-in.
         var tween = button.CreateTween().SetParallel(true).SetEase(Tween.EaseType.Out);
         tween.TweenProperty(glow, "scale", hovered ? new Vector2(1.06f, 1.06f) : Vector2.One, 0.18);
-        tween.TweenProperty(glow, "modulate:a", hovered ? 0.65f : 0f, 0.22);
+        var idleAlpha = AlwaysShowHoverGlows ? 0.55f : 0f;
+        tween.TweenProperty(glow, "modulate:a", hovered ? 0.65f : idleAlpha, 0.22);
     }
 
     private static void AnimateButtonPress(Control button, Control glow, bool pressed)
