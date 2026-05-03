@@ -8,11 +8,10 @@ namespace Karma.UI;
 // Karma main menu — programmatic construction.
 //
 // Renders the karma_menu_mockup.png splash and lays transparent click-
-// through buttons exactly over the painted PLAY / MULTIVERSE / OPTIONS
-// / CREDITS / QUIT artwork so the visible art stays the same but
-// inputs are real. Adds ambient animation (gold motes left, red embers
-// right, periodic lightning on the right half, title shimmer pulse,
-// button hover bloom).
+// through buttons exactly over the painted PLAY / OPTIONS / CREDITS /
+// QUIT artwork so the visible art stays the same but inputs are real.
+// Adds ambient animation (gold motes left, red embers right, periodic
+// lightning bolt on the Renegade side, button hover bloom).
 //
 // Options + Credits are rendered as parchment overlays that hide the
 // splash when shown; closing returns to the splash.
@@ -27,7 +26,7 @@ public partial class MainMenuController : Control
     // Debug flag: when true, button hover glows render at idle so
     // their placement is visible without mousing over each. Flip
     // back to false before merging.
-    private const bool AlwaysShowHoverGlows = true;
+    private const bool AlwaysShowHoverGlows = false;
 
     // Image is 1536x1024. These rects are normalized to that aspect:
     // (left, top, right, bottom) in 0..1 over the image bounds. Tuned
@@ -45,17 +44,14 @@ public partial class MainMenuController : Control
         //
         // Centers:  PLAY 0.546 / OPTIONS 0.641 / CREDITS 0.749 / QUIT 0.834
         // Height:   0.055 (rect top = center − 0.0275)
-        ("play",    "PLAY",    new Rect2(0.39f, 0.5185f, 0.22f, 0.055f)),
-        ("options", "OPTIONS", new Rect2(0.39f, 0.6135f, 0.22f, 0.055f)),
-        ("credits", "CREDITS", new Rect2(0.39f, 0.7215f, 0.22f, 0.055f)),
-        ("quit",    "QUIT",    new Rect2(0.39f, 0.8065f, 0.22f, 0.055f))
+        ("play",    "PLAY",    new Rect2(0.39f, 0.5385f, 0.22f, 0.055f)),
+        ("options", "OPTIONS", new Rect2(0.39f, 0.60605f, 0.22f, 0.055f)),
+        ("credits", "CREDITS", new Rect2(0.39f, 0.6605f, 0.22f, 0.055f)),
+        ("quit",    "QUIT",    new Rect2(0.39f, 0.7265f, 0.22f, 0.055f))
     };
 
-    // Title shimmer rect (over the painted "KARMA" letters).
-    private static readonly Rect2 TitleRect = new(0.20f, 0.04f, 0.60f, 0.21f);
-
-    // Right-half cover for lightning flash. Anchored to right 50% of
-    // the splash so the flash only kisses the Renegade side.
+    // Right-half cover for the lightning bolt. Anchored to the right
+    // 50% of the splash so strikes only happen on the Renegade side.
     private static readonly Rect2 LightningRect = new(0.50f, 0.0f, 0.50f, 1.0f);
 
     private static readonly Vector2I[] CommonResolutions =
@@ -74,8 +70,7 @@ public partial class MainMenuController : Control
     private Control _imageFrame;
     private GpuParticles2D _goldMotes;
     private GpuParticles2D _redEmbers;
-    private ColorRect _lightningFlash;
-    private TextureRect _titleShimmer;
+    private LightningBolt _lightningBolt;
     private Timer _lightningTimer;
     private readonly Dictionary<string, Button> _buttons = new();
     private Control _overlayLayer;
@@ -196,27 +191,9 @@ public partial class MainMenuController : Control
     {
         if (_imageFrame is null) return;
 
-        _titleShimmer = new TextureRect
-        {
-            Name = "TitleShimmer",
-            Texture = MakeRadialDot(64, 64, new Color(1, 0.95f, 0.65f), softness: 0.85f),
-            StretchMode = TextureRect.StretchModeEnum.Scale,
-            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            Modulate = new Color(1, 1, 1, 0f),
-            MouseFilter = MouseFilterEnum.Ignore
-        };
-        AnchorRect(_titleShimmer, TitleRect);
-        _imageFrame.AddChild(_titleShimmer);
-        StartTitleShimmer();
-
-        _lightningFlash = new ColorRect
-        {
-            Name = "LightningFlash",
-            Color = new Color(1f, 0.85f, 0.95f, 0f),
-            MouseFilter = MouseFilterEnum.Ignore
-        };
-        AnchorRect(_lightningFlash, LightningRect);
-        _imageFrame.AddChild(_lightningFlash);
+        _lightningBolt = new LightningBolt { Name = "LightningBolt" };
+        AnchorRect(_lightningBolt, LightningRect);
+        _imageFrame.AddChild(_lightningBolt);
         _lightningTimer = new Timer { OneShot = true, WaitTime = NextLightningInterval() };
         _lightningTimer.Timeout += OnLightning;
         AddChild(_lightningTimer);
@@ -300,30 +277,15 @@ public partial class MainMenuController : Control
         return ImageTexture.CreateFromImage(image);
     }
 
-    private void StartTitleShimmer()
-    {
-        if (_titleShimmer is null) return;
-        var tween = CreateTween();
-        tween.SetLoops();
-        tween.TweenProperty(_titleShimmer, "modulate:a", 0.32f, 1.4f).SetEase(Tween.EaseType.InOut);
-        tween.TweenProperty(_titleShimmer, "modulate:a", 0.0f, 1.4f).SetEase(Tween.EaseType.InOut);
-        tween.TweenInterval(2.6);
-    }
-
     private void OnLightning()
     {
-        if (_lightningFlash is null) return;
-        var tween = CreateTween();
-        tween.TweenProperty(_lightningFlash, "color:a", 0.36f, 0.06f);
-        tween.TweenProperty(_lightningFlash, "color:a", 0.0f, 0.05f);
-        tween.TweenProperty(_lightningFlash, "color:a", 0.22f, 0.04f);
-        tween.TweenProperty(_lightningFlash, "color:a", 0.0f, 0.18f);
-        tween.Finished += () =>
-        {
-            if (_lightningTimer is null || !IsInstanceValid(_lightningTimer)) return;
-            _lightningTimer.WaitTime = NextLightningInterval();
-            _lightningTimer.Start();
-        };
+        if (_lightningBolt is null) return;
+        _lightningBolt.Strike();
+        // The bolt animation runs ~0.4s; reschedule independently so the
+        // next strike cadence isn't tied to the tween's lifetime.
+        if (_lightningTimer is null || !IsInstanceValid(_lightningTimer)) return;
+        _lightningTimer.WaitTime = NextLightningInterval();
+        _lightningTimer.Start();
     }
 
     private static double NextLightningInterval()
