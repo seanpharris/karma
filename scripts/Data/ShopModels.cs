@@ -56,9 +56,9 @@ public static class ShopPricing
 {
     public const int TrustedDiscountPercent = 10;
     public const int SaintCommunityDiscountPercent = 5;
-    public const int ParagonFavorDiscountPercent = 25;
+    public const int ExaltedFavorDiscountPercent = 25;
     public const int ShiftyPricesDiscountPercent = 15;
-    public const int AbyssalMarkDiscountPercent = 50;
+    public const int RenegadeMarkDiscountPercent = 50;
 
     public static int CalculatePrice(ShopOffer offer, PlayerState player, LeaderboardStanding standing)
     {
@@ -91,9 +91,9 @@ public static class ShopPricing
             discountPercent = System.Math.Max(discountPercent, TrustedDiscountPercent);
         }
 
-        if (perks.Any(perk => perk.Id == PerkCatalog.ParagonFavorId))
+        if (perks.Any(perk => perk.Id == PerkCatalog.ExaltedFavorId))
         {
-            discountPercent = System.Math.Max(discountPercent, ParagonFavorDiscountPercent);
+            discountPercent = System.Math.Max(discountPercent, ExaltedFavorDiscountPercent);
         }
 
         if (perks.Any(perk => perk.Id == PerkCatalog.ShiftyPricesId))
@@ -101,9 +101,9 @@ public static class ShopPricing
             discountPercent = System.Math.Max(discountPercent, ShiftyPricesDiscountPercent);
         }
 
-        if (perks.Any(perk => perk.Id == PerkCatalog.AbyssalMarkId))
+        if (perks.Any(perk => perk.Id == PerkCatalog.RenegadeMarkId))
         {
-            discountPercent = System.Math.Max(discountPercent, AbyssalMarkDiscountPercent);
+            discountPercent = System.Math.Max(discountPercent, RenegadeMarkDiscountPercent);
         }
 
         return discountPercent;

@@ -1297,7 +1297,7 @@ public partial class GameplaySmokeTest : Node
             PeerStandInController.FormatPeerAttackLabel(System.Array.Empty<string>(), "Duel: none"),
             "peer prompt labels peer-authored attacks");
         var beaconPerks = new[] { new KarmaPerk(PerkCatalog.BeaconAuraId, "Beacon Aura", PerkPath.Ascension, 35, "test") };
-        var nervePerks = new[] { new KarmaPerk(PerkCatalog.RenegadeNerveId, "Renegade Nerve", PerkPath.Descension, 35, "test") };
+        var nervePerks = new[] { new KarmaPerk(PerkCatalog.AbyssalNerveId, "Abyssal Nerve", PerkPath.Descension, 35, "test") };
         ExpectEqual(22.5f, PlayerController.CalculateEffectiveStaminaRecovery(18f, beaconPerks), "Beacon Aura improves stamina recovery");
         ExpectTrue(Mathf.Abs(PlayerController.CalculateEffectiveSprintCost(24f, nervePerks) - 20.4f) < 0.01f, "Renegade Nerve reduces sprint stamina cost");
         var matchServer = new AuthoritativeWorldServer(state, "match-test-world");
@@ -2252,9 +2252,9 @@ public partial class GameplaySmokeTest : Node
                 BaseMagnitude: 40));
         }
         ExpectTrue(state.LocalKarma.Score > 100, "karma can rise above old positive cap");
-        ExpectEqual("Exalted 2", state.LocalKarma.TierName, "high positive karma gains infinite Exalted rank");
-        ExpectEqual("Progress: 0/100 toward Exalted 3", state.LocalKarma.RankProgress.Summary, "high positive karma shows progress toward next Exalted rank");
-        ExpectTrue(state.LocalPerks.Any(perk => perk.Name == "Exalted 2"), "repeat Exalted ranks unlock repeat ascension perks");
+        ExpectEqual("Paragon 2", state.LocalKarma.TierName, "high positive karma gains infinite Paragon rank");
+        ExpectEqual("Progress: 0/100 toward Paragon 3", state.LocalKarma.RankProgress.Summary, "high positive karma shows progress toward next Paragon rank");
+        ExpectTrue(state.LocalPerks.Any(perk => perk.Name == "Paragon 2"), "repeat Paragon ranks unlock repeat ascension perks");
         state.TriggerKarmaBreak();
         ExpectEqual(QuestStatus.Available, state.Quests.Get(StarterQuests.MaraClinicFiltersId).Status, "starter quest begins available");
 
@@ -2427,9 +2427,9 @@ public partial class GameplaySmokeTest : Node
                 BaseMagnitude: 40));
         }
         ExpectTrue(state.LocalKarma.Score < -100, "karma can fall below old negative cap");
-        ExpectEqual("Abyssal 2", state.LocalKarma.TierName, "low negative karma gains infinite Abyssal rank");
-        ExpectEqual("Progress: 54/100 toward Abyssal 3", state.LocalKarma.RankProgress.Summary, "low negative karma shows progress toward next Abyssal rank");
-        ExpectTrue(state.LocalPerks.Any(perk => perk.Name == "Abyssal 2"), "repeat Abyssal ranks unlock repeat descension perks");
+        ExpectEqual("Renegade 2", state.LocalKarma.TierName, "low negative karma gains infinite Renegade rank");
+        ExpectEqual("Progress: 54/100 toward Renegade 3", state.LocalKarma.RankProgress.Summary, "low negative karma shows progress toward next Renegade rank");
+        ExpectTrue(state.LocalPerks.Any(perk => perk.Name == "Renegade 2"), "repeat Renegade ranks unlock repeat descension perks");
         ExpectEqual("You", state.GetLeaderboardStanding().ScourgeName, "lowest negative player gets Scourge standing");
 
         state.TriggerKarmaBreak();
@@ -3513,13 +3513,13 @@ public partial class GameplaySmokeTest : Node
         var paragonPerks = PerkCatalog.GetForPlayer(
             paragonState.Players[GameState.LocalPlayerId],
             paragonState.GetLeaderboardStanding());
-        ExpectTrue(paragonPerks.Any(p => p.Id == PerkCatalog.ParagonFavorId),
+        ExpectTrue(paragonPerks.Any(p => p.Id == PerkCatalog.ExaltedFavorId),
             "Paragon Favor perk activates at karma >= 50");
 
         var paragonDiscountPct = ShopPricing.CalculateDiscountPercent(
             paragonState.Players[GameState.LocalPlayerId],
             paragonState.GetLeaderboardStanding());
-        ExpectEqual(ShopPricing.ParagonFavorDiscountPercent, paragonDiscountPct,
+        ExpectEqual(ShopPricing.ExaltedFavorDiscountPercent, paragonDiscountPct,
             "Paragon Favor grants 25% shop discount");
 
         var testOffer = StarterShopCatalog.Offers.First(o => o.VendorNpcId == StarterNpcs.Dallen.Id);
@@ -3632,13 +3632,13 @@ public partial class GameplaySmokeTest : Node
         var abyssalPerks = PerkCatalog.GetForPlayer(
             abyssalState.Players[GameState.LocalPlayerId],
             abyssalState.GetLeaderboardStanding());
-        ExpectTrue(abyssalPerks.Any(p => p.Id == PerkCatalog.AbyssalMarkId),
+        ExpectTrue(abyssalPerks.Any(p => p.Id == PerkCatalog.RenegadeMarkId),
             "Abyssal Mark perk activates at karma <= -100");
 
         var abyssalDiscountPct = ShopPricing.CalculateDiscountPercent(
             abyssalState.Players[GameState.LocalPlayerId],
             abyssalState.GetLeaderboardStanding());
-        ExpectEqual(ShopPricing.AbyssalMarkDiscountPercent, abyssalDiscountPct,
+        ExpectEqual(ShopPricing.RenegadeMarkDiscountPercent, abyssalDiscountPct,
             "Abyssal Mark grants 50% shop discount");
 
         var abyssalTestOffer = StarterShopCatalog.Offers.First(o => o.VendorNpcId == StarterNpcs.Dallen.Id);

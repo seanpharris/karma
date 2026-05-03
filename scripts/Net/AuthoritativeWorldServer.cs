@@ -3302,7 +3302,7 @@ public sealed class AuthoritativeWorldServer
         var shift = ApplyShift(intent.PlayerId, action);
 
         var paragonGift = 0;
-        if (PlayerHasPerk(intent.PlayerId, PerkCatalog.ParagonFavorId) &&
+        if (PlayerHasPerk(intent.PlayerId, PerkCatalog.ExaltedFavorId) &&
             action.Tags.Contains("helpful"))
         {
             paragonGift = 1;
@@ -3395,7 +3395,7 @@ public sealed class AuthoritativeWorldServer
         }
 
         var paragonQuestBonus = 0;
-        if (PlayerHasPerk(intent.PlayerId, PerkCatalog.ParagonFavorId))
+        if (PlayerHasPerk(intent.PlayerId, PerkCatalog.ExaltedFavorId))
         {
             paragonQuestBonus = Math.Max(1, adjustedScripReward / 5);
             _state.AddScrip(intent.PlayerId, paragonQuestBonus);

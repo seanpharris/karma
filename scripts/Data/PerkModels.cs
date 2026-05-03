@@ -23,11 +23,11 @@ public static class PerkCatalog
     public const string ShiftyPricesId = "shifty_prices";
     public const string CalmingPresenceId = "calming_presence";
     public const string BeaconAuraId = "beacon_aura";
-    public const string ParagonFavorId = "paragon_favor";
+    public const string ExaltedFavorId = "exalted_favor";
     public const string RumorcraftId = "rumorcraft";
-    public const string RenegadeNerveId = "renegade_nerve";
+    public const string AbyssalNerveId = "abyssal_nerve";
     public const string DreadReputationId = "dread_reputation";
-    public const string AbyssalMarkId = "abyssal_mark";
+    public const string RenegadeMarkId = "renegade_mark";
     public const string WardenId = "warden";
     public const int WardenThreshold = 150;
     public const string WraithId = "wraith_surge";
@@ -40,8 +40,8 @@ public static class PerkCatalog
         new(TrustedDiscountId, "Trusted Discount", PerkPath.Ascension, 10, "Helpful NPCs offer small discounts."),
         new(CalmingPresenceId, "Calming Presence", PerkPath.Ascension, 20, "Negative NPC reactions are softened."),
         new(BeaconAuraId, "Beacon Aura", PerkPath.Ascension, 35, "Nearby allies recover confidence faster, and your stamina recovers faster."),
-        new("paragon_favor", "Paragon Favor", PerkPath.Ascension, 50, "Town allies may defend you."),
-        new("exalted_grace", "Exalted Grace", PerkPath.Ascension, 100, "One severe social consequence can be softened."),
+        new("exalted_favor", "Exalted Favor", PerkPath.Ascension, 50, "Town allies may defend you."),
+        new("paragon_grace", "Paragon Grace", PerkPath.Ascension, 100, "One severe social consequence can be softened."),
         new(WardenId, "Warden", PerkPath.Ascension, WardenThreshold, "Issue Wanted warrants on players who have committed crimes. Others earn karma for bringing them down.")
     };
 
@@ -49,9 +49,9 @@ public static class PerkCatalog
     {
         new(ShiftyPricesId, "Shifty Prices", PerkPath.Descension, 10, "Shady traders offer better deals."),
         new(RumorcraftId, "Rumorcraft", PerkPath.Descension, 20, "Rumors spread globally when you expose them."),
-        new(RenegadeNerveId, "Renegade Nerve", PerkPath.Descension, 35, "Intimidation attempts become more reliable, and sprinting costs less stamina."),
+        new(AbyssalNerveId, "Abyssal Nerve", PerkPath.Descension, 35, "Intimidation attempts become more reliable, and sprinting costs less stamina."),
         new(DreadReputationId, "Dread Reputation", PerkPath.Descension, 50, "Fear softens negative NPC reactions to harmful, violent, or deceptive actions."),
-        new("abyssal_mark", "Abyssal Mark", PerkPath.Descension, 100, "Criminal factions may protect you."),
+        new("renegade_mark", "Renegade Mark", PerkPath.Descension, 100, "Criminal factions may protect you."),
         new(WraithId, "Wraith Surge", PerkPath.Descension, WraithThreshold, "At ≤ 30% HP, gain a 50% speed boost that makes you nearly impossible to pin down.")
     };
 
@@ -103,12 +103,12 @@ public static class PerkCatalog
 
     private static void AddInfiniteRankPerk(ICollection<KarmaPerk> perks, KarmaRank rank, PerkPath path)
     {
-        if (rank.Rank <= 1 || rank.Name is not ("Exalted" or "Abyssal"))
+        if (rank.Rank <= 1 || rank.Name is not ("Paragon" or "Renegade"))
         {
             return;
         }
 
-        var idPrefix = path == PerkPath.Ascension ? "exalted_rank" : "abyssal_rank";
+        var idPrefix = path == PerkPath.Ascension ? "paragon_rank" : "renegade_rank";
         var description = path == PerkPath.Ascension
             ? "Repeat ascension rank bonus from uncapped karma."
             : "Repeat descension rank bonus from uncapped karma.";

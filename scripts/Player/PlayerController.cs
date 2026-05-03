@@ -321,7 +321,7 @@ public partial class PlayerController : CharacterBody2D
     public static float CalculateEffectiveSprintCost(float baseCost, IReadOnlyList<KarmaPerk> perks)
     {
         var cost = Mathf.Max(0f, baseCost);
-        return HasPerk(perks, PerkCatalog.RenegadeNerveId)
+        return HasPerk(perks, PerkCatalog.AbyssalNerveId)
             ? cost * 0.85f
             : cost;
     }
