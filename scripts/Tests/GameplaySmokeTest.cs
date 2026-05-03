@@ -61,22 +61,9 @@ public partial class GameplaySmokeTest : Node
         var hudProbe = new HudController();
         AddChild(hudProbe);
         ExpectTrue(hudProbe.GetNodeOrNull<PanelContainer>("HudRoot/EscapeMenuPanel") is not null, "gameplay HUD includes a non-pausing Escape menu overlay");
-        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/ResumeButton") is not null, "Escape menu includes resume action");
-        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/OptionsButton") is not null, "Escape menu includes options action");
-        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearanceButton") is not null, "Escape menu includes appearance action");
-        ExpectTrue(hudProbe.GetNodeOrNull<PanelContainer>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel") is not null, "Escape menu includes appearance selection panel");
-        ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/AppearanceSkinLabel") is not null, "appearance panel shows current skin label");
-        ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/AppearanceHairLabel") is not null, "appearance panel shows current hair label");
-        ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/AppearanceOutfitLabel") is not null, "appearance panel shows current outfit label");
-        ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/AppearancePantsLabel") is not null, "appearance panel shows current pants label");
-        ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/AppearanceShirtLabel") is not null, "appearance panel shows current shirt label");
-        ExpectTrue(hudProbe.GetNodeOrNull<Label>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/AppearancePreviewLabel") is not null, "appearance panel reserves preview copy");
-        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/CycleSkinButton") is not null, "appearance panel includes skin cycling action");
-        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/CycleHairButton") is not null, "appearance panel includes hair cycling action");
-        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/CycleOutfitButton") is not null, "appearance panel includes outfit cycling action");
-        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/CyclePantsButton") is not null, "appearance panel includes pants cycling action");
-        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/AppearancePanel/AppearanceMargin/AppearanceContent/CycleShirtButton") is not null, "appearance panel includes shirt cycling action");
-        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/MainMenuButton") is not null, "Escape menu includes main menu action");
+        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuContent/ResumeButton") is not null, "Escape menu includes resume action");
+        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuContent/OptionsButton") is not null, "Escape menu includes options action");
+        ExpectTrue(hudProbe.GetNodeOrNull<Button>("HudRoot/EscapeMenuPanel/EscapeMenuContent/MainMenuButton") is not null, "Escape menu includes main menu action");
         ExpectTrue(hudProbe.GetNodeOrNull<PanelContainer>("HudRoot/DeveloperPanel") is not null, "gameplay HUD includes tilde developer overlay");
         ExpectTrue(
             hudProbe.GetNode<PanelContainer>("HudRoot/DeveloperPanel").GetThemeStylebox("panel") is StyleBoxTexture,
@@ -730,15 +717,15 @@ public partial class GameplaySmokeTest : Node
             "AudioSettings reverts to default ambient volume when key is missing");
 
         // Pause menu: each of the four mixer rows builds a labeled slider.
-        ExpectTrue(hudProbe.GetNodeOrNull<HSlider>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/EscapeOptionsPanel/EscapeOptionsMargin/EscapeOptionsContent/MasterVolumeRow/MasterVolumeSlider") is not null,
+        ExpectTrue(hudProbe.GetNodeOrNull<HSlider>("HudRoot/EscapeMenuPanel/EscapeMenuContent/EscapeOptionsPanel/EscapeOptionsMargin/EscapeOptionsContent/MasterVolumeRow/MasterVolumeSlider") is not null,
             "pause options panel includes Master volume slider");
-        ExpectTrue(hudProbe.GetNodeOrNull<HSlider>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/EscapeOptionsPanel/EscapeOptionsMargin/EscapeOptionsContent/MusicVolumeRow/MusicVolumeSlider") is not null,
+        ExpectTrue(hudProbe.GetNodeOrNull<HSlider>("HudRoot/EscapeMenuPanel/EscapeMenuContent/EscapeOptionsPanel/EscapeOptionsMargin/EscapeOptionsContent/MusicVolumeRow/MusicVolumeSlider") is not null,
             "pause options panel includes Music volume slider");
-        ExpectTrue(hudProbe.GetNodeOrNull<HSlider>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/EscapeOptionsPanel/EscapeOptionsMargin/EscapeOptionsContent/EffectsVolumeRow/EffectsVolumeSlider") is not null,
+        ExpectTrue(hudProbe.GetNodeOrNull<HSlider>("HudRoot/EscapeMenuPanel/EscapeMenuContent/EscapeOptionsPanel/EscapeOptionsMargin/EscapeOptionsContent/EffectsVolumeRow/EffectsVolumeSlider") is not null,
             "pause options panel includes Effects volume slider");
-        ExpectTrue(hudProbe.GetNodeOrNull<HSlider>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/EscapeOptionsPanel/EscapeOptionsMargin/EscapeOptionsContent/AmbientVolumeRow/AmbientVolumeSlider") is not null,
+        ExpectTrue(hudProbe.GetNodeOrNull<HSlider>("HudRoot/EscapeMenuPanel/EscapeMenuContent/EscapeOptionsPanel/EscapeOptionsMargin/EscapeOptionsContent/AmbientVolumeRow/AmbientVolumeSlider") is not null,
             "pause options panel includes Ambient volume slider");
-        ExpectTrue(hudProbe.GetNodeOrNull<CheckButton>("HudRoot/EscapeMenuPanel/EscapeMenuMargin/EscapeMenuContent/EscapeOptionsPanel/EscapeOptionsMargin/EscapeOptionsContent/CarryStateToggle") is not null,
+        ExpectTrue(hudProbe.GetNodeOrNull<CheckButton>("HudRoot/EscapeMenuPanel/EscapeMenuContent/EscapeOptionsPanel/EscapeOptionsMargin/EscapeOptionsContent/CarryStateToggle") is not null,
             "pause options panel includes carry-state toggle");
 
         const string carryStateSmokePath = "user://carry_state_smoke.json";
