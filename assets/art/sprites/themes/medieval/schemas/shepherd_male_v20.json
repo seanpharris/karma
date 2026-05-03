@@ -1,0 +1,31 @@
+{
+  "id": "shepherd_male_v20",
+  "display_name": "Shepherd (variant 20)",
+  "tags": [
+    "medieval",
+    "peasant"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/sandals/male/walk/black.png",
+    "legs": "legs/fur/male/walk/navy.png",
+    "torso": "torso/aprons/overalls/male/walk/sky.png",
+    "hair": "hair/dreadlocks_short/adult/walk.png",
+    "hat": "hat/cloth/hood_sack/adult/walk.png",
+    "facial": "facial/earrings/simple/left/adult/walk/orange.png",
+    "beard": "beards/mustache/lampshade/walk.png",
+    "cape": "cape/solid_behind/walk/blue.png"
+  },
+  "tints": {
+    "body": "#f2c7a5",
+    "head": "#f2c7a5",
+    "hair": "#2c2b26",
+    "beard": "#2c2b26"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

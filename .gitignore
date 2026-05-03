@@ -35,8 +35,14 @@ output_sprites/*
 output_sheets/*
 !output_sheets/.gitkeep
 
-# Raw LPC source art is too large to vendor directly; commit generated runtime bundles instead.
+# Raw LPC source art is too large to vendor directly (1.2 GB / 150k PNGs);
+# commit generated runtime bundles instead. Both paths covered because
+# the LPC pack has been hosted at both locations across the repo's
+# history.
 assets/art/sprites/lpc/spritesheets/
+assets/art/sprites/spritesheets/
+assets/art/sprites/sheet_definitions/
+assets/art/sprites/palette_definitions/
 
 # Local-only PixelLab API secret (read by tools/pixellab_generate_batch.js).
 .pixellab_secret

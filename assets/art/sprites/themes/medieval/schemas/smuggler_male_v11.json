@@ -1,0 +1,32 @@
+{
+  "id": "smuggler_male_v11",
+  "display_name": "Smuggler (variant 11)",
+  "tags": [
+    "medieval",
+    "outlaw"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/charcoal.png",
+    "legs": "legs/formal/male/walk/orange.png",
+    "torso": "torso/waist/belt_leather2/male/walk.png",
+    "hair": "hair/extensions/bangs/xlong_bangl/adult/walk.png",
+    "waist": "torso/waist/obi/knot/left/male/walk/yellow.png",
+    "hat": "hat/cloth/hood_sack/adult/walk/forest.png",
+    "facial": "facial/earrings/simple/right/adult/walk/teal.png",
+    "beard": "beards/beard/winter/male/walk.png",
+    "shield": "shield/heater/revised/pattern/quarterly/bg/walk/leather.png"
+  },
+  "tints": {
+    "body": "#5b3829",
+    "head": "#5b3829",
+    "hair": "#d8b36a",
+    "beard": "#d8b36a"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

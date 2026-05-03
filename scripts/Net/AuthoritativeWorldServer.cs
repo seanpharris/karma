@@ -1245,7 +1245,10 @@ public sealed class AuthoritativeWorldServer
         {
             ["playerId"] = intent.PlayerId,
             ["x"] = x.ToString(),
-            ["y"] = y.ToString()
+            ["y"] = y.ToString(),
+            ["audioCue"] = _enteredStructureByPlayer.ContainsKey(intent.PlayerId)
+                ? "footstep_wood"
+                : "footstep_dirt"
         };
         if (!string.IsNullOrEmpty(enteredInterior)) data["enteredInterior"] = enteredInterior;
         if (!string.IsNullOrEmpty(exitedInterior)) data["exitedInterior"] = exitedInterior;
@@ -1321,7 +1324,8 @@ public sealed class AuthoritativeWorldServer
                 ["mountId"] = mountId,
                 ["itemId"] = itemId,
                 ["mode"] = mode,
-                ["bagCount"] = bag.Count.ToString()
+                ["bagCount"] = bag.Count.ToString(),
+                ["audioCue"] = "mount_bag_transfer"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -1787,7 +1791,8 @@ public sealed class AuthoritativeWorldServer
                 {
                     ["playerId"] = intent.PlayerId,
                     ["entityId"] = entityId,
-                    ["itemId"] = entity.Item.Id
+                    ["itemId"] = entity.Item.Id,
+                    ["audioCue"] = "supply_drop_claimed"
                 });
         }
 
@@ -1801,7 +1806,8 @@ public sealed class AuthoritativeWorldServer
                 ["itemId"] = entity.Item.Id,
                 ["dropOwnerId"] = dropOwnerId,
                 ["dropOwnerName"] = dropOwnerName,
-                ["karmaAmount"] = karmaAmount.ToString()
+                ["karmaAmount"] = karmaAmount.ToString(),
+                ["audioCue"] = "item_picked_up"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -1949,7 +1955,8 @@ public sealed class AuthoritativeWorldServer
                 ["scripReward"] = scripReward.ToString(),
                 ["factionId"] = factionId,
                 ["factionDelta"] = factionDelta.ToString(),
-                ["factionReputation"] = factionReputation.ToString()
+                ["factionReputation"] = factionReputation.ToString(),
+                ["audioCue"] = "structure_interacted"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -2024,7 +2031,8 @@ public sealed class AuthoritativeWorldServer
                 ["scripReward"] = "0",
                 ["factionId"] = factionId,
                 ["factionDelta"] = "0",
-                ["factionReputation"] = _state.Factions.GetReputation(factionId, intent.PlayerId).ToString()
+                ["factionReputation"] = _state.Factions.GetReputation(factionId, intent.PlayerId).ToString(),
+                ["audioCue"] = "structure_interacted"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -2091,7 +2099,8 @@ public sealed class AuthoritativeWorldServer
                 ["structureId"] = structure.StructureId,
                 ["lootTableId"] = LootTableCatalog.ContainerScavengeId,
                 ["itemIds"] = string.Join(",", addedItemIds),
-                ["result"] = result
+                ["result"] = result,
+                ["audioCue"] = "container_scavenged"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -2112,7 +2121,8 @@ public sealed class AuthoritativeWorldServer
                 ["entityId"] = structure.EntityId,
                 ["structureId"] = structure.StructureId,
                 ["cleanliness"] = player.Cleanliness.ToString(),
-                ["maxCleanliness"] = player.MaxCleanliness.ToString()
+                ["maxCleanliness"] = player.MaxCleanliness.ToString(),
+                ["audioCue"] = "restroom_used"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -2421,7 +2431,8 @@ public sealed class AuthoritativeWorldServer
                     {
                         ["playerId"] = intent.PlayerId,
                         ["targetId"] = targetId,
-                        ["scripAmount"] = bountyAmount.ToString()
+                        ["scripAmount"] = bountyAmount.ToString(),
+                        ["audioCue"] = "wanted_bounty_claimed"
                     });
             }
 
@@ -2438,7 +2449,8 @@ public sealed class AuthoritativeWorldServer
                     {
                         ["playerId"] = intent.PlayerId,
                         ["targetId"] = targetId,
-                        ["karmaReward"] = WantedKarmaReward.ToString()
+                        ["karmaReward"] = WantedKarmaReward.ToString(),
+                        ["audioCue"] = "wanted_bounty_claimed"
                     });
             }
         }
@@ -2459,7 +2471,8 @@ public sealed class AuthoritativeWorldServer
                 ["witnessCount"] = witnesses.Count.ToString(),
                 ["targetHealth"] = _state.Players[targetId].Health.ToString(),
                 ["targetMaxHealth"] = _state.Players[targetId].MaxHealth.ToString(),
-                ["downedUntilTick"] = wentDown ? _downedUntilTickByPlayer[targetId].ToString() : "0"
+                ["downedUntilTick"] = wentDown ? _downedUntilTickByPlayer[targetId].ToString() : "0",
+                ["audioCue"] = equippedWeapon?.WeaponKind == WeaponKind.Melee ? "sword_hit" : "player_attacked"
             },
             witnesses);
         ScheduleCrimeReportsFor(serverEvent);
@@ -2648,7 +2661,8 @@ public sealed class AuthoritativeWorldServer
                 ["mountId"] = mountId,
                 ["mountName"] = mount.Name,
                 ["speedModifier"] = mount.SpeedModifier.ToString("F1"),
-                ["karmaAmount"] = shift.Amount.ToString()
+                ["karmaAmount"] = shift.Amount.ToString(),
+                ["audioCue"] = "player_mounted"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -2699,7 +2713,8 @@ public sealed class AuthoritativeWorldServer
                 ["mountId"] = mountId,
                 ["mountName"] = mount.Name,
                 ["nearStation"] = nearStation.ToString(),
-                ["karmaAmount"] = shift.Amount.ToString()
+                ["karmaAmount"] = shift.Amount.ToString(),
+                ["audioCue"] = "player_dismounted"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -2876,7 +2891,8 @@ public sealed class AuthoritativeWorldServer
                 ["playerId"] = intent.PlayerId,
                 ["weaponId"] = weapon.Id,
                 ["magazineSize"] = weapon.MagazineSize.ToString(),
-                ["ammoItemId"] = weapon.AmmoItemId
+                ["ammoItemId"] = weapon.AmmoItemId,
+                ["audioCue"] = "weapon_reloaded"
             });
         return ServerProcessResult.Accepted(serverEvent);
     }
@@ -2923,7 +2939,8 @@ public sealed class AuthoritativeWorldServer
                 ["slot"] = slot.ToString(),
                 ["cost"] = cost.ToString(),
                 ["durability"] = item.MaxDurability.ToString(),
-                ["maxDurability"] = item.MaxDurability.ToString()
+                ["maxDurability"] = item.MaxDurability.ToString(),
+                ["audioCue"] = "item_repaired"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -2971,7 +2988,8 @@ public sealed class AuthoritativeWorldServer
                 ["playerId"] = intent.PlayerId,
                 ["vendorNpcId"] = vendorNpcId,
                 ["itemId"] = itemId,
-                ["sellPrice"] = sellPrice.ToString()
+                ["sellPrice"] = sellPrice.ToString(),
+                ["audioCue"] = "item_sold"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -3017,7 +3035,8 @@ public sealed class AuthoritativeWorldServer
             {
                 ["playerId"] = intent.PlayerId,
                 ["recipeId"] = recipe.Id,
-                ["itemId"] = output.Id
+                ["itemId"] = output.Id,
+                ["audioCue"] = "item_crafted"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -3176,7 +3195,8 @@ public sealed class AuthoritativeWorldServer
             {
                 ["playerId"] = intent.PlayerId,
                 ["npcId"] = npcId,
-                ["choiceIds"] = string.Join(",", dialogue.Choices.Select(choice => choice.Id))
+                ["choiceIds"] = string.Join(",", dialogue.Choices.Select(choice => choice.Id)),
+                ["audioCue"] = "dialogue_started"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -3219,7 +3239,8 @@ public sealed class AuthoritativeWorldServer
                 {
                     ["playerId"] = intent.PlayerId,
                     ["npcId"] = npcId,
-                    ["choiceId"] = choice.Id
+                    ["choiceId"] = choice.Id,
+                    ["audioCue"] = "dialogue_closed"
                 });
             return ServerProcessResult.Accepted(closeEvent);
         }
@@ -3248,7 +3269,8 @@ public sealed class AuthoritativeWorldServer
                         ["playerId"] = intent.PlayerId,
                         ["npcId"] = npcId,
                         ["choiceId"] = choice.Id,
-                        ["nextNodeId"] = nextNodeId
+                        ["nextNodeId"] = nextNodeId,
+                        ["audioCue"] = "dialogue_advanced"
                     });
                 return ServerProcessResult.Accepted(gossipEvent);
             }
@@ -3266,7 +3288,8 @@ public sealed class AuthoritativeWorldServer
                     ["playerId"] = intent.PlayerId,
                     ["npcId"] = npcId,
                     ["choiceId"] = choice.Id,
-                    ["nextNodeId"] = nextNodeId
+                    ["nextNodeId"] = nextNodeId,
+                    ["audioCue"] = "dialogue_advanced"
                 });
             return ServerProcessResult.Accepted(advanceEvent);
         }
@@ -3297,7 +3320,8 @@ public sealed class AuthoritativeWorldServer
                 ["action"] = choice.ActionId,
                 ["amount"] = shift.Amount.ToString(),
                 ["targetId"] = action.TargetId,
-                ["paragonGift"] = paragonGift.ToString()
+                ["paragonGift"] = paragonGift.ToString(),
+                ["audioCue"] = "dialogue_choice_selected"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -3328,7 +3352,8 @@ public sealed class AuthoritativeWorldServer
             {
                 ["playerId"] = intent.PlayerId,
                 ["questId"] = questId,
-                ["targetId"] = quest.Definition.GiverNpcId
+                ["targetId"] = quest.Definition.GiverNpcId,
+                ["audioCue"] = "quest_started"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -3385,7 +3410,8 @@ public sealed class AuthoritativeWorldServer
             ["targetId"] = quest.Definition.GiverNpcId,
             ["scripReward"] = adjustedScripReward.ToString(),
             ["stationStateBonus"] = stationStateBonus.ToString(),
-            ["paragonQuestBonus"] = paragonQuestBonus.ToString()
+            ["paragonQuestBonus"] = paragonQuestBonus.ToString(),
+            ["audioCue"] = "quest_completed"
         };
         foreach (var kv in extraEventData)
             eventData[kv.Key] = kv.Value;
@@ -3433,7 +3459,8 @@ public sealed class AuthoritativeWorldServer
                 ["questId"] = questId,
                 ["stepId"] = stepId,
                 ["stepIndex"] = previousStepIndex.ToString(),
-                ["allStepsDone"] = quest.AllStepsDone.ToString()
+                ["allStepsDone"] = quest.AllStepsDone.ToString(),
+                ["audioCue"] = "quest_step_advanced"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -3671,7 +3698,8 @@ public sealed class AuthoritativeWorldServer
             {
                 ["playerId"] = intent.PlayerId,
                 ["itemId"] = item.Id,
-                ["slot"] = item.Slot.ToString()
+                ["slot"] = item.Slot.ToString(),
+                ["audioCue"] = Karma.Audio.AudioEventCatalog.EquipmentCueIdForItem(item)
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -3715,7 +3743,8 @@ public sealed class AuthoritativeWorldServer
                 ["health"] = player.Health.ToString(),
                 ["stamina"] = player.Stamina.ToString(),
                 ["hunger"] = player.Hunger.ToString(),
-                ["karma"] = player.Karma.Score.ToString()
+                ["karma"] = player.Karma.Score.ToString(),
+                ["audioCue"] = Karma.Audio.AudioEventCatalog.ItemUseCueIdForItem(item)
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -3886,7 +3915,8 @@ public sealed class AuthoritativeWorldServer
                 ["itemId"] = item.Id,
                 ["healing"] = repairKitHealing.ToString(),
                 ["targetHealth"] = _state.Players[targetId].Health.ToString(),
-                ["targetMaxHealth"] = _state.Players[targetId].MaxHealth.ToString()
+                ["targetMaxHealth"] = _state.Players[targetId].MaxHealth.ToString(),
+                ["audioCue"] = Karma.Audio.AudioEventCatalog.ItemUseCueIdForItem(item)
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -3928,7 +3958,8 @@ public sealed class AuthoritativeWorldServer
                 ["itemId"] = item.Id,
                 ["healing"] = healing.ToString(),
                 ["targetHealth"] = _state.Players[targetId].Health.ToString(),
-                ["targetMaxHealth"] = _state.Players[targetId].MaxHealth.ToString()
+                ["targetMaxHealth"] = _state.Players[targetId].MaxHealth.ToString(),
+                ["audioCue"] = Karma.Audio.AudioEventCatalog.ItemUseCueIdForItem(item)
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -3998,7 +4029,8 @@ public sealed class AuthoritativeWorldServer
                 ["relationshipModifierPercent"] = quote.RelationshipModifierPercent.ToString(),
                 ["relationshipOpinion"] = quote.RelationshipOpinion.ToString(),
                 ["pricingBreakdown"] = quote.Breakdown,
-                ["currency"] = offer.Currency
+                ["currency"] = offer.Currency,
+                ["audioCue"] = "item_purchased"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -4076,7 +4108,8 @@ public sealed class AuthoritativeWorldServer
                 ["returnedDrop"] = returnedDrop.ToString(),
                 ["dropOwnerId"] = returnedDrop ? returnedOwner.OwnerId : string.Empty,
                 ["dropOwnerName"] = returnedDrop ? returnedOwner.OwnerName : string.Empty,
-                ["karmaAmount"] = shift.Amount.ToString()
+                ["karmaAmount"] = shift.Amount.ToString(),
+                ["audioCue"] = "item_transferred"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -4139,7 +4172,8 @@ public sealed class AuthoritativeWorldServer
                 ["amount"] = amount.ToString(),
                 ["currency"] = "scrip",
                 ["mode"] = mode,
-                ["karmaAmount"] = shift.Amount.ToString()
+                ["karmaAmount"] = shift.Amount.ToString(),
+                ["audioCue"] = "currency_transferred"
             });
 
         return ServerProcessResult.Accepted(serverEvent);
@@ -4190,7 +4224,8 @@ public sealed class AuthoritativeWorldServer
                 ["entityId"] = entityId,
                 ["itemId"] = item.Id,
                 ["x"] = x.ToString(),
-                ["y"] = y.ToString()
+                ["y"] = y.ToString(),
+                ["audioCue"] = "item_placed"
             });
 
         return ServerProcessResult.Accepted(serverEvent);

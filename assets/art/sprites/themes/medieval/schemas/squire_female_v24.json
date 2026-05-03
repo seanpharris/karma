@@ -1,0 +1,30 @@
+{
+  "id": "squire_female_v24",
+  "display_name": "Squire (F) (variant 24)",
+  "tags": [
+    "medieval",
+    "law"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/thin/walk/leather.png",
+    "legs": "legs/fur/thin/walk/fur_tan.png",
+    "torso": "torso/aprons/apron_full/female/walk/rose.png",
+    "hair": "hair/spiked_porcupine/adult/walk.png",
+    "weapon": "weapon/polearm/spear/foreground/walk/dark.png",
+    "hat": "hat/cloth/bandana/adult/walk/walnut.png",
+    "arms": "arms/wrists/lace/thin/walk.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#9a693b",
+    "beard": "#9a693b"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

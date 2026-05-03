@@ -1,0 +1,32 @@
+{
+  "id": "woodcutter_male_v11",
+  "display_name": "Woodcutter (variant 11)",
+  "tags": [
+    "medieval",
+    "peasant"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/sandals/male/walk/charcoal.png",
+    "legs": "legs/formal/male/walk/blue.png",
+    "torso": "torso/aprons/overalls/male/walk/leather.png",
+    "hair": "hair/long_straight/adult/walk.png",
+    "weapon": "weapon/blunt/waraxe/walk/waraxe.png",
+    "waist": "torso/waist/obi/male/walk.png",
+    "hat": "hat/accessory/plumage/adult/walk.png",
+    "beard": "beards/mustache/french/walk.png",
+    "backpack": "backpack/backpack/male/walk/forest.png"
+  },
+  "tints": {
+    "body": "#a86b47",
+    "head": "#a86b47",
+    "hair": "#7a4d2d",
+    "beard": "#7a4d2d"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "id": "merchant_male_v10",
+  "display_name": "Travelling Merchant (variant 10)",
+  "tags": [
+    "medieval",
+    "wayfarer"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/gray.png",
+    "legs": "legs/fur/male/walk/pink.png",
+    "torso": "torso/aprons/suspenders/male/walk/lavender.png",
+    "hair": "hair/extensions/bangs/xlong_bangr/adult/walk.png",
+    "beard": "beards/mustache/lampshade/walk.png",
+    "quiver": "quiver/walk/quiver.png"
+  },
+  "tints": {
+    "body": "#a86b47",
+    "head": "#a86b47",
+    "hair": "#c08a4b",
+    "beard": "#c08a4b"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

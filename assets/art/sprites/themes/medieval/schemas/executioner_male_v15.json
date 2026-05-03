@@ -1,0 +1,31 @@
+{
+  "id": "executioner_male_v15",
+  "display_name": "Executioner (variant 15)",
+  "tags": [
+    "medieval",
+    "law"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/sky.png",
+    "legs": "legs/fur/male/walk/charcoal.png",
+    "torso": "torso/aprons/suspenders/male/walk/leather.png",
+    "hair": "hair/pixie/adult/walk.png",
+    "weapon": "weapon/polearm/dragonspear/background/walk/copper.png",
+    "waist": "torso/waist/belt_loose/male/walk/walnut.png",
+    "hat": "hat/cloth/hood/adult/walk/sky.png",
+    "facial": "facial/patches/eyepatch2/right/adult/walk/leather.png"
+  },
+  "tints": {
+    "body": "#7b4a32",
+    "head": "#7b4a32",
+    "hair": "#e6d6ac",
+    "beard": "#e6d6ac"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

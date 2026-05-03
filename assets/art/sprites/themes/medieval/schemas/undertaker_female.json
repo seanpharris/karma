@@ -1,0 +1,29 @@
+{
+  "id": "undertaker_female",
+  "display_name": "Undertaker",
+  "tags": [
+    "medieval",
+    "chapel"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/thin/walk/brass.png",
+    "legs": "legs/fur/thin/walk/fur_grey.png",
+    "torso": "torso/aprons/apron_full/female/walk/maroon.png",
+    "hair": "hair/extensions/bangs/xlong_curlyr/adult/walk.png",
+    "waist": "torso/waist/sash_narrow/female/walk/green.png",
+    "hat": "hat/cloth/hood_sack/adult/walk/teal.png"
+  },
+  "tints": {
+    "body": "#5b3829",
+    "head": "#5b3829",
+    "hair": "#d8b36a",
+    "beard": "#d8b36a"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

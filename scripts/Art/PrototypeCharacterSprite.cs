@@ -242,6 +242,21 @@ public partial class PrototypeCharacterSprite : Node2D
         return true;
     }
 
+    public bool ApplyLpcBundle(
+        string bundleId,
+        System.Collections.Generic.IReadOnlyDictionary<EquipmentSlot, string> equipmentItemIds)
+    {
+        if (string.IsNullOrEmpty(bundleId)) return false;
+        var atlasPath = LpcPlayerEquipmentComposer.ComposeEquippedAtlas(bundleId, equipmentItemIds);
+        if (string.IsNullOrEmpty(atlasPath) || !FileAccess.FileExists(atlasPath))
+        {
+            return false;
+        }
+
+        SetAtlasPathOverride(atlasPath);
+        return true;
+    }
+
     public string ApplyPlayerAppearanceSelection(
         PlayerAppearanceSelection selection,
         string cacheRoot = "user://player_v2/composites")

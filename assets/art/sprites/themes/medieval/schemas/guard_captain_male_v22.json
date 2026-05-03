@@ -1,0 +1,32 @@
+{
+  "id": "guard_captain_male_v22",
+  "display_name": "Guard Captain (M) (variant 22)",
+  "tags": [
+    "medieval",
+    "law",
+    "melee"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/brass.png",
+    "legs": "legs/formal/male/walk/yellow.png",
+    "torso": "torso/aprons/overalls/male/walk/navy.png",
+    "hair": "hair/spiked_liberty/adult/walk.png",
+    "waist": "torso/waist/obi/knot/left/male/walk/maroon.png",
+    "hat": "hat/cloth/bandana2/adult/walk/pink.png",
+    "beard": "beards/beard/medium/walk.png",
+    "cape": "cape/solid_behind/walk/forest.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#c08a4b",
+    "beard": "#c08a4b"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

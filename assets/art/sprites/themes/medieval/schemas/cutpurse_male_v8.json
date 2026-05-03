@@ -1,0 +1,30 @@
+{
+  "id": "cutpurse_male_v8",
+  "display_name": "Cutpurse (variant 8)",
+  "tags": [
+    "medieval",
+    "outlaw"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/blue.png",
+    "legs": "legs/leggings/male/walk/leather.png",
+    "torso": "torso/aprons/suspenders/male/walk/bluegray.png",
+    "hair": "hair/extensions/bangs/xlong_bangl/adult/walk.png",
+    "waist": "torso/waist/obi/knot/left/male/walk/pink.png",
+    "hat": "hat/cloth/bandana2/adult/walk/teal.png",
+    "cape": "cape/solid_behind/walk/slate.png"
+  },
+  "tints": {
+    "body": "#f2c7a5",
+    "head": "#f2c7a5",
+    "hair": "#c9c0b8",
+    "beard": "#c9c0b8"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

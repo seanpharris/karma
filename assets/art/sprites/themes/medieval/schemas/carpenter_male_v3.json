@@ -1,0 +1,28 @@
+{
+  "id": "carpenter_male_v3",
+  "display_name": "Carpenter (variant 3)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/iron.png",
+    "legs": "legs/formal_striped/male/walk/orange.png",
+    "torso": "torso/aprons/overalls/male/walk/black.png",
+    "hair": "hair/cowlick_tall/adult/walk.png",
+    "facial": "facial/earrings/simple/left/adult/walk/ceramic.png"
+  },
+  "tints": {
+    "body": "#7b4a32",
+    "head": "#7b4a32",
+    "hair": "#d8b36a",
+    "beard": "#d8b36a"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

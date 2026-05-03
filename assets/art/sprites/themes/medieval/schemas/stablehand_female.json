@@ -1,0 +1,31 @@
+{
+  "id": "stablehand_female",
+  "display_name": "Stable-Hand (F)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/thin/walk/sky.png",
+    "legs": "legs/formal_striped/thin/walk/pink.png",
+    "torso": "torso/aprons/apron/female/walk/leather.png",
+    "hair": "hair/jewfro/adult/walk.png",
+    "waist": "torso/waist/belt_formal/walk.png",
+    "hat": "hat/cloth/bandana/adult/walk/yellow.png",
+    "arms": "arms/armour/plate/thin/walk.png",
+    "backpack": "backpack/straps/female/walk/black.png"
+  },
+  "tints": {
+    "body": "#e1a979",
+    "head": "#e1a979",
+    "hair": "#20150f",
+    "beard": "#20150f"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

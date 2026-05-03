@@ -1,0 +1,33 @@
+{
+  "id": "hunter_male_v21",
+  "display_name": "Hunter (variant 21)",
+  "tags": [
+    "medieval",
+    "peasant",
+    "ranged"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/black.png",
+    "legs": "legs/formal/male/walk/tan.png",
+    "torso": "torso/waist/sash_narrow/male/walk/green.png",
+    "hair": "hair/curly_short/adult/walk.png",
+    "weapon": "weapon/magic/diamond/universal/background/walk/bronze.png",
+    "waist": "torso/waist/belt_leather/male/walk/leather.png",
+    "shoulders": "shoulders/legion/male/walk/brass.png",
+    "cape": "cape/solid_behind/walk/brown.png",
+    "quiver": "quiver/walk/quiver.png"
+  },
+  "tints": {
+    "body": "#f2c7a5",
+    "head": "#f2c7a5",
+    "hair": "#c08a4b",
+    "beard": "#c08a4b"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "id": "fisher_female_v19",
+  "display_name": "Fisher (F) (variant 19)",
+  "tags": [
+    "medieval",
+    "peasant"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/thin/walk/steel.png",
+    "legs": "legs/formal_striped/thin/walk/brown.png",
+    "torso": "torso/aprons/apron_half/female/walk/walnut.png",
+    "hair": "hair/half_up/adult/walk.png",
+    "hat": "hat/cloth/bandana2/adult/walk.png",
+    "shoulders": "shoulders/bauldron/thin/walk.png"
+  },
+  "tints": {
+    "body": "#e1a979",
+    "head": "#e1a979",
+    "hair": "#d8b36a",
+    "beard": "#d8b36a"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

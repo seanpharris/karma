@@ -1,0 +1,29 @@
+{
+  "id": "butcher_male_v18",
+  "display_name": "Butcher (variant 18)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/armour/plate/male/walk/silver.png",
+    "legs": "legs/formal/male/walk/green.png",
+    "torso": "torso/aprons/suspenders/male/walk/leather.png",
+    "hair": "hair/parted3/adult/walk.png",
+    "waist": "torso/waist/belt_leather2/male/walk/leather.png",
+    "beard": "beards/beard/trimmed/walk.png"
+  },
+  "tints": {
+    "body": "#e1a979",
+    "head": "#e1a979",
+    "hair": "#5f2a1d",
+    "beard": "#5f2a1d"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

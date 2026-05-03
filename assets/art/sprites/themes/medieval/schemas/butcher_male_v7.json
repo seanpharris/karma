@@ -1,0 +1,28 @@
+{
+  "id": "butcher_male_v7",
+  "display_name": "Butcher (variant 7)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/teal.png",
+    "legs": "legs/formal/male/walk/navy.png",
+    "torso": "torso/clothes/longsleeve/laced/male/walk/blue.png",
+    "hair": "hair/dreadlocks_short/adult/walk.png",
+    "beard": "beards/beard/medium/walk.png"
+  },
+  "tints": {
+    "body": "#a86b47",
+    "head": "#a86b47",
+    "hair": "#8a8a8a",
+    "beard": "#8a8a8a"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

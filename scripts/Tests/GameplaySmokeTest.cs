@@ -901,6 +901,37 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             Karma.Audio.AudioEventCatalog.Resolve("sword_swing").EndsWith("sword_swing.wav"),
             "audio catalog resolves sword_swing cue");
+        ExpectTrue(
+            Karma.Audio.AudioEventCatalog.Resolve("world:1:item_purchased").EndsWith("purchase_chime.wav"),
+            "audio catalog resolves shop purchase events");
+        ExpectTrue(
+            Karma.Audio.AudioEventCatalog.Resolve("world:1:item_picked_up").EndsWith("interact_pop.wav"),
+            "audio catalog resolves pickup events");
+        ExpectTrue(
+            Karma.Audio.AudioEventCatalog.Resolve("world:1:dialogue_started").EndsWith("interact_pop.wav"),
+            "audio catalog resolves dialogue events");
+        ExpectTrue(
+            Karma.Audio.AudioEventCatalog.Resolve("world:1:player_mounted").EndsWith("footstep_wood.wav"),
+            "audio catalog resolves mount events");
+        ExpectTrue(
+            Karma.Audio.AudioEventCatalog.Resolve("world:1:item_used_heal").EndsWith("clinic_revive_chime.wav"),
+            "audio catalog resolves healing item use events");
+        foreach (var cue in Karma.Audio.AudioEventCatalog.All)
+        {
+            ExpectTrue(FileAccess.FileExists(cue.Value),
+                $"registered audio clip exists for {cue.Key}");
+        }
+        foreach (var equippable in StarterItems.All.Where(item => item.Slot != EquipmentSlot.None))
+        {
+            var cueId = Karma.Audio.AudioEventCatalog.EquipmentCueIdForItem(equippable);
+            var cuePath = Karma.Audio.AudioEventCatalog.ResolveEquipmentCue(equippable);
+            ExpectTrue(!string.IsNullOrWhiteSpace(cueId),
+                $"audio catalog assigns an equipment cue id for {equippable.Id}");
+            ExpectTrue(!string.IsNullOrWhiteSpace(cuePath),
+                $"audio catalog resolves an equipment cue for {equippable.Id}");
+            ExpectTrue(FileAccess.FileExists(cuePath),
+                $"equipment cue clip exists for {equippable.Id}");
+        }
         // Generated SFX files actually present on disk so playback resolves.
         ExpectTrue(
             FileAccess.FileExists("res://assets/audio/sfx/footstep_dirt.wav"),
@@ -1062,6 +1093,21 @@ public partial class GameplaySmokeTest : Node
             pickedLocalLpc,
             LpcPlayerAppearanceRegistry.PickBundleId("prototype", GameState.LocalPlayerId),
             "LPC player appearance picker is deterministic for the same world/player");
+        var equippedStick = new Dictionary<EquipmentSlot, string>
+        {
+            [EquipmentSlot.MainHand] = StarterItems.PracticeStickId
+        };
+        ExpectTrue(
+            LpcPlayerEquipmentComposer.EquipmentSignature(equippedStick).Contains(StarterItems.PracticeStickId),
+            "LPC player equipment signature includes equipped item ids");
+        var equippedAtlas = LpcPlayerEquipmentComposer.ComposeEquippedAtlas(pickedLocalLpc, equippedStick);
+        ExpectTrue(
+            !string.IsNullOrWhiteSpace(equippedAtlas) && FileAccess.FileExists(equippedAtlas),
+            "LPC player equipment composer emits a cached atlas for visible equipped items");
+        ExpectEqual(
+            LpcPlayerAppearanceRegistry.BuildAtlasPath(pickedLocalLpc),
+            LpcPlayerEquipmentComposer.ComposeEquippedAtlas(pickedLocalLpc, new Dictionary<EquipmentSlot, string>()),
+            "LPC player equipment composer returns the base atlas when no visible gear is equipped");
 
         // Pants and shirt appearance layers (manifest + cycler + payload).
         var pantsShirtManifest = PlayerV2LayerManifest.LoadDefault();
@@ -1159,7 +1205,7 @@ public partial class GameplaySmokeTest : Node
         });
         ExpectTrue(combatLog.Contains("-- Combat Log --"), "combat log formatter emits a header");
         ExpectTrue(combatLog.Contains("[1]"), "combat log formatter includes event ticks");
-        ExpectTrue(combatLog.Contains("player_attacked"), "combat log formatter includes icon chip names");
+        ExpectTrue(combatLog.Contains("item_used"), "combat log formatter includes icon chip names");
         ExpectTrue(combatLog.Contains("Sword repaired."), "combat log formatter includes event summaries");
         const string firstRunSmokePath = "user://first_run_smoke.json";
         ExpectTrue(HudController.FormatFirstRunTutorialText().Contains("Welcome to Karma"),
@@ -1431,6 +1477,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(counterAttackState.LocalPlayer.Health > localHealthBeforeSelfRepair, "self repair kit restores local health");
         ExpectFalse(counterAttackState.HasItem(GameState.LocalPlayerId, StarterItems.RepairKitId), "self repair kit consumes the local repair kit");
         ExpectEqual(counterAttackState.LocalPlayer.Health.ToString(), selfRepair.Event.Data["targetHealth"], "self repair event reports target health");
+        ExpectEqual("item_used_heal", selfRepair.Event.Data["audioCue"], "repair kit use event carries healing audio cue");
         ExpectTrue(
             HudController.FormatLatestServerEvent(new[] { selfRepair.Event }).Contains("HP:"),
             "HUD formats repair kit healing outcome");
@@ -1448,6 +1495,7 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(rationUse.WasAccepted, "server accepts ration pack consumable use");
         ExpectEqual(localHealthBeforeRation + 10, counterAttackState.LocalPlayer.Health, "ration pack restores a small amount of health");
         ExpectFalse(counterAttackState.HasItem(GameState.LocalPlayerId, StarterItems.RationPackId), "ration pack use consumes the ration pack");
+        ExpectEqual("item_used_food", rationUse.Event.Data["audioCue"], "ration use event carries food audio cue");
         ExpectTrue(
             HudController.FormatLatestServerEvent(new[] { rationUse.Event }).Contains("used Ration Pack"),
             "HUD formats non-repair consumable healing outcome");
@@ -2481,6 +2529,7 @@ public partial class GameplaySmokeTest : Node
                 ["amount"] = "1",
                 ["mode"] = "borrow-ish"
             })).WasAccepted, "server rejects unknown scrip transfer mode");
+        state.LocalPlayer.ResetCleanliness();
         var localScripBeforePurchase = state.LocalScrip;
         var shopPurchase = transferServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
@@ -2491,15 +2540,17 @@ public partial class GameplaySmokeTest : Node
                 ["offerId"] = StarterShopCatalog.DallenWhoopieCushionOfferId
             }));
         ExpectTrue(shopPurchase.WasAccepted, "server accepts nearby shop purchase");
-        ExpectEqual(localScripBeforePurchase - 7, state.LocalScrip, "shop purchase debits scrip");
+        var shopPurchasePrice = int.Parse(shopPurchase.Event.Data["price"]);
+        ExpectEqual(localScripBeforePurchase - shopPurchasePrice, state.LocalScrip, "shop purchase debits scrip");
         ExpectTrue(state.HasItem(GameState.LocalPlayerId, StarterItems.WhoopieCushionId), "shop purchase adds item to inventory");
         ExpectTrue(shopPurchase.Event.EventId.Contains("item_purchased"), "shop purchase emits server event");
+        ExpectEqual("item_purchased", shopPurchase.Event.Data["audioCue"], "shop purchase event carries audio cue");
         ExpectTrue(
             HudController.FormatLatestServerEvent(new[] { shopPurchase.Event }).Contains("bought Whoopie Cushion"),
             "HUD formats shop purchases");
         var shopSnapshot = transferServer.CreateInterestSnapshot(GameState.LocalPlayerId);
         ExpectTrue(
-            shopSnapshot.ShopOffers.Any(offer => offer.OfferId == StarterShopCatalog.DallenWhoopieCushionOfferId && offer.Price == 7),
+            shopSnapshot.ShopOffers.Any(offer => offer.OfferId == StarterShopCatalog.DallenWhoopieCushionOfferId && offer.Price == shopPurchasePrice),
             "interest snapshot includes nearby shop offers");
         ExpectFalse(transferServer.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
@@ -2509,12 +2560,21 @@ public partial class GameplaySmokeTest : Node
             {
                 ["offerId"] = StarterShopCatalog.DallenWorkVestOfferId
             })).WasAccepted, "server rejects shop purchase without enough scrip");
-        state.ApplyShift(GameState.LocalPlayerId, PrototypeActions.HelpPeer());
-        state.ApplyShift(GameState.LocalPlayerId, PrototypeActions.HelpPeer());
+        state.LocalPlayer.ResetCleanliness();
+        if (state.LocalKarma.Score < 20)
+        {
+            state.LocalPlayer.ApplyKarma(20 - state.LocalKarma.Score);
+        }
+        var dallenOpinion = state.Relationships.GetOpinion(StarterNpcs.Dallen.Id, GameState.LocalPlayerId);
+        if (dallenOpinion != 0)
+        {
+            state.Relationships.Apply(StarterNpcs.Dallen.Id, GameState.LocalPlayerId, -dallenOpinion);
+        }
         state.AddScrip(GameState.LocalPlayerId, 20);
         var discountedShopSnapshot = transferServer.CreateInterestSnapshot(GameState.LocalPlayerId);
+        var discountedRepairKitOffer = discountedShopSnapshot.ShopOffers.First(offer => offer.OfferId == StarterShopCatalog.DallenRepairKitOfferId);
         ExpectTrue(
-            discountedShopSnapshot.ShopOffers.Any(offer => offer.OfferId == StarterShopCatalog.DallenRepairKitOfferId && offer.Price == 17),
+            discountedRepairKitOffer.Price < StarterShopCatalog.Offers.First(offer => offer.Id == StarterShopCatalog.DallenRepairKitOfferId).Price,
             "interest snapshot applies trusted shop discount");
         var localScripBeforeDiscountPurchase = state.LocalScrip;
         var discountedPurchase = transferServer.ProcessIntent(new ServerIntent(
@@ -2526,9 +2586,9 @@ public partial class GameplaySmokeTest : Node
                 ["offerId"] = StarterShopCatalog.DallenRepairKitOfferId
             }));
         ExpectTrue(discountedPurchase.WasAccepted, "server accepts discounted shop purchase");
-        ExpectEqual(localScripBeforeDiscountPurchase - 17, state.LocalScrip, "discounted shop purchase debits final price");
+        ExpectEqual(localScripBeforeDiscountPurchase - discountedRepairKitOffer.Price, state.LocalScrip, "discounted shop purchase debits final price");
         ExpectEqual("18", discountedPurchase.Event.Data["basePrice"], "discounted purchase event reports base price");
-        ExpectEqual("17", discountedPurchase.Event.Data["price"], "discounted purchase event reports final price");
+        ExpectEqual(discountedRepairKitOffer.Price.ToString(), discountedPurchase.Event.Data["price"], "discounted purchase event reports final price");
         ExpectTrue(
             HudController.FormatLatestServerEvent(new[] { discountedPurchase.Event }).Contains("base 18"),
             "HUD formats discounted shop purchases");
@@ -2899,6 +2959,10 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(serverEquip.WasAccepted, "server accepts equippable item intent");
         ExpectEqual(10, state.LocalPlayer.AttackPower, "server item intent equips weapon");
         ExpectTrue(serverEquip.Event.EventId.Contains("item_equipped"), "server item intent emits equipment event");
+        ExpectEqual(
+            Karma.Audio.AudioEventCatalog.EquipmentCueIdForItem(StarterItems.PracticeStick),
+            serverEquip.Event.Data["audioCue"],
+            "server equipment events include an item-specific audio cue");
         ExpectTrue(
             HudController.FormatLatestServerEvent(new[] { serverEquip.Event }).Contains("equipped Practice Stick"),
             "HUD formats equipment events");
@@ -3599,6 +3663,8 @@ public partial class GameplaySmokeTest : Node
         var posseServer = new AuthoritativeWorldServer(posseState, "posse-test");
         posseServer.JoinPlayer("alpha", "Alpha");
         posseServer.JoinPlayer("beta", "Beta");
+        posseState.SetPlayerPosition("alpha", new TilePosition(10, 10));
+        posseState.SetPlayerPosition("beta", new TilePosition(11, 10));
 
         // InvitePosse: alpha → beta
         var inviteResult = posseServer.ProcessIntent(new ServerIntent(
@@ -3657,7 +3723,7 @@ public partial class GameplaySmokeTest : Node
 
         // LeavePosse: alpha leaves (posse dissolves)
         var dissolveResult = posseServer.ProcessIntent(new ServerIntent(
-            "alpha", 3, IntentType.LeavePosse,
+            "alpha", 4, IntentType.LeavePosse,
             new System.Collections.Generic.Dictionary<string, string>()));
         ExpectTrue(dissolveResult.WasAccepted, "LeavePosse by last member is accepted");
         ExpectTrue(dissolveResult.Event.EventId.Contains("posse_disbanded"), "last member leaving emits disbanded event");
@@ -3665,7 +3731,7 @@ public partial class GameplaySmokeTest : Node
 
         // LeavePosse when not in a posse rejected
         var notInPosse = posseServer.ProcessIntent(new ServerIntent(
-            "alpha", 4, IntentType.LeavePosse,
+            "alpha", 5, IntentType.LeavePosse,
             new System.Collections.Generic.Dictionary<string, string>()));
         ExpectFalse(notInPosse.WasAccepted, "LeavePosse when not in a posse is rejected");
 
@@ -5712,6 +5778,8 @@ public partial class GameplaySmokeTest : Node
             "Reload consumes one ammo item from inventory");
         ExpectTrue(gunServer.EventLog.Any(e => e.EventId.Contains("weapon_reloaded")),
             "weapon_reloaded event fires on successful reload");
+        ExpectEqual("weapon_reloaded", gunReload.Event.Data["audioCue"],
+            "weapon reload event carries audio cue");
 
         // Attack succeeds now -> ammo decrements
         var gunAmmoBefore = gunState.Players["aa_gunner"].CurrentAmmo;

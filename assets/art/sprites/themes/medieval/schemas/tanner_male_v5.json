@@ -1,0 +1,31 @@
+{
+  "id": "tanner_male_v5",
+  "display_name": "Tanner (variant 5)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/rose.png",
+    "legs": "legs/fur/male/walk/base.png",
+    "torso": "torso/aprons/suspenders/male/walk/teal.png",
+    "hair": "hair/bedhead/adult/walk.png",
+    "waist": "torso/waist/belt_belly/male/walk/slate.png",
+    "hat": "hat/cloth/bandana/adult/walk/lavender.png",
+    "facial": "facial/earrings/simple/left/adult/walk/leather.png",
+    "quiver": "quiver/walk/quiver.png"
+  },
+  "tints": {
+    "body": "#a86b47",
+    "head": "#a86b47",
+    "hair": "#7a4d2d",
+    "beard": "#7a4d2d"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "mason_male_v7",
+  "display_name": "Mason (variant 7)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/armour/plate/male/walk/ceramic.png",
+    "legs": "legs/fur/male/walk/base.png",
+    "torso": "torso/aprons/overalls/male/walk/gray.png",
+    "hair": "hair/extensions/bangs/long_wavyl/adult/walk.png",
+    "beard": "beards/beard/winter/male/walk.png"
+  },
+  "tints": {
+    "body": "#a86b47",
+    "head": "#a86b47",
+    "hair": "#d8b36a",
+    "beard": "#d8b36a"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

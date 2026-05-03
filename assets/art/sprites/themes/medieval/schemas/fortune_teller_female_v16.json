@@ -1,0 +1,29 @@
+{
+  "id": "fortune_teller_female_v16",
+  "display_name": "Fortune-Teller (variant 16)",
+  "tags": [
+    "medieval",
+    "wayfarer"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/thin/walk.png",
+    "legs": "legs/fur/thin/walk/brown.png",
+    "torso": "torso/aprons/apron_half/female/walk/forest.png",
+    "hair": "hair/longhawk/adult/walk.png",
+    "waist": "torso/waist/belt_double/female/walk/brown.png",
+    "facial": "facial/patches/eyepatch2/right/adult/walk/leather.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#5b3822",
+    "beard": "#5b3822"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

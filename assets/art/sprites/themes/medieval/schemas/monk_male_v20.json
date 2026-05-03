@@ -1,0 +1,31 @@
+{
+  "id": "monk_male_v20",
+  "display_name": "Monk (variant 20)",
+  "tags": [
+    "medieval",
+    "chapel"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/bronze.png",
+    "legs": "legs/formal/male/walk/lavender.png",
+    "torso": "torso/armour/leather/male/walk.png",
+    "hair": "hair/unkempt/adult/walk.png",
+    "weapon": "weapon/magic/gnarled/universal/background/walk/ceramic.png",
+    "hat": "hat/cloth/hood_sack/adult/walk.png",
+    "facial": "facial/earrings/simple/right/adult/walk/teal.png",
+    "beard": "beards/mustache/walrus/walk.png"
+  },
+  "tints": {
+    "body": "#a86b47",
+    "head": "#a86b47",
+    "hair": "#8a8a8a",
+    "beard": "#8a8a8a"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "baker_female_v11",
+  "display_name": "Baker (F) (variant 11)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/thin/walk/charcoal.png",
+    "legs": "legs/formal/thin/walk/yellow.png",
+    "torso": "torso/aprons/apron_full/female/walk/slate.png",
+    "hair": "hair/flat_top_straight/adult/walk.png",
+    "cape": "cape/tattered_behind/walk/maroon.png"
+  },
+  "tints": {
+    "body": "#5b3829",
+    "head": "#5b3829",
+    "hair": "#5f2a1d",
+    "beard": "#5f2a1d"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

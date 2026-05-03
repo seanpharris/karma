@@ -1,0 +1,33 @@
+{
+  "id": "child_male_v15",
+  "display_name": "Errand-Boy / Child (variant 15)",
+  "tags": [
+    "medieval",
+    "peasant"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/child/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/sandals/male/walk/bluegray.png",
+    "legs": "legs/cuffed/male/walk/leather.png",
+    "torso": "torso/aprons/apron/male/walk/charcoal.png",
+    "hair": "hair/extensions/bangs/xlong_bangl/child/walk.png",
+    "neck": "neck/amulet/cross/male/walk/ceramic_orange.png",
+    "hat": "hat/cloth/bandana2/adult/walk/teal.png",
+    "facial": "facial/masks/plain/adult/walk/charcoal.png",
+    "beard": "beards/mustache/handlebar/walk.png",
+    "arms": "arms/hands/gloves/male/walk.png",
+    "quiver": "quiver/walk/quiver.png"
+  },
+  "tints": {
+    "body": "#a86b47",
+    "head": "#a86b47",
+    "hair": "#7a4d2d",
+    "beard": "#7a4d2d"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "fence_female_v24",
+  "display_name": "Fence (F) (variant 24)",
+  "tags": [
+    "medieval",
+    "outlaw"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/revised/thin/walk/blue.png",
+    "legs": "legs/shorts/shorts/thin/walk/leather.png",
+    "torso": "torso/waist/belt_leather/female/walk/charcoal.png",
+    "hair": "hair/half_up/adult/walk.png",
+    "waist": "torso/waist/belt_loose/female/walk/charcoal.png",
+    "facial": "facial/earrings/simple/left/adult/walk/bronze.png",
+    "arms": "arms/wrists/cuffs/thin/walk.png",
+    "shield": "shield/heater/original/pattern/cross/fg/walk/leather.png"
+  },
+  "tints": {
+    "body": "#e1a979",
+    "head": "#e1a979",
+    "hair": "#5b3822",
+    "beard": "#5b3822"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

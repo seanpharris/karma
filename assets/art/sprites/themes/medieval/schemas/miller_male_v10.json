@@ -1,0 +1,27 @@
+{
+  "id": "miller_male_v10",
+  "display_name": "Miller (variant 10)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/yellow.png",
+    "legs": "legs/formal/male/walk/green.png",
+    "torso": "torso/clothes/longsleeve/laced/male/walk/black.png",
+    "hair": "hair/buzzcut/adult/walk.png"
+  },
+  "tints": {
+    "body": "#e1a979",
+    "head": "#e1a979",
+    "hair": "#8a8a8a",
+    "beard": "#8a8a8a"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

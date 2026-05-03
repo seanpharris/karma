@@ -1,0 +1,29 @@
+{
+  "id": "baker_female_v5",
+  "display_name": "Baker (F) (variant 5)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/thin/walk/leather.png",
+    "legs": "legs/fur/thin/walk/maroon.png",
+    "torso": "torso/aprons/apron_full/female/walk/white.png",
+    "hair": "hair/bob/adult/walk.png",
+    "waist": "torso/waist/belt_belly/female/walk/brown.png",
+    "backpack": "backpack/basket_contents/ore/walk/fg.png"
+  },
+  "tints": {
+    "body": "#f2c7a5",
+    "head": "#f2c7a5",
+    "hair": "#2c2b26",
+    "beard": "#2c2b26"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

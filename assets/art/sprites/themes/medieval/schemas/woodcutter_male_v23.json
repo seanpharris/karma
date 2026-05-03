@@ -1,0 +1,31 @@
+{
+  "id": "woodcutter_male_v23",
+  "display_name": "Woodcutter (variant 23)",
+  "tags": [
+    "medieval",
+    "peasant"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/hoofs/male/walk/fur_grey.png",
+    "legs": "legs/fur/male/walk/lavender.png",
+    "torso": "torso/aprons/apron/male/walk/navy.png",
+    "hair": "hair/bangs_bun/adult/walk.png",
+    "waist": "torso/waist/belt_double/male/walk/walnut.png",
+    "hat": "hat/cloth/hood/adult/walk/gray.png",
+    "shoulders": "shoulders/legion/male/walk/steel.png",
+    "quiver": "quiver/walk/quiver.png"
+  },
+  "tints": {
+    "body": "#e1a979",
+    "head": "#e1a979",
+    "hair": "#20150f",
+    "beard": "#20150f"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

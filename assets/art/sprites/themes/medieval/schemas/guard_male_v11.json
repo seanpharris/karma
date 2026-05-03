@@ -1,0 +1,30 @@
+{
+  "id": "guard_male_v11",
+  "display_name": "Guard (M) (variant 11)",
+  "tags": [
+    "medieval",
+    "law"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/tan.png",
+    "legs": "legs/formal_striped/male/walk/sky.png",
+    "torso": "torso/aprons/overalls/male/walk/teal.png",
+    "hair": "hair/extensions/bangs/xlong_curlyr/adult/walk.png",
+    "neck": "neck/jabot/male/walk/leather.png",
+    "hat": "hat/helmet/kettle/adult/walk.png",
+    "beard": "beards/beard/trimmed/walk.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#3b2418",
+    "beard": "#3b2418"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

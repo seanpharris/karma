@@ -173,6 +173,7 @@ public partial class GameState : Node
         var file = FileAccess.Open(path, FileAccess.ModeFlags.Write);
         if (file is null) return false;
         file.StoreString(JsonSerializer.Serialize(new CarryStateSettings(CarryStateIntoNextRound)));
+        file.Close();
         return true;
     }
 

@@ -1,0 +1,28 @@
+{
+  "id": "farmer_female_v24",
+  "display_name": "Farmer (F) (variant 24)",
+  "tags": [
+    "medieval",
+    "peasant"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/sandals/thin/walk/leather.png",
+    "legs": "legs/fur/thin/walk/orange.png",
+    "torso": "torso/aprons/apron_full/female/walk/orange.png",
+    "hair": "hair/idol/adult/walk.png",
+    "shoulders": "shoulders/mantal/thin/walk.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#7a4d2d",
+    "beard": "#7a4d2d"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

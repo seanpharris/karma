@@ -1,0 +1,30 @@
+{
+  "id": "peasant_female_v16",
+  "display_name": "Peasant (F) (variant 16)",
+  "tags": [
+    "medieval",
+    "peasant"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/thin/walk/charcoal.png",
+    "legs": "legs/formal_striped/thin/walk/leather.png",
+    "torso": "torso/aprons/apron_full/female/walk/teal.png",
+    "hair": "hair/messy3/adult/walk.png",
+    "waist": "torso/waist/belt_leather/female/walk/white.png",
+    "neck": "neck/amulet/cross/female/walk/bronze_orange.png",
+    "shoulders": "shoulders/mantal/thin/walk.png"
+  },
+  "tints": {
+    "body": "#e1a979",
+    "head": "#e1a979",
+    "hair": "#5b3822",
+    "beard": "#5b3822"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

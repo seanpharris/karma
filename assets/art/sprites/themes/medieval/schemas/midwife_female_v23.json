@@ -1,0 +1,33 @@
+{
+  "id": "midwife_female_v23",
+  "display_name": "Midwife (variant 23)",
+  "tags": [
+    "medieval",
+    "wild"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female_elderly/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/thin/walk/slate.png",
+    "legs": "legs/formal/thin/walk/purple.png",
+    "torso": "torso/aprons/apron_half/female/walk/pink.png",
+    "hair": "hair/parted_side_bangs/adult/walk.png",
+    "waist": "torso/waist/belt_loose/female/walk/walnut.png",
+    "hat": "hat/cloth/hood_sack/adult/walk/brown.png",
+    "arms": "arms/bracers/thin/walk.png",
+    "shield": "shield/crusader2/male/fg/walk.png",
+    "quiver": "quiver/walk/quiver.png",
+    "backpack": "backpack/straps/female/walk/black.png"
+  },
+  "tints": {
+    "body": "#7b4a32",
+    "head": "#7b4a32",
+    "hair": "#3b2418",
+    "beard": "#3b2418"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

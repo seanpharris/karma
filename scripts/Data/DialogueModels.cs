@@ -91,6 +91,8 @@ public static class DialogueRegistry
                     {
                         new DialogueChoice("browse_wares", "Browse wares.",
                             NextNodeId: "wares"),
+                        new DialogueChoice("sell_items", "Sell items.",
+                            ActionId: "open_shop_sell"),
                         new DialogueChoice("ask_about_mara", "Ask about Mara.",
                             NextNodeId: "mara"),
                         new DialogueChoice("leave", "Leave.", Terminates: true),

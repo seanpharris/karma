@@ -37,6 +37,7 @@ public partial class PlayerController : CharacterBody2D
     private bool _isExhausted;
     private PlayerAppearanceSelection _lastAppliedAppearance = null;
     private string _lastAppliedLpcBundleId = string.Empty;
+    private string _lastAppliedEquipmentSignature = string.Empty;
 
     public override void _Ready()
     {
@@ -670,8 +671,10 @@ public partial class PlayerController : CharacterBody2D
             return;
         }
 
+        var equipmentSignature = LpcPlayerEquipmentComposer.EquipmentSignature(player.EquipmentItemIds);
         if (_lastAppliedAppearance == player.Appearance &&
-            _lastAppliedLpcBundleId == (player.LpcBundleId ?? string.Empty))
+            _lastAppliedLpcBundleId == (player.LpcBundleId ?? string.Empty) &&
+            _lastAppliedEquipmentSignature == equipmentSignature)
         {
             return;
         }
@@ -679,6 +682,7 @@ public partial class PlayerController : CharacterBody2D
         WorldRoot.ApplyPlayerSpriteAppearance(_characterSprite, player);
         _lastAppliedAppearance = player.Appearance;
         _lastAppliedLpcBundleId = player.LpcBundleId ?? string.Empty;
+        _lastAppliedEquipmentSignature = equipmentSignature;
     }
 
     private static TilePosition ToTilePosition(Vector2 position)

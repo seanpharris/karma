@@ -19,6 +19,9 @@ file for canonical paths if a layer is missing.
 from __future__ import annotations
 
 import json
+import random
+import shutil
+from functools import lru_cache
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -247,34 +250,28 @@ def to_bundle(spec) -> dict:
     }
 
 
-# Visual-variant strategy. Each base spec produces 1-3 bundles:
-#   <id>          — the base spec
-#   <id>_v2       — same body+role but a hair swap (for "older / weathered")
-#   <id>_v3       — same body+role with weapon dropped or swapped
-#
-# Variants share identity in theme.json — they're "what this same person
-# could plausibly look like in different weeks". Hair swaps are the cheap
-# diff because they read clearly on top of the head.
-
-# Hair-style alternatives keyed by the original hair path. Paths are real
-# LPC layout -- flat under hair/, with body-kind suffix (adult/child/etc).
-HAIR_VARIANTS = {
-    "hair/buzzcut/adult":  ["hair/messy1/adult", "hair/balding/adult", "hair/cowlick/adult", "hair/parted/adult"],
-    "hair/bob/adult":      ["hair/long/adult", "hair/messy1/adult", "hair/lob/adult", "hair/page/adult"],
-    "hair/long/adult":     ["hair/messy1/adult", "hair/buzzcut/adult", "hair/curly_long/adult", "hair/half_up/adult"],
-    "hair/messy1/adult":   ["hair/long/adult", "hair/buzzcut/adult", "hair/long_messy/adult", "hair/unkempt/adult"],
-    "hair/balding/adult":  ["hair/buzzcut/adult", "hair/parted/adult", "hair/messy2/adult"],
-}
+# Visual-variant strategy. Each base role now produces a broad deterministic
+# random set. The generator scans the local LPC spritesheets so new vendored
+# colors/styles are picked up without hand-editing every role.
+VARIANTS_PER_BASE = 24
 
 BLOCKED_MEDIEVAL_TOKENS = {
     "alien",
+    "baseball",
     "blaster",
     "christmas",
     "cyber",
+    "cyborg",
+    "firearm",
     "frankenstein",
+    "glow",
     "glowsword",
     "gun",
+    "hazmat",
+    "hoodie",
     "jack",
+    "jetpack",
+    "lab",
     "laser",
     "modern",
     "pistol",
@@ -283,91 +280,80 @@ BLOCKED_MEDIEVAL_TOKENS = {
     "santa",
     "scifi",
     "shotgun",
+    "sneaker",
     "space",
+    "spacesuit",
+    "tshirt",
     "xeon",
     "zombie",
 }
 
-ADULT_HAIR_POOL = [
-    "hair/afro/adult",
-    "hair/bangs/adult",
-    "hair/bangslong/adult",
-    "hair/bangs_bun/adult",
-    "hair/bedhead/adult",
-    "hair/bob/adult",
-    "hair/bob_side_part/adult",
-    "hair/buzzcut/adult",
-    "hair/cornrows/adult",
-    "hair/cowlick/adult",
-    "hair/curly_long/adult",
-    "hair/curly_short/adult",
-    "hair/curtains/adult",
-    "hair/dreadlocks_long/adult",
-    "hair/dreadlocks_short/adult",
-    "hair/halfmessy/adult",
-    "hair/half_up/adult",
-    "hair/high_and_tight/adult",
-    "hair/lob/adult",
-    "hair/long/adult",
-    "hair/long_messy/adult",
-    "hair/long_straight/adult",
-    "hair/messy1/adult",
-    "hair/messy2/adult",
-    "hair/messy3/adult",
-    "hair/mop/adult",
-    "hair/page/adult",
-    "hair/parted/adult",
-    "hair/pigtails/adult",
-    "hair/pixie/adult",
-    "hair/plain/adult",
-    "hair/swoop/adult",
-    "hair/unkempt/adult",
-]
-
-CHILD_HAIR_POOL = [
-    "hair/jewfro/child",
-    "hair/parted_side_bangs/child",
-    "hair/parted_side_bangs2/child",
-    "hair/relm_short/child",
-    "hair/swoop_side/child",
-    "hair/wavy/child",
-]
-
-WEAPON_POOLS = {
-    "melee": [
-        "weapon/sword/arming/universal/fg/walk/iron.png",
-        "weapon/sword/arming/universal/fg/walk/steel.png",
-        "weapon/sword/arming/universal/fg/walk/silver.png",
-        "weapon/sword/dagger/walk/dagger.png",
-        "weapon/blunt/mace/walk/mace.png",
-        "weapon/blunt/waraxe/walk/waraxe.png",
-        "weapon/blunt/flail/walk/flail.png",
-        "weapon/polearm/halberd/walk/halberd.png",
-    ],
-    "ranged": [
-        "weapon/ranged/bow/great/walk/foreground/iron.png",
-        "weapon/ranged/bow/recurve/walk/foreground/wood.png",
-        "weapon/ranged/bow/short/walk/foreground/wood.png",
-        "weapon/ranged/slingshot/walk/foreground.png",
-    ],
-    "law": [
-        "weapon/polearm/spear/walk/foreground.png",
-        "weapon/polearm/longspear/foreground/walk/iron.png",
-        "weapon/sword/arming/universal/fg/walk/steel.png",
-        "weapon/blunt/mace/walk/mace.png",
-    ],
-    "wild": [
-        "weapon/blunt/club/club.png",
-        "weapon/blunt/waraxe/walk/waraxe.png",
-        "weapon/polearm/cane/male/walk/cane.png",
-        "weapon/ranged/bow/short/walk/foreground/wood.png",
-    ],
-    "chapel": [
-        "weapon/polearm/cane/male/walk/cane.png",
-        "weapon/magic/gnarled/universal/foreground/walk/wood.png",
-        "weapon/magic/simple/foreground/walk/simple.png",
-    ],
+MEDIEVAL_THEME_HINTS = {
+    "apron",
+    "armour",
+    "armor",
+    "bandana",
+    "belt",
+    "boot",
+    "bracer",
+    "cape",
+    "chainmail",
+    "cloth",
+    "cowl",
+    "dress",
+    "formal",
+    "fur",
+    "glove",
+    "hair",
+    "hat",
+    "helmet",
+    "hood",
+    "hose",
+    "kilt",
+    "leather",
+    "longsleeve",
+    "mantal",
+    "pants",
+    "robe",
+    "sandals",
+    "sash",
+    "shield",
+    "shirt",
+    "shoe",
+    "skirt",
+    "sleeveless",
+    "surcoat",
+    "tunic",
+    "vest",
+    "weapon",
+    "waist",
 }
+
+NATURAL_SKIN_TINTS = [
+    "#f2c7a5",
+    "#e1a979",
+    "#c98255",
+    "#a86b47",
+    "#7b4a32",
+    "#5b3829",
+]
+
+HAIR_TINTS = [
+    "#20150f",
+    "#3b2418",
+    "#5b3822",
+    "#7a4d2d",
+    "#9a693b",
+    "#c08a4b",
+    "#d8b36a",
+    "#e6d6ac",
+    "#8a8a8a",
+    "#c9c0b8",
+    "#5f2a1d",
+    "#2c2b26",
+]
+
+BODY_SLOT_TOKENS = {"male", "female", "thin", "pregnant", "teen", "child", "adult", "muscular", "universal"}
 
 
 def is_medieval_safe(rel_path: str) -> bool:
@@ -386,12 +372,26 @@ def existing_layer(rel_path: str) -> str | None:
     return rel if (LPC_SPRITESHEETS / rel).exists() else None
 
 
-def first_existing(candidates: list[str]) -> str | None:
-    for candidate in candidates:
-        rel = existing_layer(candidate)
-        if rel is not None:
-            return rel
-    return None
+def is_usable_walk_asset(path: Path) -> bool:
+    rel = path.relative_to(LPC_SPRITESHEETS).as_posix()
+    if not is_medieval_safe(rel):
+        return False
+    if path.name == "walk.png":
+        return True
+    return path.parent.name == "walk" and path.suffix.lower() == ".png"
+
+
+@lru_cache(maxsize=None)
+def walk_assets(category: str) -> tuple[str, ...]:
+    root = LPC_SPRITESHEETS / category
+    if not root.exists():
+        return ()
+    assets = [
+        path.relative_to(LPC_SPRITESHEETS).as_posix()
+        for path in root.rglob("*.png")
+        if is_usable_walk_asset(path)
+    ]
+    return tuple(sorted(set(assets)))
 
 
 def existing_pool(candidates: list[str]) -> list[str]:
@@ -426,270 +426,188 @@ def format_candidates(candidates: list[str], slots: dict[str, str]) -> list[str]
     return [candidate.format(**slots) for candidate in candidates]
 
 
-def torso_pool(tags: list[str], slots: dict[str, str]) -> list[str]:
-    common = [
-        "torso/clothes/longsleeve/longsleeve/{torso}",
-        "torso/clothes/longsleeve/longsleeve2/{torso}",
-        "torso/clothes/longsleeve/longsleeve2_buttoned/{torso}",
-        "torso/clothes/longsleeve/longsleeve2_cardigan/{torso}",
-        "torso/clothes/longsleeve/longsleeve2_scoop/{torso}",
-        "torso/clothes/longsleeve/longsleeve2_vneck/{torso}",
-        "torso/clothes/longsleeve/longsleeves_cuffed/{torso}",
-        "torso/clothes/longsleeve/scoop/{torso}",
-        "torso/clothes/sleeveless/sleeveless2_vneck/{torso}",
-        "torso/aprons/overalls/{torso}",
-        "torso/aprons/suspenders/{torso}",
-    ]
-    armour = [
-        "torso/armour/leather/{torso}",
-        "torso/armour/legion/{torso}",
-        "torso/armour/plate/{torso}",
-        "torso/chainmail/{torso}",
-    ]
-    if any(tag in tags for tag in ("law", "melee", "outlaw")):
-        common = armour + common
-    return existing_pool(format_candidates(common, slots))
+def path_parts(rel_path: str) -> set[str]:
+    return {part.lower() for part in Path(rel_path).parts}
 
 
-def legs_pool(tags: list[str], slots: dict[str, str]) -> list[str]:
-    candidates = [
-        "legs/pants/{legs}",
-        "legs/pants2/{legs}",
-        "legs/cuffed/{legs}",
-        "legs/pantaloons/{legs}",
-        "legs/formal/{legs}",
-        "legs/hose/{legs}",
-        "legs/leggings/{legs}",
-        "legs/fur/{legs}",
-        "legs/skirts/plain/{legs}",
-        "legs/skirts/slit/thin",
-        "legs/skirts/straight/thin",
-        "legs/skirts/overskirt/thin",
-    ]
-    if any(tag in tags for tag in ("law", "melee")):
-        candidates.insert(0, "legs/armour/plate/{legs}")
-    return existing_pool(format_candidates(candidates, slots))
+def has_body_slot(rel_path: str, slot: str) -> bool:
+    parts = path_parts(rel_path)
+    if slot in parts or "universal" in parts:
+        return True
+    body_tokens = parts & BODY_SLOT_TOKENS
+    return not body_tokens
 
 
-def feet_pool(slots: dict[str, str]) -> list[str]:
-    candidates = [
-        "feet/boots/basic/{feet}",
-        "feet/boots/fold/{feet}",
-        "feet/boots/revised/{feet}",
-        "feet/boots/rimmed/{feet}",
-        "feet/shoes/basic/{feet}",
-        "feet/shoes/ghillies/{feet}",
-        "feet/shoes/revised/{feet}",
-        "feet/sandals/{feet}",
-    ]
-    return existing_pool(format_candidates(candidates, slots))
+def excludes_split_layer(rel_path: str) -> bool:
+    parts = path_parts(rel_path)
+    return "bg" in parts or "fg" in parts or "background" in parts or "foreground" in parts
+
+
+def role_rank(rel_path: str, tags: list[str]) -> int:
+    lowered = rel_path.lower()
+    score = 0
+    if "law" in tags or "melee" in tags:
+        score += 5 if any(token in lowered for token in ("armour", "armor", "chainmail", "helmet", "shield", "sword", "spear", "mace")) else 0
+    if "ranged" in tags:
+        score += 5 if any(token in lowered for token in ("bow", "quiver", "arrow", "sling")) else 0
+    if "trade" in tags:
+        score += 4 if any(token in lowered for token in ("apron", "suspend", "tool", "belt", "sleeve")) else 0
+    if "peasant" in tags:
+        score += 4 if any(token in lowered for token in ("plain", "scoop", "fur", "sandals", "basket", "pack")) else 0
+    if "chapel" in tags:
+        score += 4 if any(token in lowered for token in ("robe", "hood", "cowl", "magic", "staff", "simple")) else 0
+    if "outlaw" in tags:
+        score += 4 if any(token in lowered for token in ("bandana", "hood", "leather", "dagger", "club", "pirate")) else 0
+    if "wayfarer" in tags:
+        score += 3 if any(token in lowered for token in ("cape", "pack", "hood", "hat", "boot")) else 0
+    score += 1 if any(token in lowered for token in MEDIEVAL_THEME_HINTS) else 0
+    return score
+
+
+def sorted_for_role(pool: list[str], tags: list[str]) -> list[str]:
+    return sorted(pool, key=lambda path: (-role_rank(path, tags), path))
+
+
+def category_pool(category: str, tags: list[str], slot: str | None = None, allow_split: bool = False) -> list[str]:
+    result = []
+    for rel in walk_assets(category):
+        if slot is not None and not has_body_slot(rel, slot):
+            continue
+        if not allow_split and excludes_split_layer(rel):
+            continue
+        result.append(rel)
+    return sorted_for_role(result, tags)
 
 
 def hair_pool(head_kind: str) -> list[str]:
-    candidates = CHILD_HAIR_POOL if head_kind.endswith("/child") else ADULT_HAIR_POOL
-    return existing_pool(candidates)
-
-
-def hat_pool(tags: list[str]) -> list[str]:
-    candidates = [
-        "hat/cloth/bandana/adult",
-        "hat/cloth/bandana2/adult",
-        "hat/cloth/hood/adult",
-        "hat/cloth/hood_sack/adult",
-        "hat/cloth/leather_cap/adult",
-        "hat/cloth/leather_cap/feather/adult",
-        "hat/headband/thick/adult",
-        "hat/headband/tied/adult",
+    age = "child" if head_kind.endswith("/child") else "adult"
+    result = [
+        rel for rel in walk_assets("hair")
+        if age in path_parts(rel) and not excludes_split_layer(rel)
     ]
-    if any(tag in tags for tag in ("law", "melee")):
-        candidates = [
-            "hat/helmet/armet/adult",
-            "hat/helmet/barbarian/adult",
-            "hat/helmet/barbuta_simple/adult",
-            "hat/helmet/bascinet/adult",
-            "hat/helmet/greathelm/male",
-            "hat/helmet/kettle/adult",
-            "hat/helmet/mail/adult",
-            "hat/helmet/nasal/adult",
-            "hat/helmet/norman/adult",
-            "hat/helmet/spangenhelm/adult",
-            "hat/helmet/sugarloaf/male",
-            "hat/visor/slit/adult",
-        ] + candidates
-    if any(tag in tags for tag in ("outlaw", "wayfarer")):
-        candidates += [
-            "hat/pirate/bandana/adult",
-            "hat/pirate/kerchief/adult",
-            "hat/pirate/tricorne/basic/adult",
-            "hat/pirate/cavalier/adult",
-        ]
-    if "chapel" in tags:
-        candidates += [
-            "hat/cloth/hood/adult",
-            "hat/magic/wizard/base/adult",
-        ]
-    return existing_pool(candidates)
+    return sorted(set(result))
 
 
 def optional_layers(tags: list[str], body_kind: str, slots: dict[str, str]) -> dict[str, list[str]]:
     pools = {
-        "arms": existing_pool(format_candidates([
-            "arms/bracers/{arms}",
-        ], slots)),
-        "shoulders": existing_pool(format_candidates([
-            "shoulders/bauldron/{shoulders}",
-            "shoulders/mantal/{shoulders}",
-            "shoulders/pauldrons/{shoulders}",
-            "shoulders/legion/{torso}",
-        ], slots)),
-        "waist": existing_pool(format_candidates([
-            "torso/waist/belt_belly/{neck}",
-            "torso/waist/belt_double/{neck}",
-            "torso/waist/belt_leather/{neck}",
-            "torso/waist/belt_leather2/{neck}",
-            "torso/waist/belt_loose/{neck}",
-            "torso/waist/sash/{neck}",
-        ], slots)),
-        "neck": existing_pool(format_candidates([
-            "neck/cravat/{neck}",
-            "neck/jabot/{neck}",
-        ], slots)),
-        "hat": hat_pool(tags),
-        "cape": existing_pool([
-            "cape/solid/adult",
-            "cape/tattered/adult",
-            "cape/trim/adult",
-        ]),
-        "shield": existing_pool([
-            "shield/round/walk.png",
-            "shield/crusader/fg/walk.png",
-        ]),
-        "quiver": existing_pool([
-            "quiver/back/adult",
-            "quiver/hip/adult",
-        ]),
-        "backpack": existing_pool([
-            "backpack/basket/adult",
-            "backpack/pack/adult",
-            "backpack/roll/adult",
-        ]),
+        "arms": category_pool("arms", tags, slots["arms"]),
+        "shoulders": category_pool("shoulders", tags, slots["shoulders"]),
+        "waist": category_pool("torso/waist", tags, slots["neck"]),
+        "neck": category_pool("neck", tags, slots["neck"]),
+        "hat": category_pool("hat", tags, "adult"),
+        "facial": category_pool("facial", tags, "adult"),
+        "cape": category_pool("cape", tags, "adult"),
+        "shield": category_pool("shield", tags, None, allow_split=True),
+        "quiver": category_pool("quiver", tags, "adult"),
+        "backpack": category_pool("backpack", tags, body_kind, allow_split=False),
     }
     if body_kind == "male":
-        pools["beard"] = existing_pool([
-            "beards/beard/basic",
-            "beards/beard/medium",
-            "beards/beard/trimmed",
-            "beards/mustache/handlebar",
-            "beards/mustache/chevron",
-        ])
+        pools["beard"] = category_pool("beards", tags)
     return pools
 
 
 def weapon_pool(tags: list[str], base_weapon: str) -> list[str]:
-    candidates: list[str] = []
+    pool = list(walk_assets("weapon"))
+    if "ranged" not in tags:
+        pool = [path for path in pool if "ranged/" not in path or any(tag in tags for tag in ("law", "outlaw", "wild"))]
+    if not any(tag in tags for tag in ("law", "melee", "ranged", "outlaw", "wild", "chapel")):
+        pool = []
     if base_weapon:
-        candidates.append(base_weapon)
-    for tag in ("law", "melee", "ranged", "wild", "chapel"):
-        if tag in tags:
-            candidates.extend(WEAPON_POOLS.get(tag, []))
-    if "outlaw" in tags:
-        candidates.extend([
-            "weapon/sword/dagger/walk/dagger.png",
-            "weapon/blunt/club/club.png",
-            "weapon/sword/arming/universal/fg/walk/iron.png",
-        ])
-    return existing_pool(candidates)
+        pool.insert(0, base_weapon)
+    return sorted_for_role(sorted(set(path for path in pool if is_medieval_safe(path))), tags)
+
+
+def choose(rng: random.Random, pool: list[str], fallback: str | None = None, favored_window: int = 80) -> str | None:
+    if not pool:
+        return fallback
+    window = min(len(pool), max(1, favored_window))
+    return rng.choice(pool[:window])
+
+
+def roll(rng: random.Random, probability: float) -> bool:
+    return rng.random() < probability
 
 
 def layer_signature(layers: dict[str, str]) -> tuple[tuple[str, str], ...]:
     return tuple(sorted((key, value) for key, value in layers.items() if value))
 
 
-def apply_variant_layers(bundle: dict, changes: dict[str, str | None]) -> dict:
-    layers = dict(bundle["layers"])
-    for key, value in changes.items():
-        if value is None:
-            layers.pop(key, None)
-        else:
-            layers[key] = value
-    bundle["layers"] = layers
-    return bundle
-
-
 def variants_for(spec):
     """Yield generated bundle dictionaries for a given base spec."""
-    base_bundle = to_bundle(spec)
-    yield base_bundle
-
     bid, name, tags, body_kind, torso, legs, feet, hair, weapon, head_kind = spec
     slots = body_slots(body_kind, head_kind)
-    torso_options = torso_pool(tags, slots)
-    legs_options = legs_pool(tags, slots)
-    feet_options = feet_pool(slots)
+    torso_options = category_pool("torso", tags, slots["torso"])
+    legs_options = category_pool("legs", tags, slots["legs"])
+    feet_options = category_pool("feet", tags, slots["feet"])
     hair_options = hair_pool(head_kind)
     weapons = weapon_pool(tags, weapon)
     extras = optional_layers(tags, body_kind, slots)
 
-    base_hair = spec[7]
-    hair_options = existing_pool(HAIR_VARIANTS.get(base_hair, []) + hair_options)
+    seen: set[tuple[tuple[str, str], ...]] = set()
+    for variant_number in range(1, VARIANTS_PER_BASE + 1):
+        rng = random.Random(f"{bid}:{variant_number}:medieval-lpc-v4")
+        skin_tint = rng.choice(NATURAL_SKIN_TINTS)
+        hair_tint = rng.choice(HAIR_TINTS)
+        layers = {
+            "body": f"body/bodies/{body_kind}/walk.png",
+            "head": f"head/heads/{head_kind}/walk.png",
+            "eyes": "eyes/human/adult/default/walk.png",
+            "feet": choose(rng, feet_options, walk_path(feet)),
+            "legs": choose(rng, legs_options, walk_path(legs)),
+            "torso": choose(rng, torso_options, walk_path(torso)),
+            "hair": choose(rng, hair_options, walk_path(hair), favored_window=200),
+        }
+        if weapons and roll(rng, 0.55 if any(tag in tags for tag in ("law", "melee", "outlaw", "ranged")) else 0.18):
+            layers["weapon"] = choose(rng, weapons, weapon, favored_window=100)
 
-    recipes: list[dict[str, str | None]] = []
-    for alt_hair in hair_options[:2]:
-        recipes.append({"hair": alt_hair})
-
-    for idx in range(8):
-        changes: dict[str, str | None] = {}
-        if hair_options:
-            changes["hair"] = hair_options[idx % len(hair_options)]
-        if torso_options:
-            changes["torso"] = torso_options[idx % len(torso_options)]
-        if legs_options:
-            changes["legs"] = legs_options[(idx + 1) % len(legs_options)]
-        if feet_options:
-            changes["feet"] = feet_options[(idx + 2) % len(feet_options)]
-        if weapons and (idx % 3 != 1):
-            changes["weapon"] = weapons[idx % len(weapons)]
-        elif weapon:
-            changes["weapon"] = None
-
-        for slot_name in ("waist", "neck", "hat", "beard", "arms", "shoulders", "cape", "shield", "quiver", "backpack"):
+        optional_chances = {
+            "waist": 0.72,
+            "neck": 0.26 if "wayfarer" not in tags else 0.50,
+            "hat": 0.38 if not any(tag in tags for tag in ("law", "outlaw")) else 0.72,
+            "facial": 0.20,
+            "beard": 0.58 if body_kind == "male" else 0.0,
+            "arms": 0.34 if any(tag in tags for tag in ("law", "melee", "outlaw")) else 0.16,
+            "shoulders": 0.34 if any(tag in tags for tag in ("law", "melee")) else 0.10,
+            "cape": 0.18 if not any(tag in tags for tag in ("law", "wayfarer", "chapel")) else 0.36,
+            "shield": 0.24 if any(tag in tags for tag in ("law", "melee", "outlaw", "ranged", "wild")) else 0.0,
+            "quiver": 0.70 if "ranged" in tags else 0.06,
+            "backpack": 0.34 if any(tag in tags for tag in ("peasant", "trade", "wayfarer")) else 0.12,
+        }
+        for slot_name, probability in optional_chances.items():
             pool = extras.get(slot_name, [])
-            if not pool:
-                continue
-            should_add = {
-                "waist": idx % 2 == 0,
-                "neck": idx % 5 == 0 or "wayfarer" in tags,
-                "hat": idx % 3 == 0 or any(tag in tags for tag in ("law", "outlaw")),
-                "beard": idx % 2 == 1,
-                "arms": any(tag in tags for tag in ("law", "melee", "outlaw")) and idx % 2 == 0,
-                "shoulders": any(tag in tags for tag in ("law", "melee")) and idx % 2 == 0,
-                "cape": any(tag in tags for tag in ("law", "wayfarer", "chapel")) and idx % 4 == 0,
-                "shield": any(tag in tags for tag in ("law", "melee")) and idx % 4 == 1,
-                "quiver": "ranged" in tags and idx % 2 == 0,
-                "backpack": any(tag in tags for tag in ("peasant", "trade", "wayfarer")) and idx % 3 == 2,
-            }.get(slot_name, False)
-            if should_add:
-                changes[slot_name] = pool[idx % len(pool)]
-        recipes.append(changes)
+            if pool and roll(rng, probability):
+                layers[slot_name] = choose(rng, pool, favored_window=100)
 
-    seen = {layer_signature(base_bundle["layers"])}
-    variant_number = 2
-    for changes in recipes:
-        bundle = apply_variant_layers(to_bundle(spec), changes)
+        layers = {key: value for key, value in layers.items() if value}
+        bundle = {
+            "id": bid if variant_number == 1 else f"{bid}_v{variant_number}",
+            "display_name": name if variant_number == 1 else f"{name} (variant {variant_number})",
+            "tags": tags,
+            "layers": layers,
+            "tints": {
+                "body": skin_tint,
+                "head": skin_tint,
+                "hair": hair_tint,
+                "beard": hair_tint,
+            },
+            "animations": ["walk", "idle"],
+        }
         signature = layer_signature(bundle["layers"])
         if signature in seen:
             continue
         seen.add(signature)
-        bundle["id"] = f"{bid}_v{variant_number}"
-        bundle["display_name"] = f"{name} (variant {variant_number})"
         yield bundle
-        variant_number += 1
-        if variant_number > 10:
-            break
 
 
 def main() -> int:
     THEMES_DIR.mkdir(parents=True, exist_ok=True)
+    for old_theme in THEMES_DIR.glob("*.json"):
+        old_theme.unlink()
+    generated_dir = REPO / "assets" / "art" / "generated" / "lpc_npcs"
+    if generated_dir.exists():
+        shutil.rmtree(generated_dir)
+    generated_dir.mkdir(parents=True, exist_ok=True)
+
     written = 0
     base_to_variants: dict[str, list[str]] = {}
     for spec in SPECS:

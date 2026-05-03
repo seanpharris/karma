@@ -1,0 +1,31 @@
+{
+  "id": "mason_male",
+  "display_name": "Mason",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/white.png",
+    "legs": "legs/formal_striped/male/walk/maroon.png",
+    "torso": "torso/clothes/longsleeve/formal/male/walk/white.png",
+    "hair": "hair/cowlick_tall/adult/walk.png",
+    "neck": "neck/capeclip/male/walk/teal.png",
+    "beard": "beards/mustache/basic/walk.png",
+    "arms": "arms/hands/gloves/male/walk.png",
+    "shoulders": "shoulders/pauldrons/male/walk.png"
+  },
+  "tints": {
+    "body": "#5b3829",
+    "head": "#5b3829",
+    "hair": "#7a4d2d",
+    "beard": "#7a4d2d"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

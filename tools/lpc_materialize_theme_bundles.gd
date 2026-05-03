@@ -112,10 +112,11 @@ func compose_bundle(bundle_id: String) -> bool:
         return false
     var bundle: Dictionary = json.data
     var ordered := order_layers(bundle.get("layers", {}))
+    var tints: Dictionary = bundle.get("tints", {})
     if ordered.is_empty():
         push_error("Bundle has no layers: %s" % bundle_id)
         return false
-    var lpc_sheet := composite_layers(ordered)
+    var lpc_sheet := composite_layers(ordered, tints)
     if lpc_sheet == null:
         push_error("No usable layers loaded: %s" % bundle_id)
         return false
@@ -148,9 +149,10 @@ func order_layers(layers: Dictionary) -> Array:
     return result
 
 
-func composite_layers(layers: Array) -> Image:
+func composite_layers(layers: Array, tints: Dictionary) -> Image:
     var base: Image = null
     for entry in layers:
+        var layer_key: String = entry[0]
         var rel_png_path: String = entry[1]
         if rel_png_path.is_empty():
             continue
@@ -164,11 +166,33 @@ func composite_layers(layers: Array) -> Image:
             continue
         if img.get_format() != Image.FORMAT_RGBA8:
             img.convert(Image.FORMAT_RGBA8)
+        if tints.has(layer_key):
+            colorize_layer(img, Color.html(str(tints[layer_key])))
         if base == null:
             base = Image.create_empty(LPC_W, LPC_H, false, Image.FORMAT_RGBA8)
             base.fill(Color(0, 0, 0, 0))
         base.blend_rect(img, Rect2i(0, 0, LPC_W, LPC_H), Vector2i.ZERO)
     return base
+
+
+func colorize_layer(img: Image, tint: Color) -> void:
+    for y in range(img.get_height()):
+        for x in range(img.get_width()):
+            var pixel := img.get_pixel(x, y)
+            if pixel.a <= 0.04:
+                continue
+            var luminance: float = pixel.r * 0.299 + pixel.g * 0.587 + pixel.b * 0.114
+            var shade: float = clamp(0.42 + luminance * 0.95, 0.0, 1.25)
+            img.set_pixel(
+                x,
+                y,
+                Color(
+                    min(tint.r * shade, 1.0),
+                    min(tint.g * shade, 1.0),
+                    min(tint.b * shade, 1.0),
+                    pixel.a
+                )
+            )
 
 
 func build_karma_sheet(lpc_sheet: Image) -> Image:

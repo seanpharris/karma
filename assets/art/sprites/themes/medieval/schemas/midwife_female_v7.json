@@ -1,0 +1,32 @@
+{
+  "id": "midwife_female_v7",
+  "display_name": "Midwife (variant 7)",
+  "tags": [
+    "medieval",
+    "wild"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female_elderly/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/thin/walk/pink.png",
+    "legs": "legs/formal_striped/thin/walk/leather.png",
+    "torso": "torso/aprons/apron/female/walk/tan.png",
+    "hair": "hair/natural/adult/walk.png",
+    "weapon": "weapon/magic/crystal/universal/foreground/walk/crystal.png",
+    "waist": "torso/waist/sash_narrow/female/walk/sky.png",
+    "neck": "neck/capeclip/female/walk/maroon.png",
+    "arms": "arms/wrists/lace/thin/walk.png",
+    "shield": "shield/heater/original/paint/fg/walk/tan.png"
+  },
+  "tints": {
+    "body": "#a86b47",
+    "head": "#a86b47",
+    "hair": "#2c2b26",
+    "beard": "#2c2b26"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

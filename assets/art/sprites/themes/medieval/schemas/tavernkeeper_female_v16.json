@@ -1,0 +1,28 @@
+{
+  "id": "tavernkeeper_female_v16",
+  "display_name": "Tavernkeeper (F) (variant 16)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/thin/walk/slate.png",
+    "legs": "legs/formal_striped/thin/walk/blue.png",
+    "torso": "torso/aprons/apron/female/walk/maroon.png",
+    "hair": "hair/page/adult/walk.png",
+    "waist": "torso/waist/sash/female/walk/sky.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#e6d6ac",
+    "beard": "#e6d6ac"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

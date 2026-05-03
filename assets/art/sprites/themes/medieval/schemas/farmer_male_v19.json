@@ -1,0 +1,28 @@
+{
+  "id": "farmer_male_v19",
+  "display_name": "Farmer (M) (variant 19)",
+  "tags": [
+    "medieval",
+    "peasant"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/brown.png",
+    "legs": "legs/formal/male/walk/lavender.png",
+    "torso": "torso/aprons/suspenders/male/walk/tan.png",
+    "hair": "hair/parted_side_bangs/adult/walk.png",
+    "waist": "torso/waist/obi/knot/right/male/walk/white.png"
+  },
+  "tints": {
+    "body": "#a86b47",
+    "head": "#a86b47",
+    "hair": "#c9c0b8",
+    "beard": "#c9c0b8"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

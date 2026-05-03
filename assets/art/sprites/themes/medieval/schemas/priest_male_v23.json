@@ -1,0 +1,32 @@
+{
+  "id": "priest_male_v23",
+  "display_name": "Priest (variant 23)",
+  "tags": [
+    "medieval",
+    "chapel"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/green.png",
+    "legs": "legs/formal/male/walk/sky.png",
+    "torso": "torso/chainmail/male/walk.png",
+    "hair": "hair/long_straight/adult/walk.png",
+    "weapon": "weapon/magic/diamond_off/universal/background/walk/ceramic.png",
+    "waist": "torso/waist/obi/knot/left/male/walk/brown.png",
+    "hat": "hat/magic/celestial/trim/adult/walk/bronze.png",
+    "beard": "beards/mustache/walrus/walk.png",
+    "cape": "cape/solid_behind/walk/navy.png"
+  },
+  "tints": {
+    "body": "#e1a979",
+    "head": "#e1a979",
+    "hair": "#c08a4b",
+    "beard": "#c08a4b"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

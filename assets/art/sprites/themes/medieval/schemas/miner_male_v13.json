@@ -1,0 +1,29 @@
+{
+  "id": "miner_male_v13",
+  "display_name": "Miner (variant 13)",
+  "tags": [
+    "medieval",
+    "peasant"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/sandals/male/walk.png",
+    "legs": "legs/fur/male/walk/base.png",
+    "torso": "torso/aprons/apron/male/walk/black.png",
+    "hair": "hair/extensions/bangs/long_wavyr/adult/walk.png",
+    "beard": "beards/beard/winter/female/walk.png",
+    "cape": "cape/solid_behind/walk/tan.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#e6d6ac",
+    "beard": "#e6d6ac"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

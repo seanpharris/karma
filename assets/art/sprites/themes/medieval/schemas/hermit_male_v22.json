@@ -1,0 +1,31 @@
+{
+  "id": "hermit_male_v22",
+  "display_name": "Hermit (variant 22)",
+  "tags": [
+    "medieval",
+    "wild"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male_elderly/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/forest.png",
+    "legs": "legs/formal_striped/male/walk/rose.png",
+    "torso": "torso/aprons/overalls/male/walk/white.png",
+    "hair": "hair/twists_straight/adult/walk.png",
+    "waist": "torso/waist/obi/knot/left/male/walk.png",
+    "hat": "hat/cloth/hood/adult/walk/navy.png",
+    "beard": "beards/mustache/lampshade/walk.png",
+    "cape": "cape/tattered_behind/walk/tan.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#9a693b",
+    "beard": "#9a693b"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

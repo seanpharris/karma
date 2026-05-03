@@ -1,0 +1,29 @@
+{
+  "id": "monk_elder_male_v4",
+  "display_name": "Abbot (variant 4)",
+  "tags": [
+    "medieval",
+    "chapel"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male_elderly/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/rose.png",
+    "legs": "legs/formal_striped/male/walk.png",
+    "torso": "torso/aprons/apron/male/walk/gray.png",
+    "hair": "hair/cornrows/adult/walk.png",
+    "waist": "torso/waist/obi/knot/right/male/walk/bluegray.png",
+    "hat": "hat/cloth/hood_sack/adult/walk/slate.png"
+  },
+  "tints": {
+    "body": "#f2c7a5",
+    "head": "#f2c7a5",
+    "hair": "#2c2b26",
+    "beard": "#2c2b26"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

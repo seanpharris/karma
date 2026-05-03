@@ -1,0 +1,30 @@
+{
+  "id": "beggar_male_v2",
+  "display_name": "Beggar (variant 2)",
+  "tags": [
+    "medieval",
+    "wild"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male_elderly/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/steel.png",
+    "legs": "legs/formal/male/walk/black.png",
+    "torso": "torso/aprons/suspenders/male/walk/white.png",
+    "hair": "hair/bob/adult/walk.png",
+    "weapon": "weapon/magic/diamond_off/universal/foreground/walk/diamond_off.png",
+    "waist": "torso/waist/obi/knot/left/male/walk/gray.png",
+    "shoulders": "shoulders/mantal/male/walk.png"
+  },
+  "tints": {
+    "body": "#a86b47",
+    "head": "#a86b47",
+    "hair": "#e6d6ac",
+    "beard": "#e6d6ac"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

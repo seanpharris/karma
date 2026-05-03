@@ -1,0 +1,34 @@
+{
+  "id": "guard_male_v23",
+  "display_name": "Guard (M) (variant 23)",
+  "tags": [
+    "medieval",
+    "law"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/armour/plate/male/walk/brass.png",
+    "legs": "legs/formal_striped/male/walk/black.png",
+    "torso": "torso/aprons/apron/male/walk/walnut.png",
+    "hair": "hair/curly_short/adult/walk.png",
+    "weapon": "weapon/polearm/dragonspear/foreground/walk/light.png",
+    "waist": "torso/waist/obi/knot/left/male/walk/navy.png",
+    "hat": "hat/cloth/bandana2/adult/walk/leather.png",
+    "facial": "facial/earrings/simple/left/adult/walk/white.png",
+    "beard": "beards/beard/5oclock_shadow/walk.png",
+    "cape": "cape/solid_behind/walk/red.png",
+    "shield": "shield/heater/original/paint/fg/walk/sepia.png"
+  },
+  "tints": {
+    "body": "#5b3829",
+    "head": "#5b3829",
+    "hair": "#2c2b26",
+    "beard": "#2c2b26"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

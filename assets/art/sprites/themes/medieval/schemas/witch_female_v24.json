@@ -1,0 +1,30 @@
+{
+  "id": "witch_female_v24",
+  "display_name": "Hedge-Witch (variant 24)",
+  "tags": [
+    "medieval",
+    "wild"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/thin/walk/walnut.png",
+    "legs": "legs/fur/thin/walk/fur_brown.png",
+    "torso": "torso/aprons/apron/female/walk/purple.png",
+    "hair": "hair/buzzcut/adult/walk.png",
+    "waist": "torso/waist/belt_leather/female/walk/leather.png",
+    "hat": "hat/cloth/hood/adult/walk/sky.png",
+    "shield": "shield/heater/original/paint/fg/walk/tawny.png"
+  },
+  "tints": {
+    "body": "#7b4a32",
+    "head": "#7b4a32",
+    "hair": "#5b3822",
+    "beard": "#5b3822"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "id": "knight_male_v21",
+  "display_name": "Knight-Errant (variant 21)",
+  "tags": [
+    "medieval",
+    "law",
+    "melee"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/walnut.png",
+    "legs": "legs/formal/male/walk/yellow.png",
+    "torso": "torso/aprons/suspenders/male/walk/forest.png",
+    "hair": "hair/balding/adult/walk.png",
+    "weapon": "weapon/polearm/spear/background/walk/ceramic.png",
+    "waist": "torso/waist/obi/knot/right/male/walk/tan.png",
+    "hat": "hat/cloth/bandana2/adult/walk/walnut.png",
+    "beard": "beards/beard/medium/walk.png"
+  },
+  "tints": {
+    "body": "#e1a979",
+    "head": "#e1a979",
+    "hair": "#9a693b",
+    "beard": "#9a693b"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

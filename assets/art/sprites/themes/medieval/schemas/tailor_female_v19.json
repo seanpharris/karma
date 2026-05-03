@@ -1,0 +1,29 @@
+{
+  "id": "tailor_female_v19",
+  "display_name": "Tailor (F) (variant 19)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/thin/walk/charcoal.png",
+    "legs": "legs/fur/thin/walk/fur_grey.png",
+    "torso": "torso/aprons/apron_half/female/walk/slate.png",
+    "hair": "hair/long_straight/adult/walk.png",
+    "waist": "torso/waist/belt_leather/female/walk/charcoal.png",
+    "neck": "neck/amulet/cross/female/walk.png"
+  },
+  "tints": {
+    "body": "#f2c7a5",
+    "head": "#f2c7a5",
+    "hair": "#2c2b26",
+    "beard": "#2c2b26"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

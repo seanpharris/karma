@@ -1,0 +1,31 @@
+{
+  "id": "mason_male_v19",
+  "display_name": "Mason (variant 19)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/revised/male/walk/blue.png",
+    "legs": "legs/formal/male/walk/pink.png",
+    "torso": "torso/aprons/suspenders/male/walk/sky.png",
+    "hair": "hair/bangs/adult/walk.png",
+    "waist": "torso/waist/obi/male/walk/bluegray.png",
+    "neck": "neck/amulet/cross/male/walk/steel_green.png",
+    "facial": "facial/masks/plain/adult/walk/leather.png",
+    "beard": "beards/mustache/handlebar/walk.png"
+  },
+  "tints": {
+    "body": "#5b3829",
+    "head": "#5b3829",
+    "hair": "#8a8a8a",
+    "beard": "#8a8a8a"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

@@ -26,6 +26,7 @@ public partial class PeerStandInController : Area2D
     private string _peerDuelState = "Duel: none";
     private PlayerAppearanceSelection _lastAppliedAppearance = null;
     private string _lastAppliedLpcBundleId = string.Empty;
+    private string _lastAppliedEquipmentSignature = string.Empty;
 
     public override void _Ready()
     {
@@ -428,8 +429,10 @@ public partial class PeerStandInController : Area2D
             return;
         }
 
+        var equipmentSignature = LpcPlayerEquipmentComposer.EquipmentSignature(peer.EquipmentItemIds);
         if (_lastAppliedAppearance == peer.Appearance &&
-            _lastAppliedLpcBundleId == (peer.LpcBundleId ?? string.Empty))
+            _lastAppliedLpcBundleId == (peer.LpcBundleId ?? string.Empty) &&
+            _lastAppliedEquipmentSignature == equipmentSignature)
         {
             return;
         }
@@ -437,6 +440,7 @@ public partial class PeerStandInController : Area2D
         WorldRoot.ApplyPlayerSpriteAppearance(_characterSprite, peer);
         _lastAppliedAppearance = peer.Appearance;
         _lastAppliedLpcBundleId = peer.LpcBundleId ?? string.Empty;
+        _lastAppliedEquipmentSignature = equipmentSignature;
     }
 
     private static string FormatDuelState(ClientInterestSnapshot snapshot)

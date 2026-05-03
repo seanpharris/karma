@@ -1,0 +1,30 @@
+{
+  "id": "executioner_male_v2",
+  "display_name": "Executioner (variant 2)",
+  "tags": [
+    "medieval",
+    "law"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/teal.png",
+    "legs": "legs/formal/male/walk/tan.png",
+    "torso": "torso/aprons/overalls/male/walk/slate.png",
+    "hair": "hair/pixie/adult/walk.png",
+    "waist": "torso/waist/obi/knot/left/male/walk/white.png",
+    "facial": "facial/earrings/simple/left/adult/walk.png",
+    "shoulders": "shoulders/legion/male/walk/gold.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#3b2418",
+    "beard": "#3b2418"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

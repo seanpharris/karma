@@ -1,0 +1,29 @@
+{
+  "id": "blacksmith_male_v22",
+  "display_name": "Blacksmith (variant 22)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/armour/plate/male/walk/steel.png",
+    "legs": "legs/fur/male/walk/fur_grey.png",
+    "torso": "torso/aprons/apron/male/walk/forest.png",
+    "hair": "hair/cowlick/adult/walk.png",
+    "hat": "hat/magic/wizard/belt/adult/walk/pink.png",
+    "facial": "facial/glasses/glasses/adult/walk/bluegray.png"
+  },
+  "tints": {
+    "body": "#7b4a32",
+    "head": "#7b4a32",
+    "hair": "#e6d6ac",
+    "beard": "#e6d6ac"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

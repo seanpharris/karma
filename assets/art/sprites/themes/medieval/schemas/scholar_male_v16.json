@@ -1,0 +1,32 @@
+{
+  "id": "scholar_male_v16",
+  "display_name": "Wandering Scholar (variant 16)",
+  "tags": [
+    "medieval",
+    "wayfarer"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male_elderly/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/blue.png",
+    "legs": "legs/fur/male/walk/fur_black.png",
+    "torso": "torso/aprons/apron/male/walk/teal.png",
+    "hair": "hair/longhawk/adult/walk.png",
+    "waist": "torso/waist/obi/knot/right/male/walk/yellow.png",
+    "facial": "facial/earrings/simple/left/adult/walk/sky.png",
+    "beard": "beards/mustache/bigstache/walk.png",
+    "cape": "cape/tattered_behind/walk/black.png",
+    "backpack": "backpack/squarepack/male/walk/forest.png"
+  },
+  "tints": {
+    "body": "#f2c7a5",
+    "head": "#f2c7a5",
+    "hair": "#3b2418",
+    "beard": "#3b2418"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}
