@@ -341,7 +341,7 @@ public partial class PlayerController : CharacterBody2D
 
     private void UpdateStaminaHud()
     {
-        _hud?.ShowStamina(FormatStamina(_stamina, MaxStamina, _isExhausted));
+        _hud?.ShowStamina(_stamina, MaxStamina, _isExhausted);
     }
 
     private void EquipThroughServer(string itemId)

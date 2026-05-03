@@ -33,6 +33,15 @@ public partial class HudController : CanvasLayer
     private Label _staminaLabel = new();
     private Label _healthLabel = new();
     private ProgressBar _healthBar = new();
+    private ProgressBar _staminaBar = new();
+    private ProgressBar _combatStaminaBar = new();
+    private ProgressBar _ammoBar = new();
+    private ProgressBar _hungerBar = new();
+    private Control _staminaRow;
+    private Control _healthRow;
+    private Control _combatStaminaRow;
+    private Control _ammoRow;
+    private Control _hungerRow;
     private HBoxContainer _statusStrip = new();
     private Label _ammoLabel = new();
     private Label _combatStaminaLabel = new();
@@ -747,6 +756,24 @@ public partial class HudController : CanvasLayer
         _staminaLabel.Text = staminaText;
     }
 
+    public void ShowStamina(float stamina, float maxStamina, bool isExhausted)
+    {
+        _staminaLabel.Text = FormatMovementStamina(stamina, maxStamina, isExhausted);
+        var safeMax = MathF.Max(1f, maxStamina);
+        var clamped = Math.Clamp(stamina, 0f, safeMax);
+        _staminaBar.Value = clamped / safeMax * 100.0;
+    }
+
+    public static string FormatMovementStamina(float stamina, float maxStamina, bool isExhausted)
+    {
+        var roundedStamina = Mathf.RoundToInt(stamina);
+        var roundedMax = Mathf.RoundToInt(MathF.Max(1f, maxStamina));
+        if (isExhausted) return $"Stamina  {roundedStamina} / {roundedMax}  (winded)";
+        return maxStamina > 0f && stamina / maxStamina <= 0.25f
+            ? $"Stamina  {roundedStamina} / {roundedMax}  (low)"
+            : $"Stamina  {roundedStamina} / {roundedMax}";
+    }
+
     public void OpenLocalChatInput()
     {
         _chatInputPanel.Visible = true;
@@ -1052,81 +1079,17 @@ public partial class HudController : CanvasLayer
         };
         _chatInputPanel.AddChild(_chatInput);
 
-        _staminaLabel = new Label
-        {
-            OffsetLeft = 300,
-            OffsetTop = 16,
-            OffsetRight = 520,
-            OffsetBottom = 46,
-            Text = "Stamina: 100/100"
-        };
-        root.AddChild(_staminaLabel);
-
-        _healthLabel = new Label
-        {
-            OffsetLeft = 300,
-            OffsetTop = 48,
-            OffsetRight = 520,
-            OffsetBottom = 70,
-            Text = "Health: 100/100"
-        };
-        root.AddChild(_healthLabel);
-
-        _healthBar = new ProgressBar
-        {
-            OffsetLeft = 300,
-            OffsetTop = 72,
-            OffsetRight = 520,
-            OffsetBottom = 90,
-            MinValue = 0,
-            MaxValue = 100,
-            Value = 100,
-            ShowPercentage = false
-        };
-        root.AddChild(_healthBar);
+        BuildVitalsPanel(root);
 
         _statusStrip = new HBoxContainer
         {
             Name = "StatusStrip",
-            OffsetLeft = 526,
-            OffsetTop = 68,
-            OffsetRight = 820,
-            OffsetBottom = 96
+            OffsetLeft = 560,
+            OffsetTop = 24,
+            OffsetRight = 860,
+            OffsetBottom = 56
         };
         root.AddChild(_statusStrip);
-
-        _ammoLabel = new Label
-        {
-            OffsetLeft = 300,
-            OffsetTop = 92,
-            OffsetRight = 520,
-            OffsetBottom = 114,
-            Text = string.Empty,
-            Visible = false
-        };
-        root.AddChild(_ammoLabel);
-
-        _combatStaminaLabel = new Label
-        {
-            OffsetLeft = 300,
-            OffsetTop = 116,
-            OffsetRight = 520,
-            OffsetBottom = 138,
-            Text = string.Empty,
-            Visible = false
-        };
-        root.AddChild(_combatStaminaLabel);
-
-        _hungerLabel = new Label
-        {
-            OffsetLeft = 300,
-            OffsetTop = 140,
-            OffsetRight = 520,
-            OffsetBottom = 162,
-            Text = string.Empty,
-            Visible = false
-        };
-        root.AddChild(_hungerLabel);
 
         _karmaBreakFlash = new ColorRect
         {
@@ -1568,6 +1531,133 @@ public partial class HudController : CanvasLayer
         BuildDeveloperOverlay(root);
         BuildEscapeMenu(root);
         BuildFirstRunTutorialOverlay(root);
+    }
+
+    // Themed vitals readout — colored dot icon + name/value label + slim
+    // gold-fill progress bar per row. The panel uses MenuTheme so it
+    // matches the karma duality main + pause menus, and opts out of the
+    // medieval palette walker so the styling sticks.
+    private static readonly Color HealthBarColor = new(0.86f, 0.22f, 0.22f);
+    private static readonly Color StaminaBarColor = new(0.95f, 0.80f, 0.32f);
+    private static readonly Color CombatStaminaBarColor = new(0.78f, 0.55f, 0.20f);
+    private static readonly Color AmmoBarColor = new(0.78f, 0.84f, 0.95f);
+    private static readonly Color HungerBarColor = new(0.95f, 0.55f, 0.18f);
+
+    private void BuildVitalsPanel(Control root)
+    {
+        var panel = new PanelContainer
+        {
+            Name = "VitalsPanel",
+            OffsetLeft = 300,
+            OffsetTop = 16,
+            OffsetRight = 540,
+            OffsetBottom = 220
+        };
+        panel.AddThemeStyleboxOverride("panel", MenuTheme.MakePanelStyle());
+        panel.SetMeta(PaletteOptOutMeta, true);
+        root.AddChild(panel);
+
+        var content = new VBoxContainer { Name = "VitalsContent" };
+        content.AddThemeConstantOverride("separation", 8);
+        panel.AddChild(content);
+
+        _staminaRow = BuildVitalRow(content, "Stamina", StaminaBarColor, out _staminaLabel, out _staminaBar);
+        _staminaLabel.Text = "Stamina 100 / 100";
+        _staminaBar.Value = 100;
+
+        _healthRow = BuildVitalRow(content, "Health", HealthBarColor, out _healthLabel, out _healthBar);
+        _healthLabel.Text = "Health 100 / 100";
+        _healthBar.Value = 100;
+
+        _combatStaminaRow = BuildVitalRow(content, "Combat", CombatStaminaBarColor, out _combatStaminaLabel, out _combatStaminaBar);
+        _combatStaminaRow.Visible = false;
+
+        _ammoRow = BuildVitalRow(content, "Ammo", AmmoBarColor, out _ammoLabel, out _ammoBar);
+        _ammoRow.Visible = false;
+
+        _hungerRow = BuildVitalRow(content, "Hunger", HungerBarColor, out _hungerLabel, out _hungerBar);
+        _hungerRow.Visible = false;
+    }
+
+    private static Control BuildVitalRow(VBoxContainer parent, string name, Color tint, out Label valueLabel, out ProgressBar bar)
+    {
+        var row = new VBoxContainer { Name = $"{name}VitalRow" };
+        row.AddThemeConstantOverride("separation", 2);
+        parent.AddChild(row);
+
+        var header = new HBoxContainer();
+        header.AddThemeConstantOverride("separation", 8);
+        row.AddChild(header);
+
+        var icon = new TextureRect
+        {
+            Texture = MakeCircleIcon(12, tint),
+            CustomMinimumSize = new Vector2(12, 12),
+            StretchMode = TextureRect.StretchModeEnum.KeepCentered,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            MouseFilter = Control.MouseFilterEnum.Ignore
+        };
+        header.AddChild(icon);
+
+        valueLabel = MenuTheme.MakeBodyLabel(name);
+        valueLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        header.AddChild(valueLabel);
+
+        bar = new ProgressBar
+        {
+            Name = $"{name}Bar",
+            MinValue = 0,
+            MaxValue = 100,
+            Value = 0,
+            ShowPercentage = false,
+            CustomMinimumSize = new Vector2(0, 6)
+        };
+        StyleVitalBar(bar, tint);
+        row.AddChild(bar);
+
+        return row;
+    }
+
+    private static void StyleVitalBar(ProgressBar bar, Color fillTint)
+    {
+        var track = new StyleBoxFlat
+        {
+            BgColor = new Color(0.04f, 0.07f, 0.11f, 1f),
+            BorderColor = new Color(0.55f, 0.45f, 0.22f, 0.7f),
+            BorderWidthLeft = 1, BorderWidthRight = 1,
+            BorderWidthTop = 1, BorderWidthBottom = 1,
+            CornerRadiusTopLeft = 3, CornerRadiusTopRight = 3,
+            CornerRadiusBottomLeft = 3, CornerRadiusBottomRight = 3
+        };
+        var fill = new StyleBoxFlat
+        {
+            BgColor = fillTint,
+            CornerRadiusTopLeft = 3, CornerRadiusTopRight = 3,
+            CornerRadiusBottomLeft = 3, CornerRadiusBottomRight = 3
+        };
+        bar.AddThemeStyleboxOverride("background", track);
+        bar.AddThemeStyleboxOverride("fill", fill);
+    }
+
+    // Procedurally-drawn antialiased circle, used as a vitals icon and
+    // anywhere else we need a small colored dot without an asset.
+    private static Texture2D MakeCircleIcon(int size, Color tint)
+    {
+        var img = Image.CreateEmpty(size, size, false, Image.Format.Rgba8);
+        var c = (size - 1) * 0.5f;
+        var r = size * 0.5f;
+        for (var y = 0; y < size; y++)
+        {
+            for (var x = 0; x < size; x++)
+            {
+                var dx = x - c;
+                var dy = y - c;
+                var d = MathF.Sqrt(dx * dx + dy * dy);
+                var alpha = MathF.Max(0f, MathF.Min(1f, r - d));
+                img.SetPixel(x, y, new Color(tint.R, tint.G, tint.B, alpha));
+            }
+        }
+        return ImageTexture.CreateFromImage(img);
     }
 
     private void BuildCombatLogPanel(Control root)
@@ -2350,19 +2440,22 @@ public partial class HudController : CanvasLayer
     {
         var safeMax = Mathf.Max(1, maxHealth);
         var clampedHealth = Mathf.Clamp(health, 0, safeMax);
-        return $"Health: {clampedHealth}/{safeMax}";
+        return $"Health  {clampedHealth} / {safeMax}";
     }
 
     private void SetAmmoFromSnapshot(PlayerSnapshot localPlayer)
     {
         if (localPlayer.EquippedWeaponKind == WeaponKind.Ranged)
         {
+            var safeMax = Mathf.Max(0, localPlayer.MaxAmmo);
+            var clamped = Mathf.Clamp(localPlayer.CurrentAmmo, 0, safeMax);
             _ammoLabel.Text = FormatAmmo(localPlayer.CurrentAmmo, localPlayer.MaxAmmo);
-            _ammoLabel.Visible = true;
+            _ammoBar.Value = safeMax == 0 ? 0 : clamped / (double)safeMax * 100.0;
+            if (_ammoRow is not null) _ammoRow.Visible = true;
         }
         else
         {
-            _ammoLabel.Visible = false;
+            if (_ammoRow is not null) _ammoRow.Visible = false;
         }
     }
 
@@ -2370,12 +2463,15 @@ public partial class HudController : CanvasLayer
     {
         if (localPlayer.MaxStamina > 0)
         {
+            var safeMax = Mathf.Max(1, localPlayer.MaxStamina);
+            var clamped = Mathf.Clamp(localPlayer.Stamina, 0, safeMax);
             _combatStaminaLabel.Text = FormatCombatStamina(localPlayer.Stamina, localPlayer.MaxStamina);
-            _combatStaminaLabel.Visible = true;
+            _combatStaminaBar.Value = clamped / (double)safeMax * 100.0;
+            if (_combatStaminaRow is not null) _combatStaminaRow.Visible = true;
         }
         else
         {
-            _combatStaminaLabel.Visible = false;
+            if (_combatStaminaRow is not null) _combatStaminaRow.Visible = false;
         }
     }
 
@@ -2384,29 +2480,32 @@ public partial class HudController : CanvasLayer
         var safeMax = Mathf.Max(0, maxAmmo);
         var clamped = Mathf.Clamp(currentAmmo, 0, safeMax);
         return safeMax == 0
-            ? "Ammo: --"
+            ? "Ammo  --"
             : clamped == 0
-                ? $"Ammo: {clamped}/{safeMax} (reload)"
-                : $"Ammo: {clamped}/{safeMax}";
+                ? $"Ammo  {clamped} / {safeMax}  (reload)"
+                : $"Ammo  {clamped} / {safeMax}";
     }
 
     public static string FormatCombatStamina(int stamina, int maxStamina)
     {
         var safeMax = Mathf.Max(1, maxStamina);
         var clamped = Mathf.Clamp(stamina, 0, safeMax);
-        return $"Stamina: {clamped}/{safeMax}";
+        return $"Combat  {clamped} / {safeMax}";
     }
 
     private void SetHungerFromSnapshot(PlayerSnapshot localPlayer)
     {
         if (localPlayer.MaxHunger > 0)
         {
+            var safeMax = Mathf.Max(1, localPlayer.MaxHunger);
+            var clamped = Mathf.Clamp(localPlayer.Hunger, 0, safeMax);
             _hungerLabel.Text = FormatHunger(localPlayer.Hunger, localPlayer.MaxHunger);
-            _hungerLabel.Visible = true;
+            _hungerBar.Value = clamped / (double)safeMax * 100.0;
+            if (_hungerRow is not null) _hungerRow.Visible = true;
         }
         else
         {
-            _hungerLabel.Visible = false;
+            if (_hungerRow is not null) _hungerRow.Visible = false;
         }
     }
 
@@ -2415,11 +2514,11 @@ public partial class HudController : CanvasLayer
         var safeMax = Mathf.Max(1, maxHunger);
         var clamped = Mathf.Clamp(hunger, 0, safeMax);
         var ratio = clamped / (float)safeMax;
-        var label = ratio <= 0.0f ? " (starving)"
-            : ratio <= 0.25f ? " (hungry)"
-            : ratio <= 0.5f ? " (peckish)"
+        var label = ratio <= 0.0f ? "  (starving)"
+            : ratio <= 0.25f ? "  (hungry)"
+            : ratio <= 0.5f ? "  (peckish)"
             : string.Empty;
-        return $"Hunger: {clamped}/{safeMax}{label}";
+        return $"Hunger  {clamped} / {safeMax}{label}";
     }
 
     public static float CalculateHealthPercent(int health, int maxHealth)
