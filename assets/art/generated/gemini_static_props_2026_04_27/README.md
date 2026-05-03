@@ -1,6 +1,6 @@
 # Cleaned Gemini Static Props — 2026-04-27
 
-Extracted from `assets/art/reference/gemini_prototypes/2026-04-27/karma_static_props_ref.jpg` using `tools/cleanup_gemini_reference_sheet.gd`.
+Extracted from `assets/art/reference/gemini_prototypes/2026-04-27/karma_static_props_ref.jpg` during the old Gemini reference-sheet cleanup pass.
 
 ## Output
 
