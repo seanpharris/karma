@@ -135,6 +135,12 @@ public partial class HudController : CanvasLayer
         BuildUi();
         ShowFirstRunTutorial();
 
+        // Boot at the saved volume so opening the pause options later
+        // doesn't jump the AudioServer to a different value.
+        Karma.Audio.AudioSettings.EnsureBusesExist();
+        Karma.Audio.AudioSettings.LoadFromDisk(MainMenuController.OptionsPath);
+        Karma.Audio.AudioSettings.ApplyToAudioServer();
+
         _gameState = GetNode<GameState>("/root/GameState");
         _serverSession = GetNodeOrNull<PrototypeServerSession>("/root/PrototypeServerSession");
         ApplyUiPalette(ResolveActiveThemeId());

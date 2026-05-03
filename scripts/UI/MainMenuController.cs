@@ -106,6 +106,11 @@ public partial class MainMenuController : Control
         if (_menuThemePlayer.GetParent() is null) AddChild(_menuThemePlayer);
 
         AudioSettings.EnsureBusesExist();
+        // Boot at the saved volume — without this, buses sit at their
+        // defaults until the options overlay is first opened, so the
+        // first slider open would jump the volume to the saved value.
+        AudioSettings.LoadFromDisk(OptionsPath);
+        AudioSettings.ApplyToAudioServer();
 
         BuildSplashStage();
         BuildAnimations();
