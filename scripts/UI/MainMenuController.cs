@@ -38,14 +38,17 @@ public partial class MainMenuController : Control
     // the 5-button version: ~10% center-to-center, 8% tall.
     private static readonly (string Id, string Label, Rect2 Bounds)[] ButtonLayout =
     {
-        // PLAY pushed down, OPTIONS pulled up, so the gap between
-        // PLAY → OPTIONS equals the gap between CREDITS → QUIT
-        // (≈ 9.5% top-to-top). Top tier (PLAY/OPTIONS) and bottom tier
-        // (CREDITS/QUIT) read as paired stacks.
-        ("play",    "PLAY",    new Rect2(0.39f, 0.505f, 0.22f, 0.082f)),
-        ("options", "OPTIONS", new Rect2(0.39f, 0.600f, 0.22f, 0.082f)),
-        ("credits", "CREDITS", new Rect2(0.39f, 0.708f, 0.22f, 0.082f)),
-        ("quit",    "QUIT",    new Rect2(0.39f, 0.793f, 0.22f, 0.082f))
+        // Click rects sized to match the painted buttons (≈5.5% tall
+        // instead of an over-padded 8.2%). Y values are the *centered*
+        // positions over the painted artwork, then offset back by
+        // half-height to get the rect top.
+        //
+        // Centers:  PLAY 0.546 / OPTIONS 0.641 / CREDITS 0.749 / QUIT 0.834
+        // Height:   0.055 (rect top = center − 0.0275)
+        ("play",    "PLAY",    new Rect2(0.39f, 0.5185f, 0.22f, 0.055f)),
+        ("options", "OPTIONS", new Rect2(0.39f, 0.6135f, 0.22f, 0.055f)),
+        ("credits", "CREDITS", new Rect2(0.39f, 0.7215f, 0.22f, 0.055f)),
+        ("quit",    "QUIT",    new Rect2(0.39f, 0.8065f, 0.22f, 0.055f))
     };
 
     // Title shimmer rect (over the painted "KARMA" letters).
