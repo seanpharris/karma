@@ -20,7 +20,7 @@ public partial class MainMenuController : Control
     public const string GameplayScenePath = "res://scenes/Main.tscn";
     public const string EventPrototypeScenePath = "res://scenes/InGameEventPrototype.tscn";
     public const string OptionsPath = "user://options.cfg";
-    public const string MenuThemePath = PrototypeMusicPlayer.MusicDirectory + PrototypeMusicPlayer.TravellingOnMedievalFileName;
+    public const string MenuThemePath = MusicPlayer.MusicDirectory + MusicPlayer.TravellingOnMedievalFileName;
     public const string SplashTexturePath = "res://assets/art/main_menu/karma_menu_mockup.png";
 
     // Debug flag: when true, button hover glows render at idle so
@@ -688,7 +688,7 @@ public partial class MainMenuController : Control
 
     public static AudioStream LoadMenuThemeStream()
     {
-        return PrototypeMusicPlayer.LoadPlayableAudio(MenuThemePath);
+        return MusicPlayer.LoadPlayableAudio(MenuThemePath);
     }
 
     private void SetupMenuTheme()

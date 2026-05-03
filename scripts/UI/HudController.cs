@@ -119,26 +119,9 @@ public partial class HudController : CanvasLayer
     private Label _escapeMenuStatusLabel = new();
     private Button _resumeButton = new();
     private Button _escapeOptionsButton = new();
-    private Button _appearanceButton = new();
     private Button _backToMenuButton = new();
     private Button _quitButton = new();
     private Button _closeEscapeOptionsButton = new();
-    private CheckButton _carryStateToggle = new();
-    private Control _appearancePanel = new();
-    private Label _appearanceSummaryLabel = new();
-    private Label _appearanceSkinLabel = new();
-    private Label _appearanceHairLabel = new();
-    private Label _appearanceOutfitLabel = new();
-    private Label _appearancePantsLabel = new();
-    private Label _appearanceShirtLabel = new();
-    private Label _appearanceToolLabel = new();
-    private Label _appearancePreviewLabel = new();
-    private Button _cycleSkinButton = new();
-    private Button _cycleHairButton = new();
-    private Button _cycleOutfitButton = new();
-    private Button _cyclePantsButton = new();
-    private Button _cycleShirtButton = new();
-    private Button _closeAppearanceButton = new();
     private Label _posseLabel = new();
     private PanelContainer _possePanel = new();
     private PanelContainer _tutorialOverlay = new();
@@ -169,18 +152,9 @@ public partial class HudController : CanvasLayer
         _gameState.WorldEventsChanged += OnWorldEventsChanged;
         _resumeButton.Pressed += HideEscapeMenu;
         _escapeOptionsButton.Pressed += ShowEscapeOptions;
-        _appearanceButton.Pressed += ShowAppearancePanel;
-        _cycleSkinButton.Pressed += () => CycleAppearanceLayer("skin");
-        _cycleHairButton.Pressed += () => CycleAppearanceLayer("hair");
-        _cycleOutfitButton.Pressed += () => CycleAppearanceLayer("outfit");
-        _cyclePantsButton.Pressed += () => CycleAppearanceLayer("pants");
-        _cycleShirtButton.Pressed += () => CycleAppearanceLayer("shirt");
-        _closeAppearanceButton.Pressed += HideAppearancePanel;
         _backToMenuButton.Pressed += ReturnToMainMenu;
         _quitButton.Pressed += () => GetTree().Quit();
         _closeEscapeOptionsButton.Pressed += HideEscapeOptions;
-        _carryStateToggle.Toggled += OnCarryStateToggleChanged;
-        _carryStateToggle.ButtonPressed = _gameState.CarryStateIntoNextRound;
         _chatInput.TextSubmitted += OnChatInputSubmitted;
         if (_serverSession is not null)
         {
@@ -853,7 +827,8 @@ public partial class HudController : CanvasLayer
 
     public void ToggleEscapeMenu()
     {
-        SetEscapeMenuVisible(!_escapeMenuPanel.Visible);
+        var anyOpen = _escapeMenuPanel.Visible || _escapeOptionsPanel.Visible;
+        SetEscapeMenuVisible(!anyOpen);
     }
 
     public void HideEscapeMenu()
@@ -863,39 +838,33 @@ public partial class HudController : CanvasLayer
 
     public void SetEscapeMenuVisible(bool visible)
     {
-        _escapeMenuPanel.Visible = visible;
-        if (!visible)
+        if (visible)
         {
-            HideEscapeOptions();
+            // Always open onto the pause main view; sub-panels stay hidden.
+            _escapeOptionsPanel.Visible = false;
+            _escapeMenuPanel.Visible = true;
+        }
+        else
+        {
+            _escapeMenuPanel.Visible = false;
+            _escapeOptionsPanel.Visible = false;
         }
     }
 
     private void ShowEscapeOptions()
     {
-        HideAppearancePanel();
         LoadPauseAudioSettings();
         ApplyPauseAudioSettings();
-        if (_gameState is not null && _carryStateToggle is not null)
-        {
-            _carryStateToggle.ButtonPressed = _gameState.CarryStateIntoNextRound;
-        }
+        _escapeMenuPanel.Visible = false;
         _escapeOptionsPanel.Visible = true;
-        _escapeMenuStatusLabel.Text = "Audio sliders save to options.cfg and apply live; gameplay keeps running.";
-    }
-
-    private void OnCarryStateToggleChanged(bool enabled)
-    {
-        _gameState?.SetCarryStateIntoNextRound(enabled);
-        _escapeMenuStatusLabel.Text = enabled
-            ? "Next round will carry karma, relationships, and faction reputation."
-            : "Next round will start with fresh karma, relationships, and faction reputation.";
     }
 
     private void BuildPauseVolumeRow(VBoxContainer parent, string title, out HSlider slider, out Label valueLabel)
     {
         var row = new HBoxContainer { Name = $"{title}VolumeRow" };
-        row.AddThemeConstantOverride("separation", 8);
-        var titleLabel = new Label { Text = $"{title} volume", CustomMinimumSize = new Vector2(140, 0) };
+        row.AddThemeConstantOverride("separation", 12);
+        var titleLabel = MenuTheme.MakeBodyLabel($"{title} volume");
+        titleLabel.CustomMinimumSize = new Vector2(140, 0);
         slider = new HSlider
         {
             Name = $"{title}VolumeSlider",
@@ -903,9 +872,13 @@ public partial class HudController : CanvasLayer
             MaxValue = 100,
             Step = 1,
             Value = 80,
-            CustomMinimumSize = new Vector2(220, 0)
+            CustomMinimumSize = new Vector2(220, 20),
+            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
         };
-        valueLabel = new Label { Text = "80%", CustomMinimumSize = new Vector2(56, 0), HorizontalAlignment = HorizontalAlignment.Right };
+        MenuTheme.StyleSlider(slider);
+        valueLabel = MenuTheme.MakeSubtleLabel("80%");
+        valueLabel.CustomMinimumSize = new Vector2(56, 0);
+        valueLabel.HorizontalAlignment = HorizontalAlignment.Right;
         row.AddChild(titleLabel);
         row.AddChild(slider);
         row.AddChild(valueLabel);
@@ -952,7 +925,7 @@ public partial class HudController : CanvasLayer
         Karma.Audio.AudioSettings.EnsureBusesExist();
         Karma.Audio.AudioSettings.ApplyToAudioServer();
 
-        // PrototypeMusicPlayer sits on the Music bus, so AudioSettings owns
+        // MusicPlayer sits on the Music bus, so AudioSettings owns
         // the live slider gain for every gameplay music source.
     }
 
@@ -975,62 +948,15 @@ public partial class HudController : CanvasLayer
 
     private void HideEscapeOptions()
     {
+        // "Back" returns to the pause main view rather than closing pause.
         _escapeOptionsPanel.Visible = false;
-        HideAppearancePanel();
-        _escapeMenuStatusLabel.Text = "Menu open. Prototype world is still running.";
+        _escapeMenuPanel.Visible = true;
     }
 
-    public void ShowAppearancePanel()
-    {
-        _escapeOptionsPanel.Visible = false;
-        _appearancePanel.Visible = true;
-        RefreshAppearancePanel();
-        _escapeMenuStatusLabel.Text = "Appearance changes are routed through the authoritative prototype server.";
-    }
-
-    public void HideAppearancePanel()
-    {
-        _appearancePanel.Visible = false;
-    }
-
-    public bool CycleAppearanceLayer(string slot)
-    {
-        if (_serverSession is null)
-        {
-            _appearanceSummaryLabel.Text = "Appearance unavailable: prototype server is not running.";
-            return false;
-        }
-
-        var current = GetLocalAppearanceSelection(_serverSession.LastLocalSnapshot) ?? PlayerAppearanceSelection.Default;
-        var payload = BuildAppearanceCyclePayload(slot, current);
-        if (payload.Count == 0)
-        {
-            _appearanceSummaryLabel.Text = $"Unknown appearance slot: {slot}";
-            return false;
-        }
-
-        var result = _serverSession.SendLocal(IntentType.SetAppearance, payload);
-        RefreshAppearancePanel();
-        if (!result.WasAccepted)
-        {
-            _appearanceSummaryLabel.Text = $"Appearance change failed: {result.RejectionReason}";
-        }
-
-        return result.WasAccepted;
-    }
-
-    private void RefreshAppearancePanel()
-    {
-        var appearance = GetLocalAppearanceSelection(_serverSession?.LastLocalSnapshot) ?? PlayerAppearanceSelection.Default;
-        _appearanceSummaryLabel.Text = FormatAppearanceSummary(appearance);
-        _appearanceSkinLabel.Text = FormatAppearanceDetailLine("Skin", appearance.SkinLayerId);
-        _appearanceHairLabel.Text = FormatAppearanceDetailLine("Hair", appearance.HairLayerId);
-        _appearanceOutfitLabel.Text = FormatAppearanceDetailLine("Outfit", appearance.OutfitLayerId);
-        _appearancePantsLabel.Text = FormatAppearanceDetailLine("Pants", appearance.PantsLayerId);
-        _appearanceShirtLabel.Text = FormatAppearanceDetailLine("Shirt", appearance.ShirtLayerId);
-        _appearanceToolLabel.Text = FormatAppearanceDetailLine("Held tool", appearance.HeldToolLayerId);
-        _appearancePreviewLabel.Text = "Preview: live on your character; thumbnails will plug into this panel as variants grow.";
-    }
+    // Removed: appearance panel UI (cycle buttons + labels) and the
+    // instance methods that drove it. Keyboard shortcuts in
+    // PlayerController still cycle layers through the server intent
+    // path; only the pause-menu surface is gone.
 
     private void ReturnToMainMenu()
     {
@@ -1716,8 +1642,15 @@ public partial class HudController : CanvasLayer
         ApplyUiPaletteRecursive(root, palette, string.Empty);
     }
 
+    // Subtrees that opt out (e.g. the pause menu, which uses MenuTheme's
+    // karma duality styling) are skipped entirely — neither the control
+    // itself nor any of its descendants get repainted.
+    public const string PaletteOptOutMeta = "opt_out_ui_palette";
+
     private static void ApplyUiPaletteRecursive(Control control, UiPalette palette, string themeId)
     {
+        if (control.HasMeta(PaletteOptOutMeta)) return;
+
         switch (control)
         {
             case PanelContainer panel:
@@ -2148,159 +2081,80 @@ public partial class HudController : CanvasLayer
             OffsetBottom = 620,
             Visible = false
         };
+        _escapeMenuPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakePanelStyle());
+        // Opt this entire subtree (and its sub-panels) out of the
+        // medieval UI palette walker so MenuTheme styling sticks.
+        _escapeMenuPanel.SetMeta(PaletteOptOutMeta, true);
         root.AddChild(_escapeMenuPanel);
-
-        var margin = new MarginContainer
-        {
-            Name = "EscapeMenuMargin"
-        };
-        margin.AddThemeConstantOverride("margin_left", 28);
-        margin.AddThemeConstantOverride("margin_top", 24);
-        margin.AddThemeConstantOverride("margin_right", 28);
-        margin.AddThemeConstantOverride("margin_bottom", 24);
-        _escapeMenuPanel.AddChild(margin);
 
         var content = new VBoxContainer
         {
             Name = "EscapeMenuContent"
         };
         content.AddThemeConstantOverride("separation", 12);
-        margin.AddChild(content);
+        _escapeMenuPanel.AddChild(content);
 
-        content.AddChild(new Label
-        {
-            Name = "EscapeMenuTitle",
-            Text = "Karma Menu",
-            HorizontalAlignment = HorizontalAlignment.Center
-        });
+        var title = MenuTheme.MakeTitle("Pause");
+        title.Name = "EscapeMenuTitle";
+        content.AddChild(title);
+        content.AddChild(MenuTheme.MakeDivider());
 
-        _escapeMenuStatusLabel = new Label
-        {
-            Name = "EscapeMenuStatusLabel",
-            Text = "Menu open. Prototype world is still running.",
-            AutowrapMode = TextServer.AutowrapMode.WordSmart,
-            HorizontalAlignment = HorizontalAlignment.Center
-        };
+        _escapeMenuStatusLabel = MenuTheme.MakeSubtleLabel("Menu open. World is still running.");
+        _escapeMenuStatusLabel.Name = "EscapeMenuStatusLabel";
+        _escapeMenuStatusLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        _escapeMenuStatusLabel.HorizontalAlignment = HorizontalAlignment.Center;
         content.AddChild(_escapeMenuStatusLabel);
 
         _resumeButton = new Button { Name = "ResumeButton", Text = "Resume" };
         _escapeOptionsButton = new Button { Name = "OptionsButton", Text = "Options" };
-        _appearanceButton = new Button { Name = "AppearanceButton", Text = "Appearance" };
         _backToMenuButton = new Button { Name = "MainMenuButton", Text = "Main Menu" };
         _quitButton = new Button { Name = "QuitButton", Text = "Quit" };
+        foreach (var b in new[] { _resumeButton, _escapeOptionsButton, _backToMenuButton, _quitButton })
+            MenuTheme.StyleButton(b);
         content.AddChild(_resumeButton);
         content.AddChild(_escapeOptionsButton);
-        content.AddChild(_appearanceButton);
         content.AddChild(_backToMenuButton);
         content.AddChild(_quitButton);
 
         _escapeOptionsPanel = new PanelContainer
         {
             Name = "EscapeOptionsPanel",
+            OffsetLeft = 390,
+            OffsetTop = 120,
+            OffsetRight = 890,
+            OffsetBottom = 620,
             Visible = false
         };
-        content.AddChild(_escapeOptionsPanel);
-
-        var optionsMargin = new MarginContainer { Name = "EscapeOptionsMargin" };
-        optionsMargin.AddThemeConstantOverride("margin_left", 16);
-        optionsMargin.AddThemeConstantOverride("margin_top", 12);
-        optionsMargin.AddThemeConstantOverride("margin_right", 16);
-        optionsMargin.AddThemeConstantOverride("margin_bottom", 12);
-        _escapeOptionsPanel.AddChild(optionsMargin);
+        _escapeOptionsPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakePanelStyle());
+        _escapeOptionsPanel.SetMeta(PaletteOptOutMeta, true);
+        // Sibling of the pause panel, not a child — clicking Options
+        // swaps views (hides pause, shows this) instead of expanding it.
+        root.AddChild(_escapeOptionsPanel);
 
         var optionsContent = new VBoxContainer { Name = "EscapeOptionsContent" };
-        optionsContent.AddThemeConstantOverride("separation", 8);
-        optionsMargin.AddChild(optionsContent);
-        optionsContent.AddChild(new Label
-        {
-            Text = "Audio",
-            HorizontalAlignment = HorizontalAlignment.Center
-        });
-        optionsContent.AddChild(new Label
-        {
-            Text = "Adjustments persist via the same options.cfg the main menu writes. This overlay does not pause the match timer.",
-            AutowrapMode = TextServer.AutowrapMode.WordSmart
-        });
+        optionsContent.AddThemeConstantOverride("separation", 10);
+        _escapeOptionsPanel.AddChild(optionsContent);
+
+        optionsContent.AddChild(MenuTheme.MakeSectionHeading("Audio"));
+        var optionsHint = MenuTheme.MakeSubtleLabel(
+            "Adjustments persist via the same options.cfg the main menu writes. This overlay does not pause the match timer.");
+        optionsHint.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        optionsContent.AddChild(optionsHint);
 
         BuildPauseVolumeRow(optionsContent, "Master", out _pauseMasterVolumeSlider, out _pauseMasterVolumeLabel);
         BuildPauseVolumeRow(optionsContent, "Music", out _pauseMusicVolumeSlider, out _pauseMusicVolumeLabel);
         BuildPauseVolumeRow(optionsContent, "Effects", out _pauseEffectsVolumeSlider, out _pauseEffectsVolumeLabel);
         BuildPauseVolumeRow(optionsContent, "Ambient", out _pauseAmbientVolumeSlider, out _pauseAmbientVolumeLabel);
 
-        _carryStateToggle = new CheckButton
-        {
-            Name = "CarryStateToggle",
-            Text = "Carry karma + relationships + faction rep into next round"
-        };
-        optionsContent.AddChild(_carryStateToggle);
+        optionsContent.AddChild(MenuTheme.MakeDivider());
 
         _closeEscapeOptionsButton = new Button
         {
             Name = "CloseOptionsButton",
             Text = "Back"
         };
+        MenuTheme.StyleButton(_closeEscapeOptionsButton);
         optionsContent.AddChild(_closeEscapeOptionsButton);
-
-        _appearancePanel = new PanelContainer
-        {
-            Name = "AppearancePanel",
-            Visible = false
-        };
-        content.AddChild(_appearancePanel);
-
-        var appearanceMargin = new MarginContainer { Name = "AppearanceMargin" };
-        appearanceMargin.AddThemeConstantOverride("margin_left", 16);
-        appearanceMargin.AddThemeConstantOverride("margin_top", 12);
-        appearanceMargin.AddThemeConstantOverride("margin_right", 16);
-        appearanceMargin.AddThemeConstantOverride("margin_bottom", 12);
-        _appearancePanel.AddChild(appearanceMargin);
-
-        var appearanceContent = new VBoxContainer { Name = "AppearanceContent" };
-        appearanceContent.AddThemeConstantOverride("separation", 8);
-        appearanceMargin.AddChild(appearanceContent);
-        appearanceContent.AddChild(new Label
-        {
-            Text = "Prototype appearance",
-            HorizontalAlignment = HorizontalAlignment.Center
-        });
-        _appearanceSummaryLabel = new Label
-        {
-            Name = "AppearanceSummaryLabel",
-            Text = "Appearance: default",
-            AutowrapMode = TextServer.AutowrapMode.WordSmart
-        };
-        appearanceContent.AddChild(_appearanceSummaryLabel);
-        _appearanceSkinLabel = new Label { Name = "AppearanceSkinLabel", Text = "Skin: default" };
-        _appearanceHairLabel = new Label { Name = "AppearanceHairLabel", Text = "Hair: default" };
-        _appearanceOutfitLabel = new Label { Name = "AppearanceOutfitLabel", Text = "Outfit: default" };
-        _appearancePantsLabel = new Label { Name = "AppearancePantsLabel", Text = "Pants: default" };
-        _appearanceShirtLabel = new Label { Name = "AppearanceShirtLabel", Text = "Shirt: default" };
-        _appearanceToolLabel = new Label { Name = "AppearanceToolLabel", Text = "Held tool: none" };
-        _appearancePreviewLabel = new Label
-        {
-            Name = "AppearancePreviewLabel",
-            Text = "Preview: live on your character",
-            AutowrapMode = TextServer.AutowrapMode.WordSmart
-        };
-        appearanceContent.AddChild(_appearanceSkinLabel);
-        appearanceContent.AddChild(_appearanceHairLabel);
-        appearanceContent.AddChild(_appearanceOutfitLabel);
-        appearanceContent.AddChild(_appearancePantsLabel);
-        appearanceContent.AddChild(_appearanceShirtLabel);
-        appearanceContent.AddChild(_appearanceToolLabel);
-        appearanceContent.AddChild(_appearancePreviewLabel);
-        _cycleSkinButton = new Button { Name = "CycleSkinButton", Text = "Cycle skin (V)" };
-        _cycleHairButton = new Button { Name = "CycleHairButton", Text = "Cycle hair (B)" };
-        _cycleOutfitButton = new Button { Name = "CycleOutfitButton", Text = "Cycle outfit (N)" };
-        _cyclePantsButton = new Button { Name = "CyclePantsButton", Text = "Cycle pants (M)" };
-        _cycleShirtButton = new Button { Name = "CycleShirtButton", Text = "Cycle shirt (H)" };
-        _closeAppearanceButton = new Button { Name = "CloseAppearanceButton", Text = "Back" };
-        appearanceContent.AddChild(_cycleSkinButton);
-        appearanceContent.AddChild(_cycleHairButton);
-        appearanceContent.AddChild(_cycleOutfitButton);
-        appearanceContent.AddChild(_cyclePantsButton);
-        appearanceContent.AddChild(_cycleShirtButton);
-        appearanceContent.AddChild(_closeAppearanceButton);
     }
 
     private void OnKarmaChanged(int score, string tierName, string pathName)
@@ -2418,11 +2272,6 @@ public partial class HudController : CanvasLayer
             MaybeTriggerEventStinger(snapshot.ServerEvents);
             MaybeTriggerVoiceBarks(snapshot.ServerEvents, snapshot.PlayerId);
             _chatLabel.Text = FormatLocalChatSummary(snapshot.LocalChatMessages);
-            if (_appearancePanel.Visible)
-            {
-                RefreshAppearancePanel();
-            }
-
             if (_possePanel.Visible)
             {
                 RefreshPossePanel();
