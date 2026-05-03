@@ -34,17 +34,14 @@ public partial class HudController : CanvasLayer
     private Label _healthLabel = new();
     private ProgressBar _healthBar = new();
     private ProgressBar _staminaBar = new();
-    private ProgressBar _combatStaminaBar = new();
     private ProgressBar _ammoBar = new();
     private ProgressBar _hungerBar = new();
     private Control _staminaRow;
     private Control _healthRow;
-    private Control _combatStaminaRow;
     private Control _ammoRow;
     private Control _hungerRow;
     private HBoxContainer _statusStrip = new();
     private Label _ammoLabel = new();
-    private Label _combatStaminaLabel = new();
     private Label _hungerLabel = new();
     private HSlider _pauseMasterVolumeSlider;
     private HSlider _pauseMusicVolumeSlider;
@@ -1539,7 +1536,6 @@ public partial class HudController : CanvasLayer
     // medieval palette walker so the styling sticks.
     private static readonly Color HealthBarColor = new(0.86f, 0.22f, 0.22f);
     private static readonly Color StaminaBarColor = new(0.95f, 0.80f, 0.32f);
-    private static readonly Color CombatStaminaBarColor = new(0.78f, 0.55f, 0.20f);
     private static readonly Color AmmoBarColor = new(0.78f, 0.84f, 0.95f);
     private static readonly Color HungerBarColor = new(0.95f, 0.55f, 0.18f);
 
@@ -1568,9 +1564,6 @@ public partial class HudController : CanvasLayer
         _healthRow = BuildVitalRow(content, "Health", HealthBarColor, out _healthLabel, out _healthBar);
         _healthLabel.Text = "Health 100 / 100";
         _healthBar.Value = 100;
-
-        _combatStaminaRow = BuildVitalRow(content, "Combat", CombatStaminaBarColor, out _combatStaminaLabel, out _combatStaminaBar);
-        _combatStaminaRow.Visible = false;
 
         _ammoRow = BuildVitalRow(content, "Ammo", AmmoBarColor, out _ammoLabel, out _ammoBar);
         _ammoRow.Visible = false;
@@ -2354,7 +2347,6 @@ public partial class HudController : CanvasLayer
             {
                 SetHealth(localPlayer.Health, localPlayer.MaxHealth);
                 SetAmmoFromSnapshot(localPlayer);
-                SetCombatStaminaFromSnapshot(localPlayer);
                 SetHungerFromSnapshot(localPlayer);
                 _lastStatusEffects = localPlayer.StatusEffects;
                 RenderCombatLine(GetNode<GameState>("/root/GameState"));
@@ -2459,21 +2451,6 @@ public partial class HudController : CanvasLayer
         }
     }
 
-    private void SetCombatStaminaFromSnapshot(PlayerSnapshot localPlayer)
-    {
-        if (localPlayer.MaxStamina > 0)
-        {
-            var safeMax = Mathf.Max(1, localPlayer.MaxStamina);
-            var clamped = Mathf.Clamp(localPlayer.Stamina, 0, safeMax);
-            _combatStaminaLabel.Text = FormatCombatStamina(localPlayer.Stamina, localPlayer.MaxStamina);
-            _combatStaminaBar.Value = clamped / (double)safeMax * 100.0;
-            if (_combatStaminaRow is not null) _combatStaminaRow.Visible = true;
-        }
-        else
-        {
-            if (_combatStaminaRow is not null) _combatStaminaRow.Visible = false;
-        }
-    }
 
     public static string FormatAmmo(int currentAmmo, int maxAmmo)
     {
@@ -2484,13 +2461,6 @@ public partial class HudController : CanvasLayer
             : clamped == 0
                 ? $"Ammo  {clamped} / {safeMax}  (reload)"
                 : $"Ammo  {clamped} / {safeMax}";
-    }
-
-    public static string FormatCombatStamina(int stamina, int maxStamina)
-    {
-        var safeMax = Mathf.Max(1, maxStamina);
-        var clamped = Mathf.Clamp(stamina, 0, safeMax);
-        return $"Combat  {clamped} / {safeMax}";
     }
 
     private void SetHungerFromSnapshot(PlayerSnapshot localPlayer)

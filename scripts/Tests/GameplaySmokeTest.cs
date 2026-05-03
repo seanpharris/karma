@@ -647,19 +647,17 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             PlayerController.ShouldSnapToAuthoritativePosition(new Vector2(0f, 0f), new Vector2(128f, 0f), new Vector2(0f, 0f)),
             "player controller still snaps when prediction does not explain the authority correction");
-        ExpectEqual("Health: 75/100", HudController.FormatHealth(75, 100), "health label formats current and maximum health");
+        ExpectEqual("Health  75 / 100", HudController.FormatHealth(75, 100), "health label formats current and maximum health");
         ExpectEqual(75f, HudController.CalculateHealthPercent(75, 100), "health bar percent follows authoritative health");
         ExpectEqual(0f, HudController.CalculateHealthPercent(-5, 100), "health bar percent clamps below zero");
         ExpectEqual(100f, HudController.CalculateHealthPercent(125, 100), "health bar percent clamps above maximum");
-        ExpectEqual("Ammo: 6/12", HudController.FormatAmmo(6, 12), "ammo label formats current and max magazine");
-        ExpectEqual("Ammo: 0/12 (reload)", HudController.FormatAmmo(0, 12), "ammo label flags empty magazine for reload");
-        ExpectEqual("Ammo: --", HudController.FormatAmmo(0, 0), "ammo label shows -- when no magazine is configured");
-        ExpectEqual("Stamina: 80/100", HudController.FormatCombatStamina(80, 100), "combat stamina label formats current and max");
-        ExpectEqual("Stamina: 0/100", HudController.FormatCombatStamina(-5, 100), "combat stamina label clamps below zero");
-        ExpectEqual("Hunger: 100/100", HudController.FormatHunger(100, 100), "hunger label formats full pool");
-        ExpectEqual("Hunger: 50/100 (peckish)", HudController.FormatHunger(50, 100), "hunger label flags peckish at 50%");
-        ExpectEqual("Hunger: 25/100 (hungry)", HudController.FormatHunger(25, 100), "hunger label flags hungry at 25%");
-        ExpectEqual("Hunger: 0/100 (starving)", HudController.FormatHunger(0, 100), "hunger label flags starving at empty");
+        ExpectEqual("Ammo  6 / 12", HudController.FormatAmmo(6, 12), "ammo label formats current and max magazine");
+        ExpectEqual("Ammo  0 / 12  (reload)", HudController.FormatAmmo(0, 12), "ammo label flags empty magazine for reload");
+        ExpectEqual("Ammo  --", HudController.FormatAmmo(0, 0), "ammo label shows -- when no magazine is configured");
+        ExpectEqual("Hunger  100 / 100", HudController.FormatHunger(100, 100), "hunger label formats full pool");
+        ExpectEqual("Hunger  50 / 100  (peckish)", HudController.FormatHunger(50, 100), "hunger label flags peckish at 50%");
+        ExpectEqual("Hunger  25 / 100  (hungry)", HudController.FormatHunger(25, 100), "hunger label flags hungry at 25%");
+        ExpectEqual("Hunger  0 / 100  (starving)", HudController.FormatHunger(0, 100), "hunger label flags starving at empty");
 
         // Pause Options panel: percent → dB and linear → dB conversions.
         ExpectEqual(-80f, HudController.PercentToDb(0.0),
