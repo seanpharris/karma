@@ -123,7 +123,6 @@ public partial class HudController : CanvasLayer
     private Button _backToMenuButton = new();
     private Button _quitButton = new();
     private Button _closeEscapeOptionsButton = new();
-    private CheckButton _carryStateToggle = new();
     private Control _appearancePanel = new();
     private Label _appearanceSummaryLabel = new();
     private Label _appearanceSkinLabel = new();
@@ -179,8 +178,6 @@ public partial class HudController : CanvasLayer
         _backToMenuButton.Pressed += ReturnToMainMenu;
         _quitButton.Pressed += () => GetTree().Quit();
         _closeEscapeOptionsButton.Pressed += HideEscapeOptions;
-        _carryStateToggle.Toggled += OnCarryStateToggleChanged;
-        _carryStateToggle.ButtonPressed = _gameState.CarryStateIntoNextRound;
         _chatInput.TextSubmitted += OnChatInputSubmitted;
         if (_serverSession is not null)
         {
@@ -875,20 +872,8 @@ public partial class HudController : CanvasLayer
         HideAppearancePanel();
         LoadPauseAudioSettings();
         ApplyPauseAudioSettings();
-        if (_gameState is not null && _carryStateToggle is not null)
-        {
-            _carryStateToggle.ButtonPressed = _gameState.CarryStateIntoNextRound;
-        }
         _escapeOptionsPanel.Visible = true;
         _escapeMenuStatusLabel.Text = "Audio sliders save to options.cfg and apply live; gameplay keeps running.";
-    }
-
-    private void OnCarryStateToggleChanged(bool enabled)
-    {
-        _gameState?.SetCarryStateIntoNextRound(enabled);
-        _escapeMenuStatusLabel.Text = enabled
-            ? "Next round will carry karma, relationships, and faction reputation."
-            : "Next round will start with fresh karma, relationships, and faction reputation.";
     }
 
     private void BuildPauseVolumeRow(VBoxContainer parent, string title, out HSlider slider, out Label valueLabel)
@@ -1721,8 +1706,15 @@ public partial class HudController : CanvasLayer
         ApplyUiPaletteRecursive(root, palette, string.Empty);
     }
 
+    // Subtrees that opt out (e.g. the pause menu, which uses MenuTheme's
+    // karma duality styling) are skipped entirely — neither the control
+    // itself nor any of its descendants get repainted.
+    public const string PaletteOptOutMeta = "opt_out_ui_palette";
+
     private static void ApplyUiPaletteRecursive(Control control, UiPalette palette, string themeId)
     {
+        if (control.HasMeta(PaletteOptOutMeta)) return;
+
         switch (control)
         {
             case PanelContainer panel:
@@ -2154,6 +2146,9 @@ public partial class HudController : CanvasLayer
             Visible = false
         };
         _escapeMenuPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakePanelStyle());
+        // Opt this entire subtree (and its sub-panels) out of the
+        // medieval UI palette walker so MenuTheme styling sticks.
+        _escapeMenuPanel.SetMeta(PaletteOptOutMeta, true);
         root.AddChild(_escapeMenuPanel);
 
         var content = new VBoxContainer
@@ -2211,14 +2206,6 @@ public partial class HudController : CanvasLayer
         BuildPauseVolumeRow(optionsContent, "Ambient", out _pauseAmbientVolumeSlider, out _pauseAmbientVolumeLabel);
 
         optionsContent.AddChild(MenuTheme.MakeDivider());
-
-        _carryStateToggle = new CheckButton
-        {
-            Name = "CarryStateToggle",
-            Text = "Carry karma + relationships + faction rep into next round"
-        };
-        MenuTheme.StyleCheckButton(_carryStateToggle);
-        optionsContent.AddChild(_carryStateToggle);
 
         _closeEscapeOptionsButton = new Button
         {
