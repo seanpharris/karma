@@ -30,12 +30,19 @@ public partial class MainMenuController : Control
     // re-renders or moves the buttons.
     private static readonly (string Id, string Label, Rect2 Bounds)[] ButtonLayout =
     {
-        ("play",       "PLAY",       new Rect2(0.39f, 0.495f, 0.22f, 0.072f)),
-        ("multiverse", "MULTIVERSE", new Rect2(0.39f, 0.572f, 0.22f, 0.072f)),
-        ("options",    "OPTIONS",    new Rect2(0.39f, 0.650f, 0.22f, 0.072f)),
-        ("credits",    "CREDITS",    new Rect2(0.39f, 0.728f, 0.22f, 0.072f)),
-        ("quit",       "QUIT",       new Rect2(0.39f, 0.806f, 0.22f, 0.072f))
+        ("play",    "PLAY",    new Rect2(0.39f, 0.495f, 0.22f, 0.072f)),
+        // MULTIVERSE removed — the painted button still appears in the
+        // splash but is non-interactive. A blocker rect (see
+        // BuildPaintedMultiverseCover) softly dims the painted artwork
+        // so it reads as decorative rather than clickable.
+        ("options", "OPTIONS", new Rect2(0.39f, 0.650f, 0.22f, 0.072f)),
+        ("credits", "CREDITS", new Rect2(0.39f, 0.728f, 0.22f, 0.072f)),
+        ("quit",    "QUIT",    new Rect2(0.39f, 0.806f, 0.22f, 0.072f))
     };
+
+    // Bounds of the painted MULTIVERSE button. Used by
+    // BuildPaintedMultiverseCover to dim out the leftover artwork.
+    private static readonly Rect2 PaintedMultiverseBounds = new(0.37f, 0.572f, 0.26f, 0.072f);
 
     // Title shimmer rect (over the painted "KARMA" letters).
     private static readonly Rect2 TitleRect = new(0.20f, 0.04f, 0.60f, 0.21f);
@@ -301,44 +308,36 @@ public partial class MainMenuController : Control
     private void BuildButtons()
     {
         if (_stageFrame is null) return;
+
+        BuildPaintedMultiverseCover();
+
         var transparent = new StyleBoxEmpty();
         var pillTexture = MakePillGlow(256, 80, softness: 1.4f);
         foreach (var (id, label, bounds) in ButtonLayout)
         {
-            // Container holds the glow + the actual button so they
-            // share the same anchored rect. Glow is a sibling beneath
-            // the button (lower draw order). Container's PivotOffset
-            // sits at its center so scale tweens look balanced.
-            var container = new Control
-            {
-                Name = $"ButtonShell_{id}",
-                MouseFilter = MouseFilterEnum.Pass
-            };
-            AnchorRect(container, bounds);
-            _stageFrame.AddChild(container);
-            container.PivotOffset = container.Size * 0.5f;
-            container.Resized += () => container.PivotOffset = container.Size * 0.5f;
-
-            // Soft pill-shaped glow that fades in on hover. Tinted per
-            // button — gold for PLAY (Paragon), red for QUIT
-            // (Renegade), parchment for the others.
+            // Glow sits below the button as a separate stage-frame child
+            // (under the click target's draw order). Both share the
+            // same normalised rect and are tweened together on hover.
             var glow = new TextureRect
             {
-                Name = "Glow",
+                Name = $"Glow_{id}",
                 Texture = pillTexture,
                 StretchMode = TextureRect.StretchModeEnum.Scale,
                 ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
                 Modulate = new Color(GlowTint(id), 0f),
                 MouseFilter = MouseFilterEnum.Ignore
             };
-            // Glow extends slightly past the button rect for a halo
-            // bloom — anchors at -8% on each side so it spills around
-            // the painted edges.
-            glow.AnchorLeft = -0.10f;
-            glow.AnchorTop = -0.20f;
-            glow.AnchorRight = 1.10f;
-            glow.AnchorBottom = 1.20f;
-            container.AddChild(glow);
+            // Anchor the glow slightly larger than the button rect so
+            // the halo bleeds around the painted edges.
+            var glowBounds = new Rect2(
+                bounds.Position.X - bounds.Size.X * 0.08f,
+                bounds.Position.Y - bounds.Size.Y * 0.20f,
+                bounds.Size.X * 1.16f,
+                bounds.Size.Y * 1.40f);
+            AnchorRect(glow, glowBounds);
+            _stageFrame.AddChild(glow);
+            glow.PivotOffset = glow.Size * 0.5f;
+            glow.Resized += () => glow.PivotOffset = glow.Size * 0.5f;
 
             var button = new Button
             {
@@ -346,31 +345,49 @@ public partial class MainMenuController : Control
                 Text = string.Empty,
                 FocusMode = FocusModeEnum.None,
                 MouseFilter = MouseFilterEnum.Stop,
-                TooltipText = label,
-                AnchorRight = 1f, AnchorBottom = 1f
+                TooltipText = label
             };
             button.AddThemeStyleboxOverride("normal", transparent);
             button.AddThemeStyleboxOverride("focus", transparent);
             button.AddThemeStyleboxOverride("disabled", transparent);
             button.AddThemeStyleboxOverride("hover", transparent);
             button.AddThemeStyleboxOverride("pressed", transparent);
-            container.AddChild(button);
+            AnchorRect(button, bounds);
+            _stageFrame.AddChild(button);
+            button.PivotOffset = button.Size * 0.5f;
+            button.Resized += () => button.PivotOffset = button.Size * 0.5f;
 
-            // Hover animation: glow fades in, container scales up
-            // slightly + lifts a few px, on exit reverses.
-            button.MouseEntered += () => AnimateButtonHover(container, glow, hovered: true);
-            button.MouseExited += () => AnimateButtonHover(container, glow, hovered: false);
-            button.ButtonDown += () => AnimateButtonPress(container, pressed: true);
-            button.ButtonUp += () => AnimateButtonPress(container, pressed: false);
+            // Hover animation: glow fades in, button scales up slightly.
+            // No vertical lift — keeps the click rect anchored where
+            // the painted button sits so hover stays sticky.
+            button.MouseEntered += () => AnimateButtonHover(button, glow, hovered: true);
+            button.MouseExited += () => AnimateButtonHover(button, glow, hovered: false);
+            button.ButtonDown += () => AnimateButtonPress(button, glow, pressed: true);
+            button.ButtonUp += () => AnimateButtonPress(button, glow, pressed: false);
 
             _buttons[id] = button;
         }
 
         _buttons["play"].Pressed += StartGame;
-        _buttons["multiverse"].Pressed += StartMultiverse;
         _buttons["options"].Pressed += ShowOptions;
         _buttons["credits"].Pressed += ShowCredits;
         _buttons["quit"].Pressed += QuitGame;
+    }
+
+    // The MULTIVERSE button is painted into the splash but no longer
+    // wired. Drop a soft dark veil over the painted area so it reads
+    // as decorative / disabled rather than something the player should
+    // try to click.
+    private void BuildPaintedMultiverseCover()
+    {
+        var veil = new ColorRect
+        {
+            Name = "PaintedMultiverseVeil",
+            Color = new Color(0, 0, 0, 0.55f),
+            MouseFilter = MouseFilterEnum.Ignore
+        };
+        AnchorRect(veil, PaintedMultiverseBounds);
+        _stageFrame.AddChild(veil);
     }
 
     private static Color GlowTint(string buttonId) => buttonId switch
@@ -380,18 +397,22 @@ public partial class MainMenuController : Control
         _ => new Color(0.96f, 0.88f, 0.65f)         // parchment (neutral)
     };
 
-    private static void AnimateButtonHover(Control shell, CanvasItem glow, bool hovered)
+    private static void AnimateButtonHover(Control button, Control glow, bool hovered)
     {
-        var tween = shell.CreateTween().SetParallel(true).SetEase(Tween.EaseType.Out);
-        tween.TweenProperty(shell, "scale", hovered ? new Vector2(1.045f, 1.045f) : Vector2.One, 0.18);
-        tween.TweenProperty(shell, "position:y", hovered ? -3f : 0f, 0.18);
+        // Animate scale on the glow (visual emphasis) and alpha on the
+        // glow's modulate. Button itself stays put so the click rect
+        // doesn't drift out from under the cursor on hover-in.
+        var tween = button.CreateTween().SetParallel(true).SetEase(Tween.EaseType.Out);
+        tween.TweenProperty(glow, "scale", hovered ? new Vector2(1.06f, 1.06f) : Vector2.One, 0.18);
         tween.TweenProperty(glow, "modulate:a", hovered ? 0.65f : 0f, 0.22);
     }
 
-    private static void AnimateButtonPress(Control shell, bool pressed)
+    private static void AnimateButtonPress(Control button, Control glow, bool pressed)
     {
-        var tween = shell.CreateTween().SetEase(Tween.EaseType.Out);
-        tween.TweenProperty(shell, "scale", pressed ? new Vector2(0.98f, 0.98f) : new Vector2(1.045f, 1.045f), 0.08);
+        // Subtle "press" pulse on the glow only — the painted button
+        // doesn't need to physically dip since it's part of the splash.
+        var tween = glow.CreateTween().SetEase(Tween.EaseType.Out);
+        tween.TweenProperty(glow, "scale", pressed ? new Vector2(0.98f, 0.98f) : new Vector2(1.06f, 1.06f), 0.08);
     }
 
     // Soft elliptical-pill glow texture. Computes one image at startup
@@ -477,14 +498,6 @@ public partial class MainMenuController : Control
         GetTree().ChangeSceneToFile(GameplayScenePath);
     }
 
-    public void StartMultiverse()
-    {
-        // Multiverse routes to the in-game event prototype for now —
-        // it's the closest existing surface to "experience another
-        // playable scenario". Swap in a real lobby browser later.
-        _statusLabel.Text = "Multiverse: opening event prototype...";
-        GetTree().ChangeSceneToFile(EventPrototypeScenePath);
-    }
 
     public void ShowOptions()
     {
