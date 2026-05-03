@@ -894,8 +894,9 @@ public partial class HudController : CanvasLayer
     private void BuildPauseVolumeRow(VBoxContainer parent, string title, out HSlider slider, out Label valueLabel)
     {
         var row = new HBoxContainer { Name = $"{title}VolumeRow" };
-        row.AddThemeConstantOverride("separation", 8);
-        var titleLabel = new Label { Text = $"{title} volume", CustomMinimumSize = new Vector2(140, 0) };
+        row.AddThemeConstantOverride("separation", 12);
+        var titleLabel = MenuTheme.MakeBodyLabel($"{title} volume");
+        titleLabel.CustomMinimumSize = new Vector2(140, 0);
         slider = new HSlider
         {
             Name = $"{title}VolumeSlider",
@@ -903,9 +904,13 @@ public partial class HudController : CanvasLayer
             MaxValue = 100,
             Step = 1,
             Value = 80,
-            CustomMinimumSize = new Vector2(220, 0)
+            CustomMinimumSize = new Vector2(220, 20),
+            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
         };
-        valueLabel = new Label { Text = "80%", CustomMinimumSize = new Vector2(56, 0), HorizontalAlignment = HorizontalAlignment.Right };
+        MenuTheme.StyleSlider(slider);
+        valueLabel = MenuTheme.MakeSubtleLabel("80%");
+        valueLabel.CustomMinimumSize = new Vector2(56, 0);
+        valueLabel.HorizontalAlignment = HorizontalAlignment.Right;
         row.AddChild(titleLabel);
         row.AddChild(slider);
         row.AddChild(valueLabel);
@@ -2148,39 +2153,25 @@ public partial class HudController : CanvasLayer
             OffsetBottom = 620,
             Visible = false
         };
+        _escapeMenuPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakePanelStyle());
         root.AddChild(_escapeMenuPanel);
-
-        var margin = new MarginContainer
-        {
-            Name = "EscapeMenuMargin"
-        };
-        margin.AddThemeConstantOverride("margin_left", 28);
-        margin.AddThemeConstantOverride("margin_top", 24);
-        margin.AddThemeConstantOverride("margin_right", 28);
-        margin.AddThemeConstantOverride("margin_bottom", 24);
-        _escapeMenuPanel.AddChild(margin);
 
         var content = new VBoxContainer
         {
             Name = "EscapeMenuContent"
         };
         content.AddThemeConstantOverride("separation", 12);
-        margin.AddChild(content);
+        _escapeMenuPanel.AddChild(content);
 
-        content.AddChild(new Label
-        {
-            Name = "EscapeMenuTitle",
-            Text = "Karma Menu",
-            HorizontalAlignment = HorizontalAlignment.Center
-        });
+        var title = MenuTheme.MakeTitle("Pause");
+        title.Name = "EscapeMenuTitle";
+        content.AddChild(title);
+        content.AddChild(MenuTheme.MakeDivider());
 
-        _escapeMenuStatusLabel = new Label
-        {
-            Name = "EscapeMenuStatusLabel",
-            Text = "Menu open. Prototype world is still running.",
-            AutowrapMode = TextServer.AutowrapMode.WordSmart,
-            HorizontalAlignment = HorizontalAlignment.Center
-        };
+        _escapeMenuStatusLabel = MenuTheme.MakeSubtleLabel("Menu open. World is still running.");
+        _escapeMenuStatusLabel.Name = "EscapeMenuStatusLabel";
+        _escapeMenuStatusLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        _escapeMenuStatusLabel.HorizontalAlignment = HorizontalAlignment.Center;
         content.AddChild(_escapeMenuStatusLabel);
 
         _resumeButton = new Button { Name = "ResumeButton", Text = "Resume" };
@@ -2188,6 +2179,8 @@ public partial class HudController : CanvasLayer
         _appearanceButton = new Button { Name = "AppearanceButton", Text = "Appearance" };
         _backToMenuButton = new Button { Name = "MainMenuButton", Text = "Main Menu" };
         _quitButton = new Button { Name = "QuitButton", Text = "Quit" };
+        foreach (var b in new[] { _resumeButton, _escapeOptionsButton, _appearanceButton, _backToMenuButton, _quitButton })
+            MenuTheme.StyleButton(b);
         content.AddChild(_resumeButton);
         content.AddChild(_escapeOptionsButton);
         content.AddChild(_appearanceButton);
@@ -2199,39 +2192,32 @@ public partial class HudController : CanvasLayer
             Name = "EscapeOptionsPanel",
             Visible = false
         };
+        _escapeOptionsPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakePanelStyle());
         content.AddChild(_escapeOptionsPanel);
 
-        var optionsMargin = new MarginContainer { Name = "EscapeOptionsMargin" };
-        optionsMargin.AddThemeConstantOverride("margin_left", 16);
-        optionsMargin.AddThemeConstantOverride("margin_top", 12);
-        optionsMargin.AddThemeConstantOverride("margin_right", 16);
-        optionsMargin.AddThemeConstantOverride("margin_bottom", 12);
-        _escapeOptionsPanel.AddChild(optionsMargin);
-
         var optionsContent = new VBoxContainer { Name = "EscapeOptionsContent" };
-        optionsContent.AddThemeConstantOverride("separation", 8);
-        optionsMargin.AddChild(optionsContent);
-        optionsContent.AddChild(new Label
-        {
-            Text = "Audio",
-            HorizontalAlignment = HorizontalAlignment.Center
-        });
-        optionsContent.AddChild(new Label
-        {
-            Text = "Adjustments persist via the same options.cfg the main menu writes. This overlay does not pause the match timer.",
-            AutowrapMode = TextServer.AutowrapMode.WordSmart
-        });
+        optionsContent.AddThemeConstantOverride("separation", 10);
+        _escapeOptionsPanel.AddChild(optionsContent);
+
+        optionsContent.AddChild(MenuTheme.MakeSectionHeading("Audio"));
+        var optionsHint = MenuTheme.MakeSubtleLabel(
+            "Adjustments persist via the same options.cfg the main menu writes. This overlay does not pause the match timer.");
+        optionsHint.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        optionsContent.AddChild(optionsHint);
 
         BuildPauseVolumeRow(optionsContent, "Master", out _pauseMasterVolumeSlider, out _pauseMasterVolumeLabel);
         BuildPauseVolumeRow(optionsContent, "Music", out _pauseMusicVolumeSlider, out _pauseMusicVolumeLabel);
         BuildPauseVolumeRow(optionsContent, "Effects", out _pauseEffectsVolumeSlider, out _pauseEffectsVolumeLabel);
         BuildPauseVolumeRow(optionsContent, "Ambient", out _pauseAmbientVolumeSlider, out _pauseAmbientVolumeLabel);
 
+        optionsContent.AddChild(MenuTheme.MakeDivider());
+
         _carryStateToggle = new CheckButton
         {
             Name = "CarryStateToggle",
             Text = "Carry karma + relationships + faction rep into next round"
         };
+        MenuTheme.StyleCheckButton(_carryStateToggle);
         optionsContent.AddChild(_carryStateToggle);
 
         _closeEscapeOptionsButton = new Button
@@ -2239,6 +2225,7 @@ public partial class HudController : CanvasLayer
             Name = "CloseOptionsButton",
             Text = "Back"
         };
+        MenuTheme.StyleButton(_closeEscapeOptionsButton);
         optionsContent.AddChild(_closeEscapeOptionsButton);
 
         _appearancePanel = new PanelContainer
@@ -2246,42 +2233,33 @@ public partial class HudController : CanvasLayer
             Name = "AppearancePanel",
             Visible = false
         };
+        _appearancePanel.AddThemeStyleboxOverride("panel", MenuTheme.MakePanelStyle());
         content.AddChild(_appearancePanel);
 
-        var appearanceMargin = new MarginContainer { Name = "AppearanceMargin" };
-        appearanceMargin.AddThemeConstantOverride("margin_left", 16);
-        appearanceMargin.AddThemeConstantOverride("margin_top", 12);
-        appearanceMargin.AddThemeConstantOverride("margin_right", 16);
-        appearanceMargin.AddThemeConstantOverride("margin_bottom", 12);
-        _appearancePanel.AddChild(appearanceMargin);
-
         var appearanceContent = new VBoxContainer { Name = "AppearanceContent" };
-        appearanceContent.AddThemeConstantOverride("separation", 8);
-        appearanceMargin.AddChild(appearanceContent);
-        appearanceContent.AddChild(new Label
-        {
-            Text = "Prototype appearance",
-            HorizontalAlignment = HorizontalAlignment.Center
-        });
-        _appearanceSummaryLabel = new Label
-        {
-            Name = "AppearanceSummaryLabel",
-            Text = "Appearance: default",
-            AutowrapMode = TextServer.AutowrapMode.WordSmart
-        };
+        appearanceContent.AddThemeConstantOverride("separation", 10);
+        _appearancePanel.AddChild(appearanceContent);
+
+        appearanceContent.AddChild(MenuTheme.MakeSectionHeading("Appearance"));
+        _appearanceSummaryLabel = MenuTheme.MakeBodyLabel("Appearance: default");
+        _appearanceSummaryLabel.Name = "AppearanceSummaryLabel";
+        _appearanceSummaryLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         appearanceContent.AddChild(_appearanceSummaryLabel);
-        _appearanceSkinLabel = new Label { Name = "AppearanceSkinLabel", Text = "Skin: default" };
-        _appearanceHairLabel = new Label { Name = "AppearanceHairLabel", Text = "Hair: default" };
-        _appearanceOutfitLabel = new Label { Name = "AppearanceOutfitLabel", Text = "Outfit: default" };
-        _appearancePantsLabel = new Label { Name = "AppearancePantsLabel", Text = "Pants: default" };
-        _appearanceShirtLabel = new Label { Name = "AppearanceShirtLabel", Text = "Shirt: default" };
-        _appearanceToolLabel = new Label { Name = "AppearanceToolLabel", Text = "Held tool: none" };
-        _appearancePreviewLabel = new Label
-        {
-            Name = "AppearancePreviewLabel",
-            Text = "Preview: live on your character",
-            AutowrapMode = TextServer.AutowrapMode.WordSmart
-        };
+        _appearanceSkinLabel = MenuTheme.MakeBodyLabel("Skin: default");
+        _appearanceSkinLabel.Name = "AppearanceSkinLabel";
+        _appearanceHairLabel = MenuTheme.MakeBodyLabel("Hair: default");
+        _appearanceHairLabel.Name = "AppearanceHairLabel";
+        _appearanceOutfitLabel = MenuTheme.MakeBodyLabel("Outfit: default");
+        _appearanceOutfitLabel.Name = "AppearanceOutfitLabel";
+        _appearancePantsLabel = MenuTheme.MakeBodyLabel("Pants: default");
+        _appearancePantsLabel.Name = "AppearancePantsLabel";
+        _appearanceShirtLabel = MenuTheme.MakeBodyLabel("Shirt: default");
+        _appearanceShirtLabel.Name = "AppearanceShirtLabel";
+        _appearanceToolLabel = MenuTheme.MakeBodyLabel("Held tool: none");
+        _appearanceToolLabel.Name = "AppearanceToolLabel";
+        _appearancePreviewLabel = MenuTheme.MakeSubtleLabel("Preview: live on your character");
+        _appearancePreviewLabel.Name = "AppearancePreviewLabel";
+        _appearancePreviewLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         appearanceContent.AddChild(_appearanceSkinLabel);
         appearanceContent.AddChild(_appearanceHairLabel);
         appearanceContent.AddChild(_appearanceOutfitLabel);
@@ -2289,12 +2267,15 @@ public partial class HudController : CanvasLayer
         appearanceContent.AddChild(_appearanceShirtLabel);
         appearanceContent.AddChild(_appearanceToolLabel);
         appearanceContent.AddChild(_appearancePreviewLabel);
+        appearanceContent.AddChild(MenuTheme.MakeDivider());
         _cycleSkinButton = new Button { Name = "CycleSkinButton", Text = "Cycle skin (V)" };
         _cycleHairButton = new Button { Name = "CycleHairButton", Text = "Cycle hair (B)" };
         _cycleOutfitButton = new Button { Name = "CycleOutfitButton", Text = "Cycle outfit (N)" };
         _cyclePantsButton = new Button { Name = "CyclePantsButton", Text = "Cycle pants (M)" };
         _cycleShirtButton = new Button { Name = "CycleShirtButton", Text = "Cycle shirt (H)" };
         _closeAppearanceButton = new Button { Name = "CloseAppearanceButton", Text = "Back" };
+        foreach (var b in new[] { _cycleSkinButton, _cycleHairButton, _cycleOutfitButton, _cyclePantsButton, _cycleShirtButton, _closeAppearanceButton })
+            MenuTheme.StyleButton(b);
         appearanceContent.AddChild(_cycleSkinButton);
         appearanceContent.AddChild(_cycleHairButton);
         appearanceContent.AddChild(_cycleOutfitButton);
