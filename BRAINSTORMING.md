@@ -1,6 +1,6 @@
 # Karma Brainstorming
 
-A living scratchpad for game ideas. Nothing here is a promise; good ideas can graduate into `AGENTS.md`, issues, prototypes, or design docs later.
+A living scratchpad for game ideas. Nothing here is a promise; good ideas can graduate into `TASKS.md`, issues, prototypes, or design docs later.
 
 ## North Star
 
@@ -1761,7 +1761,7 @@ the value is the *story they create*, not the score change.
   apologizer for being weird, the target for tolerating it). Rumor.
 - **Talk to a corpse** — emote that "starts a conversation" with a
   dead/downed player. NPCs in line of sight react with the muttered
-  "uneasy" cue (see SOUND_NEEDED.md NPC vocals). No karma change.
+  "uneasy" cue (see TASKS.md (Sound Needed section) NPC vocals). No karma change.
 - **Pet carrier sneak-up** — give a Pet Carrier with a Whoopie Cushion
   inside as a "gift." Recipient opens it, deflation prank fires.
   Mutual silly karma+ if both laugh (server can't tell — random

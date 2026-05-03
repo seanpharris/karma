@@ -2,7 +2,7 @@
 
 One row per shipped audio clip. Pixabay, OpenGameArt, Freesound, etc.
 entries record the source URL + author + license fields per
-[`docs/medieval-audio-inventory.md`](../../docs/medieval-audio-inventory.md).
+[TASKS.md#medieval-audio-inventory](../../TASKS.md#medieval-audio-inventory).
 
 ## Procedurally generated SFX
 

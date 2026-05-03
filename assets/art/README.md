@@ -178,10 +178,10 @@ For new art, start broad, then make runtime atlases.
 
 Useful docs:
 
-- `docs/theme-art-curation-standard.md` — broad multi-theme standard and prompts.
-- `docs/character-art-generation-workflow.md` — character prompt and validator workflow.
-- `docs/prototype-model-art-prompts.md` — paste-ready prompts for current prototype NPC, item, weapon, tool, and station models.
-- `docs/character-animation-pipeline.md` — base-body plus skin/outfit layering plan.
+- [TASKS.md#theme-art-curation-standard](../../TASKS.md#theme-art-curation-standard) — broad multi-theme standard and prompts.
+- [TASKS.md#character-art-generation-workflow](../../TASKS.md#character-art-generation-workflow) — character prompt and validator workflow.
+- [TASKS.md#prototype-model-art-prompts](../../TASKS.md#prototype-model-art-prompts) — paste-ready prompts for current prototype NPC, item, weapon, tool, and station models.
+- [TASKS.md#character-animation-pipeline](../../TASKS.md#character-animation-pipeline) — base-body plus skin/outfit layering plan.
 
 ## Audit Commands
 

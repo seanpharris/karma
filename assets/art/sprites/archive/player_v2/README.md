@@ -95,7 +95,7 @@ python tools/import_pixellab_character.py path\to\pixellab-download.png --output
 
 The sprite viewer writes `assets/art/sprites/player_v2/review/index.html`, `player_v2_variant_matrix.png`, and `player_v2_layer_contact_sheet.png`. Use it whenever layer variants change so Sean and the assistant can review the same preview artifacts.
 
-See `docs/pixellab-mcp-workflow.md` for the PixelLab MCP candidate-generation workflow and token-safety notes.
+See [TASKS.md#pixellab-mcp-workflow](../../../../TASKS.md#pixellab-mcp-workflow) for the PixelLab MCP candidate-generation workflow and token-safety notes.
 
 ## Next steps
 

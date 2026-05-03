@@ -66,7 +66,7 @@ collection or template.
 
 Karma's procedural-generation direction is informed by permissively licensed
 Godot/C# procedural generation projects, documented in
-`docs/reusable-procgen-research.md`.
+`TASKS.md` (Reusable procgen research section).
 
 Current researched sources include:
 

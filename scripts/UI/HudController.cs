@@ -3189,7 +3189,7 @@ public partial class HudController : CanvasLayer
     // Resolve an audio clip via AudioEventCatalog and play it through the
     // shared stinger AudioStreamPlayer. Silently no-ops when the resolved
     // path is empty or the file isn't on disk yet — the catalog is the seam,
-    // not the asset. Once SOUND_NEEDED.md deliveries land, drop the clips
+    // not the asset. Once TASKS.md (Sound Needed section) deliveries land, drop the clips
     // at the registered paths and they play automatically.
     public void PlayEventStinger(string eventId)
     {

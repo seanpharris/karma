@@ -46,8 +46,8 @@ and perks reset.
 - Main game Windows export: `powershell -ExecutionPolicy Bypass -File .\tools\export-main-game.ps1`
 - Prototype Windows export: `powershell -ExecutionPolicy Bypass -File .\tools\export-prototype-game.ps1`
 
-See [`docs/testing-launch-paths.md`](docs/testing-launch-paths.md) for direct Godot commands.
-See [`docs/sprite-modeling-status.md`](docs/sprite-modeling-status.md) for why the current sprite-modeling difference is mostly pipeline/animation support rather than a dramatic visual upgrade.
+See [TASKS.md#testing-launch-paths](TASKS.md#testing-launch-paths) for direct Godot commands.
+See [TASKS.md#sprite-modeling-status](TASKS.md#sprite-modeling-status) for why the current sprite-modeling difference is mostly pipeline/animation support rather than a dramatic visual upgrade.
 
 ## Building Sprite Pipeline
 

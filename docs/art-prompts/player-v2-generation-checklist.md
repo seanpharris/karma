@@ -72,6 +72,6 @@ Prompt files:
 
 Longer design docs:
 
-- `docs/professional-character-art-systems.md`
-- `docs/character-art-generation-workflow.md`
-- `docs/character-animation-pipeline.md`
+- `../../TASKS.md#professional-character-art-systems`
+- `../../TASKS.md#character-art-generation-workflow`
+- `../../TASKS.md#character-animation-pipeline`
