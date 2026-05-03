@@ -20,7 +20,7 @@ extends SceneTree
 # Run via:
 #   godot --headless --path . --script res://tools/lpc_compose_item_icons.gd
 
-const LPC_ROOT := "res://assets/art/sprites/lpc/spritesheets/"
+const LPC_ROOT := "res://assets/art/sprites/spritesheets/"
 const OUT_DIR := "res://assets/art/themes/medieval/items/"
 const CELL := 64
 const TARGET := 32

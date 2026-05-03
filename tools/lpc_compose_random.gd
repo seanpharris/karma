@@ -14,7 +14,7 @@ extends SceneTree
 # Optional CLI arg: --seed=NNN (Godot doesn't make this easy; use the
 # SEED_SALT constant below or edit the script).
 
-const LPC_ROOT := "res://assets/art/sprites/lpc/spritesheets/"
+const LPC_ROOT := "res://assets/art/sprites/spritesheets/"
 const OUT_LPC := "res://assets/art/generated/lpc/random_character_lpc_walk.png"
 const OUT_KARMA := "res://assets/art/generated/lpc/random_character_32x64_8dir_4row.png"
 

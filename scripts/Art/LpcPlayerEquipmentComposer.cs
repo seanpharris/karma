@@ -8,7 +8,7 @@ namespace Karma.Art;
 
 public static class LpcPlayerEquipmentComposer
 {
-    private const string LpcRoot = "res://assets/art/sprites/lpc/spritesheets/";
+    private const string LpcRoot = "res://assets/art/sprites/spritesheets/";
     private const int LpcFrame = 64;
     private const int LpcColumns = 9;
     private const int LpcRows = 4;

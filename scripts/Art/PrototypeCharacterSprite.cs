@@ -227,7 +227,7 @@ public partial class PrototypeCharacterSprite : Node2D
 
     // Resolve and apply an LPC theme bundle by id (e.g. "blacksmith_male").
     // Looks up the materialized atlas at
-    // assets/art/generated/lpc_npcs/<id>_32x64_8dir_4row.png and overrides
+    // assets/art/sprites/themes/medieval/generated/<id>_32x64_8dir_4row.png and overrides
     // this sprite to render from it. Falls back to the catalog default for
     // the current Kind if the atlas is missing on disk.
     public bool ApplyLpcBundle(string bundleId)

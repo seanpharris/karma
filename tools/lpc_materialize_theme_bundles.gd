@@ -2,7 +2,7 @@ extends SceneTree
 
 # Batch-compose every theme bundle JSON under
 # assets/art/sprites/lpc/themes/ into Karma atlases under
-# assets/art/generated/lpc_npcs/.
+# assets/art/sprites/themes/medieval/generated/.
 #
 # Re-runnable. Skips bundles whose Karma atlas already exists unless
 # FORCE_REBUILD is true. Emits a summary at the end with how many bundles
@@ -16,10 +16,10 @@ extends SceneTree
 #   --force        force rebuild every bundle even if its atlas exists
 #   --filter <substr>  only process bundles whose id contains <substr>
 
-const THEMES_DIR := "res://assets/art/sprites/lpc/themes/"
-const OUT_DIR := "res://assets/art/generated/lpc_npcs/"
+const THEMES_DIR := "res://assets/art/sprites/themes/"
+const OUT_DIR := "res://assets/art/sprites/themes/medieval/generated/"
 
-const LPC_ROOT := "res://assets/art/sprites/lpc/spritesheets/"
+const LPC_ROOT := "res://assets/art/sprites/spritesheets/"
 const LPC_FRAME := 64
 const LPC_COLS := 9
 const LPC_ROWS := 4

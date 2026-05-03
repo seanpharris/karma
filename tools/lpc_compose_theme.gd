@@ -6,7 +6,7 @@ extends SceneTree
 # Reads the JSON bundle at:
 #   assets/art/sprites/lpc/themes/<bundle_id>.json
 #
-# Produces two outputs under assets/art/generated/lpc_npcs/:
+# Produces two outputs under assets/art/sprites/themes/medieval/generated/:
 #   <bundle_id>_lpc_walk.png             — native 576x256 LPC sheet (9 cols x 4 rows)
 #   <bundle_id>_32x64_8dir_4row.png      — Karma 256x256 atlas (8 cols x 4 rows)
 #
@@ -20,9 +20,9 @@ extends SceneTree
 # tools/lpc_materialize_theme_bundles.gd batches over every JSON in the
 # themes folder.
 
-const LPC_ROOT := "res://assets/art/sprites/lpc/spritesheets/"
-const THEMES_DIR := "res://assets/art/sprites/lpc/themes/"
-const OUT_DIR := "res://assets/art/generated/lpc_npcs/"
+const LPC_ROOT := "res://assets/art/sprites/spritesheets/"
+const THEMES_DIR := "res://assets/art/sprites/themes/"
+const OUT_DIR := "res://assets/art/sprites/themes/medieval/generated/"
 
 # Default bundle to compose when no --bundle CLI arg is provided.
 const BUNDLE_ID := "medieval_warrior_male"

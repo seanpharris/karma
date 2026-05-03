@@ -205,8 +205,8 @@ public static class StructureArtCatalog
     public const string BoardingSchoolPropsAtlasPath = "res://assets/themes/boarding_school/props_atlas.png";
     public const string BoardingSchoolTreesAtlasPath = "res://assets/themes/boarding_school/trees_atlas.png";
     public const string BoardingSchoolGrassAtlasPath = "res://assets/themes/boarding_school/grass_tiles_1_32.png";
-    public const string GeminiStaticPropsRoot = "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/";
-    public const string GeminiNaturalPropsRoot = "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/";
+    public const string GeminiStaticPropsRoot = "res://assets/art/generated/gemini_static_props_2026_04_27/polished/";
+    public const string GeminiNaturalPropsRoot = "res://assets/art/generated/gemini_natural_props_2026_04_27/polished/";
     public const string SlicedClinicRoot = "res://assets/art/generated/sliced/clinic_rescue_revive/";
     public const string SlicedSupplyShopRoot = "res://assets/art/generated/sliced/supply_shop_loot/";
     public const string SlicedWantedBountyRoot = "res://assets/art/generated/sliced/wanted_bounty_law/";

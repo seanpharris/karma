@@ -106,7 +106,7 @@ public static class PrototypeSpriteCatalog
     public const string UtilityItemAtlasPath = "res://assets/art/sprites/scifi_utility_item_atlas.png";
     public const string WeaponAtlasPath = "res://assets/art/sprites/scifi_weapon_atlas.png";
     public const string ToolAtlasPath = "res://assets/art/sprites/scifi_tool_atlas.png";
-    public const string GeminiStaticPropsRoot = "res://assets/art/sprites/generated/gemini_static_props_2026_04_27/polished/";
+    public const string GeminiStaticPropsRoot = "res://assets/art/generated/gemini_static_props_2026_04_27/polished/";
 
     public static PrototypeSpriteKind GetKindForItem(string itemId)
     {

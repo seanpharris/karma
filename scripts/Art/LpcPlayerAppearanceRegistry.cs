@@ -6,7 +6,7 @@ namespace Karma.Art;
 
 public static class LpcPlayerAppearanceRegistry
 {
-    public const string BundleDirectory = "res://assets/art/generated/lpc_npcs/";
+    public const string BundleDirectory = "res://assets/art/sprites/themes/medieval/generated/";
     public const string BundleSuffix = "_32x64_8dir_4row.png";
 
     public static IReadOnlyList<string> ListBundleIds()

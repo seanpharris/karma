@@ -2,7 +2,7 @@ extends SceneTree
 
 # Crop a 32×32 head/shoulders portrait from each LPC NPC bundle atlas.
 #
-# Source atlases under assets/art/generated/lpc_npcs/<bundle_id>_32x64_8dir_4row.png
+# Source atlases under assets/art/sprites/themes/medieval/generated/<bundle_id>_32x64_8dir_4row.png
 # are 256×256: 8 cols × 4 rows of 32×64 cells. Col 0 row 0 = south-
 # facing standing frame. The top 32 pixels of that cell is the head +
 # shoulders, which is the cleanest portrait crop.
@@ -12,7 +12,7 @@ extends SceneTree
 # Run via:
 #   godot --headless --path . --script res://tools/lpc_compose_npc_portraits.gd
 
-const SOURCE_DIR := "res://assets/art/generated/lpc_npcs/"
+const SOURCE_DIR := "res://assets/art/sprites/themes/medieval/generated/"
 const OUT_DIR := "res://assets/art/themes/medieval/npc_portraits/"
 const BUNDLE_SUFFIX := "_32x64_8dir_4row.png"
 const CELL_W := 32
