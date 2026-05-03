@@ -642,7 +642,7 @@ public partial class MainMenuController : Control
             "Built on Godot 4 .NET",
             "Art: PixelLab + Liberated Pixel Cup + Cainos top-down basics",
             "Music: Pixabay-licensed medieval tracks",
-            "Code: Sean Pharris",
+            "Code: Sean Pharris, Jasmen Coelho",
             "",
             "Press Esc to return."
         })
