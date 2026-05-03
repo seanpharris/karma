@@ -54,9 +54,10 @@ public partial class MainMenuController : Control
     // 50% of the splash so strikes only happen on the Renegade side.
     private static readonly Rect2 LightningRect = new(0.50f, 0.0f, 0.50f, 1.0f);
 
-    // Left-half cover for the shooting star. Anchored to the left 50%
-    // so the streak only crosses the Paragon side.
-    private static readonly Rect2 ShootingStarRect = new(0.0f, 0.0f, 0.50f, 1.0f);
+    // Upper-left cover for the constellation. Constrained to the top
+    // ~35% of the left half so stars stay in the sky area and don't
+    // sprinkle over mountains/waterfall/wolf.
+    private static readonly Rect2 ConstellationRect = new(0.0f, 0.0f, 0.50f, 0.35f);
 
     private static readonly Vector2I[] CommonResolutions =
     {
@@ -76,8 +77,7 @@ public partial class MainMenuController : Control
     private GpuParticles2D _redEmbers;
     private LightningBolt _lightningBolt;
     private Timer _lightningTimer;
-    private ShootingStar _shootingStar;
-    private Timer _shootingStarTimer;
+    private Constellation _constellation;
     private readonly Dictionary<string, Button> _buttons = new();
     private Control _overlayLayer;
     private PanelContainer _optionsOverlay;
@@ -205,13 +205,9 @@ public partial class MainMenuController : Control
         AddChild(_lightningTimer);
         _lightningTimer.Start();
 
-        _shootingStar = new ShootingStar { Name = "ShootingStar" };
-        AnchorRect(_shootingStar, ShootingStarRect);
-        _imageFrame.AddChild(_shootingStar);
-        _shootingStarTimer = new Timer { OneShot = true, WaitTime = NextShootingStarInterval() };
-        _shootingStarTimer.Timeout += OnShootingStar;
-        AddChild(_shootingStarTimer);
-        _shootingStarTimer.Start();
+        _constellation = new Constellation { Name = "Constellation" };
+        AnchorRect(_constellation, ConstellationRect);
+        _imageFrame.AddChild(_constellation);
 
         // Particles drift up across the painted halves. Children of
         // _imageFrame so the emission box tracks the visible image
@@ -305,22 +301,6 @@ public partial class MainMenuController : Control
     private static double NextLightningInterval()
     {
         return 8.0 + GD.RandRange(0.0, 5.0);
-    }
-
-    private void OnShootingStar()
-    {
-        if (_shootingStar is null) return;
-        _shootingStar.Shoot();
-        if (_shootingStarTimer is null || !IsInstanceValid(_shootingStarTimer)) return;
-        _shootingStarTimer.WaitTime = NextShootingStarInterval();
-        _shootingStarTimer.Start();
-    }
-
-    // Slightly different cadence than lightning so the two sides don't
-    // sync up into a paired pulse.
-    private static double NextShootingStarInterval()
-    {
-        return 9.0 + GD.RandRange(0.0, 6.0);
     }
 
     private void BuildButtons()
