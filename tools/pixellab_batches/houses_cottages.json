@@ -1,0 +1,16 @@
+{
+  "force": true,
+  "category": "buildings",
+  "items": [
+    { "id": "cottage_thatch_small", "prompt": "small medieval peasant cottage, daub-and-wattle walls, thatched roof, single door, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "cottage_thatch_round", "prompt": "round medieval peasant cottage, low stone walls, conical thatched roof, single door, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "cottage_stone_small", "prompt": "small medieval stone cottage, slate roof, weathered wooden door, narrow window, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "cottage_timber_a", "prompt": "small medieval half-timbered cottage, dark wood beams white plaster, thatched roof, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "cottage_timber_b", "prompt": "small medieval half-timbered cottage, painted blue door, smoke from chimney, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "cottage_log", "prompt": "small medieval log cabin cottage, sod roof, single small window, smoke from chimney, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "cottage_two_story", "prompt": "small medieval two-story peasant home, half-timbered, overhanging upper floor, thatched roof, isometric pixel art", "width": 96, "height": 128 },
+    { "id": "cottage_garden", "prompt": "medieval cottage with attached vegetable garden, wattle fence, thatched roof, isometric pixel art", "width": 128, "height": 96 },
+    { "id": "cottage_well", "prompt": "medieval cottage with adjacent stone well, thatched roof, isometric pixel art", "width": 128, "height": 96 },
+    { "id": "cottage_porch", "prompt": "medieval cottage with covered front porch, two wooden chairs, thatched roof, isometric pixel art", "width": 96, "height": 96 }
+  ]
+}

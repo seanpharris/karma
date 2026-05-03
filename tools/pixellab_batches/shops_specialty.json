@@ -1,0 +1,20 @@
+{
+  "force": true,
+  "category": "buildings",
+  "items": [
+    { "id": "bakery", "prompt": "medieval bakery shop, half-timbered, smoke from chimney, painted sign with bread loaf, fresh bread on window display, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "apothecary", "prompt": "medieval apothecary shop, half-timbered, hanging mortar-and-pestle sign, jars in window, dried herbs, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "tannery", "prompt": "medieval tannery, single story, leather hides drying outside, smoke from chimney, vat visible, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "fletcher", "prompt": "medieval fletcher's bowyer shop, painted bow-and-arrow sign, half-timbered, bows displayed in window, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "armorer", "prompt": "medieval armorer shop, stone walls, anvil out front, helmet on display sign, smoke from forge, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "cooper", "prompt": "medieval cooper barrel-maker shop, barrels stacked outside, half-timbered, painted barrel sign, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "butcher", "prompt": "medieval butcher shop, hanging meat in window, painted cleaver sign, half-timbered, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "fishmonger", "prompt": "medieval fishmonger stall, ice display of fish, blue and white striped awning, fishermen baskets, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "carpenter", "prompt": "medieval carpenter workshop, sawhorse out front, lumber stacked, painted hammer-and-saw sign, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "mason", "prompt": "medieval stonemason workshop, stone blocks in yard, chisels at workbench, painted hammer-and-chisel sign, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "cobbler", "prompt": "medieval cobbler shoemaker shop, painted shoe sign, leather samples in window, half-timbered, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "weaver", "prompt": "medieval weaver shop, loom visible through window, woven cloths hanging, painted shuttle sign, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "scribe", "prompt": "medieval scribe's shop, scrolls in window, painted quill-and-inkwell sign, narrow building, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "alchemist", "prompt": "medieval alchemist shop, bubbling glass apparatus in window, painted star-and-moon sign, mysterious half-timbered building, isometric pixel art", "width": 96, "height": 96 }
+  ]
+}

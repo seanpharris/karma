@@ -1,0 +1,22 @@
+{
+  "force": true,
+  "category": "buildings",
+  "items": [
+    { "id": "windmill", "prompt": "medieval stone windmill, four wooden sails, slate roof cap, isometric pixel art", "width": 96, "height": 144 },
+    { "id": "watermill", "prompt": "medieval watermill, half-timbered building beside river, large turning waterwheel, isometric pixel art", "width": 144, "height": 128 },
+    { "id": "lighthouse", "prompt": "medieval coastal stone lighthouse, lit beacon at top, narrow circular base, isometric pixel art", "width": 80, "height": 144 },
+    { "id": "hermit_hut", "prompt": "medieval hermit's small wooden hut in clearing, thatched roof, herb bundles hanging by door, isometric pixel art", "width": 80, "height": 96 },
+    { "id": "witch_hut", "prompt": "medieval witch's twisted hut on chicken legs, dark wood, smoke from crooked chimney, ominous, isometric pixel art", "width": 80, "height": 128 },
+    { "id": "wooden_dock", "prompt": "medieval wooden fishing dock with pier extending over water, small fishing boat tied up, isometric pixel art", "width": 128, "height": 96 },
+    { "id": "stone_bridge", "prompt": "medieval stone arch bridge spanning a river, two arches, mossy, isometric pixel art", "width": 144, "height": 80 },
+    { "id": "wooden_bridge", "prompt": "medieval wooden plank bridge with rope handrails, spanning river, isometric pixel art", "width": 144, "height": 64 },
+    { "id": "stable", "prompt": "medieval stable, long wooden building, hay piles outside, horse heads visible in stall openings, isometric pixel art", "width": 128, "height": 96 },
+    { "id": "granary", "prompt": "medieval round stone granary, sloped wooden roof, narrow door, sacks of grain outside, isometric pixel art", "width": 80, "height": 96 },
+    { "id": "stockyard", "prompt": "medieval stockyard pen, wooden fence enclosure with sheep visible, troughs, gate, isometric pixel art", "width": 128, "height": 96 },
+    { "id": "lumber_yard", "prompt": "medieval lumber yard, stacked logs, sawhorse, lumber piles, sheltered work area, isometric pixel art", "width": 128, "height": 96 },
+    { "id": "cemetery", "prompt": "medieval cemetery, multiple gravestones, low stone wall around, barren tree, isometric pixel art", "width": 128, "height": 128 },
+    { "id": "mausoleum", "prompt": "medieval stone family mausoleum, ornate carved entrance, iron gate, on small hill, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "bandit_camp", "prompt": "medieval bandit camp, ragged tents around campfire, weapons stacked, ominous, isometric pixel art", "width": 128, "height": 96 },
+    { "id": "vineyard_row", "prompt": "medieval vineyard row, wooden trellises with grape vines, ripe purple grapes, isometric pixel art", "width": 128, "height": 64 }
+  ]
+}

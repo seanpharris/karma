@@ -92,11 +92,16 @@ public partial class WorldRoot : Node2D
 
         _tileMapRenderer.SetChunks(snapshot.MapChunks, ThemeArtRegistry.GetForTheme(GeneratedWorld.Theme));
         RenderFogOfWar(snapshot);
+        // Always render server-driven structures so the medieval
+        // building art (layered in RenderServerStructures via
+        // ThemedArtRegistry) shows up on the prototype map. The
+        // remaining actor renderers stay gated until the broader
+        // server-driven actor pipeline ships.
+        RenderServerStructures(snapshot);
         if (RenderGeneratedPrototypeActors)
         {
             RenderServerNpcs(snapshot);
             RenderRemotePlayers(snapshot);
-            RenderServerStructures(snapshot);
             RenderServerItems(snapshot);
             RenderLocalChatBubbles(snapshot);
         }
@@ -323,8 +328,11 @@ public partial class WorldRoot : Node2D
         if (sprite is null || player is null)
             return false;
 
-        if (!string.IsNullOrWhiteSpace(player.LpcBundleId) && sprite.ApplyLpcBundle(player.LpcBundleId))
+        if (!string.IsNullOrWhiteSpace(player.LpcBundleId) &&
+            sprite.ApplyLpcBundle(player.LpcBundleId, player.EquipmentItemIds))
+        {
             return true;
+        }
 
         sprite.ApplyPlayerAppearanceSelection(player.Appearance);
         return false;
@@ -523,10 +531,40 @@ public partial class WorldRoot : Node2D
                 Position = new Vector2(structure.TileX * 32f, structure.TileY * 32f)
             };
             node.ZIndex = TopDownDepth.CalculateZIndex(node.Position.Y, TopDownDepth.StructureOffsetZ);
+
+            // Layer a medieval building sprite from the themed art set
+            // when one matches this structure's category. Renders
+            // *under* the existing StructureSprite so the prototype
+            // interaction visuals still surface, but takes the visual
+            // foreground via z-index.
+            var themeId = GeneratedWorld?.Theme ?? "medieval";
+            var medievalTexture = ThemedArtRegistry.GetBuildingTexture(
+                structure.Category, structure.Name, themeId, structure.EntityId);
+            if (medievalTexture is null)
+            {
+                medievalTexture = ThemedArtRegistry.GetVariant(
+                    "structures", structure.StructureId, themeId, structure.EntityId);
+            }
+            if (medievalTexture is not null)
+            {
+                var medievalSprite = new Sprite2D
+                {
+                    Texture = medievalTexture,
+                    Centered = false,
+                    TextureFilter = CanvasItem.TextureFilterEnum.Nearest
+                };
+                // Anchor to bottom-center of the structure footprint so
+                // the building visually "sits" on its tile.
+                var halfWidth = medievalTexture.GetSize().X * 0.5f;
+                medievalSprite.Position = new Vector2(16f - halfWidth, 32f - medievalTexture.GetSize().Y);
+                node.AddChild(medievalSprite);
+            }
+
             var sprite = new StructureSprite
             {
                 StructureId = structure.StructureId
             };
+            sprite.Modulate = medievalTexture is not null ? new Color(1, 1, 1, 0) : new Color(1, 1, 1, 1);
             node.AddChild(sprite);
             node.AddChild(new CollisionShape2D
             {

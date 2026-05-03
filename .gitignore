@@ -37,3 +37,6 @@ output_sheets/*
 
 # Raw LPC source art is too large to vendor directly; commit generated runtime bundles instead.
 assets/art/sprites/lpc/spritesheets/
+
+# Local-only PixelLab API secret (read by tools/pixellab_generate_batch.js).
+.pixellab_secret

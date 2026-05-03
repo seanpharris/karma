@@ -1,23 +1,27 @@
 {
+  "force": true,
   "category": "hud_chrome",
   "items": [
     {
       "id": "panel_parchment_bg",
       "prompt": "medieval parchment paper texture, aged tan with darker edges, no writing, top-down view, pixel art",
       "width": 128,
-      "height": 96
+      "height": 96,
+      "background": true
     },
     {
       "id": "panel_wood_bg",
       "prompt": "medieval dark wood plank panel texture, horizontal grain, iron rivets at corners, top-down view, pixel art",
       "width": 128,
-      "height": 96
+      "height": 96,
+      "background": true
     },
     {
       "id": "panel_stone_bg",
       "prompt": "medieval grey stone block wall texture, mortared seams, top-down view, pixel art",
       "width": 128,
-      "height": 96
+      "height": 96,
+      "background": true
     },
     {
       "id": "button_wood",
@@ -47,19 +51,19 @@
       "id": "divider_horizontal",
       "prompt": "medieval ornate horizontal divider line, gold filigree pattern with center diamond, transparent ends, pixel art",
       "width": 128,
-      "height": 16
+      "height": 32
     },
     {
       "id": "scroll_top",
       "prompt": "medieval parchment scroll top edge, rolled with red wax seal, transparent background, pixel art",
       "width": 96,
-      "height": 24
+      "height": 32
     },
     {
       "id": "scroll_bottom",
       "prompt": "medieval parchment scroll bottom edge, rolled with red ribbon, transparent background, pixel art",
       "width": 96,
-      "height": 24
+      "height": 32
     }
   ]
 }

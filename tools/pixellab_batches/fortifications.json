@@ -1,0 +1,16 @@
+{
+  "force": true,
+  "category": "buildings",
+  "items": [
+    { "id": "town_gate_a", "prompt": "medieval fortified town gate, stone arch, raised portcullis, twin towers flanking, isometric pixel art", "width": 144, "height": 128 },
+    { "id": "town_gate_b", "prompt": "medieval rural town gate, wooden double doors, low stone wall around, banner flying, isometric pixel art", "width": 128, "height": 96 },
+    { "id": "gatehouse", "prompt": "medieval gatehouse with passage through middle, two-story, archers' slits, banner on top, isometric pixel art", "width": 128, "height": 128 },
+    { "id": "wall_section_stone", "prompt": "medieval stone fortification wall section with crenelations, banner pole, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "wall_section_wood", "prompt": "medieval wooden palisade wall section, sharpened log tops, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "guard_tower_corner", "prompt": "medieval stone guard tower, corner of fortification, conical roof, banner flying, archer slits, isometric pixel art", "width": 96, "height": 128 },
+    { "id": "drawbridge_up", "prompt": "medieval stone drawbridge raised in vertical position, chains visible, gate visible behind, isometric pixel art", "width": 96, "height": 128 },
+    { "id": "drawbridge_down", "prompt": "medieval stone drawbridge in lowered horizontal position, wooden planks crossing moat, isometric pixel art", "width": 144, "height": 96 },
+    { "id": "barracks", "prompt": "medieval stone barracks building, slate roof, multiple shuttered windows, weapons racks visible by door, isometric pixel art", "width": 128, "height": 128 },
+    { "id": "castle_keep", "prompt": "medieval castle keep, tall stone tower, multiple banners flying, narrow windows, crenelated top, isometric pixel art", "width": 128, "height": 144 }
+  ]
+}

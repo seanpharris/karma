@@ -28,15 +28,20 @@ function readSecret() {
   if (process.env.PIXELLAB_SECRET) return process.env.PIXELLAB_SECRET.trim();
   const file = path.join(PROJECT_ROOT, ".pixellab_secret");
   if (fs.existsSync(file)) return fs.readFileSync(file, "utf8").trim();
-  // Fallback: hard-coded from auto-memory reference.
-  return "7e61a400-5a8f-442e-8ee2-3336470deb55";
+  return "";
 }
 
-function generate(secret, description, width, height) {
+function generate(secret, description, width, height, noBackground = true) {
   return new Promise((resolve, reject) => {
     const payload = JSON.stringify({
       description,
       image_size: { width, height },
+      // PixelLab paints solid backgrounds by default. The `no_background`
+      // API flag (verified 2026-05-02) is the only thing that actually
+      // produces transparent edges — prompt-only "transparent background"
+      // wording is ignored. Default true; per-item override via
+      // batch entry's `background: true`.
+      no_background: noBackground,
     });
     const req = https.request(
       {
@@ -120,6 +125,7 @@ async function main() {
         item.prompt,
         item.width || 64,
         item.height || 64,
+        item.background === true ? false : true,
       );
       fs.writeFileSync(outPath, Buffer.from(base64, "base64"));
       console.log(`ok   ${item.id} (${usage?.usd ?? "0"} usd)`);

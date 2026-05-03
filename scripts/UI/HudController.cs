@@ -50,6 +50,7 @@ public partial class HudController : CanvasLayer
     private ColorRect _contrabandFlash = new();
     private long _lastContrabandFlashTick = -1;
     private long _lastVoiceBarkTick = -1;
+    private string _lastEventStingerKey = string.Empty;
     private AudioStreamPlayer _eventStingerPlayer;
     private Label _inventoryLabel = new();
     private Label _leaderboardLabel = new();
@@ -548,6 +549,27 @@ public partial class HudController : CanvasLayer
         _dialoguePromptLabel.Text = $"{snapshot.NpcName}\n\n{snapshot.Prompt}";
         foreach (var child in _dialogueChoicesContainer.GetChildren())
             child.QueueFree();
+
+        // Surface a 64×64 portrait at the top of the choice container
+        // when the NPC has an `LpcBundleId` that maps to a generated
+        // portrait under assets/art/themes/medieval/npc_portraits/.
+        var bundleId = _lastSnapshot?.Npcs.FirstOrDefault(n => n.Id == npcId)?.LpcBundleId;
+        if (!string.IsNullOrWhiteSpace(bundleId))
+        {
+            var portrait = ThemedArtRegistry.GetExact("npc_portraits", bundleId);
+            if (portrait is not null)
+            {
+                var portraitRect = new TextureRect
+                {
+                    Texture = portrait,
+                    CustomMinimumSize = new Vector2(64, 64),
+                    StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+                    TextureFilter = CanvasItem.TextureFilterEnum.Nearest,
+                    SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter
+                };
+                _dialogueChoicesContainer.AddChild(portraitRect);
+            }
+        }
         for (var i = 0; i < snapshot.Choices.Count; i++)
         {
             var choice = snapshot.Choices[i];
@@ -667,6 +689,25 @@ public partial class HudController : CanvasLayer
 
         foreach (var entry in FormatStatusStrip(statusEffects, UiPaletteRegistry.Get(ResolveActiveThemeId())))
         {
+            // Try the medieval status_icons PNG first; fall back to
+            // the placeholder colored glyph if no art exists for the
+            // status id.
+            var iconKey = "status_" + entry.Status.ToLowerInvariant();
+            var iconTex = ThemedArtRegistry.GetExact("status_icons", iconKey);
+            if (iconTex is not null)
+            {
+                var rect = new TextureRect
+                {
+                    Texture = iconTex,
+                    TooltipText = entry.Status,
+                    CustomMinimumSize = new Vector2(24, 24),
+                    StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+                    TextureFilter = CanvasItem.TextureFilterEnum.Nearest
+                };
+                _statusStrip.AddChild(rect);
+                continue;
+            }
+
             var label = new Label
             {
                 Text = entry.Glyph,
@@ -2374,6 +2415,7 @@ public partial class HudController : CanvasLayer
             UpdateEventIcon(snapshot.ServerEvents);
             MaybeTriggerKarmaBreakFlash(snapshot.ServerEvents, snapshot.PlayerId);
             MaybeTriggerContrabandFlash(snapshot.ServerEvents, snapshot.PlayerId);
+            MaybeTriggerEventStinger(snapshot.ServerEvents);
             MaybeTriggerVoiceBarks(snapshot.ServerEvents, snapshot.PlayerId);
             _chatLabel.Text = FormatLocalChatSummary(snapshot.LocalChatMessages);
             if (_appearancePanel.Visible)
@@ -3158,6 +3200,39 @@ public partial class HudController : CanvasLayer
         if (stream is null) return;
         _eventStingerPlayer.Stream = stream;
         _eventStingerPlayer.Play();
+    }
+
+    private void MaybeTriggerEventStinger(IReadOnlyList<ServerEvent> serverEvents)
+    {
+        if (_eventStingerPlayer is null || serverEvents is null || serverEvents.Count == 0)
+            return;
+
+        var latest = serverEvents[^1];
+        var key = $"{latest.Tick}:{latest.EventId}";
+        if (_lastEventStingerKey == key)
+            return;
+
+        if (latest.EventId.Contains("karma_break") || latest.EventId.Contains("contraband_detected"))
+            return;
+
+        var cueId = ReadEventData(latest, "audioCue", string.Empty);
+        if (string.IsNullOrWhiteSpace(cueId) &&
+            latest.EventId.Contains("item_equipped") &&
+            latest.Data is not null &&
+            latest.Data.TryGetValue("itemId", out var itemId))
+        {
+            cueId = Karma.Audio.AudioEventCatalog.EquipmentCueIdForItemId(itemId);
+        }
+
+        if (string.IsNullOrWhiteSpace(cueId))
+            cueId = latest.EventId;
+
+        var path = Karma.Audio.AudioEventCatalog.Resolve(cueId);
+        if (string.IsNullOrWhiteSpace(path) || !FileAccess.FileExists(path))
+            return;
+
+        _lastEventStingerKey = key;
+        PlayEventStinger(cueId);
     }
 
     private void MaybeTriggerVoiceBarks(IReadOnlyList<ServerEvent> serverEvents, string localPlayerId)

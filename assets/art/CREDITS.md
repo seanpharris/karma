@@ -109,8 +109,15 @@ by PixelLab generations (see below). The Cainos-derived plant icons
 
 Generated via `tools/pixellab_generate_batch.js` against
 `https://api.pixellab.ai/v1/generate-image-pixflux` using account
-`pharris.sean@gmail.com` (Tier 2: Pixel Artisan). Total burn: ~58
-generations against a 5,000/month subscription pool.
+`pharris.sean@gmail.com` (Tier 2: Pixel Artisan). Burning the
+5,000/month subscription pool, no overage credits used.
+
+**Transparency:** the API flag `no_background: true` is required to
+get transparent edges (verified 2026-05-02 — prompt-only "transparent
+background" wording is *ignored*). The batch script defaults it to
+true; per-item override `"background": true` keeps a solid background
+(used for HUD parchment/wood/stone tiled textures). Initial generations
+without the flag were regenerated 2026-05-02 PM.
 
 **License:** PixelLab outputs ship under the PixelLab Output License
 (<https://www.pixellab.ai/terms>) — usable commercially in games,

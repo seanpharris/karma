@@ -78,6 +78,22 @@ public partial class MainMenuController : Control
         _menuThemePlayer = GetNode<AudioStreamPlayer>("MenuThemePlayer");
         _statusLabel = GetNode<Label>("Root/MenuPanel/MenuMargin/MenuButtons/StatusLabel");
 
+        // Add runtime "View Assets" + "Building Showcase" buttons
+        // injected just above the status label.
+        var menuButtonsParent = _statusLabel.GetParent() as Container;
+        if (menuButtonsParent is not null)
+        {
+            var showcaseButton = new Button { Text = "Building Showcase" };
+            showcaseButton.Pressed += ShowBuildingShowcase;
+            menuButtonsParent.AddChild(showcaseButton);
+            menuButtonsParent.MoveChild(showcaseButton, _statusLabel.GetIndex());
+
+            var galleryButton = new Button { Text = "View Assets" };
+            galleryButton.Pressed += ShowAssetGallery;
+            menuButtonsParent.AddChild(galleryButton);
+            menuButtonsParent.MoveChild(galleryButton, _statusLabel.GetIndex());
+        }
+
         _startButton.Pressed += StartGame;
         _eventPrototypeButton.Pressed += StartEventPrototypes;
         _optionsButton.Pressed += ShowOptions;
@@ -143,6 +159,25 @@ public partial class MainMenuController : Control
     {
         _optionsPanel.Visible = false;
         _creditsPanel.Visible = false;
+    }
+
+    public void ShowAssetGallery()
+    {
+        _statusLabel.Text = "Asset gallery: scanning assets/art/themes/medieval/...";
+        AssetGalleryOverlay.Mount(this);
+    }
+
+    public void ShowBuildingShowcase()
+    {
+        _statusLabel.Text = "Loading Building Showcase scene...";
+        var tree = GetTree();
+        var showcaseRoot = new BuildingShowcaseScene { Name = "BuildingShowcase" };
+        // Add the showcase as a sibling of the main-menu scene under
+        // the SceneTree root, then free the current scene. The
+        // showcase's _Ready / _Process / _Input fire on the next frame.
+        tree.Root.AddChild(showcaseRoot);
+        tree.CurrentScene?.QueueFree();
+        tree.CurrentScene = showcaseRoot;
     }
 
     public override void _Process(double delta)
