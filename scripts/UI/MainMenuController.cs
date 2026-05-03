@@ -54,6 +54,10 @@ public partial class MainMenuController : Control
     // 50% of the splash so strikes only happen on the Renegade side.
     private static readonly Rect2 LightningRect = new(0.50f, 0.0f, 0.50f, 1.0f);
 
+    // Left-half cover for the god ray. Anchored to the left 50% so the
+    // beam only descends through the Paragon side.
+    private static readonly Rect2 GodRayRect = new(0.0f, 0.0f, 0.50f, 1.0f);
+
     private static readonly Vector2I[] CommonResolutions =
     {
         new(1280, 720),
@@ -72,6 +76,8 @@ public partial class MainMenuController : Control
     private GpuParticles2D _redEmbers;
     private LightningBolt _lightningBolt;
     private Timer _lightningTimer;
+    private GodRay _godRay;
+    private Timer _godRayTimer;
     private readonly Dictionary<string, Button> _buttons = new();
     private Control _overlayLayer;
     private PanelContainer _optionsOverlay;
@@ -199,6 +205,14 @@ public partial class MainMenuController : Control
         AddChild(_lightningTimer);
         _lightningTimer.Start();
 
+        _godRay = new GodRay { Name = "GodRay" };
+        AnchorRect(_godRay, GodRayRect);
+        _imageFrame.AddChild(_godRay);
+        _godRayTimer = new Timer { OneShot = true, WaitTime = NextGodRayInterval() };
+        _godRayTimer.Timeout += OnGodRay;
+        AddChild(_godRayTimer);
+        _godRayTimer.Start();
+
         // Particles drift up across the painted halves. Children of
         // _imageFrame so the emission box tracks the visible image
         // rect (not the full window) — keeps motes on-image even when
@@ -291,6 +305,22 @@ public partial class MainMenuController : Control
     private static double NextLightningInterval()
     {
         return 8.0 + GD.RandRange(0.0, 5.0);
+    }
+
+    private void OnGodRay()
+    {
+        if (_godRay is null) return;
+        _godRay.Shine();
+        if (_godRayTimer is null || !IsInstanceValid(_godRayTimer)) return;
+        _godRayTimer.WaitTime = NextGodRayInterval();
+        _godRayTimer.Start();
+    }
+
+    // Slightly different cadence than lightning so the two sides don't
+    // sync up into a paired pulse.
+    private static double NextGodRayInterval()
+    {
+        return 9.0 + GD.RandRange(0.0, 6.0);
     }
 
     private void BuildButtons()
