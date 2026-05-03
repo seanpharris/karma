@@ -30,11 +30,11 @@ public partial class MainMenuController : Control
     // re-renders or moves the buttons.
     private static readonly (string Id, string Label, Rect2 Bounds)[] ButtonLayout =
     {
-        ("play",       "PLAY",       new Rect2(0.40f, 0.508f, 0.20f, 0.046f)),
-        ("multiverse", "MULTIVERSE", new Rect2(0.40f, 0.566f, 0.20f, 0.046f)),
-        ("options",    "OPTIONS",    new Rect2(0.40f, 0.624f, 0.20f, 0.046f)),
-        ("credits",    "CREDITS",    new Rect2(0.40f, 0.682f, 0.20f, 0.046f)),
-        ("quit",       "QUIT",       new Rect2(0.40f, 0.740f, 0.20f, 0.046f))
+        ("play",       "PLAY",       new Rect2(0.39f, 0.495f, 0.22f, 0.072f)),
+        ("multiverse", "MULTIVERSE", new Rect2(0.39f, 0.572f, 0.22f, 0.072f)),
+        ("options",    "OPTIONS",    new Rect2(0.39f, 0.650f, 0.22f, 0.072f)),
+        ("credits",    "CREDITS",    new Rect2(0.39f, 0.728f, 0.22f, 0.072f)),
+        ("quit",       "QUIT",       new Rect2(0.39f, 0.806f, 0.22f, 0.072f))
     };
 
     // Title shimmer rect (over the painted "KARMA" letters).
@@ -301,29 +301,68 @@ public partial class MainMenuController : Control
     private void BuildButtons()
     {
         if (_stageFrame is null) return;
+        var transparent = new StyleBoxEmpty();
+        var pillTexture = MakePillGlow(256, 80, softness: 1.4f);
         foreach (var (id, label, bounds) in ButtonLayout)
         {
+            // Container holds the glow + the actual button so they
+            // share the same anchored rect. Glow is a sibling beneath
+            // the button (lower draw order). Container's PivotOffset
+            // sits at its center so scale tweens look balanced.
+            var container = new Control
+            {
+                Name = $"ButtonShell_{id}",
+                MouseFilter = MouseFilterEnum.Pass
+            };
+            AnchorRect(container, bounds);
+            _stageFrame.AddChild(container);
+            container.PivotOffset = container.Size * 0.5f;
+            container.Resized += () => container.PivotOffset = container.Size * 0.5f;
+
+            // Soft pill-shaped glow that fades in on hover. Tinted per
+            // button — gold for PLAY (Paragon), red for QUIT
+            // (Renegade), parchment for the others.
+            var glow = new TextureRect
+            {
+                Name = "Glow",
+                Texture = pillTexture,
+                StretchMode = TextureRect.StretchModeEnum.Scale,
+                ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+                Modulate = new Color(GlowTint(id), 0f),
+                MouseFilter = MouseFilterEnum.Ignore
+            };
+            // Glow extends slightly past the button rect for a halo
+            // bloom — anchors at -8% on each side so it spills around
+            // the painted edges.
+            glow.AnchorLeft = -0.10f;
+            glow.AnchorTop = -0.20f;
+            glow.AnchorRight = 1.10f;
+            glow.AnchorBottom = 1.20f;
+            container.AddChild(glow);
+
             var button = new Button
             {
                 Name = $"Button_{id}",
                 Text = string.Empty,
                 FocusMode = FocusModeEnum.None,
                 MouseFilter = MouseFilterEnum.Stop,
-                TooltipText = label
+                TooltipText = label,
+                AnchorRight = 1f, AnchorBottom = 1f
             };
-
-            // Strip the default StyleBox so the painted button shows
-            // through. On hover, swap to a faint translucent gold so
-            // there's clear feedback.
-            var transparent = new StyleBoxEmpty();
             button.AddThemeStyleboxOverride("normal", transparent);
             button.AddThemeStyleboxOverride("focus", transparent);
             button.AddThemeStyleboxOverride("disabled", transparent);
-            button.AddThemeStyleboxOverride("hover", MakeHoverStyle(id));
-            button.AddThemeStyleboxOverride("pressed", MakeHoverStyle(id, intensity: 0.55f));
+            button.AddThemeStyleboxOverride("hover", transparent);
+            button.AddThemeStyleboxOverride("pressed", transparent);
+            container.AddChild(button);
 
-            AnchorRect(button, bounds);
-            _stageFrame.AddChild(button);
+            // Hover animation: glow fades in, container scales up
+            // slightly + lifts a few px, on exit reverses.
+            button.MouseEntered += () => AnimateButtonHover(container, glow, hovered: true);
+            button.MouseExited += () => AnimateButtonHover(container, glow, hovered: false);
+            button.ButtonDown += () => AnimateButtonPress(container, pressed: true);
+            button.ButtonUp += () => AnimateButtonPress(container, pressed: false);
+
             _buttons[id] = button;
         }
 
@@ -334,28 +373,51 @@ public partial class MainMenuController : Control
         _buttons["quit"].Pressed += QuitGame;
     }
 
-    private static StyleBoxFlat MakeHoverStyle(string buttonId, float intensity = 0.32f)
+    private static Color GlowTint(string buttonId) => buttonId switch
     {
-        // PLAY uses gold (Paragon side), QUIT uses red (Renegade side),
-        // others a neutral parchment glow.
-        var color = buttonId switch
-        {
-            "play" => new Color(1f, 0.92f, 0.55f, intensity),
-            "quit" => new Color(0.95f, 0.35f, 0.25f, intensity),
-            _ => new Color(0.92f, 0.85f, 0.65f, intensity * 0.85f)
-        };
-        return new StyleBoxFlat
-        {
-            BgColor = color,
-            CornerRadiusTopLeft = 6,
-            CornerRadiusTopRight = 6,
-            CornerRadiusBottomLeft = 6,
-            CornerRadiusBottomRight = 6,
-            ContentMarginLeft = 0,
-            ContentMarginRight = 0,
-            ContentMarginTop = 0,
-            ContentMarginBottom = 0
-        };
+        "play" => new Color(1.00f, 0.88f, 0.45f),   // gold (Paragon)
+        "quit" => new Color(0.95f, 0.30f, 0.20f),   // red (Renegade)
+        _ => new Color(0.96f, 0.88f, 0.65f)         // parchment (neutral)
+    };
+
+    private static void AnimateButtonHover(Control shell, CanvasItem glow, bool hovered)
+    {
+        var tween = shell.CreateTween().SetParallel(true).SetEase(Tween.EaseType.Out);
+        tween.TweenProperty(shell, "scale", hovered ? new Vector2(1.045f, 1.045f) : Vector2.One, 0.18);
+        tween.TweenProperty(shell, "position:y", hovered ? -3f : 0f, 0.18);
+        tween.TweenProperty(glow, "modulate:a", hovered ? 0.65f : 0f, 0.22);
+    }
+
+    private static void AnimateButtonPress(Control shell, bool pressed)
+    {
+        var tween = shell.CreateTween().SetEase(Tween.EaseType.Out);
+        tween.TweenProperty(shell, "scale", pressed ? new Vector2(0.98f, 0.98f) : new Vector2(1.045f, 1.045f), 0.08);
+    }
+
+    // Soft elliptical-pill glow texture. Computes one image at startup
+    // and shares it across every button — colorisation is per-button
+    // via Modulate.
+    private static Texture2D MakePillGlow(int width, int height, float softness)
+    {
+        var image = Image.CreateEmpty(width, height, false, Image.Format.Rgba8);
+        var cx = (width - 1) * 0.5f;
+        var cy = (height - 1) * 0.5f;
+        // Treat the rectangle as an ellipse for radial falloff so the
+        // glow has soft rounded ends (pill shape).
+        var rx = width * 0.5f;
+        var ry = height * 0.5f;
+        for (var y = 0; y < height; y++)
+            for (var x = 0; x < width; x++)
+            {
+                var dx = (x - cx) / rx;
+                var dy = (y - cy) / ry;
+                var d = MathF.Sqrt(dx * dx + dy * dy);
+                var alpha = MathF.Max(0f, 1f - d * softness);
+                // Smoothstep the edge so it feathers nicely.
+                alpha = alpha * alpha * (3f - 2f * alpha);
+                image.SetPixel(x, y, new Color(1, 1, 1, alpha));
+            }
+        return ImageTexture.CreateFromImage(image);
     }
 
     private static void AnchorRect(Control node, Rect2 normalized)
