@@ -33,10 +33,14 @@ public partial class MainMenuController : Control
     // the 5-button version: ~10% center-to-center, 8% tall.
     private static readonly (string Id, string Label, Rect2 Bounds)[] ButtonLayout =
     {
-        ("play",    "PLAY",    new Rect2(0.39f, 0.500f, 0.22f, 0.082f)),
-        ("options", "OPTIONS", new Rect2(0.39f, 0.605f, 0.22f, 0.082f)),
+        // PLAY pushed down, OPTIONS pulled up, so the gap between
+        // PLAY → OPTIONS equals the gap between CREDITS → QUIT
+        // (≈ 9.5% top-to-top). Top tier (PLAY/OPTIONS) and bottom tier
+        // (CREDITS/QUIT) read as paired stacks.
+        ("play",    "PLAY",    new Rect2(0.39f, 0.505f, 0.22f, 0.082f)),
+        ("options", "OPTIONS", new Rect2(0.39f, 0.600f, 0.22f, 0.082f)),
         ("credits", "CREDITS", new Rect2(0.39f, 0.708f, 0.22f, 0.082f)),
-        ("quit",    "QUIT",    new Rect2(0.39f, 0.804f, 0.22f, 0.082f))
+        ("quit",    "QUIT",    new Rect2(0.39f, 0.803f, 0.22f, 0.082f))
     };
 
     // Title shimmer rect (over the painted "KARMA" letters).
