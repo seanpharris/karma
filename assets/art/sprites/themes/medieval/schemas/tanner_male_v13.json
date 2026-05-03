@@ -1,0 +1,29 @@
+{
+  "id": "tanner_male_v13",
+  "display_name": "Tanner (variant 13)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/black.png",
+    "legs": "legs/formal_striped/male/walk/red.png",
+    "torso": "torso/aprons/suspenders/male/walk/navy.png",
+    "hair": "hair/high_and_tight/adult/walk.png",
+    "facial": "facial/glasses/glasses/adult/walk/bronze.png",
+    "beard": "beards/mustache/lampshade/walk.png"
+  },
+  "tints": {
+    "body": "#e1a979",
+    "head": "#e1a979",
+    "hair": "#9a693b",
+    "beard": "#9a693b"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

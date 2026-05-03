@@ -1,0 +1,114 @@
+{
+  "category": "items",
+  "force": true,
+  "items": [
+    {
+      "id": "stim_spike",
+      "prompt": "small medieval glass potion bottle, glowing red liquid, cork stopper, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "downer_haze",
+      "prompt": "small medieval glass potion bottle, hazy purple liquid, dark cork stopper, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "tremor_tab",
+      "prompt": "small wax-paper packet of bitter herbal tablets, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "ration_pack",
+      "prompt": "medieval cloth-wrapped travel ration, bread loaf and dried meat tied with twine, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "energy_cell",
+      "prompt": "small glowing crystal shard wrapped in copper wire, magical, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "medi_patch",
+      "prompt": "rolled bandage wrapped around healing herbs, blood-stained linen, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "chem_injector",
+      "prompt": "medieval brass syringe with leather grip, glass vial of green liquid, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "flashlight",
+      "prompt": "medieval iron lantern with glass panes, lit with warm flame, leather handle, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "welding_torch",
+      "prompt": "wooden torch with burning oil-soaked rag head, iron band, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "apology_flower",
+      "prompt": "single red rose with green stem and leaves, slight thorns, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "whoopie_cushion",
+      "prompt": "deflated leather wineskin with comically loose laces, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "deflated_balloon",
+      "prompt": "wrinkled pig bladder balloon, deflated, faded paint, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "data_chip",
+      "prompt": "small wax-sealed parchment scroll, red wax seal, twine wrap, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "filter_core",
+      "prompt": "polished bronze cog gear, four spokes, weathered, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "contraband_package",
+      "prompt": "small cloth-wrapped parcel tied with rope, suspicious bulge, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "portable_terminal",
+      "prompt": "medieval leather-bound spellbook, brass clasps, golden runes on cover, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "emp_grenade",
+      "prompt": "small clay throwing pot with burning fuse on top, runic markings, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "id": "impact_mine",
+      "prompt": "small spiked metal caltrop, rusted iron, top-down inventory icon, transparent background, pixel art",
+      "width": 32,
+      "height": 32
+    }
+  ]
+}

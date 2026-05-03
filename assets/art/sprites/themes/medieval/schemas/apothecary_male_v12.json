@@ -1,0 +1,31 @@
+{
+  "id": "apothecary_male_v12",
+  "display_name": "Apothecary (variant 12)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/maroon.png",
+    "legs": "legs/formal/male/walk/forest.png",
+    "torso": "torso/aprons/suspenders/male/walk/gray.png",
+    "hair": "hair/parted3/adult/walk.png",
+    "waist": "torso/waist/obi/male/walk.png",
+    "neck": "neck/amulet/cross/male/walk/iron_red.png",
+    "beard": "beards/mustache/handlebar/walk.png",
+    "backpack": "backpack/basket_contents/ore/walk/fg.png"
+  },
+  "tints": {
+    "body": "#e1a979",
+    "head": "#e1a979",
+    "hair": "#e6d6ac",
+    "beard": "#e6d6ac"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

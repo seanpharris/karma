@@ -1,0 +1,32 @@
+{
+  "id": "alchemist_male_v20",
+  "display_name": "Alchemist (variant 20)",
+  "tags": [
+    "medieval",
+    "wayfarer"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/charcoal.png",
+    "legs": "legs/formal_striped/male/walk/gray.png",
+    "torso": "torso/aprons/overalls/male/walk/gray.png",
+    "hair": "hair/swoop/adult/walk.png",
+    "waist": "torso/waist/obi/knot/right/male/walk/charcoal.png",
+    "neck": "neck/capetie/male/walk/brown.png",
+    "facial": "facial/earrings/simple/right/adult/walk/base.png",
+    "cape": "cape/tattered_behind/walk/red.png",
+    "backpack": "backpack/backpack/male/walk/pink.png"
+  },
+  "tints": {
+    "body": "#f2c7a5",
+    "head": "#f2c7a5",
+    "hair": "#3b2418",
+    "beard": "#3b2418"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

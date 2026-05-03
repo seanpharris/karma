@@ -34,6 +34,19 @@ public sealed class FactionLedger
         return next;
     }
 
+    public void Decay()
+    {
+        foreach (var byPlayer in _reputation.Values)
+        {
+            foreach (var playerId in byPlayer.Keys.ToArray())
+            {
+                var current = byPlayer[playerId];
+                if (current > 0) byPlayer[playerId]--;
+                else if (current < 0) byPlayer[playerId]++;
+            }
+        }
+    }
+
     public IReadOnlyList<FactionSnapshot> Snapshot()
     {
         return _reputation
@@ -45,6 +58,8 @@ public sealed class FactionLedger
             .ThenBy(snapshot => snapshot.PlayerId)
             .ToArray();
     }
+
+    public void Clear() => _reputation.Clear();
 }
 
 public sealed record FactionSnapshot(
@@ -60,7 +75,7 @@ public static class StarterFactions
 
     public static IReadOnlyList<FactionProfile> All { get; } = new[]
     {
-        new FactionProfile(FreeSettlersId, "Free Settlers", "Neighbors trying to keep the town livable."),
+        new FactionProfile(FreeSettlersId, "Village Freeholders", "Neighbors keeping the village fed, mended, and free."),
         new FactionProfile(CivicRepairGuildId, "Civic Repair Guild", "Fixers, tinkerers, and people with opinions about bolts."),
         new FactionProfile(BackroomMerchantsId, "Backroom Merchants", "Useful traders with selective memories.")
     };

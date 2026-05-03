@@ -1,0 +1,33 @@
+{
+  "id": "merchant_female_v6",
+  "display_name": "Foreign Merchant (variant 6)",
+  "tags": [
+    "medieval",
+    "wayfarer"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/thin/walk/red.png",
+    "legs": "legs/fur/thin/walk/fur_grey.png",
+    "torso": "torso/aprons/apron_full/female/walk/yellow.png",
+    "hair": "hair/curly_short2/adult/walk.png",
+    "waist": "torso/waist/sash_narrow/female/walk/brown.png",
+    "neck": "neck/amulet/cross/female/walk/iron_orange.png",
+    "hat": "hat/accessory/plumage_legion/adult/walk.png",
+    "facial": "facial/earrings/simple/right/adult/walk/green.png",
+    "shoulders": "shoulders/mantal/thin/walk.png",
+    "backpack": "backpack/backpack/female/walk/teal.png"
+  },
+  "tints": {
+    "body": "#e1a979",
+    "head": "#e1a979",
+    "hair": "#c08a4b",
+    "beard": "#c08a4b"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

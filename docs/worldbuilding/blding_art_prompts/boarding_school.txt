@@ -1,0 +1,108 @@
+Create a pixel-art sprite sheet of multiple buildings for a top-down 2D RPG boarding school game.
+
+STYLE:
+- 3/4 top-down RPG perspective (front + slight roof visible)
+- retro pixel art, crisp edges, NO anti-aliasing
+- limited color palette (warm stone grays, dark wood browns, slate blues, ivy greens, muted gold/brass accents, parchment tones)
+- soft directional lighting from top-left
+- chunky, readable, slightly exaggerated academy proportions
+- subtle wear: aged stone, warped wood, ivy growth, patched roofing, but NOT noisy or overly detailed
+
+TONE:
+- cozy, whimsical, slightly dramatic boarding school
+- socially tense, gossipy, emotionally charged academy atmosphere
+- buildings feel lived-in, old, secretive, and full of social pressure
+- hint at story through shape: uneven ivy, leaning chimneys, patched roofs, rigid faculty architecture, warm dorm windows
+
+CRITICAL READABILITY:
+- must remain clear when each building is resized to 96x96 pixels
+- use large, simple shapes only
+- avoid details smaller than 3–4 pixels at final size
+- thick outlines and chunky forms
+- doors, windows, and major features must be bold and readable
+- NO text labels — use simple icon signage only
+
+DETAIL CONTROL:
+- minimal micro detail
+- no dense brick patterns, tiny papers, or noisy textures
+- prefer large wall sections, roof shapes, bold doors, and clear attached icons
+- silhouettes must be instantly recognizable
+- exaggerate shapes slightly for clarity
+
+COMPOSITION:
+- create a clean 3x3 grid
+- each building centered in its own square cell with padding
+- consistent scale across all buildings
+- no overlap or elements crossing cells
+
+BACKGROUND:
+- solid bright magenta (#ff00ff)
+- flat color only, no gradients, no shadows
+
+STRICT RULES:
+- no people, animals, or vehicles
+- no terrain, grass, sky, or environment
+- no floating props or clutter
+- no fog, bloom, blur, or lighting effects
+- no perspective distortion
+- no text
+
+BUILDINGS TO INCLUDE:
+
+COURTYARD:
+1. main_hall
+   - large central academy building
+   - wide entrance, symmetrical shape, tall roofline
+   - icon: crest
+
+2. notice_board
+   - covered wooden board structure
+   - attached parchment shapes, small roof canopy
+   - icon: paper
+
+3. fountain
+   - compact stone fountain structure
+   - simple central basin, readable water shape
+   - icon: water drop
+
+DORMS:
+4. student_rooms
+   - cozy dormitory building
+   - repeating large windows, warm glow
+   - icon: bed
+
+5. common_room
+   - inviting lounge-like building
+   - large windows, chimney/fireplace shape
+   - icon: couch
+
+ACADEMIC:
+6. classroom
+   - structured academic building
+   - large windows, simple rectangular form
+   - icon: book
+
+7. faculty_office
+   - formal, slightly intimidating office
+   - symmetrical entrance, rigid shape
+   - icon: quill
+
+8. library
+   - taller scholarly building
+   - arched windows, layered roof
+   - icon: stacked books
+
+OUTPUT:
+- one clean sprite sheet
+- evenly spaced grid
+- each building readable and distinct at small size
+
+PIPELINE REQUIREMENTS:
+- The sheet must be an exact 3x3 grid
+- Grid order must be left-to-right, top-to-bottom:
+  row 1: main_hall, notice_board, fountain
+  row 2: student_rooms, common_room, classroom
+  row 3: faculty_office, library, empty_slot
+- Keep each sprite centered inside its cell
+- Maintain visible #ff00ff spacing between all cells and around the outer border
+- Do not add labels, captions, numbering, or text to the image

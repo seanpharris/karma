@@ -1,0 +1,154 @@
+﻿{
+    "main_hall":  {
+                      "canvas":  [
+                                     128,
+                                     128
+                                 ],
+                      "fit":  [
+                                  124,
+                                  124
+                              ],
+                      "anchor":  [
+                                     64,
+                                     120
+                                 ],
+                      "footprint_tiles":  [
+                                              8,
+                                              8
+                                          ],
+                      "category":  "building"
+                  },
+    "notice_board":  {
+                         "canvas":  [
+                                        64,
+                                        64
+                                    ],
+                         "fit":  [
+                                     60,
+                                     60
+                                 ],
+                         "anchor":  [
+                                        32,
+                                        56
+                                    ],
+                         "footprint_tiles":  [
+                                                 4,
+                                                 4
+                                             ],
+                         "category":  "building"
+                     },
+    "fountain":  {
+                     "canvas":  [
+                                    64,
+                                    64
+                                ],
+                     "fit":  [
+                                 60,
+                                 60
+                             ],
+                     "anchor":  [
+                                    32,
+                                    56
+                                ],
+                     "footprint_tiles":  [
+                                             4,
+                                             4
+                                         ],
+                     "category":  "building"
+                 },
+    "student_rooms":  {
+                          "canvas":  [
+                                         128,
+                                         96
+                                     ],
+                          "fit":  [
+                                      124,
+                                      92
+                                  ],
+                          "anchor":  [
+                                         64,
+                                         88
+                                     ],
+                          "footprint_tiles":  [
+                                                  8,
+                                                  6
+                                              ],
+                          "category":  "building"
+                      },
+    "common_room":  {
+                        "canvas":  [
+                                       96,
+                                       96
+                                   ],
+                        "fit":  [
+                                    92,
+                                    92
+                                ],
+                        "anchor":  [
+                                       48,
+                                       88
+                                   ],
+                        "footprint_tiles":  [
+                                                6,
+                                                6
+                                            ],
+                        "category":  "building"
+                    },
+    "classroom":  {
+                      "canvas":  [
+                                     96,
+                                     96
+                                 ],
+                      "fit":  [
+                                  92,
+                                  92
+                              ],
+                      "anchor":  [
+                                     48,
+                                     88
+                                 ],
+                      "footprint_tiles":  [
+                                              6,
+                                              6
+                                          ],
+                      "category":  "building"
+                  },
+    "faculty_office":  {
+                           "canvas":  [
+                                          96,
+                                          96
+                                      ],
+                           "fit":  [
+                                       92,
+                                       92
+                                   ],
+                           "anchor":  [
+                                          48,
+                                          88
+                                      ],
+                           "footprint_tiles":  [
+                                                   6,
+                                                   6
+                                               ],
+                           "category":  "building"
+                       },
+    "library":  {
+                    "canvas":  [
+                                   96,
+                                   128
+                               ],
+                    "fit":  [
+                                92,
+                                124
+                            ],
+                    "anchor":  [
+                                   48,
+                                   120
+                               ],
+                    "footprint_tiles":  [
+                                            6,
+                                            8
+                                        ],
+                    "category":  "building"
+                }
+}

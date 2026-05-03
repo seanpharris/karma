@@ -1,0 +1,30 @@
+{
+  "id": "brewer_male_v6",
+  "display_name": "Brewer (variant 6)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/purple.png",
+    "legs": "legs/formal/male/walk/maroon.png",
+    "torso": "torso/aprons/suspenders/male/walk/brown.png",
+    "hair": "hair/shorthawk/adult/walk.png",
+    "waist": "torso/waist/obi/male/walk/black.png",
+    "beard": "beards/beard/winter/female/walk.png",
+    "backpack": "backpack/squarepack/male/walk/red.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#2c2b26",
+    "beard": "#2c2b26"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "id": "mason_male_v8",
+  "display_name": "Mason (variant 8)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/forest.png",
+    "legs": "legs/fur/male/walk/navy.png",
+    "torso": "torso/aprons/overalls/male/walk/lavender.png",
+    "hair": "hair/long_messy/adult/walk.png",
+    "waist": "torso/waist/belt_belly/male/walk/charcoal.png",
+    "backpack": "backpack/backpack/male/walk/blue.png"
+  },
+  "tints": {
+    "body": "#7b4a32",
+    "head": "#7b4a32",
+    "hair": "#d8b36a",
+    "beard": "#d8b36a"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

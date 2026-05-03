@@ -1,0 +1,30 @@
+{
+  "id": "monk_male_v24",
+  "display_name": "Monk (variant 24)",
+  "tags": [
+    "medieval",
+    "chapel"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/gray.png",
+    "legs": "legs/formal/male/walk/base.png",
+    "torso": "torso/aprons/suspenders/male/walk/maroon.png",
+    "hair": "hair/swoop/adult/walk.png",
+    "weapon": "weapon/magic/diamond/universal/background/walk/bronze.png",
+    "waist": "torso/waist/belt_double/male/walk/charcoal.png",
+    "beard": "beards/mustache/lampshade/walk.png"
+  },
+  "tints": {
+    "body": "#7b4a32",
+    "head": "#7b4a32",
+    "hair": "#c08a4b",
+    "beard": "#c08a4b"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

@@ -1,0 +1,277 @@
+[
+  {
+    "name": "wood_chest",
+    "path": "res://assets/art/generated/sliced/containers_loot/wood_chest.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      7,
+      7,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "scifi_chest",
+    "path": "res://assets/art/generated/sliced/containers_loot/scifi_chest.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      211,
+      7,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "dumpster_wood",
+    "path": "res://assets/art/generated/sliced/containers_loot/dumpster_wood.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      415,
+      7,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "ornate_chest_jeweled",
+    "path": "res://assets/art/generated/sliced/containers_loot/ornate_chest_jeweled.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      619,
+      7,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "medkit_white_box",
+    "path": "res://assets/art/generated/sliced/containers_loot/medkit_white_box.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      823,
+      7,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "gun_case_open",
+    "path": "res://assets/art/generated/sliced/containers_loot/gun_case_open.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      7,
+      211,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "tool_box_grey",
+    "path": "res://assets/art/generated/sliced/containers_loot/tool_box_grey.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      211,
+      211,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "lockbox_metal",
+    "path": "res://assets/art/generated/sliced/containers_loot/lockbox_metal.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      415,
+      211,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "duffel_bag_olive",
+    "path": "res://assets/art/generated/sliced/containers_loot/duffel_bag_olive.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      619,
+      211,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "backpack_brown",
+    "path": "res://assets/art/generated/sliced/containers_loot/backpack_brown.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      823,
+      211,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "cardboard_box_a",
+    "path": "res://assets/art/generated/sliced/containers_loot/cardboard_box_a.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      7,
+      415,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "cardboard_box_b",
+    "path": "res://assets/art/generated/sliced/containers_loot/cardboard_box_b.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      211,
+      415,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "money_sack_brown",
+    "path": "res://assets/art/generated/sliced/containers_loot/money_sack_brown.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      415,
+      415,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "cash_pile_green",
+    "path": "res://assets/art/generated/sliced/containers_loot/cash_pile_green.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      619,
+      415,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "bedroll_tan",
+    "path": "res://assets/art/generated/sliced/containers_loot/bedroll_tan.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      823,
+      415,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "cardboard_box_dark",
+    "path": "res://assets/art/generated/sliced/containers_loot/cardboard_box_dark.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      7,
+      619,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "energy_cells_crate",
+    "path": "res://assets/art/generated/sliced/containers_loot/energy_cells_crate.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      211,
+      619,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "tools_in_open_box",
+    "path": "res://assets/art/generated/sliced/containers_loot/tools_in_open_box.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      415,
+      619,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "military_trunk_locked",
+    "path": "res://assets/art/generated/sliced/containers_loot/military_trunk_locked.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      619,
+      619,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "shipping_container_blue",
+    "path": "res://assets/art/generated/sliced/containers_loot/shipping_container_blue.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      823,
+      619,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "cardboard_fragile_box",
+    "path": "res://assets/art/generated/sliced/containers_loot/cardboard_fragile_box.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      7,
+      823,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "treasure_chest_gold_trim",
+    "path": "res://assets/art/generated/sliced/containers_loot/treasure_chest_gold_trim.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      211,
+      823,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "safe_padlock",
+    "path": "res://assets/art/generated/sliced/containers_loot/safe_padlock.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      415,
+      823,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "scrap_junk_pile",
+    "path": "res://assets/art/generated/sliced/containers_loot/scrap_junk_pile.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      619,
+      823,
+      189,
+      189
+    ]
+  },
+  {
+    "name": "barrel_wood",
+    "path": "res://assets/art/generated/sliced/containers_loot/barrel_wood.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_containers_loot_atlas.jpg",
+    "source_region": [
+      823,
+      823,
+      189,
+      189
+    ]
+  }
+]

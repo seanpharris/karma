@@ -1,0 +1,31 @@
+{
+  "id": "cutpurse_male_v3",
+  "display_name": "Cutpurse (variant 3)",
+  "tags": [
+    "medieval",
+    "outlaw"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/black.png",
+    "legs": "legs/fur/male/walk.png",
+    "torso": "torso/waist/belt_leather/male/walk/leather.png",
+    "hair": "hair/extensions/bangs/long_straightr/adult/walk.png",
+    "weapon": "weapon/magic/gnarled/universal/background/walk/ceramic.png",
+    "hat": "hat/cloth/hood/adult/walk/charcoal.png",
+    "arms": "arms/bracers/male/walk.png",
+    "backpack": "backpack/squarepack/male/walk/leather.png"
+  },
+  "tints": {
+    "body": "#5b3829",
+    "head": "#5b3829",
+    "hair": "#5f2a1d",
+    "beard": "#5f2a1d"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

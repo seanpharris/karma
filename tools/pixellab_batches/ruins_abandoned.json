@@ -1,0 +1,14 @@
+{
+  "force": true,
+  "category": "buildings",
+  "items": [
+    { "id": "ruined_cottage_a", "prompt": "medieval ruined peasant cottage, collapsed roof, ivy growing through walls, broken door hanging, abandoned, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "ruined_cottage_b", "prompt": "medieval ruined cottage, only stone foundation and one wall standing, weathered, abandoned, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "ruined_tower", "prompt": "medieval ruined stone tower, top collapsed leaving jagged edge, ivy climbing, abandoned, isometric pixel art", "width": 96, "height": 128 },
+    { "id": "ruined_chapel", "prompt": "medieval ruined chapel, partial stone walls, fallen cross, ivy-covered altar visible, abandoned, isometric pixel art", "width": 128, "height": 96 },
+    { "id": "ruined_keep", "prompt": "medieval ruined castle keep, partially collapsed, ivy-covered, banner pole bare, abandoned, isometric pixel art", "width": 128, "height": 144 },
+    { "id": "burned_house", "prompt": "medieval burned-down house, charred timber framing, ash pile, partial walls standing, abandoned, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "abandoned_well", "prompt": "medieval abandoned village well, broken bucket dangling, mossy stones, no rope, isometric pixel art", "width": 64, "height": 64 },
+    { "id": "stone_circle", "prompt": "medieval ancient stone circle, weathered standing stones, ground worn smooth in middle, isometric pixel art", "width": 128, "height": 128 }
+  ]
+}

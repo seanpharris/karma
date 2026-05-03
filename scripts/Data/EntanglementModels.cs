@@ -90,6 +90,8 @@ public sealed class EntanglementLedger
         return ChangeStatus(entanglementId, EntanglementStatus.Resolved);
     }
 
+    public void Clear() => _entanglements.Clear();
+
     public string FormatSummary()
     {
         return _entanglements.Count == 0

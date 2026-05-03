@@ -1,0 +1,33 @@
+{
+  "id": "hermit_male_v16",
+  "display_name": "Hermit (variant 16)",
+  "tags": [
+    "medieval",
+    "wild"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male_elderly/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/ceramic.png",
+    "legs": "legs/fur/male/walk/charcoal.png",
+    "torso": "torso/aprons/suspenders/male/walk/gray.png",
+    "hair": "hair/extensions/bangs/xlong_bangl/adult/walk.png",
+    "weapon": "weapon/magic/gnarled/universal/foreground/walk/brass.png",
+    "waist": "torso/waist/obi/male/walk/bluegray.png",
+    "neck": "neck/amulet/cross/male/walk/silver_red.png",
+    "hat": "hat/cloth/hood_sack/adult/walk/green.png",
+    "beard": "beards/beard/winter/male/walk.png",
+    "arms": "arms/armour/plate/male/walk.png"
+  },
+  "tints": {
+    "body": "#5b3829",
+    "head": "#5b3829",
+    "hair": "#e6d6ac",
+    "beard": "#e6d6ac"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "bandit_male_v13",
+  "display_name": "Bandit (variant 13)",
+  "tags": [
+    "medieval",
+    "outlaw",
+    "melee"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/slate.png",
+    "legs": "legs/formal_striped/male/walk/forest.png",
+    "torso": "torso/aprons/overalls/male/walk/leather.png",
+    "hair": "hair/curtains/adult/walk.png",
+    "hat": "hat/cloth/hood/adult/walk/brown.png",
+    "arms": "arms/bracers/male/walk.png"
+  },
+  "tints": {
+    "body": "#a86b47",
+    "head": "#a86b47",
+    "hair": "#c9c0b8",
+    "beard": "#c9c0b8"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "id": "hunter_male_v24",
+  "display_name": "Hunter (variant 24)",
+  "tags": [
+    "medieval",
+    "peasant",
+    "ranged"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/hoofs/male/walk/fur_tan.png",
+    "legs": "legs/fur/male/walk/maroon.png",
+    "torso": "torso/aprons/overalls/male/walk.png",
+    "hair": "hair/parted_side_bangs/adult/walk.png",
+    "weapon": "weapon/ranged/slingshot/foreground/walk/slingshot.png",
+    "waist": "torso/waist/obi/knot/left/male/walk/walnut.png",
+    "neck": "neck/amulet/cross/male/walk/steel_purple.png",
+    "hat": "hat/cloth/bandana/adult/walk/white.png",
+    "beard": "beards/mustache/horseshoe/walk.png"
+  },
+  "tints": {
+    "body": "#a86b47",
+    "head": "#a86b47",
+    "hair": "#9a693b",
+    "beard": "#9a693b"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

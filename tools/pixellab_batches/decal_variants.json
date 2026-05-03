@@ -1,0 +1,30 @@
+{
+  "force": true,
+  "category": "decals",
+  "items": [
+    { "id": "decal_blood_a", "prompt": "small dark red blood splatter pattern, drops and smear, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_blood_b", "prompt": "medium blood splatter with arc pattern, dark red, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_blood_pool", "prompt": "blood pool puddle on ground, dark red with reflection, top-down view, transparent background, pixel art", "width": 48, "height": 48 },
+    { "id": "decal_footprints_dirt_a", "prompt": "two muddy boot footprints in dirt, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_footprints_dirt_b", "prompt": "single muddy bare foot print, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_footprints_snow", "prompt": "boot footprints in snow, dark grey impressions, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_hay_pile_a", "prompt": "small loose hay pile, scattered straw, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_hay_scattered", "prompt": "scattered yellow hay strands across ground, sparse, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_scorch_a", "prompt": "black scorch burn mark on ground, ash residue, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_scorch_b", "prompt": "wide black scorch mark with embers, charred, top-down view, transparent background, pixel art", "width": 48, "height": 48 },
+    { "id": "decal_water_puddle_a", "prompt": "small reflective water puddle on muddy ground, ripples, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_water_puddle_b", "prompt": "medium puddle with ripples and grass at edges, top-down view, transparent background, pixel art", "width": 48, "height": 48 },
+    { "id": "decal_loose_stones_a", "prompt": "scattered small grey stones on ground, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_loose_stones_b", "prompt": "rubble pile of broken stones, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_leaves_a", "prompt": "scattered fallen leaves on ground, brown and orange, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_leaves_b", "prompt": "scattered red autumn leaves, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_market_rug_a", "prompt": "small medieval woven market rug, red and gold pattern, top-down view, transparent background, pixel art", "width": 64, "height": 32 },
+    { "id": "decal_market_rug_b", "prompt": "small medieval blue and white striped rug on ground, top-down view, transparent background, pixel art", "width": 64, "height": 32 },
+    { "id": "decal_oil_spill", "prompt": "dark oil slick on ground, glistening, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_grass_tuft", "prompt": "small tuft of grass with flower, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_mushroom_patch", "prompt": "small cluster of red and white mushrooms, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_skull", "prompt": "single weathered animal skull on ground, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_torch_holder", "prompt": "iron torch holder mounted to ground, top-down view, transparent background, pixel art", "width": 32, "height": 32 },
+    { "id": "decal_chains", "prompt": "broken iron chains on ground, rusted links, top-down view, transparent background, pixel art", "width": 32, "height": 32 }
+  ]
+}

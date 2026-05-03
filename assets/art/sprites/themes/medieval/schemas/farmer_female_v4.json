@@ -1,0 +1,31 @@
+{
+  "id": "farmer_female_v4",
+  "display_name": "Farmer (F) (variant 4)",
+  "tags": [
+    "medieval",
+    "peasant"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/sandals/thin/walk/orange.png",
+    "legs": "legs/formal_striped/thin/walk/maroon.png",
+    "torso": "torso/aprons/apron_full/female/walk/charcoal.png",
+    "hair": "hair/dreadlocks_short/adult/walk.png",
+    "waist": "torso/waist/sash_narrow/female/walk/green.png",
+    "neck": "neck/amulet/cross/female/walk/ceramic_yellow.png",
+    "hat": "hat/cloth/bandana/adult/walk/lavender.png",
+    "shoulders": "shoulders/mantal/thin/walk.png"
+  },
+  "tints": {
+    "body": "#f2c7a5",
+    "head": "#f2c7a5",
+    "hair": "#5b3822",
+    "beard": "#5b3822"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

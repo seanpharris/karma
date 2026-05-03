@@ -9,7 +9,9 @@ public enum WorldEventType
     Quest,
     Combat,
     Karma,
-    System
+    Structure,
+    System,
+    SupplyDrop
 }
 
 public sealed record WorldEvent(
@@ -17,7 +19,12 @@ public sealed record WorldEvent(
     WorldEventType Type,
     string Summary,
     string SourcePlayerId,
-    string TargetId);
+    string TargetId)
+{
+    public const string GlobalTargetId = "*";
+
+    public bool IsGlobal => TargetId == GlobalTargetId;
+}
 
 public sealed class WorldEventLog
 {
@@ -52,4 +59,6 @@ public sealed class WorldEventLog
         var latest = _events.LastOrDefault();
         return latest is null ? "World Events: none" : $"{latest.Type}: {latest.Summary}";
     }
+
+    public void Clear() => _events.Clear();
 }

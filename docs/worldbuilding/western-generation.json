@@ -1,0 +1,138 @@
+{
+  "generation_request": {
+    "theme": "western",
+    "world_name_style": "cozy, absurd, slightly dark",
+    "max_core_npcs": 6,
+    "max_factions": 3,
+    "max_active_quests": 5,
+    "tone": [
+      "cozy",
+      "absurd",
+      "socially reactive",
+      "occasionally dark"
+    ]
+  },
+
+  "fixed_world_rules": {
+    "world_size_tiles": {
+      "width": 1000,
+      "height": 1000,
+      "tile_size_px": 16
+    },
+    "karma_system": {
+      "ascend": "Helpful, merciful, protective, honest, restorative actions",
+      "descend": "Cruel, exploitative, violent, betraying, selfish actions",
+      "important_note": "An action can Ascend globally while upsetting a specific NPC, or Descend globally while pleasing another NPC."
+    },
+    "relationship_system": {
+      "description": "NPC relationships are local memory tracked per NPC/player pair.",
+      "tracked_values": ["trust", "fear", "respect", "resentment", "affection"]
+    }
+  },
+
+  "available_locations": [
+    {
+      "id": "loc_town_center",
+      "type": "town_center",
+      "required_buildings": [
+        "saloon",
+        "sheriff_office",
+        "general_store",
+        "doctor_office"
+      ],
+      "story_function": "main social hub"
+    },
+    {
+      "id": "loc_red_ridge_mine",
+      "type": "mine",
+      "required_buildings": [
+        "mine_entrance",
+        "ore_storage"
+      ],
+      "story_function": "danger/resource conflict zone"
+    },
+    {
+      "id": "loc_sunset_homestead",
+      "type": "homestead",
+      "required_buildings": [
+        "farmhouse",
+        "barn",
+        "animal_pen"
+      ],
+      "story_function": "family/survival/moral dilemma zone"
+    }
+  ],
+
+  "required_roles": [
+    {
+      "role": "sheriff",
+      "workplace": "sheriff_office",
+      "needs_home": true
+    },
+    {
+      "role": "doctor",
+      "workplace": "doctor_office",
+      "needs_home": true
+    },
+    {
+      "role": "saloon_keeper",
+      "workplace": "saloon",
+      "needs_home": true
+    },
+    {
+      "role": "ranch_owner",
+      "workplace": "farmhouse",
+      "needs_home": false
+    },
+    {
+      "role": "miner",
+      "workplace": "mine_entrance",
+      "needs_home": true
+    }
+  ],
+
+  "optional_roles_pool": [
+    "gambler",
+    "bandit_scout",
+    "undertaker",
+    "preacher",
+    "shopkeeper",
+    "deputy",
+    "farmhand",
+    "runaway",
+    "traveling_salesman"
+  ],
+
+  "story_generation_rules": {
+    "npc_requirements": [
+      "Each NPC must have a secret",
+      "Each NPC must have at least 2 relationship biases",
+      "Each NPC must have a pressure point",
+      "Each NPC must react differently to Ascend and Descend players"
+    ],
+    "quest_requirements": [
+      "Each quest must support at least 3 approaches",
+      "At least one approach should be morally messy",
+      "Each quest must affect karma and at least one NPC relationship",
+      "At least one quest should involve betrayal or mistaken identity",
+      "At least one quest should use an object in multiple ways"
+    ],
+    "object_requirements": [
+      "Objects should be usable as tool, gift, bribe, clue, weapon, joke, or mistake",
+      "Avoid single-purpose quest items when possible"
+    ]
+  },
+
+  "output_format": {
+    "world_identity": {},
+    "npcs": [],
+    "factions": [],
+    "quests": [],
+    "relationship_web": [],
+    "oddities": [],
+    "multi_use_objects": [],
+    "karma_events": []
+  },
+
+  "generation_instruction": "Using this form, generate one new western Karma world instance. Do not change location IDs or required building types. Create changing NPCs, factions, quests, secrets, relationships, oddities, and karma hooks. Output valid JSON only."
+}

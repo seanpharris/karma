@@ -1,0 +1,34 @@
+{
+  "id": "hunter_male_v8",
+  "display_name": "Hunter (variant 8)",
+  "tags": [
+    "medieval",
+    "peasant",
+    "ranged"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/forest.png",
+    "legs": "legs/formal_striped/male/walk.png",
+    "torso": "torso/aprons/overalls/male/walk/walnut.png",
+    "hair": "hair/parted_side_bangs/adult/walk.png",
+    "waist": "torso/waist/obi/knot/left/male/walk/yellow.png",
+    "facial": "facial/masks/plain/adult/walk/navy.png",
+    "beard": "beards/mustache/lampshade/walk.png",
+    "arms": "arms/wrists/cuffs/male/walk.png",
+    "shield": "shield/heater/original/pattern/barry/fg/walk/lavender.png",
+    "quiver": "quiver/walk/quiver.png"
+  },
+  "tints": {
+    "body": "#a86b47",
+    "head": "#a86b47",
+    "hair": "#c9c0b8",
+    "beard": "#c9c0b8"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "id": "peasant_male_v19",
+  "display_name": "Peasant (M) (variant 19)",
+  "tags": [
+    "medieval",
+    "peasant"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/sandals/male/walk/leather.png",
+    "legs": "legs/formal_striped/male/walk/pink.png",
+    "torso": "torso/aprons/overalls/male/walk/slate.png",
+    "hair": "hair/dreadlocks_short/adult/walk.png",
+    "waist": "torso/waist/belt_double/male/walk/slate.png",
+    "hat": "hat/cloth/bandana2/adult/walk/bluegray.png",
+    "facial": "facial/masks/plain/adult/walk/steel.png",
+    "beard": "beards/mustache/walrus/walk.png",
+    "cape": "cape/solid_behind/walk/red.png"
+  },
+  "tints": {
+    "body": "#7b4a32",
+    "head": "#7b4a32",
+    "hair": "#5b3822",
+    "beard": "#5b3822"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

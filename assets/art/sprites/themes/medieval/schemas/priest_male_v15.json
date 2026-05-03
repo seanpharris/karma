@@ -1,0 +1,30 @@
+{
+  "id": "priest_male_v15",
+  "display_name": "Priest (variant 15)",
+  "tags": [
+    "medieval",
+    "chapel"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/blue.png",
+    "legs": "legs/formal/male/walk/maroon.png",
+    "torso": "torso/aprons/suspenders/male/walk/purple.png",
+    "hair": "hair/bangs/adult/walk.png",
+    "hat": "hat/cloth/hood/adult/walk/walnut.png",
+    "facial": "facial/patches/eyepatch/left/adult/walk/leather.png",
+    "beard": "beards/mustache/basic/walk.png"
+  },
+  "tints": {
+    "body": "#f2c7a5",
+    "head": "#f2c7a5",
+    "hair": "#8a8a8a",
+    "beard": "#8a8a8a"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

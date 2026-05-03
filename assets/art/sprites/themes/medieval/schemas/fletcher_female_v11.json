@@ -1,0 +1,28 @@
+{
+  "id": "fletcher_female_v11",
+  "display_name": "Fletcher (F) (variant 11)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/thin/walk/brass.png",
+    "legs": "legs/formal_striped/thin/walk.png",
+    "torso": "torso/aprons/apron/female/walk/orange.png",
+    "hair": "hair/long_straight/adult/walk.png",
+    "hat": "hat/magic/wizard/belt/adult/walk/pink.png"
+  },
+  "tints": {
+    "body": "#f2c7a5",
+    "head": "#f2c7a5",
+    "hair": "#3b2418",
+    "beard": "#3b2418"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

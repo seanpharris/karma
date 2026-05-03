@@ -1,0 +1,32 @@
+{
+  "id": "bard_female_v21",
+  "display_name": "Wandering Bard (F) (variant 21)",
+  "tags": [
+    "medieval",
+    "wayfarer"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/thin/walk/red.png",
+    "legs": "legs/formal_striped/thin/walk/base.png",
+    "torso": "torso/aprons/apron/female/walk/charcoal.png",
+    "hair": "hair/parted/adult/walk.png",
+    "waist": "torso/waist/belt_double/female/walk/slate.png",
+    "neck": "neck/capeclip/female/walk/leather.png",
+    "hat": "hat/cloth/hood/adult/walk/leather.png",
+    "arms": "arms/wrists/cuffs/thin/walk.png",
+    "backpack": "backpack/backpack/female/walk/teal.png"
+  },
+  "tints": {
+    "body": "#5b3829",
+    "head": "#5b3829",
+    "hair": "#2c2b26",
+    "beard": "#2c2b26"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

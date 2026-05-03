@@ -1,0 +1,29 @@
+{
+  "id": "beggar_male_v22",
+  "display_name": "Beggar (variant 22)",
+  "tags": [
+    "medieval",
+    "wild"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male_elderly/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/rose.png",
+    "legs": "legs/formal_striped/male/walk/green.png",
+    "torso": "torso/aprons/suspenders/male/walk/white.png",
+    "hair": "hair/page/adult/walk.png",
+    "waist": "torso/waist/belt_mage/walk/bronze.png",
+    "cape": "cape/tattered_behind/walk/sky.png"
+  },
+  "tints": {
+    "body": "#7b4a32",
+    "head": "#7b4a32",
+    "hair": "#3b2418",
+    "beard": "#3b2418"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

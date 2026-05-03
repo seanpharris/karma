@@ -1,0 +1,42 @@
+{
+  "force": true,
+  "category": "mounts",
+  "items": [
+    {
+      "id": "horse_brown",
+      "prompt": "medieval brown horse standing in profile, leather saddle, brown leather bridle, top-down view, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "horse_white",
+      "prompt": "medieval white draft horse standing in profile, leather saddle, gold-trimmed bridle, top-down view, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "horse_black",
+      "prompt": "medieval black warhorse standing in profile, dark leather saddle, ornate bridle, top-down view, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "donkey_grey",
+      "prompt": "medieval grey donkey standing in profile, simple cloth saddle, packs on either side, top-down view, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "ox_cart",
+      "prompt": "medieval brown ox pulling a small wooden cart, top-down view, transparent background, pixel art",
+      "width": 96,
+      "height": 64
+    },
+    {
+      "id": "mule_pack",
+      "prompt": "medieval brown mule with travel packs, leather harness, standing in profile, top-down view, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    }
+  ]
+}

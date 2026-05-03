@@ -1,0 +1,134 @@
+[
+  {
+    "name": "mechanical_workbench",
+    "path": "res://assets/art/generated/sliced/crafting_stations/mechanical_workbench.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_crafting_stations_atlas.jpg",
+    "source_region": [
+      12,
+      9,
+      317,
+      238
+    ]
+  },
+  {
+    "name": "alchemy_workbench",
+    "path": "res://assets/art/generated/sliced/crafting_stations/alchemy_workbench.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_crafting_stations_atlas.jpg",
+    "source_region": [
+      353,
+      9,
+      317,
+      238
+    ]
+  },
+  {
+    "name": "weapons_display_pegboard",
+    "path": "res://assets/art/generated/sliced/crafting_stations/weapons_display_pegboard.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_crafting_stations_atlas.jpg",
+    "source_region": [
+      694,
+      9,
+      317,
+      238
+    ]
+  },
+  {
+    "name": "pressure_vessel_meter",
+    "path": "res://assets/art/generated/sliced/crafting_stations/pressure_vessel_meter.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_crafting_stations_atlas.jpg",
+    "source_region": [
+      12,
+      265,
+      317,
+      238
+    ]
+  },
+  {
+    "name": "water_filtration_system",
+    "path": "res://assets/art/generated/sliced/crafting_stations/water_filtration_system.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_crafting_stations_atlas.jpg",
+    "source_region": [
+      353,
+      265,
+      317,
+      238
+    ]
+  },
+  {
+    "name": "fuel_pump_barrel",
+    "path": "res://assets/art/generated/sliced/crafting_stations/fuel_pump_barrel.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_crafting_stations_atlas.jpg",
+    "source_region": [
+      694,
+      265,
+      317,
+      238
+    ]
+  },
+  {
+    "name": "scribe_desk",
+    "path": "res://assets/art/generated/sliced/crafting_stations/scribe_desk.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_crafting_stations_atlas.jpg",
+    "source_region": [
+      12,
+      521,
+      317,
+      238
+    ]
+  },
+  {
+    "name": "cluttered_paper_desk",
+    "path": "res://assets/art/generated/sliced/crafting_stations/cluttered_paper_desk.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_crafting_stations_atlas.jpg",
+    "source_region": [
+      353,
+      521,
+      317,
+      238
+    ]
+  },
+  {
+    "name": "recycling_bin_blue",
+    "path": "res://assets/art/generated/sliced/crafting_stations/recycling_bin_blue.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_crafting_stations_atlas.jpg",
+    "source_region": [
+      694,
+      521,
+      317,
+      238
+    ]
+  },
+  {
+    "name": "electronics_workshop",
+    "path": "res://assets/art/generated/sliced/crafting_stations/electronics_workshop.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_crafting_stations_atlas.jpg",
+    "source_region": [
+      12,
+      777,
+      317,
+      238
+    ]
+  },
+  {
+    "name": "hydroponics_planter_grown",
+    "path": "res://assets/art/generated/sliced/crafting_stations/hydroponics_planter_grown.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_crafting_stations_atlas.jpg",
+    "source_region": [
+      353,
+      777,
+      317,
+      238
+    ]
+  },
+  {
+    "name": "computer_workbench",
+    "path": "res://assets/art/generated/sliced/crafting_stations/computer_workbench.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_crafting_stations_atlas.jpg",
+    "source_region": [
+      694,
+      777,
+      317,
+      238
+    ]
+  }
+]

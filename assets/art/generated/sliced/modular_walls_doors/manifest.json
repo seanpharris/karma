@@ -1,0 +1,266 @@
+[
+  {
+    "name": "scifi_wall_straight",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/scifi_wall_straight.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      0,
+      48,
+      170,
+      144
+    ]
+  },
+  {
+    "name": "scifi_wall_corner",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/scifi_wall_corner.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      170,
+      48,
+      170,
+      144
+    ]
+  },
+  {
+    "name": "wood_wall_straight",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/wood_wall_straight.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      340,
+      48,
+      170,
+      144
+    ]
+  },
+  {
+    "name": "wood_wall_corner",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/wood_wall_corner.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      510,
+      48,
+      170,
+      144
+    ]
+  },
+  {
+    "name": "scrap_wall_straight",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/scrap_wall_straight.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      680,
+      48,
+      170,
+      144
+    ]
+  },
+  {
+    "name": "scrap_wall_corner",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/scrap_wall_corner.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      850,
+      48,
+      170,
+      144
+    ]
+  },
+  {
+    "name": "stone_wall_straight",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/stone_wall_straight.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      0,
+      304,
+      170,
+      144
+    ]
+  },
+  {
+    "name": "stone_wall_corner",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/stone_wall_corner.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      170,
+      304,
+      170,
+      144
+    ]
+  },
+  {
+    "name": "clinic_door",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/clinic_door.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      340,
+      304,
+      170,
+      144
+    ]
+  },
+  {
+    "name": "shop_door",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/shop_door.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      510,
+      304,
+      170,
+      144
+    ]
+  },
+  {
+    "name": "jail_door",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/jail_door.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      680,
+      304,
+      170,
+      144
+    ]
+  },
+  {
+    "name": "curtain_door_black_market",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/curtain_door_black_market.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      850,
+      304,
+      170,
+      144
+    ]
+  },
+  {
+    "name": "airlock_door_closed",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/airlock_door_closed.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      0,
+      544,
+      170,
+      112
+    ]
+  },
+  {
+    "name": "airlock_door_open",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/airlock_door_open.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      170,
+      544,
+      170,
+      112
+    ]
+  },
+  {
+    "name": "gate_closed",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/gate_closed.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      340,
+      544,
+      170,
+      112
+    ]
+  },
+  {
+    "name": "gate_open",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/gate_open.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      510,
+      544,
+      170,
+      112
+    ]
+  },
+  {
+    "name": "window_lit",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/window_lit.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      680,
+      544,
+      170,
+      112
+    ]
+  },
+  {
+    "name": "window_broken",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/window_broken.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      850,
+      544,
+      170,
+      112
+    ]
+  },
+  {
+    "name": "fence_straight",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/fence_straight.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      0,
+      744,
+      170,
+      80
+    ]
+  },
+  {
+    "name": "fence_corner",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/fence_corner.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      170,
+      744,
+      170,
+      80
+    ]
+  },
+  {
+    "name": "railing",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/railing.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      340,
+      744,
+      170,
+      80
+    ]
+  },
+  {
+    "name": "barricade",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/barricade.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      510,
+      744,
+      170,
+      80
+    ]
+  },
+  {
+    "name": "checkpoint_turnstile",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/checkpoint_turnstile.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      680,
+      744,
+      170,
+      80
+    ]
+  },
+  {
+    "name": "archway",
+    "path": "res://assets/art/generated/sliced/modular_walls_doors/archway.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_modular_walls_doors_atlas.jpg",
+    "source_region": [
+      850,
+      744,
+      170,
+      80
+    ]
+  }
+]

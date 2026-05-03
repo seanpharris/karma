@@ -1,0 +1,222 @@
+[
+  {
+    "name": "barter_terminal",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/barter_terminal.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      9,
+      7,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "neon_handshake",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/neon_handshake.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      265,
+      7,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "gift_box_silver",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/gift_box_silver.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      521,
+      7,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "alert_sign_post",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/alert_sign_post.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      777,
+      7,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "rifles_warden_star",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/rifles_warden_star.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      9,
+      211,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "satellite_dish",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/satellite_dish.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      265,
+      211,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "locked_chest_rusty",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/locked_chest_rusty.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      521,
+      211,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "signed_contract",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/signed_contract.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      777,
+      211,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "faction_flag_small",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/faction_flag_small.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      9,
+      415,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "wax_seal_red",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/wax_seal_red.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      265,
+      415,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "voting_decision_tablet",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/voting_decision_tablet.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      521,
+      415,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "money_envelope_seal",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/money_envelope_seal.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      777,
+      415,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "magnet_coin",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/magnet_coin.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      9,
+      619,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "gear_chest",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/gear_chest.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      265,
+      619,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "blue_arrow_down",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/blue_arrow_down.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      521,
+      619,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "blank_parchment",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/blank_parchment.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      777,
+      619,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "signed_parchment",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/signed_parchment.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      9,
+      823,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "evil_eye_computer",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/evil_eye_computer.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      265,
+      823,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "badge_slot_board",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/badge_slot_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      521,
+      823,
+      238,
+      189
+    ]
+  },
+  {
+    "name": "casino_chip_dice_table",
+    "path": "res://assets/art/generated/sliced/player_interaction_props/casino_chip_dice_table.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_player_interaction_props_atlas.jpg",
+    "source_region": [
+      777,
+      823,
+      238,
+      189
+    ]
+  }
+]

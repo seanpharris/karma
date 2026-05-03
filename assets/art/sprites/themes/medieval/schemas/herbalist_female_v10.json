@@ -1,0 +1,29 @@
+{
+  "id": "herbalist_female_v10",
+  "display_name": "Herbalist (F) (variant 10)",
+  "tags": [
+    "medieval",
+    "wild"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/thin/walk/navy.png",
+    "legs": "legs/formal/thin/walk/leather.png",
+    "torso": "torso/aprons/apron/female/walk/black.png",
+    "hair": "hair/bangs/adult/walk.png",
+    "weapon": "weapon/magic/diamond/universal/walk/background.png",
+    "hat": "hat/cloth/hood/adult/walk/pink.png"
+  },
+  "tints": {
+    "body": "#f2c7a5",
+    "head": "#f2c7a5",
+    "hair": "#e6d6ac",
+    "beard": "#e6d6ac"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

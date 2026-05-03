@@ -1,0 +1,28 @@
+{
+  "id": "fisher_female_v2",
+  "display_name": "Fisher (F) (variant 2)",
+  "tags": [
+    "medieval",
+    "peasant"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/sandals/thin/walk/blue.png",
+    "legs": "legs/formal/thin/walk/black.png",
+    "torso": "torso/aprons/apron/female/walk/white.png",
+    "hair": "hair/swoop/adult/walk.png",
+    "waist": "torso/waist/sash/female/walk/sky.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#9a693b",
+    "beard": "#9a693b"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

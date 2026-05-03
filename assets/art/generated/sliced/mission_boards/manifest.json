@@ -1,0 +1,222 @@
+[
+  {
+    "name": "adventure_quest_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/adventure_quest_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      28,
+      10,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "computer_data_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/computer_data_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      284,
+      10,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "danger_skull_gear_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/danger_skull_gear_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      540,
+      10,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "ornate_faction_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/ornate_faction_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      796,
+      10,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "bandage_health_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/bandage_health_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      28,
+      215,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "wanted_poster_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/wanted_poster_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      284,
+      215,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "supply_check_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/supply_check_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      540,
+      215,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "repair_tool_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/repair_tool_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      796,
+      215,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "lost_and_found_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/lost_and_found_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      28,
+      410,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "rumor_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/rumor_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      284,
+      410,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "posse_recruitment_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/posse_recruitment_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      540,
+      410,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "faction_notice_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/faction_notice_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      796,
+      410,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "black_market_coded_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/black_market_coded_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      28,
+      615,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "law_bulletin_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/law_bulletin_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      284,
+      615,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "community_vote_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/community_vote_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      540,
+      615,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "delivery_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/delivery_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      796,
+      615,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "salvage_claim_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/salvage_claim_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      28,
+      820,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "duel_challenge_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/duel_challenge_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      284,
+      820,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "apology_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/apology_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      540,
+      820,
+      200,
+      145
+    ]
+  },
+  {
+    "name": "warning_board",
+    "path": "res://assets/art/generated/sliced/mission_boards/warning_board.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_mission_boards_atlas.jpg",
+    "source_region": [
+      796,
+      820,
+      200,
+      145
+    ]
+  }
+]

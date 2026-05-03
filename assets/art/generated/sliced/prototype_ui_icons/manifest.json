@@ -1,0 +1,398 @@
+[
+  {
+    "name": "interact_key_prompt",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/interact_key_prompt.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      27,
+      10,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "objective_arrow",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/objective_arrow.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      197,
+      10,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "scenario_start",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/scenario_start.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      367,
+      10,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "scenario_complete",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/scenario_complete.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      537,
+      10,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "server_event_log",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/server_event_log.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      707,
+      10,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "match_summary",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/match_summary.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      877,
+      10,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "ready_up",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/ready_up.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      27,
+      200,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "match_started",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/match_started.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      197,
+      200,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "wanted",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/wanted.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      367,
+      200,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "bounty_claimed",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/bounty_claimed.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      537,
+      200,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "contraband_detected",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/contraband_detected.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      707,
+      200,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "supply_spawned",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/supply_spawned.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      877,
+      200,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "supply_claimed",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/supply_claimed.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      27,
+      365,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "clinic_revive",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/clinic_revive.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      197,
+      365,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "duel_requested",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/duel_requested.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      367,
+      365,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "duel_accepted",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/duel_accepted.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      537,
+      365,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "player_downed",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/player_downed.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      707,
+      365,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "player_rescued",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/player_rescued.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      877,
+      365,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "karma_break",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/karma_break.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      27,
+      545,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "item_purchased",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/item_purchased.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      197,
+      545,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "item_used",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/item_used.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      367,
+      545,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "structure_interacted",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/structure_interacted.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      537,
+      545,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "posse_invite",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/posse_invite.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      707,
+      545,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "posse_accepted",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/posse_accepted.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      877,
+      545,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "local_chat",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/local_chat.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      27,
+      705,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "mount",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/mount.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      197,
+      705,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "dismount",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/dismount.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      367,
+      705,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "quest_started",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/quest_started.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      537,
+      705,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "quest_completed",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/quest_completed.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      707,
+      705,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "dialogue",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/dialogue.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      877,
+      705,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "entanglement",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/entanglement.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      27,
+      880,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "rumor",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/rumor.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      197,
+      880,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "witness",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/witness.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      367,
+      880,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "evidence",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/evidence.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      537,
+      880,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "danger_heat",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/danger_heat.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      707,
+      880,
+      115,
+      115
+    ]
+  },
+  {
+    "name": "restart",
+    "path": "res://assets/art/generated/sliced/prototype_ui_icons/restart.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_prototype_ui_icons_atlas.jpg",
+    "source_region": [
+      877,
+      880,
+      115,
+      115
+    ]
+  }
+]

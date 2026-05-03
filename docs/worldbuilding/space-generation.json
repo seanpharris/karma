@@ -1,0 +1,140 @@
+{
+  "generation_request": {
+    "theme": "space",
+    "world_name_style": "cozy, eerie, slightly surreal sci-fi",
+    "max_core_npcs": 6,
+    "max_factions": 3,
+    "max_active_quests": 5,
+    "tone": [
+      "cozy",
+      "absurd",
+      "socially reactive",
+      "occasionally dark",
+      "isolated",
+      "mysterious"
+    ]
+  },
+
+  "fixed_world_rules": {
+    "world_size_tiles": {
+      "width": 1000,
+      "height": 1000,
+      "tile_size_px": 16
+    },
+    "karma_system": {
+      "ascend": "Protecting others, sharing resources, repairing systems, telling the truth, preventing harm",
+      "descend": "Sabotage, hoarding, deception, exploitation, causing instability or panic",
+      "important_note": "An action can Ascend globally while upsetting one NPC, or Descend globally while pleasing another NPC."
+    },
+    "relationship_system": {
+      "description": "NPC relationships are local memory tracked per NPC/player pair.",
+      "tracked_values": ["trust", "fear", "respect", "resentment", "affection"]
+    }
+  },
+
+  "available_locations": [
+    {
+      "id": "loc_station_hub",
+      "type": "station_hub",
+      "required_buildings": [
+        "command_center",
+        "mess_hall",
+        "trade_terminal",
+        "medical_bay"
+      ],
+      "story_function": "main social and operational hub"
+    },
+    {
+      "id": "loc_engineering_bay",
+      "type": "engineering",
+      "required_buildings": [
+        "reactor_core",
+        "maintenance_station"
+      ],
+      "story_function": "danger/repair/sabotage zone"
+    },
+    {
+      "id": "loc_habitat_ring",
+      "type": "habitat",
+      "required_buildings": [
+        "living_quarters",
+        "hydroponics",
+        "recreation_room"
+      ],
+      "story_function": "personal life / survival / emotional conflicts"
+    }
+  ],
+
+  "required_roles": [
+    {
+      "role": "commander",
+      "workplace": "command_center",
+      "needs_home": true
+    },
+    {
+      "role": "medic",
+      "workplace": "medical_bay",
+      "needs_home": true
+    },
+    {
+      "role": "engineer",
+      "workplace": "reactor_core",
+      "needs_home": true
+    },
+    {
+      "role": "quartermaster",
+      "workplace": "trade_terminal",
+      "needs_home": true
+    },
+    {
+      "role": "hydroponics_keeper",
+      "workplace": "hydroponics",
+      "needs_home": false
+    }
+  ],
+
+  "optional_roles_pool": [
+    "smuggler",
+    "pilot",
+    "android",
+    "scientist",
+    "security_officer",
+    "drifter",
+    "signal_technician",
+    "mechanic",
+    "stowaway"
+  ],
+
+  "story_generation_rules": {
+    "npc_requirements": [
+      "Each NPC must have a secret",
+      "Each NPC must have at least 2 relationship biases",
+      "Each NPC must have a pressure point",
+      "Each NPC must react differently to Ascend and Descend players"
+    ],
+    "quest_requirements": [
+      "Each quest must support at least 3 approaches",
+      "At least one approach should be morally messy",
+      "Each quest must affect karma and at least one NPC relationship",
+      "At least one quest should involve deception, hidden data, or identity ambiguity",
+      "At least one quest should use an object in multiple ways"
+    ],
+    "object_requirements": [
+      "Objects should be usable as tool, weapon, access key, data source, bribe, repair component, or mistake",
+      "Avoid single-purpose quest items when possible"
+    ]
+  },
+
+  "output_format": {
+    "world_identity": {},
+    "npcs": [],
+    "factions": [],
+    "quests": [],
+    "relationship_web": [],
+    "oddities": [],
+    "multi_use_objects": [],
+    "karma_events": []
+  },
+
+  "generation_instruction": "Using this form, generate one new space Karma world instance. Do not change location IDs or required building types. Create changing NPCs, factions, quests, secrets, relationships, oddities, and karma hooks. Output valid JSON only."
+}

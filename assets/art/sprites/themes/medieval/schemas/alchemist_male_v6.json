@@ -1,0 +1,29 @@
+{
+  "id": "alchemist_male_v6",
+  "display_name": "Alchemist (variant 6)",
+  "tags": [
+    "medieval",
+    "wayfarer"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/brass.png",
+    "legs": "legs/cuffed/male/walk/leather.png",
+    "torso": "torso/aprons/apron/male/walk/green.png",
+    "hair": "hair/parted3/adult/walk.png",
+    "neck": "neck/capetie/male/walk/orange.png",
+    "beard": "beards/mustache/french/walk.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#c9c0b8",
+    "beard": "#c9c0b8"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "force": true,
+  "category": "banners",
+  "items": [
+    {
+      "id": "banner_chapel_order",
+      "prompt": "medieval banner, white silk, gold cross emblem, hanging from a wooden pole, top-down pixel art",
+      "width": 64,
+      "height": 96
+    },
+    {
+      "id": "banner_crown_garrison",
+      "prompt": "medieval banner, royal blue, golden crown emblem, hanging from a wooden pole, top-down pixel art",
+      "width": 64,
+      "height": 96
+    },
+    {
+      "id": "banner_shadowed_guild",
+      "prompt": "medieval banner, dark grey, black raven emblem, tattered edge, hanging from a wooden pole, top-down pixel art",
+      "width": 64,
+      "height": 96
+    },
+    {
+      "id": "banner_wayfarers",
+      "prompt": "medieval banner, forest green, silver compass star emblem, hanging from a wooden pole, top-down pixel art",
+      "width": 64,
+      "height": 96
+    },
+    {
+      "id": "banner_wild_folk",
+      "prompt": "medieval banner, leather brown, antler emblem, frayed hanging from a wooden pole, top-down pixel art",
+      "width": 64,
+      "height": 96
+    },
+    {
+      "id": "banner_freeholders",
+      "prompt": "medieval banner, harvest gold, wheat sheaf emblem, hanging from a wooden pole, top-down pixel art",
+      "width": 64,
+      "height": 96
+    }
+  ]
+}

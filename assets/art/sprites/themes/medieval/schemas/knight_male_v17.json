@@ -1,0 +1,32 @@
+{
+  "id": "knight_male_v17",
+  "display_name": "Knight-Errant (variant 17)",
+  "tags": [
+    "medieval",
+    "law",
+    "melee"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/tan.png",
+    "legs": "legs/fur/male/walk/rose.png",
+    "torso": "torso/aprons/apron/male/walk/red.png",
+    "hair": "hair/swoop_side/adult/walk.png",
+    "weapon": "weapon/polearm/dragonspear/foreground/walk/dragonspear.png",
+    "waist": "torso/waist/belt_loose/male/walk/slate.png",
+    "neck": "neck/capeclip/male/walk/yellow.png",
+    "shoulders": "shoulders/epaulets/male/walk.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#c08a4b",
+    "beard": "#c08a4b"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

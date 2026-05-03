@@ -22,6 +22,8 @@ public sealed class DuelLedger
 
     public IReadOnlyList<Duel> All => _duels;
 
+    public void Clear() => _duels.Clear();
+
     public Duel Request(string challengerId, string targetId)
     {
         var existing = _duels.FirstOrDefault(duel =>

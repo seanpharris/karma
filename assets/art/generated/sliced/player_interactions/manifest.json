@@ -1,0 +1,398 @@
+[
+  {
+    "name": "duel_post_sign",
+    "path": "res://assets/art/generated/sliced/player_interactions/duel_post_sign.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      6,
+      6,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "parade_flags",
+    "path": "res://assets/art/generated/sliced/player_interactions/parade_flags.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      176,
+      6,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "gambling_table",
+    "path": "res://assets/art/generated/sliced/player_interactions/gambling_table.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      346,
+      6,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "handshake_statue",
+    "path": "res://assets/art/generated/sliced/player_interactions/handshake_statue.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      516,
+      6,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "manuscript_scroll",
+    "path": "res://assets/art/generated/sliced/player_interactions/manuscript_scroll.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      686,
+      6,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "wanted_paper",
+    "path": "res://assets/art/generated/sliced/player_interactions/wanted_paper.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      856,
+      6,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "gift_box",
+    "path": "res://assets/art/generated/sliced/player_interactions/gift_box.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      6,
+      176,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "handshake_accept",
+    "path": "res://assets/art/generated/sliced/player_interactions/handshake_accept.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      176,
+      176,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "handshake_decline",
+    "path": "res://assets/art/generated/sliced/player_interactions/handshake_decline.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      346,
+      176,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "handshake_prohibited",
+    "path": "res://assets/art/generated/sliced/player_interactions/handshake_prohibited.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      516,
+      176,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "money_pile",
+    "path": "res://assets/art/generated/sliced/player_interactions/money_pile.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      686,
+      176,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "posse_banner_pole",
+    "path": "res://assets/art/generated/sliced/player_interactions/posse_banner_pole.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      856,
+      176,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "posse_banner_hanging",
+    "path": "res://assets/art/generated/sliced/player_interactions/posse_banner_hanging.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      6,
+      346,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "contracts_pinboard",
+    "path": "res://assets/art/generated/sliced/player_interactions/contracts_pinboard.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      176,
+      346,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "chest_open_jewels",
+    "path": "res://assets/art/generated/sliced/player_interactions/chest_open_jewels.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      346,
+      346,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "chest_open_weapons",
+    "path": "res://assets/art/generated/sliced/player_interactions/chest_open_weapons.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      516,
+      346,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "chest_open_misc",
+    "path": "res://assets/art/generated/sliced/player_interactions/chest_open_misc.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      686,
+      346,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "chest_open_candy",
+    "path": "res://assets/art/generated/sliced/player_interactions/chest_open_candy.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      856,
+      346,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "chest_closed",
+    "path": "res://assets/art/generated/sliced/player_interactions/chest_closed.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      6,
+      516,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "treasure_map_a",
+    "path": "res://assets/art/generated/sliced/player_interactions/treasure_map_a.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      176,
+      516,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "treasure_map_b",
+    "path": "res://assets/art/generated/sliced/player_interactions/treasure_map_b.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      346,
+      516,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "gold_medallion",
+    "path": "res://assets/art/generated/sliced/player_interactions/gold_medallion.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      516,
+      516,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "danger_sign_yellow",
+    "path": "res://assets/art/generated/sliced/player_interactions/danger_sign_yellow.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      686,
+      516,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "danger_sign_yellow_alt",
+    "path": "res://assets/art/generated/sliced/player_interactions/danger_sign_yellow_alt.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      856,
+      516,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "ballot_box_wood",
+    "path": "res://assets/art/generated/sliced/player_interactions/ballot_box_wood.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      6,
+      686,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "sealed_parchment",
+    "path": "res://assets/art/generated/sliced/player_interactions/sealed_parchment.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      176,
+      686,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "money_envelope",
+    "path": "res://assets/art/generated/sliced/player_interactions/money_envelope.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      346,
+      686,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "magic_ritual_circle",
+    "path": "res://assets/art/generated/sliced/player_interactions/magic_ritual_circle.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      516,
+      686,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "torch_standing",
+    "path": "res://assets/art/generated/sliced/player_interactions/torch_standing.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      686,
+      686,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "torch_standing_alt",
+    "path": "res://assets/art/generated/sliced/player_interactions/torch_standing_alt.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      856,
+      686,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "torch_on_stick",
+    "path": "res://assets/art/generated/sliced/player_interactions/torch_on_stick.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      6,
+      856,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "hunter_recruit_sign",
+    "path": "res://assets/art/generated/sliced/player_interactions/hunter_recruit_sign.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      176,
+      856,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "potion_chess_table",
+    "path": "res://assets/art/generated/sliced/player_interactions/potion_chess_table.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      346,
+      856,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "casino_chips_dice",
+    "path": "res://assets/art/generated/sliced/player_interactions/casino_chips_dice.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      516,
+      856,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "money_sack_tag",
+    "path": "res://assets/art/generated/sliced/player_interactions/money_sack_tag.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      686,
+      856,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "mailbox_lit_red",
+    "path": "res://assets/art/generated/sliced/player_interactions/mailbox_lit_red.png",
+    "source_atlas": "res://assets/art/generated/priority_static_atlases/karma_priority_player_interactions_atlas.jpg",
+    "source_region": [
+      856,
+      856,
+      158,
+      158
+    ]
+  }
+]

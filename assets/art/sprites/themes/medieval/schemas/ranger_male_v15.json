@@ -1,0 +1,34 @@
+{
+  "id": "ranger_male_v15",
+  "display_name": "Ranger (variant 15)",
+  "tags": [
+    "medieval",
+    "law",
+    "ranged"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/white.png",
+    "legs": "legs/formal/male/walk/black.png",
+    "torso": "torso/aprons/apron/male/walk/red.png",
+    "hair": "hair/spiked_liberty2/adult/walk.png",
+    "waist": "torso/waist/belt_belly/male/walk/brown.png",
+    "neck": "neck/capetie/male/walk/gray.png",
+    "hat": "hat/helmet/legion/adult/walk.png",
+    "beard": "beards/mustache/chevron/walk.png",
+    "cape": "cape/solid_behind/walk/white.png",
+    "quiver": "quiver/walk/quiver.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#c08a4b",
+    "beard": "#c08a4b"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

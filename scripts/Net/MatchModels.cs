@@ -4,14 +4,32 @@ namespace Karma.Net;
 
 public enum MatchStatus
 {
+    Lobby,
     Running,
     Finished
 }
 
+public enum MatchPhase
+{
+    Dawn,
+    Morning,
+    Noon,
+    Afternoon,
+    Dusk,
+    Night
+}
+
 public sealed record MatchSnapshot(
     MatchStatus Status,
+    MatchPhase Phase,
     int DurationSeconds,
     int ElapsedSeconds,
+    string CurrentSaintId,
+    string CurrentSaintName,
+    int CurrentSaintScore,
+    string CurrentScourgeId,
+    string CurrentScourgeName,
+    int CurrentScourgeScore,
     string SaintWinnerId,
     string SaintWinnerName,
     int SaintWinnerScore,
@@ -21,9 +39,12 @@ public sealed record MatchSnapshot(
 {
     public int RemainingSeconds => System.Math.Max(0, DurationSeconds - ElapsedSeconds);
 
-    public string Summary => Status == MatchStatus.Running
-        ? $"Match: {FormatTime(RemainingSeconds)} remaining"
-        : $"Match complete: Saint {SaintWinnerName} ({SaintWinnerScore:+#;-#;0}) | Scourge {ScourgeWinnerName} ({ScourgeWinnerScore:+#;-#;0})";
+    public string Summary => Status switch
+    {
+        MatchStatus.Lobby => "Lobby: waiting for players to ready up",
+        MatchStatus.Finished => $"Match complete: Saint {SaintWinnerName} ({SaintWinnerScore:+#;-#;0}) | Scourge {ScourgeWinnerName} ({ScourgeWinnerScore:+#;-#;0})",
+        _ => $"Match: {FormatTime(RemainingSeconds)} | Phase {Phase} | Saint {CurrentSaintName} ({CurrentSaintScore:+#;-#;0}) | Scourge {CurrentScourgeName} ({CurrentScourgeScore:+#;-#;0})"
+    };
 
     private static string FormatTime(int seconds)
     {
@@ -42,13 +63,19 @@ public sealed class MatchState
         _durationSeconds = durationSeconds;
     }
 
-    public MatchStatus Status { get; private set; } = MatchStatus.Running;
+    public MatchStatus Status { get; private set; } = MatchStatus.Lobby;
     public int DurationSeconds => _durationSeconds;
     public int ElapsedSeconds => _elapsedSeconds;
 
+    public void StartMatch()
+    {
+        if (Status == MatchStatus.Lobby)
+            Status = MatchStatus.Running;
+    }
+
     public void Advance(int seconds, LeaderboardStanding standing)
     {
-        if (Status == MatchStatus.Finished || seconds <= 0)
+        if (Status != MatchStatus.Running || seconds <= 0)
         {
             return;
         }
@@ -63,15 +90,23 @@ public sealed class MatchState
         _winners = SnapshotBuilder.LeaderboardFrom(standing);
     }
 
-    public MatchSnapshot Snapshot(LeaderboardStanding currentStanding)
+    public MatchSnapshot Snapshot(LeaderboardStanding currentStanding, MatchPhase phase = MatchPhase.Dawn)
     {
+        var leaders = SnapshotBuilder.LeaderboardFrom(currentStanding);
         var winners = Status == MatchStatus.Finished
             ? _winners
-            : SnapshotBuilder.LeaderboardFrom(currentStanding);
+            : leaders;
         return new MatchSnapshot(
             Status,
+            phase,
             _durationSeconds,
             _elapsedSeconds,
+            leaders.SaintPlayerId,
+            leaders.SaintName,
+            leaders.SaintScore,
+            leaders.ScourgePlayerId,
+            leaders.ScourgeName,
+            leaders.ScourgeScore,
             winners.SaintPlayerId,
             winners.SaintName,
             winners.SaintScore,

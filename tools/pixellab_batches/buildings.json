@@ -1,0 +1,78 @@
+{
+  "force": true,
+  "category": "buildings",
+  "items": [
+    {
+      "id": "smithy",
+      "prompt": "medieval blacksmith smithy building, stone walls, wooden roof, anvil and forge visible through doorway, smoke from chimney, top-down view, isometric pixel art",
+      "width": 128,
+      "height": 128
+    },
+    {
+      "id": "tavern",
+      "prompt": "medieval tavern inn building, wooden beams, thatched roof, hanging sign with mug icon, warm lit windows, top-down view, pixel art",
+      "width": 128,
+      "height": 128
+    },
+    {
+      "id": "chapel",
+      "prompt": "small medieval stone chapel with cross on roof, arched wooden door, narrow windows, top-down view, pixel art",
+      "width": 128,
+      "height": 128
+    },
+    {
+      "id": "watchtower",
+      "prompt": "medieval stone watchtower, square base, wooden palisade top, banner flying, top-down view, pixel art",
+      "width": 96,
+      "height": 128
+    },
+    {
+      "id": "market_stall",
+      "prompt": "medieval market stall with striped canvas awning, wooden counter, baskets of produce, top-down view, pixel art",
+      "width": 96,
+      "height": 96
+    },
+    {
+      "id": "tithe_barn",
+      "prompt": "medieval wooden barn for storing tithes, double doors, stone foundation, sloped wooden roof, top-down view, pixel art",
+      "width": 128,
+      "height": 96
+    },
+    {
+      "id": "notice_post",
+      "prompt": "medieval wooden notice board on a post, weathered, parchment notices nailed to it, top-down view, pixel art",
+      "width": 64,
+      "height": 96
+    },
+    {
+      "id": "well",
+      "prompt": "medieval stone village well with wooden bucket on rope, mossy stones, top-down view, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "shrine",
+      "prompt": "small medieval roadside shrine, stone niche with wooden cross, candles burning, flowers offering, top-down view, pixel art",
+      "width": 64,
+      "height": 80
+    },
+    {
+      "id": "bell_tower",
+      "prompt": "medieval stone bell tower, large bronze bell visible at top, narrow stone base, top-down view, pixel art",
+      "width": 96,
+      "height": 128
+    },
+    {
+      "id": "duel_ring",
+      "prompt": "medieval stone duel circle, packed dirt center, ring of standing stones, weapons rack, top-down view, pixel art",
+      "width": 128,
+      "height": 128
+    },
+    {
+      "id": "memorial",
+      "prompt": "medieval stone war memorial, tall stone slab with sword carving, weathered, surrounded by flowers, top-down view, pixel art",
+      "width": 64,
+      "height": 96
+    }
+  ]
+}

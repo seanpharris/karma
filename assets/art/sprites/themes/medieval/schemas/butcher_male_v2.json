@@ -1,0 +1,30 @@
+{
+  "id": "butcher_male_v2",
+  "display_name": "Butcher (variant 2)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/rose.png",
+    "legs": "legs/formal/male/walk/navy.png",
+    "torso": "torso/aprons/overalls/male/walk/sky.png",
+    "hair": "hair/curly_short/adult/walk.png",
+    "waist": "torso/waist/obi/knot/left/male/walk/bluegray.png",
+    "beard": "beards/mustache/basic/walk.png",
+    "backpack": "backpack/backpack/male/walk/black.png"
+  },
+  "tints": {
+    "body": "#5b3829",
+    "head": "#5b3829",
+    "hair": "#8a8a8a",
+    "beard": "#8a8a8a"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

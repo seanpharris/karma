@@ -1,0 +1,33 @@
+{
+  "id": "mercenary_male_v22",
+  "display_name": "Mercenary (M) (variant 22)",
+  "tags": [
+    "medieval",
+    "wayfarer",
+    "melee"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/bronze.png",
+    "legs": "legs/formal_striped/male/walk/orange.png",
+    "torso": "torso/aprons/apron/male/walk/bluegray.png",
+    "hair": "hair/swoop_side/adult/walk.png",
+    "weapon": "weapon/polearm/spear/background/walk/light.png",
+    "waist": "torso/waist/obi/male/walk/blue.png",
+    "neck": "neck/cravat/male/walk/leather.png",
+    "arms": "arms/hands/gloves/male/walk.png",
+    "quiver": "quiver/walk/quiver.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#5f2a1d",
+    "beard": "#5f2a1d"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

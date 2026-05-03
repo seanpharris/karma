@@ -1,0 +1,21 @@
+{
+  "force": true,
+  "category": "buildings",
+  "items": [
+    { "id": "market_stall_red", "prompt": "medieval market stall with red striped canvas awning, wooden counter with pottery wares, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "market_stall_blue", "prompt": "medieval market stall with blue canvas awning, baskets of fruit and vegetables, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "market_stall_green", "prompt": "medieval market stall with green canvas awning, fish and bread display, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "market_stall_yellow", "prompt": "medieval market stall with yellow canvas awning, ribbons and fabrics on display, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "market_stall_butcher", "prompt": "medieval butcher market stall, hanging meat, painted cleaver sign, white awning, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "market_stall_jeweler", "prompt": "medieval jeweler market stall, glass case of trinkets, fine purple awning, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "market_stall_potter", "prompt": "medieval potter market stall, clay pots and vases on display, brown awning, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "market_stall_herbs", "prompt": "medieval herbalist stall, hanging dried herb bundles, green awning, vials in front, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "market_open_a", "prompt": "medieval open-air market square, several adjacent stalls visible, central well, isometric pixel art", "width": 144, "height": 144 },
+    { "id": "market_food_court", "prompt": "medieval food market with several food stalls clustered, smoke from cooking fires, isometric pixel art", "width": 128, "height": 128 },
+    { "id": "tavern_d", "prompt": "medieval tavern with outdoor benches, painted swinging sign with frothy mug, half-timbered, isometric pixel art", "width": 128, "height": 128 },
+    { "id": "tavern_e", "prompt": "medieval roadside tavern, two stories, big stone chimney, hanging horseshoe sign, isometric pixel art", "width": 128, "height": 128 },
+    { "id": "tavern_seedy", "prompt": "medieval seedy tavern, weathered wood, broken shutter, dim light, isometric pixel art", "width": 128, "height": 128 },
+    { "id": "wine_shop", "prompt": "medieval wine merchant shop, barrels stacked outside, painted grape cluster sign, half-timbered, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "spice_shop", "prompt": "medieval exotic spice shop, colorful sacks of spices in window, ornate eastern-style awning, isometric pixel art", "width": 96, "height": 96 }
+  ]
+}

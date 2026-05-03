@@ -1,0 +1,32 @@
+{
+  "id": "monk_male_v17",
+  "display_name": "Monk (variant 17)",
+  "tags": [
+    "medieval",
+    "chapel"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/iron.png",
+    "legs": "legs/fur/male/walk/purple.png",
+    "torso": "torso/aprons/apron/male/walk/rose.png",
+    "hair": "hair/dreadlocks_long/adult/walk.png",
+    "waist": "torso/waist/obi/male/walk/black.png",
+    "hat": "hat/magic/celestial/adult/walk/orange.png",
+    "facial": "facial/earrings/simple/right/adult/walk/yellow.png",
+    "beard": "beards/mustache/horseshoe/walk.png",
+    "backpack": "backpack/squarepack/male/walk/black.png"
+  },
+  "tints": {
+    "body": "#e1a979",
+    "head": "#e1a979",
+    "hair": "#3b2418",
+    "beard": "#3b2418"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

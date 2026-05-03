@@ -1,0 +1,32 @@
+{
+  "id": "guard_female_v16",
+  "display_name": "Guard (F) (variant 16)",
+  "tags": [
+    "medieval",
+    "law"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/thin/walk/gray.png",
+    "legs": "legs/formal/thin/walk/white.png",
+    "torso": "torso/aprons/apron_full/female/walk/navy.png",
+    "hair": "hair/spiked_liberty2/adult/walk.png",
+    "weapon": "weapon/polearm/dragonspear/foreground/walk/silver.png",
+    "waist": "torso/waist/sash/female/walk/sky.png",
+    "hat": "hat/cloth/bandana/adult/walk/bandana_red.png",
+    "arms": "arms/bracers/thin/walk.png",
+    "cape": "cape/solid_behind/walk/purple.png"
+  },
+  "tints": {
+    "body": "#e1a979",
+    "head": "#e1a979",
+    "hair": "#2c2b26",
+    "beard": "#2c2b26"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "id": "hermit_male",
+  "display_name": "Hermit",
+  "tags": [
+    "medieval",
+    "wild"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male_elderly/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/forest.png",
+    "legs": "legs/formal/male/walk/brown.png",
+    "torso": "torso/aprons/apron/male/walk/purple.png",
+    "hair": "hair/jewfro/adult/walk.png",
+    "weapon": "weapon/magic/diamond_off/universal/background/walk/copper.png",
+    "waist": "torso/waist/obi/knot/left/male/walk/green.png",
+    "neck": "neck/amulet/cross/male/walk/steel_red.png",
+    "hat": "hat/cloth/hood/adult/walk/charcoal.png",
+    "beard": "beards/beard/winter/female/walk.png"
+  },
+  "tints": {
+    "body": "#e1a979",
+    "head": "#e1a979",
+    "hair": "#20150f",
+    "beard": "#20150f"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

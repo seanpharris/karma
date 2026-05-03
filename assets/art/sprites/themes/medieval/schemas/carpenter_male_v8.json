@@ -1,0 +1,30 @@
+{
+  "id": "carpenter_male_v8",
+  "display_name": "Carpenter (variant 8)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/white.png",
+    "legs": "legs/fur/male/walk.png",
+    "torso": "torso/clothes/longsleeve/laced/male/walk/blue.png",
+    "hair": "hair/bob/adult/walk.png",
+    "waist": "torso/waist/belt_loose/male/walk/slate.png",
+    "neck": "neck/amulet/cross/male/walk/brass_blue.png",
+    "hat": "hat/cloth/bandana2/adult/walk/sky.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#c9c0b8",
+    "beard": "#c9c0b8"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

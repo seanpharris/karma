@@ -1,0 +1,29 @@
+{
+  "id": "washerwoman_female_v16",
+  "display_name": "Washerwoman (variant 16)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/thin/walk/purple.png",
+    "legs": "legs/formal_striped/thin/walk/charcoal.png",
+    "torso": "torso/aprons/apron/female/walk/tan.png",
+    "hair": "hair/lob/adult/walk.png",
+    "waist": "torso/waist/belt_belly/female/walk/white.png",
+    "cape": "cape/solid_behind/walk/walnut.png"
+  },
+  "tints": {
+    "body": "#5b3829",
+    "head": "#5b3829",
+    "hair": "#c9c0b8",
+    "beard": "#c9c0b8"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

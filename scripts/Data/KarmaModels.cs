@@ -14,6 +14,8 @@ public enum KarmaDirection
 public sealed class PlayerKarma
 {
     public int Score { get; private set; }
+    public int KarmaPeak { get; private set; }
+    public int KarmaFloor { get; private set; }
 
     public KarmaDirection Path => Score switch
     {
@@ -29,11 +31,14 @@ public sealed class PlayerKarma
     public void Apply(int amount)
     {
         Score += amount;
+        if (Score > KarmaPeak) KarmaPeak = Score;
+        if (Score < KarmaFloor) KarmaFloor = Score;
     }
 
     public void Reset()
     {
         Score = 0;
+        // KarmaPeak and KarmaFloor are match-scoped — they survive Karma Break
     }
 }
 
@@ -106,9 +111,9 @@ public static class KarmaTiers
 {
     private static readonly (int Threshold, string Name)[] Positive =
     {
-        (100, "Exalted"),
+        (100, "Paragon"),
         (75, "Luminary"),
-        (50, "Paragon"),
+        (50, "Exalted"),
         (35, "Beacon"),
         (20, "Advocate"),
         (10, "Trusted")
@@ -116,10 +121,10 @@ public static class KarmaTiers
 
     private static readonly (int Threshold, string Name)[] Negative =
     {
-        (-100, "Abyssal"),
+        (-100, "Renegade"),
         (-75, "Wraith"),
         (-50, "Dread"),
-        (-35, "Renegade"),
+        (-35, "Abyssal"),
         (-20, "Outlaw"),
         (-10, "Shifty")
     };
@@ -139,7 +144,7 @@ public static class KarmaTiers
                 return new KarmaRank("Unmarked", 0);
             }
 
-            return tier.Name == "Exalted"
+            return tier.Name == "Paragon"
                 ? new KarmaRank(tier.Name, GetInfiniteRank(score))
                 : new KarmaRank(tier.Name, 1);
         }
@@ -152,7 +157,7 @@ public static class KarmaTiers
                 return new KarmaRank("Unmarked", 0);
             }
 
-            return tier.Name == "Abyssal"
+            return tier.Name == "Renegade"
                 ? new KarmaRank(tier.Name, GetInfiniteRank(-score))
                 : new KarmaRank(tier.Name, 1);
         }
@@ -164,12 +169,12 @@ public static class KarmaTiers
     {
         if (score >= 100)
         {
-            return GetInfiniteProgress(score, "Exalted");
+            return GetInfiniteProgress(score, "Paragon");
         }
 
         if (score <= -100)
         {
-            return GetInfiniteProgress(-score, "Abyssal");
+            return GetInfiniteProgress(-score, "Renegade");
         }
 
         if (score > 0)

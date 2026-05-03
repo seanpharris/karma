@@ -19,22 +19,40 @@ public sealed record KarmaPerk(
 
 public static class PerkCatalog
 {
+    public const string TrustedDiscountId = "trusted_discount";
+    public const string ShiftyPricesId = "shifty_prices";
+    public const string CalmingPresenceId = "calming_presence";
+    public const string BeaconAuraId = "beacon_aura";
+    public const string ExaltedFavorId = "exalted_favor";
+    public const string RumorcraftId = "rumorcraft";
+    public const string AbyssalNerveId = "abyssal_nerve";
+    public const string DreadReputationId = "dread_reputation";
+    public const string RenegadeMarkId = "renegade_mark";
+    public const string WardenId = "warden";
+    public const int WardenThreshold = 150;
+    public const string WraithId = "wraith_surge";
+    public const int WraithThreshold = 150;
+    public const float WraithSpeedModifier = 1.5f;
+    public const float WraithLowHpPercent = 0.3f;
+
     private static readonly KarmaPerk[] AscensionPerks =
     {
-        new("trusted_discount", "Trusted Discount", PerkPath.Ascension, 10, "Helpful NPCs offer small discounts."),
-        new("calming_presence", "Calming Presence", PerkPath.Ascension, 20, "Angry NPCs are easier to calm."),
-        new("beacon_aura", "Beacon Aura", PerkPath.Ascension, 35, "Nearby allies recover confidence faster."),
-        new("paragon_favor", "Paragon Favor", PerkPath.Ascension, 50, "Town allies may defend you."),
-        new("exalted_grace", "Exalted Grace", PerkPath.Ascension, 100, "One severe social consequence can be softened.")
+        new(TrustedDiscountId, "Trusted Discount", PerkPath.Ascension, 10, "Helpful NPCs offer small discounts."),
+        new(CalmingPresenceId, "Calming Presence", PerkPath.Ascension, 20, "Negative NPC reactions are softened."),
+        new(BeaconAuraId, "Beacon Aura", PerkPath.Ascension, 35, "Nearby allies recover confidence faster, and your stamina recovers faster."),
+        new("exalted_favor", "Exalted Favor", PerkPath.Ascension, 50, "Town allies may defend you."),
+        new("paragon_grace", "Paragon Grace", PerkPath.Ascension, 100, "One severe social consequence can be softened."),
+        new(WardenId, "Warden", PerkPath.Ascension, WardenThreshold, "Issue Wanted warrants on players who have committed crimes. Others earn karma for bringing them down.")
     };
 
     private static readonly KarmaPerk[] DescensionPerks =
     {
-        new("shifty_prices", "Shifty Prices", PerkPath.Descension, 10, "Shady traders offer better deals."),
-        new("rumorcraft", "Rumorcraft", PerkPath.Descension, 20, "Rumors spread farther when you start them."),
-        new("renegade_nerve", "Renegade Nerve", PerkPath.Descension, 35, "Intimidation attempts become more reliable."),
-        new("dread_reputation", "Dread Reputation", PerkPath.Descension, 50, "Weaker NPCs may comply out of fear."),
-        new("abyssal_mark", "Abyssal Mark", PerkPath.Descension, 100, "Criminal factions may protect you.")
+        new(ShiftyPricesId, "Shifty Prices", PerkPath.Descension, 10, "Shady traders offer better deals."),
+        new(RumorcraftId, "Rumorcraft", PerkPath.Descension, 20, "Rumors spread globally when you expose them."),
+        new(AbyssalNerveId, "Abyssal Nerve", PerkPath.Descension, 35, "Intimidation attempts become more reliable, and sprinting costs less stamina."),
+        new(DreadReputationId, "Dread Reputation", PerkPath.Descension, 50, "Fear softens negative NPC reactions to harmful, violent, or deceptive actions."),
+        new("renegade_mark", "Renegade Mark", PerkPath.Descension, 100, "Criminal factions may protect you."),
+        new(WraithId, "Wraith Surge", PerkPath.Descension, WraithThreshold, "At ≤ 30% HP, gain a 50% speed boost that makes you nearly impossible to pin down.")
     };
 
     private static readonly KarmaPerk SaintStanding = new(
@@ -85,12 +103,12 @@ public static class PerkCatalog
 
     private static void AddInfiniteRankPerk(ICollection<KarmaPerk> perks, KarmaRank rank, PerkPath path)
     {
-        if (rank.Rank <= 1 || rank.Name is not ("Exalted" or "Abyssal"))
+        if (rank.Rank <= 1 || rank.Name is not ("Paragon" or "Renegade"))
         {
             return;
         }
 
-        var idPrefix = path == PerkPath.Ascension ? "exalted_rank" : "abyssal_rank";
+        var idPrefix = path == PerkPath.Ascension ? "paragon_rank" : "renegade_rank";
         var description = path == PerkPath.Ascension
             ? "Repeat ascension rank bonus from uncapped karma."
             : "Repeat descension rank bonus from uncapped karma.";

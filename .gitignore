@@ -1,14 +1,48 @@
 .godot/
 .import/
+*.import
 export.cfg
 export_presets.cfg
 *.translation
 
 bin/
 obj/
+build/
 .vs/
 .vscode/
+.venv/
+.venv_broken_store*/
+.tmp/
+test_tmp/
+__pycache__/
+*.pyc
 
 *.tmp
 *.log
 debug/*.json
+debug/*.png
+debug/*.txt
+debug/**/*.json
+debug/**/*.png
+debug/**/*.txt
+tools/last_test_output.txt
+
+# Sprite pipeline generated assets
+input_raw/*
+!input_raw/.gitkeep
+output_sprites/*
+!output_sprites/.gitkeep
+output_sheets/*
+!output_sheets/.gitkeep
+
+# Raw LPC source art is too large to vendor directly (1.2 GB / 150k PNGs);
+# commit generated runtime bundles instead. Both paths covered because
+# the LPC pack has been hosted at both locations across the repo's
+# history.
+assets/art/sprites/lpc/spritesheets/
+assets/art/sprites/spritesheets/
+assets/art/sprites/sheet_definitions/
+assets/art/sprites/palette_definitions/
+
+# Local-only PixelLab API secret (read by tools/pixellab_generate_batch.js).
+.pixellab_secret

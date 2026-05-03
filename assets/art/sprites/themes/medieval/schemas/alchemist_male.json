@@ -1,0 +1,30 @@
+{
+  "id": "alchemist_male",
+  "display_name": "Alchemist",
+  "tags": [
+    "medieval",
+    "wayfarer"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/revised/male/walk/ceramic.png",
+    "legs": "legs/fur/male/walk/forest.png",
+    "torso": "torso/aprons/suspenders/male/walk/sky.png",
+    "hair": "hair/cowlick_tall/adult/walk.png",
+    "waist": "torso/waist/belt_mage/walk.png",
+    "neck": "neck/amulet/cross/male/walk/ceramic_blue.png",
+    "beard": "beards/beard/trimmed/walk.png"
+  },
+  "tints": {
+    "body": "#5b3829",
+    "head": "#5b3829",
+    "hair": "#e6d6ac",
+    "beard": "#e6d6ac"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

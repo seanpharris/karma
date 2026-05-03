@@ -40,6 +40,8 @@ public sealed class RelationshipLedger
         byPlayer[playerId] = next;
         return next;
     }
+
+    public void Clear() => _opinions.Clear();
 }
 
 public static class RelationshipRules

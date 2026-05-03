@@ -1,0 +1,29 @@
+{
+  "id": "innkeeper_male_v23",
+  "display_name": "Innkeeper (variant 23)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/steel.png",
+    "legs": "legs/formal_striped/male/walk/pink.png",
+    "torso": "torso/aprons/overalls/male/walk/teal.png",
+    "hair": "hair/messy2/adult/walk.png",
+    "arms": "arms/wrists/cuffs/male/walk.png",
+    "backpack": "backpack/squarepack/male/walk/black.png"
+  },
+  "tints": {
+    "body": "#5b3829",
+    "head": "#5b3829",
+    "hair": "#3b2418",
+    "beard": "#3b2418"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

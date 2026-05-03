@@ -1,0 +1,30 @@
+{
+  "id": "undertaker_female_v23",
+  "display_name": "Undertaker (variant 23)",
+  "tags": [
+    "medieval",
+    "chapel"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/thin/walk/silver.png",
+    "legs": "legs/formal/thin/walk/yellow.png",
+    "torso": "torso/aprons/apron/female/walk/tan.png",
+    "hair": "hair/long_straight/adult/walk.png",
+    "waist": "torso/waist/sash_narrow/female/walk/gray.png",
+    "neck": "neck/tie/necktie/female/walk/leather.png",
+    "backpack": "backpack/squarepack/female/walk/tan.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#7a4d2d",
+    "beard": "#7a4d2d"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

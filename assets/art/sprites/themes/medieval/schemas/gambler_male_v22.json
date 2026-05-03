@@ -1,0 +1,30 @@
+{
+  "id": "gambler_male_v22",
+  "display_name": "Gambler (variant 22)",
+  "tags": [
+    "medieval",
+    "outlaw"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/brown.png",
+    "legs": "legs/formal/male/walk/pink.png",
+    "torso": "torso/aprons/overalls/male/walk/blue.png",
+    "hair": "hair/pigtails/adult/walk.png",
+    "waist": "torso/waist/obi/knot/right/male/walk/bluegray.png",
+    "facial": "facial/earrings/simple/left/adult/walk/green.png",
+    "beard": "beards/mustache/chevron/walk.png"
+  },
+  "tints": {
+    "body": "#f2c7a5",
+    "head": "#f2c7a5",
+    "hair": "#d8b36a",
+    "beard": "#d8b36a"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "force": true,
+  "category": "buildings",
+  "items": [
+    { "id": "cottage_thatch_a", "prompt": "small medieval cottage with sagging thatch roof, wooden shutters, smoke from chimney, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "cottage_thatch_b", "prompt": "small medieval cottage with new gold thatch roof, painted blue door, flower box, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "cottage_thatch_c", "prompt": "small medieval cottage with patchy thatch roof, weathered grey wood, faded red door, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "cottage_corner", "prompt": "small medieval cottage on corner, two visible sides, thatched roof, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "cottage_woodland", "prompt": "small medieval cottage tucked among trees, log walls, thatched roof, mossy, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "cottage_riverside", "prompt": "small medieval cottage by riverside, wooden walls on stone foundation, dock visible, thatched roof, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "cottage_tall", "prompt": "narrow medieval two-story cottage, half-timbered, single door, smoke from chimney, isometric pixel art", "width": 80, "height": 128 },
+    { "id": "cottage_wide", "prompt": "wide medieval single-story cottage, two doors, multiple shuttered windows, thatched roof, isometric pixel art", "width": 128, "height": 96 },
+    { "id": "cottage_painted_red", "prompt": "small medieval cottage with bright red painted wood walls, white trim, thatched roof, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "cottage_painted_blue", "prompt": "small medieval cottage with painted blue wood walls, white trim, thatched roof, isometric pixel art", "width": 96, "height": 96 },
+    { "id": "townhouse_a", "prompt": "medieval narrow townhouse, three stories, painted yellow plaster, dark beams, slate roof, isometric pixel art", "width": 64, "height": 128 },
+    { "id": "townhouse_b", "prompt": "medieval narrow townhouse, three stories, painted green plaster, dark beams, slate roof, isometric pixel art", "width": 64, "height": 128 },
+    { "id": "townhouse_c", "prompt": "medieval narrow townhouse, three stories, painted red plaster, dark beams, slate roof, isometric pixel art", "width": 64, "height": 128 },
+    { "id": "row_houses", "prompt": "medieval row of three connected townhouses, half-timbered, slate roofs, isometric pixel art", "width": 144, "height": 96 },
+    { "id": "tinker_wagon", "prompt": "medieval tinker traveling wagon, painted wooden shop on wheels, hanging pots and tools, isometric pixel art", "width": 96, "height": 96 }
+  ]
+}

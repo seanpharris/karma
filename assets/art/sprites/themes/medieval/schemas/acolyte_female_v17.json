@@ -1,0 +1,28 @@
+{
+  "id": "acolyte_female_v17",
+  "display_name": "Acolyte (variant 17)",
+  "tags": [
+    "medieval",
+    "chapel"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/revised/thin/walk/green.png",
+    "legs": "legs/formal_striped/thin/walk/base.png",
+    "torso": "torso/aprons/apron/female/walk/teal.png",
+    "hair": "hair/spiked_liberty/adult/walk.png",
+    "waist": "torso/waist/sash_narrow/female/walk/red.png"
+  },
+  "tints": {
+    "body": "#f2c7a5",
+    "head": "#f2c7a5",
+    "hair": "#2c2b26",
+    "beard": "#2c2b26"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

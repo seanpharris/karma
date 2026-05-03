@@ -1,0 +1,31 @@
+{
+  "id": "vagabond_male_v23",
+  "display_name": "Vagabond / Deserter (variant 23)",
+  "tags": [
+    "medieval",
+    "wild"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/gold.png",
+    "legs": "legs/fur/male/walk/purple.png",
+    "torso": "torso/aprons/suspenders/male/walk/purple.png",
+    "hair": "hair/twists_fade/adult/walk.png",
+    "waist": "torso/waist/obi/knot/right/male/walk/yellow.png",
+    "neck": "neck/amulet/cross/male/walk/iron_orange.png",
+    "hat": "hat/cloth/hood/adult/walk/bluegray.png",
+    "beard": "beards/beard/winter/male/walk.png"
+  },
+  "tints": {
+    "body": "#f2c7a5",
+    "head": "#f2c7a5",
+    "hair": "#c08a4b",
+    "beard": "#c08a4b"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

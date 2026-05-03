@@ -1,0 +1,30 @@
+{
+  "id": "noble_male_v7",
+  "display_name": "Magistrate / Noble (variant 7)",
+  "tags": [
+    "medieval",
+    "law"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/gray.png",
+    "legs": "legs/fur/male/walk/black.png",
+    "torso": "torso/aprons/overalls/male/walk/slate.png",
+    "hair": "hair/pigtails_bangs/adult/walk.png",
+    "waist": "torso/waist/obi/knot/right/male/walk/brown.png",
+    "beard": "beards/mustache/walrus/walk.png",
+    "arms": "arms/armour/plate/male/walk.png"
+  },
+  "tints": {
+    "body": "#f2c7a5",
+    "head": "#f2c7a5",
+    "hair": "#e6d6ac",
+    "beard": "#e6d6ac"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

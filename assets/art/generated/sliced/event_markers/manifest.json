@@ -1,0 +1,398 @@
+[
+  {
+    "name": "target_ring",
+    "path": "res://assets/art/generated/sliced/event_markers/target_ring.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      4,
+      4,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "location_pin",
+    "path": "res://assets/art/generated/sliced/event_markers/location_pin.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      174,
+      4,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "warning_triangle",
+    "path": "res://assets/art/generated/sliced/event_markers/warning_triangle.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      344,
+      4,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "shield",
+    "path": "res://assets/art/generated/sliced/event_markers/shield.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      514,
+      4,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "racing_flag",
+    "path": "res://assets/art/generated/sliced/event_markers/racing_flag.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      684,
+      4,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "ring_buoy",
+    "path": "res://assets/art/generated/sliced/event_markers/ring_buoy.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      854,
+      4,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "skull_crossbones",
+    "path": "res://assets/art/generated/sliced/event_markers/skull_crossbones.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      4,
+      174,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "wanted_poster",
+    "path": "res://assets/art/generated/sliced/event_markers/wanted_poster.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      174,
+      174,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "kneeling_figure",
+    "path": "res://assets/art/generated/sliced/event_markers/kneeling_figure.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      344,
+      174,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "red_cross",
+    "path": "res://assets/art/generated/sliced/event_markers/red_cross.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      514,
+      174,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "money_bag",
+    "path": "res://assets/art/generated/sliced/event_markers/money_bag.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      684,
+      174,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "exclamation",
+    "path": "res://assets/art/generated/sliced/event_markers/exclamation.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      854,
+      174,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "crossed_swords",
+    "path": "res://assets/art/generated/sliced/event_markers/crossed_swords.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      4,
+      344,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "wanted_poster_alt",
+    "path": "res://assets/art/generated/sliced/event_markers/wanted_poster_alt.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      174,
+      344,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "parachute_mushroom",
+    "path": "res://assets/art/generated/sliced/event_markers/parachute_mushroom.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      344,
+      344,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "red_cross_alt",
+    "path": "res://assets/art/generated/sliced/event_markers/red_cross_alt.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      514,
+      344,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "money_bag_alt",
+    "path": "res://assets/art/generated/sliced/event_markers/money_bag_alt.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      684,
+      344,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "exclamation_alt",
+    "path": "res://assets/art/generated/sliced/event_markers/exclamation_alt.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      854,
+      344,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "wrench_hammer",
+    "path": "res://assets/art/generated/sliced/event_markers/wrench_hammer.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      4,
+      514,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "fire_gear",
+    "path": "res://assets/art/generated/sliced/event_markers/fire_gear.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      174,
+      514,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "magnifier",
+    "path": "res://assets/art/generated/sliced/event_markers/magnifier.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      344,
+      514,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "eye_bubble",
+    "path": "res://assets/art/generated/sliced/event_markers/eye_bubble.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      514,
+      514,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "question_bubble",
+    "path": "res://assets/art/generated/sliced/event_markers/question_bubble.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      684,
+      514,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "posse_circle",
+    "path": "res://assets/art/generated/sliced/event_markers/posse_circle.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      854,
+      514,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "handshake_top",
+    "path": "res://assets/art/generated/sliced/event_markers/handshake_top.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      4,
+      684,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "crossed_x",
+    "path": "res://assets/art/generated/sliced/event_markers/crossed_x.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      174,
+      684,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "lock_alert",
+    "path": "res://assets/art/generated/sliced/event_markers/lock_alert.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      344,
+      684,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "x_box",
+    "path": "res://assets/art/generated/sliced/event_markers/x_box.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      514,
+      684,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "package",
+    "path": "res://assets/art/generated/sliced/event_markers/package.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      684,
+      684,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "fire_triangle",
+    "path": "res://assets/art/generated/sliced/event_markers/fire_triangle.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      854,
+      684,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "handshake_bottom",
+    "path": "res://assets/art/generated/sliced/event_markers/handshake_bottom.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      4,
+      854,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "big_x_swords",
+    "path": "res://assets/art/generated/sliced/event_markers/big_x_swords.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      174,
+      854,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "horse",
+    "path": "res://assets/art/generated/sliced/event_markers/horse.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      344,
+      854,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "shovel_chest",
+    "path": "res://assets/art/generated/sliced/event_markers/shovel_chest.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      514,
+      854,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "money_arrow",
+    "path": "res://assets/art/generated/sliced/event_markers/money_arrow.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      684,
+      854,
+      161,
+      161
+    ]
+  },
+  {
+    "name": "fire_triangle_alt",
+    "path": "res://assets/art/generated/sliced/event_markers/fire_triangle_alt.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_event_markers_atlas.jpg",
+    "source_region": [
+      854,
+      854,
+      161,
+      161
+    ]
+  }
+]

@@ -1,0 +1,66 @@
+{
+  "force": true,
+  "category": "environment",
+  "items": [
+    {
+      "id": "tree_oak_large",
+      "prompt": "tall medieval oak tree, full green canopy, gnarled brown trunk, top-down view, transparent background, pixel art",
+      "width": 96,
+      "height": 96
+    },
+    {
+      "id": "tree_pine",
+      "prompt": "tall medieval pine tree, dark green needles, narrow conical shape, brown trunk, top-down view, transparent background, pixel art",
+      "width": 64,
+      "height": 96
+    },
+    {
+      "id": "tree_dead",
+      "prompt": "leafless dead medieval tree, twisted grey branches, no leaves, ominous, top-down view, transparent background, pixel art",
+      "width": 64,
+      "height": 96
+    },
+    {
+      "id": "bush_berry",
+      "prompt": "medieval green berry bush, red berries clustered, full leafy round shape, top-down view, transparent background, pixel art",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "id": "wheat_patch",
+      "prompt": "medieval golden wheat patch, ripe stalks, top-down view, transparent background, pixel art",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "id": "campfire",
+      "prompt": "medieval campfire with crackling orange flames, surrounding logs and ring of stones, top-down view, transparent background, pixel art",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "id": "hay_bale",
+      "prompt": "round medieval hay bale, golden straw, twine wrapped, top-down view, transparent background, pixel art",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "id": "wagon_wheel",
+      "prompt": "medieval wooden wagon wheel, iron rim, broken at bottom, leaning against unseen wall, top-down view, transparent background, pixel art",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "id": "fence_post",
+      "prompt": "medieval wooden fence post with horizontal rail, weathered grey wood, top-down view, transparent background, pixel art",
+      "width": 64,
+      "height": 32
+    },
+    {
+      "id": "stump_axe",
+      "prompt": "tree stump with axe embedded in top, woodchip pile around it, top-down view, transparent background, pixel art",
+      "width": 48,
+      "height": 48
+    }
+  ]
+}

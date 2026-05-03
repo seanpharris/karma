@@ -1,0 +1,33 @@
+{
+  "id": "pilgrim_female_v9",
+  "display_name": "Pilgrim (F) (variant 9)",
+  "tags": [
+    "medieval",
+    "wayfarer",
+    "chapel"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/revised/thin/walk/brown.png",
+    "legs": "legs/formal_striped/thin/walk/blue.png",
+    "torso": "torso/aprons/apron_half/female/walk/blue.png",
+    "hair": "hair/bedhead/adult/walk.png",
+    "waist": "torso/waist/sash_narrow/female/walk/charcoal.png",
+    "neck": "neck/capetie/female/walk/pink.png",
+    "hat": "hat/cloth/hood/adult/walk/leather.png",
+    "facial": "facial/earrings/simple/left/adult/walk/steel.png",
+    "shoulders": "shoulders/mantal/thin/walk.png"
+  },
+  "tints": {
+    "body": "#a86b47",
+    "head": "#a86b47",
+    "hair": "#3b2418",
+    "beard": "#3b2418"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

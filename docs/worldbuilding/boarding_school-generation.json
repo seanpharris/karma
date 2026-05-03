@@ -1,0 +1,140 @@
+{
+  "generation_request": {
+    "theme": "boarding_school",
+    "world_name_style": "cozy, whimsical, slightly dramatic, socially tense",
+    "max_core_npcs": 6,
+    "max_factions": 3,
+    "max_active_quests": 5,
+    "tone": [
+      "cozy",
+      "absurd",
+      "socially reactive",
+      "occasionally dark",
+      "gossipy",
+      "emotionally charged"
+    ]
+  },
+
+  "fixed_world_rules": {
+    "world_size_tiles": {
+      "width": 1000,
+      "height": 1000,
+      "tile_size_px": 16
+    },
+    "karma_system": {
+      "ascend": "Helping others, protecting someone, telling the truth, standing up for others, repairing relationships",
+      "descend": "Spreading rumors, betrayal, cheating, manipulation, exclusion, humiliation",
+      "important_note": "An action can Ascend globally while upsetting one NPC, or Descend globally while pleasing another NPC."
+    },
+    "relationship_system": {
+      "description": "NPC relationships are local memory tracked per NPC/player pair.",
+      "tracked_values": ["trust", "fear", "respect", "resentment", "affection"]
+    }
+  },
+
+  "available_locations": [
+    {
+      "id": "loc_courtyard",
+      "type": "courtyard",
+      "required_buildings": [
+        "main_hall",
+        "notice_board",
+        "fountain"
+      ],
+      "story_function": "main social hub where gossip spreads"
+    },
+    {
+      "id": "loc_dorms",
+      "type": "dormitory",
+      "required_buildings": [
+        "student_rooms",
+        "common_room"
+      ],
+      "story_function": "private life, secrets, friendships, and betrayal"
+    },
+    {
+      "id": "loc_classroom_wing",
+      "type": "academic",
+      "required_buildings": [
+        "classroom",
+        "faculty_office",
+        "library"
+      ],
+      "story_function": "rules, authority, cheating, and pressure"
+    }
+  ],
+
+  "required_roles": [
+    {
+      "role": "headmaster",
+      "workplace": "faculty_office",
+      "needs_home": true
+    },
+    {
+      "role": "teacher",
+      "workplace": "classroom",
+      "needs_home": true
+    },
+    {
+      "role": "top_student",
+      "workplace": "classroom",
+      "needs_home": false
+    },
+    {
+      "role": "troublemaker",
+      "workplace": "common_room",
+      "needs_home": false
+    },
+    {
+      "role": "caretaker",
+      "workplace": "main_hall",
+      "needs_home": true
+    }
+  ],
+
+  "optional_roles_pool": [
+    "bully",
+    "shy_student",
+    "gossip",
+    "prefect",
+    "rule_follower",
+    "rule_breaker",
+    "new_student",
+    "secret_club_member",
+    "teacher_pet"
+  ],
+
+  "story_generation_rules": {
+    "npc_requirements": [
+      "Each NPC must have a secret",
+      "Each NPC must have at least 2 relationship biases",
+      "Each NPC must have a pressure point",
+      "Each NPC must react differently to Ascend and Descend players"
+    ],
+    "quest_requirements": [
+      "Each quest must support at least 3 approaches",
+      "At least one approach should involve gossip or social manipulation",
+      "At least one approach should be morally messy",
+      "Each quest must affect karma and at least one NPC relationship",
+      "At least one quest should involve betrayal, rumor, or mistaken identity",
+      "At least one quest should use an object in multiple ways"
+    ],
+    "object_requirements": [
+      "Objects should be usable as tool, evidence, gossip material, bribe, prank item, clue, or mistake",
+      "Avoid single-purpose quest items when possible"
+    ]
+  },
+
+  "output_format": {
+    "world_identity": {},
+    "npcs": [],
+    "factions": [],
+    "quests": [],
+    "relationship_web": [],
+    "oddities": [],
+    "multi_use_objects": [],
+    "karma_events": []
+  },
+
+  "generation_instruction": "Using this form, generate one new boarding school Karma world instance. Do not change location IDs or required building types. Create changing NPCs, factions, quests, secrets, relationships, oddities, and karma hooks. Output valid JSON only."
+}

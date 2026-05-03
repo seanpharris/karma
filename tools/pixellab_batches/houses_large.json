@@ -1,0 +1,14 @@
+{
+  "force": true,
+  "category": "buildings",
+  "items": [
+    { "id": "manor_a", "prompt": "medieval merchant manor house, two stories, half-timbered, slate roof, ornate front door, several windows, isometric pixel art", "width": 128, "height": 128 },
+    { "id": "manor_b", "prompt": "medieval stone manor house, two stories, mullioned windows, sturdy oak door, slate roof, isometric pixel art", "width": 128, "height": 128 },
+    { "id": "manor_lord", "prompt": "medieval lord's manor, three stories, fortified with corner towers, banner flying, isometric pixel art", "width": 128, "height": 144 },
+    { "id": "longhouse", "prompt": "medieval longhouse, single long building with wattle-and-daub walls, thatched roof, central door, several smoke vents, isometric pixel art", "width": 144, "height": 96 },
+    { "id": "guildhall", "prompt": "medieval guildhall, two stories, ornate carved entrance, painted shop sign, slate roof, isometric pixel art", "width": 128, "height": 128 },
+    { "id": "boarding_house", "prompt": "medieval boarding house, three stories, half-timbered, painted shutters, multiple windows, isometric pixel art", "width": 96, "height": 144 },
+    { "id": "council_hall", "prompt": "medieval town council hall, stone walls, large oak doors, bell on roof, isometric pixel art", "width": 128, "height": 128 },
+    { "id": "rural_inn", "prompt": "medieval rural inn, two stories, painted shutters, hanging horseshoe sign, stable attached, isometric pixel art", "width": 144, "height": 128 }
+  ]
+}

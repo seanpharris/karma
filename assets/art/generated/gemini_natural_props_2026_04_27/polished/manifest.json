@@ -1,0 +1,146 @@
+[
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "alien_shrub",
+    "path": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/alien_shrub.png",
+    "source": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/alien_shrub.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "dry_grass_clump",
+    "path": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/dry_grass_clump.png",
+    "source": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/dry_grass_clump.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "moss_patch",
+    "path": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/moss_patch.png",
+    "source": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/moss_patch.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "tiny_flowering_plant",
+    "path": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/tiny_flowering_plant.png",
+    "source": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/tiny_flowering_plant.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "mushroom_cluster",
+    "path": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/mushroom_cluster.png",
+    "source": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/mushroom_cluster.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "red_mineral_rock",
+    "path": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/red_mineral_rock.png",
+    "source": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/red_mineral_rock.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "blue_crystal_shard",
+    "path": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/blue_crystal_shard.png",
+    "source": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/blue_crystal_shard.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "fallen_branch",
+    "path": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/fallen_branch.png",
+    "source": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/fallen_branch.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "dead_bush",
+    "path": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/dead_bush.png",
+    "source": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/dead_bush.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "smooth_river_stone",
+    "path": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/smooth_river_stone.png",
+    "source": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/smooth_river_stone.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "cactus_succulent",
+    "path": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/cactus_succulent.png",
+    "source": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/cactus_succulent.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "glowing_lichen_patch",
+    "path": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/glowing_lichen_patch.png",
+    "source": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/glowing_lichen_patch.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "puddle",
+    "path": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/puddle.png",
+    "source": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/puddle.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "cracked_mud_clump",
+    "path": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/cracked_mud_clump.png",
+    "source": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/cracked_mud_clump.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "berry_bush",
+    "path": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/berry_bush.png",
+    "source": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/berry_bush.png"
+  },
+  {
+    "canvas": [
+      128,
+      128
+    ],
+    "name": "small_sapling",
+    "path": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/polished/small_sapling.png",
+    "source": "res://assets/art/sprites/generated/gemini_natural_props_2026_04_27/small_sapling.png"
+  }
+]

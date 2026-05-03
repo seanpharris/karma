@@ -1,0 +1,31 @@
+{
+  "id": "blacksmith_male_v19",
+  "display_name": "Blacksmith (variant 19)",
+  "tags": [
+    "medieval",
+    "trade"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/fold/male/walk/yellow.png",
+    "legs": "legs/formal/male/walk/bluegray.png",
+    "torso": "torso/aprons/apron/male/walk/forest.png",
+    "hair": "hair/parted3/adult/walk.png",
+    "waist": "torso/waist/obi/knot/right/male/walk/blue.png",
+    "hat": "hat/cloth/bandana2/adult/walk/forest.png",
+    "beard": "beards/mustache/french/walk.png",
+    "backpack": "backpack/backpack/male/walk/pink.png"
+  },
+  "tints": {
+    "body": "#a86b47",
+    "head": "#a86b47",
+    "hair": "#5f2a1d",
+    "beard": "#5f2a1d"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

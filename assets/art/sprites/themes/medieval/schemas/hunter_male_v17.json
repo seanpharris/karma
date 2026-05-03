@@ -1,0 +1,31 @@
+{
+  "id": "hunter_male_v17",
+  "display_name": "Hunter (variant 17)",
+  "tags": [
+    "medieval",
+    "peasant",
+    "ranged"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/hoofs/male/walk/fur_white.png",
+    "legs": "legs/formal_striped/male/walk/bluegray.png",
+    "torso": "torso/aprons/apron/male/walk/walnut.png",
+    "hair": "hair/spiked_porcupine/adult/walk.png",
+    "waist": "torso/waist/sash_narrow/male/walk/tan.png",
+    "neck": "neck/amulet/cross/male/walk/bronze_purple.png",
+    "cape": "cape/tattered_behind/walk/sky.png"
+  },
+  "tints": {
+    "body": "#5b3829",
+    "head": "#5b3829",
+    "hair": "#20150f",
+    "beard": "#20150f"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

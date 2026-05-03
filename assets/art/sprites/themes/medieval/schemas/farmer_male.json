@@ -1,0 +1,31 @@
+{
+  "id": "farmer_male",
+  "display_name": "Farmer (M)",
+  "tags": [
+    "medieval",
+    "peasant"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/pink.png",
+    "legs": "legs/formal/male/walk/rose.png",
+    "torso": "torso/aprons/suspenders/male/walk/pink.png",
+    "hair": "hair/swoop/adult/walk.png",
+    "waist": "torso/waist/obi/knot/left/male/walk/gray.png",
+    "facial": "facial/masks/plain/adult/walk/navy.png",
+    "beard": "beards/mustache/basic/walk.png",
+    "backpack": "backpack/squarepack/male/walk/navy.png"
+  },
+  "tints": {
+    "body": "#c98255",
+    "head": "#c98255",
+    "hair": "#c08a4b",
+    "beard": "#c08a4b"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

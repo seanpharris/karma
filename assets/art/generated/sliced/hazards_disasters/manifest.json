@@ -1,0 +1,332 @@
+[
+  {
+    "name": "warning_barricade",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/warning_barricade.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      6,
+      6,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "fire_flames",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/fire_flames.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      176,
+      6,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "electric_portal_blue",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/electric_portal_blue.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      346,
+      6,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "sparking_cable_yellow",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/sparking_cable_yellow.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      516,
+      6,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "leaking_pipe_green",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/leaking_pipe_green.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      686,
+      6,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "steam_manhole",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/steam_manhole.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      6,
+      176,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "oil_spill_dark",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/oil_spill_dark.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      176,
+      176,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "toxic_pool_green",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/toxic_pool_green.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      346,
+      176,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "radioactive_sign",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/radioactive_sign.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      516,
+      176,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "biohazard_cone_orange",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/biohazard_cone_orange.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      686,
+      176,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "broken_glass_blue",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/broken_glass_blue.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      6,
+      346,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "rock_pile_grey",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/rock_pile_grey.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      176,
+      346,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "broken_metal_beam",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/broken_metal_beam.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      346,
+      346,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "beam_debris",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/beam_debris.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      516,
+      346,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "dark_rocks",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/dark_rocks.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      686,
+      346,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "blue_puddle",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/blue_puddle.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      6,
+      516,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "red_flag_swirl",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/red_flag_swirl.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      176,
+      516,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "purple_meteor",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/purple_meteor.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      346,
+      516,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "broken_viewscreen",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/broken_viewscreen.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      516,
+      516,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "sparking_generator_grey",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/sparking_generator_grey.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      686,
+      516,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "toxic_canister_green",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/toxic_canister_green.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      6,
+      686,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "broken_planks",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/broken_planks.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      176,
+      686,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "broken_x_sign",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/broken_x_sign.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      346,
+      686,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "alert_siren_red",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/alert_siren_red.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      516,
+      686,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "repair_sign_yellow",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/repair_sign_yellow.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      686,
+      686,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "biohazard_crate_green",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/biohazard_crate_green.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      6,
+      856,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "medkit_white_first_aid",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/medkit_white_first_aid.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      176,
+      856,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "dark_hole",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/dark_hole.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      346,
+      856,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "red_barrel_hazard",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/red_barrel_hazard.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      516,
+      856,
+      158,
+      158
+    ]
+  },
+  {
+    "name": "repair_sign_yellow_alt",
+    "path": "res://assets/art/generated/sliced/hazards_disasters/repair_sign_yellow_alt.png",
+    "source_atlas": "res://assets/art/generated/static_event_atlases/karma_static_hazards_disasters_atlas.jpg",
+    "source_region": [
+      686,
+      856,
+      158,
+      158
+    ]
+  }
+]

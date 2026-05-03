@@ -1,0 +1,30 @@
+{
+  "id": "herbalist_female_v17",
+  "display_name": "Herbalist (F) (variant 17)",
+  "tags": [
+    "medieval",
+    "wild"
+  ],
+  "layers": {
+    "body": "body/bodies/female/walk.png",
+    "head": "head/heads/human/female/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/thin/walk/ceramic.png",
+    "legs": "legs/formal/thin/walk/pink.png",
+    "torso": "torso/aprons/apron_full/female/walk/blue.png",
+    "hair": "hair/extensions/bangs/xlong_bangl/adult/walk.png",
+    "weapon": "weapon/magic/gnarled/universal/background/walk/silver.png",
+    "cape": "cape/tattered_behind/walk/brown.png",
+    "shield": "shield/crusader/bg/walk.png"
+  },
+  "tints": {
+    "body": "#e1a979",
+    "head": "#e1a979",
+    "hair": "#5f2a1d",
+    "beard": "#5f2a1d"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}

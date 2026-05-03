@@ -1,0 +1,31 @@
+{
+  "id": "hunter_male_v5",
+  "display_name": "Hunter (variant 5)",
+  "tags": [
+    "medieval",
+    "peasant",
+    "ranged"
+  ],
+  "layers": {
+    "body": "body/bodies/male/walk.png",
+    "head": "head/heads/human/male/walk.png",
+    "eyes": "eyes/human/adult/default/walk.png",
+    "feet": "feet/boots/basic/male/walk/silver.png",
+    "legs": "legs/fur/male/walk/orange.png",
+    "torso": "torso/waist/sash_narrow/male/walk/lavender.png",
+    "hair": "hair/lob/adult/walk.png",
+    "waist": "torso/waist/belt_loose/male/walk/walnut.png",
+    "shield": "shield/heater/original/paint/fg/walk/mustard.png",
+    "quiver": "quiver/walk/quiver.png"
+  },
+  "tints": {
+    "body": "#5b3829",
+    "head": "#5b3829",
+    "hair": "#e6d6ac",
+    "beard": "#e6d6ac"
+  },
+  "animations": [
+    "walk",
+    "idle"
+  ]
+}
