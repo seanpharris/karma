@@ -57,7 +57,6 @@ public partial class MainMenuController : Control
     };
 
     private AudioStreamPlayer _menuThemePlayer;
-    private AspectRatioContainer _stage;
     private Control _stageFrame;
     private TextureRect _splash;
     private GpuParticles2D _goldMotes;
@@ -108,27 +107,18 @@ public partial class MainMenuController : Control
 
     private void BuildSplashStage()
     {
-        _stage = new AspectRatioContainer
-        {
-            Name = "Stage",
-            Ratio = 1.5f, // 1536 / 1024
-            StretchMode = AspectRatioContainer.StretchModeEnum.Fit,
-            AlignmentHorizontal = AspectRatioContainer.AlignmentMode.Center,
-            AlignmentVertical = AspectRatioContainer.AlignmentMode.Center,
-            AnchorRight = 1f,
-            AnchorBottom = 1f,
-            MouseFilter = MouseFilterEnum.Pass
-        };
-        AddChild(_stage);
-
+        // Splash fills the full window — project already uses
+        // canvas_items / expand stretch so the painted art will scale
+        // proportionally with the window size. Skipping
+        // AspectRatioContainer means no letterbox bars and no empty
+        // hover region around the image.
         _stageFrame = new Control
         {
             Name = "StageFrame",
-            SizeFlagsHorizontal = SizeFlags.ExpandFill,
-            SizeFlagsVertical = SizeFlags.ExpandFill,
             MouseFilter = MouseFilterEnum.Pass
         };
-        _stage.AddChild(_stageFrame);
+        _stageFrame.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        AddChild(_stageFrame);
 
         var splashImage = new Image();
         var loadErr = splashImage.Load(ProjectSettings.GlobalizePath(SplashTexturePath));
