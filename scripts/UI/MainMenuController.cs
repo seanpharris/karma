@@ -59,6 +59,7 @@ public partial class MainMenuController : Control
     private AudioStreamPlayer _menuThemePlayer;
     private Control _stageFrame;
     private TextureRect _splash;
+    private Control _imageFrame;
     private GpuParticles2D _goldMotes;
     private GpuParticles2D _redEmbers;
     private ColorRect _lightningFlash;
@@ -107,11 +108,13 @@ public partial class MainMenuController : Control
 
     private void BuildSplashStage()
     {
-        // Splash fills the full window — project already uses
-        // canvas_items / expand stretch so the painted art will scale
-        // proportionally with the window size. Skipping
-        // AspectRatioContainer means no letterbox bars and no empty
-        // hover region around the image.
+        // Outer frame fills the window; the splash inside fills + crops
+        // (KeepAspectCovered) so it's distortion-free on any aspect.
+        // ImageFrame is a sibling Control sized to track the visible
+        // image rect — every overlay (animations, buttons, title
+        // shimmer, lightning) lives inside ImageFrame and uses anchor
+        // percentages relative to it, so they always align with the
+        // painted art regardless of window aspect.
         _stageFrame = new Control
         {
             Name = "StageFrame",
@@ -124,7 +127,6 @@ public partial class MainMenuController : Control
         var loadErr = splashImage.Load(ProjectSettings.GlobalizePath(SplashTexturePath));
         if (loadErr != Error.Ok)
         {
-            // Fallback: solid dark rect so the menu still boots.
             var bg = new ColorRect { Color = new Color(0.05f, 0.05f, 0.08f) };
             bg.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
             _stageFrame.AddChild(bg);
@@ -136,22 +138,52 @@ public partial class MainMenuController : Control
         {
             Name = "Splash",
             Texture = splashTex,
-            StretchMode = TextureRect.StretchModeEnum.Scale,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
             ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
             TextureFilter = CanvasItem.TextureFilterEnum.Linear,
             MouseFilter = MouseFilterEnum.Ignore
         };
         _splash.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _stageFrame.AddChild(_splash);
+
+        _imageFrame = new Control
+        {
+            Name = "ImageFrame",
+            MouseFilter = MouseFilterEnum.Pass
+        };
+        _stageFrame.AddChild(_imageFrame);
+        _stageFrame.Resized += LayoutImageFrame;
+        LayoutImageFrame();
+    }
+
+    // Recompute the visible image rect after KeepAspectCovered scaling
+    // and snap _imageFrame to it. Called whenever the stage frame
+    // resizes (window resize / fullscreen toggle).
+    private void LayoutImageFrame()
+    {
+        if (_imageFrame is null || _splash?.Texture is null || _stageFrame is null) return;
+        var stageSize = _stageFrame.Size;
+        if (stageSize.X <= 0 || stageSize.Y <= 0) return;
+        var texSize = _splash.Texture.GetSize();
+        if (texSize.X <= 0 || texSize.Y <= 0) return;
+
+        // KeepAspectCovered scale = max so the image fills both axes.
+        var scale = Mathf.Max(stageSize.X / texSize.X, stageSize.Y / texSize.Y);
+        var imgSize = texSize * scale;
+        var imgPos = (stageSize - imgSize) * 0.5f;
+
+        _imageFrame.AnchorLeft = 0; _imageFrame.AnchorTop = 0;
+        _imageFrame.AnchorRight = 0; _imageFrame.AnchorBottom = 0;
+        _imageFrame.OffsetLeft = imgPos.X;
+        _imageFrame.OffsetTop = imgPos.Y;
+        _imageFrame.OffsetRight = imgPos.X + imgSize.X;
+        _imageFrame.OffsetBottom = imgPos.Y + imgSize.Y;
     }
 
     private void BuildAnimations()
     {
-        if (_stageFrame is null) return;
+        if (_imageFrame is null) return;
 
-        // Title shimmer: a soft white pulse over the KARMA painted
-        // letters — uses a small built-in dot texture stretched across
-        // the title rect, modulate-alpha tweened on a loop.
         _titleShimmer = new TextureRect
         {
             Name = "TitleShimmer",
@@ -162,11 +194,9 @@ public partial class MainMenuController : Control
             MouseFilter = MouseFilterEnum.Ignore
         };
         AnchorRect(_titleShimmer, TitleRect);
-        _stageFrame.AddChild(_titleShimmer);
+        _imageFrame.AddChild(_titleShimmer);
         StartTitleShimmer();
 
-        // Lightning flash: a near-white ColorRect over the right half
-        // that briefly fades up + back. Random cadence 8-13s.
         _lightningFlash = new ColorRect
         {
             Name = "LightningFlash",
@@ -174,29 +204,28 @@ public partial class MainMenuController : Control
             MouseFilter = MouseFilterEnum.Ignore
         };
         AnchorRect(_lightningFlash, LightningRect);
-        _stageFrame.AddChild(_lightningFlash);
+        _imageFrame.AddChild(_lightningFlash);
         _lightningTimer = new Timer { OneShot = true, WaitTime = NextLightningInterval() };
         _lightningTimer.Timeout += OnLightning;
         AddChild(_lightningTimer);
         _lightningTimer.Start();
 
-        // Particles. Gold motes drift up across the left half;
-        // red embers drift up across the right half. Each emitter is
-        // a Node2D child of the stage frame, repositioned + resized
-        // whenever the stage frame's size changes so the emission
-        // box tracks the painted halves regardless of window size.
+        // Particles drift up across the painted halves. Children of
+        // _imageFrame so the emission box tracks the visible image
+        // rect (not the full window) — keeps motes on-image even when
+        // KeepAspectCovered crops part of the splash off the window.
         _goldMotes = MakeAmbientParticles("GoldMotes", new Color(1f, 0.85f, 0.45f, 0.9f), 28, 6.5);
-        _stageFrame.AddChild(_goldMotes);
+        _imageFrame.AddChild(_goldMotes);
         _redEmbers = MakeAmbientParticles("RedEmbers", new Color(1f, 0.4f, 0.18f, 0.9f), 32, 4.5);
-        _stageFrame.AddChild(_redEmbers);
-        _stageFrame.Resized += LayoutParticles;
+        _imageFrame.AddChild(_redEmbers);
+        _imageFrame.Resized += LayoutParticles;
         LayoutParticles();
     }
 
     private void LayoutParticles()
     {
-        if (_stageFrame is null || _goldMotes is null || _redEmbers is null) return;
-        var size = _stageFrame.Size;
+        if (_imageFrame is null || _goldMotes is null || _redEmbers is null) return;
+        var size = _imageFrame.Size;
         if (size.X <= 0 || size.Y <= 0) return;
 
         var halfWidth = size.X * 0.5f;
@@ -292,7 +321,7 @@ public partial class MainMenuController : Control
 
     private void BuildButtons()
     {
-        if (_stageFrame is null) return;
+        if (_imageFrame is null) return;
 
         var transparent = new StyleBoxEmpty();
         var pillTexture = MakePillGlow(256, 80, softness: 1.4f);
@@ -318,7 +347,7 @@ public partial class MainMenuController : Control
                 bounds.Size.X * 1.16f,
                 bounds.Size.Y * 1.40f);
             AnchorRect(glow, glowBounds);
-            _stageFrame.AddChild(glow);
+            _imageFrame.AddChild(glow);
             glow.PivotOffset = glow.Size * 0.5f;
             glow.Resized += () => glow.PivotOffset = glow.Size * 0.5f;
 
@@ -336,7 +365,7 @@ public partial class MainMenuController : Control
             button.AddThemeStyleboxOverride("hover", transparent);
             button.AddThemeStyleboxOverride("pressed", transparent);
             AnchorRect(button, bounds);
-            _stageFrame.AddChild(button);
+            _imageFrame.AddChild(button);
             button.PivotOffset = button.Size * 0.5f;
             button.Resized += () => button.PivotOffset = button.Size * 0.5f;
 
