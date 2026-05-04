@@ -1545,7 +1545,7 @@ public partial class HudController : CanvasLayer
         BuildFirstRunTutorialOverlay(root);
     }
 
-    // Themed vitals readout — colored dot icon + name/value label + slim
+    // Themed vitals readout — pack icon + name/value label + slim
     // gold-fill progress bar per row. The panel uses MenuTheme so it
     // matches the karma duality main + pause menus, and opts out of the
     // medieval palette walker so the styling sticks.
@@ -1553,6 +1553,12 @@ public partial class HudController : CanvasLayer
     private static readonly Color StaminaBarColor = new(0.95f, 0.80f, 0.32f);
     private static readonly Color AmmoBarColor = new(0.78f, 0.84f, 0.95f);
     private static readonly Color HungerBarColor = new(0.95f, 0.55f, 0.18f);
+
+    // 4-icon strip from the etahoshi pack — 68×17 = 4 icons of 17×17.
+    // Slot 0 is the heart; remaining slots are weapon-ish glyphs +
+    // gold/coin. Each vital row picks one slot.
+    private const string AttributesIconsPath = "res://assets/art/third_party/Fantasy Minimal Pixel Art GUI by eta-commercial-free/UI/AttributesIcons_17x17.png";
+    private const int AttributesIconSize = 17;
 
     private void BuildVitalsPanel(Control root)
     {
@@ -1572,22 +1578,24 @@ public partial class HudController : CanvasLayer
         content.AddThemeConstantOverride("separation", 8);
         panel.AddChild(content);
 
-        _staminaRow = BuildVitalRow(content, "Stamina", StaminaBarColor, out _staminaLabel, out _staminaBar);
-        _staminaLabel.Text = "Stamina 100 / 100";
-        _staminaBar.Value = 100;
-
-        _healthRow = BuildVitalRow(content, "Health", HealthBarColor, out _healthLabel, out _healthBar);
+        // Pack icon assignments — slot 0 is the heart, so Health gets
+        // it. Remaining slots (1-3) are mapped by visual fit.
+        _healthRow = BuildVitalRow(content, "Health", HealthBarColor, iconSlot: 0, out _healthLabel, out _healthBar);
         _healthLabel.Text = "Health 100 / 100";
         _healthBar.Value = 100;
 
-        _ammoRow = BuildVitalRow(content, "Ammo", AmmoBarColor, out _ammoLabel, out _ammoBar);
+        _staminaRow = BuildVitalRow(content, "Stamina", StaminaBarColor, iconSlot: 2, out _staminaLabel, out _staminaBar);
+        _staminaLabel.Text = "Stamina 100 / 100";
+        _staminaBar.Value = 100;
+
+        _ammoRow = BuildVitalRow(content, "Ammo", AmmoBarColor, iconSlot: 1, out _ammoLabel, out _ammoBar);
         _ammoRow.Visible = false;
 
-        _hungerRow = BuildVitalRow(content, "Hunger", HungerBarColor, out _hungerLabel, out _hungerBar);
+        _hungerRow = BuildVitalRow(content, "Hunger", HungerBarColor, iconSlot: 3, out _hungerLabel, out _hungerBar);
         _hungerRow.Visible = false;
     }
 
-    private static Control BuildVitalRow(VBoxContainer parent, string name, Color tint, out Label valueLabel, out ProgressBar bar)
+    private static Control BuildVitalRow(VBoxContainer parent, string name, Color tint, int iconSlot, out Label valueLabel, out ProgressBar bar)
     {
         var row = new VBoxContainer { Name = $"{name}VitalRow" };
         row.AddThemeConstantOverride("separation", 2);
@@ -1597,11 +1605,15 @@ public partial class HudController : CanvasLayer
         header.AddThemeConstantOverride("separation", 8);
         row.AddChild(header);
 
+        // Icon: 17×17 region from the AttributesIcons strip, scaled 2×
+        // (34×34 on screen) so the pixel art reads at HUD distance.
+        // Falls back to a colored dot if the texture didn't load.
+        var iconTexture = MakeAttributesIcon(iconSlot, tint);
         var icon = new TextureRect
         {
-            Texture = MakeCircleIcon(12, tint),
-            CustomMinimumSize = new Vector2(12, 12),
-            StretchMode = TextureRect.StretchModeEnum.KeepCentered,
+            Texture = iconTexture,
+            CustomMinimumSize = new Vector2(AttributesIconSize * 2, AttributesIconSize * 2),
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
             ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
             MouseFilter = Control.MouseFilterEnum.Ignore
         };
@@ -1647,8 +1659,23 @@ public partial class HudController : CanvasLayer
         bar.AddThemeStyleboxOverride("fill", fill);
     }
 
-    // Procedurally-drawn antialiased circle, used as a vitals icon and
-    // anywhere else we need a small colored dot without an asset.
+    // Slices one 17×17 icon out of AttributesIcons_17x17.png (a 4-icon
+    // horizontal strip). Falls back to a procedural colored dot if the
+    // pack texture can't be loaded so the HUD still functions.
+    private static Texture2D MakeAttributesIcon(int slot, Color fallbackTint)
+    {
+        var atlas = ResourceLoader.Load<Texture2D>(AttributesIconsPath);
+        if (atlas is null) return MakeCircleIcon(14, fallbackTint);
+        var clampedSlot = Math.Max(0, slot);
+        return new AtlasTexture
+        {
+            Atlas = atlas,
+            Region = new Rect2(clampedSlot * AttributesIconSize, 0, AttributesIconSize, AttributesIconSize)
+        };
+    }
+
+    // Procedurally-drawn antialiased circle, used as a fallback vitals
+    // icon and anywhere else we need a small colored dot without an asset.
     private static Texture2D MakeCircleIcon(int size, Color tint)
     {
         var img = Image.CreateEmpty(size, size, false, Image.Format.Rgba8);

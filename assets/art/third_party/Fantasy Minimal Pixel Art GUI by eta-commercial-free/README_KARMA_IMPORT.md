@@ -24,15 +24,17 @@ pause / in-game HUD widgets.
   `StyleOptionButton`. Modulate variants per state (normal / hover /
   pressed / disabled); state feedback comes from the modulate tint
   plus the existing font color shift.
+- `AttributesIcons_17x17.png` — HUD vitals icons. Sliced via
+  `AtlasTexture` into 4 individual 17×17 icons; assigned per-vital:
+  Health → slot 0 (heart), Ammo → slot 1, Stamina → slot 2,
+  Hunger → slot 3.
 
 ## On deck
 
 - `HighlightButton_60x23.png` — bracket overlay for hovered buttons.
   Doesn't compose into a single stylebox, so deferred until a custom
   Button subclass is justified.
-- `HealthBarPanel_160x41.png` — `KarmaDualityBar` ornate frame
-  (9-slice).
-- `AttributesIcons_17x17.png` — vitals row icons (heart / bolt /
-  shield / etc.) replacing the procedural colored dots.
-- `ValueBar_128x16.png` — vitals bar frames.
+- `HealthBarPanel_160x41.png` / `ValueBar_128x16.png` — bar frames
+  for the vitals + KarmaDualityBar (custom-draw rework needed for
+  the duality bar's marker layering).
 - `HotkeyBox_34x34.png` / `ItemBox_24x24.png` — hotbar slot frames.
