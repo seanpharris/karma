@@ -25,6 +25,7 @@ public partial class HudController : CanvasLayer
     };
     private GameState _gameState = null!;
     private Label _karmaLabel = new();
+    private KarmaTierBadge _karmaBadge;
     private Label _eventLabel = new();
     private TextureRect _eventIcon = new();
     private Label _chatLabel = new();
@@ -99,8 +100,6 @@ public partial class HudController : CanvasLayer
     private Label _hotbarLabel = new();
     private HBoxContainer _hotbarSlotsContainer = new();
     private readonly Dictionary<int, string> _hotbarBindings = new();
-    private PanelContainer _minimapPanel = new();
-    private Label _minimapLabel = new();
     private PanelContainer _bountyPanel = new();
     private Label _bountyLabel = new();
     private PanelContainer _bountyBoardPanel = new();
@@ -1392,20 +1391,19 @@ public partial class HudController : CanvasLayer
         _hotbarSlotsContainer = new HBoxContainer();
         hotbarContent.AddChild(_hotbarSlotsContainer);
 
-        _minimapPanel = new PanelContainer
+        // Karma tier badge replaces the minimap — top-down view means
+        // the player always knows orientation, so a tier crest with
+        // progress ring is more useful in this corner.
+        _karmaBadge = new KarmaTierBadge
         {
-            OffsetLeft = 1100,
+            Name = "KarmaTierBadge",
+            OffsetLeft = 1110,
             OffsetTop = 16,
-            OffsetRight = 1280,
-            OffsetBottom = 200
+            OffsetRight = 1110 + 140,
+            OffsetBottom = 16 + 140 + 56
         };
-        root.AddChild(_minimapPanel);
-
-        _minimapLabel = new Label
-        {
-            Text = "[minimap unavailable]"
-        };
-        _minimapPanel.AddChild(_minimapLabel);
+        _karmaBadge.SetMeta(PaletteOptOutMeta, true);
+        root.AddChild(_karmaBadge);
 
         _bountyPanel = new PanelContainer
         {
@@ -2250,6 +2248,7 @@ public partial class HudController : CanvasLayer
     {
         var progress = Karma.Data.KarmaTiers.GetRankProgress(score);
         _karmaLabel.Text = $"Karma: {score:+#;-#;0}\nTier: {tierName}\nPath: {pathName}\n{progress.Summary}";
+        _karmaBadge?.SetKarma(score, progress, _gameState?.LocalKarma.Path ?? Karma.Data.KarmaDirection.Neutral);
     }
 
     private void OnKarmaEvent(string message)
@@ -2394,7 +2393,6 @@ public partial class HudController : CanvasLayer
 
             var combatRange = serverSession.Server.Config.CombatRangeTiles;
             _targetLabel.Text = FormatAttackTargetLine(snapshot, snapshot.PlayerId, combatRange);
-            _minimapLabel.Text = FormatMinimap(snapshot, snapshot.PlayerId, radiusTiles: 6);
             _bountyLabel.Text = FormatBountyLeaderboard(snapshot);
             RefreshFactionPanel(snapshot);
             RefreshNpcTooltip(snapshot);
