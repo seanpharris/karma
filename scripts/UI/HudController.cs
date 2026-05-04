@@ -67,6 +67,8 @@ public partial class HudController : CanvasLayer
     private Label _relationshipsLabel = new();
     private Label _factionsLabel = new();
     private Label _questsLabel = new();
+    private PanelContainer _questHelperPanel;
+    private Label _questHelperLabel;
     private Label _combatLabel = new();
     private Label _targetLabel = new();
     private Label _entanglementsLabel = new();
@@ -1167,16 +1169,47 @@ public partial class HudController : CanvasLayer
         };
         root.AddChild(_factionsLabel);
 
-        _questsLabel = new Label
+        // _questsLabel detached — the new _questHelperPanel below renders
+        // the active quest as a styled card. Field stays so the
+        // OnQuestsChanged signal handler still compiles.
+        _questsLabel = new Label { Text = string.Empty };
+
+        // Quest helper card — right side under the bounty box, hidden
+        // when the player has no active quests.
+        _questHelperPanel = new PanelContainer
         {
-            OffsetLeft = 16,
-            OffsetTop = 288,
-            OffsetRight = 900,
-            OffsetBottom = 318,
-            Text = "Quests: none",
+            Name = "QuestHelperPanel",
+            OffsetLeft = 1140,
+            OffsetTop = 310,
+            OffsetRight = 1270,
+            OffsetBottom = 400,
             Visible = false
         };
-        root.AddChild(_questsLabel);
+        _questHelperPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakeHudPanelStyle());
+        _questHelperPanel.SetMeta(PaletteOptOutMeta, true);
+        root.AddChild(_questHelperPanel);
+
+        var questContent = new VBoxContainer { Name = "QuestHelperContent" };
+        questContent.AddThemeConstantOverride("separation", 4);
+        _questHelperPanel.AddChild(questContent);
+
+        var questTitle = new Label
+        {
+            Text = "QUEST",
+            HorizontalAlignment = HorizontalAlignment.Center
+        };
+        questTitle.AddThemeFontSizeOverride("font_size", 11);
+        questTitle.AddThemeColorOverride("font_color", new Color(0.92f, 0.78f, 0.42f));
+        questContent.AddChild(questTitle);
+
+        _questHelperLabel = new Label
+        {
+            Text = string.Empty,
+            AutowrapMode = TextServer.AutowrapMode.WordSmart
+        };
+        _questHelperLabel.AddThemeFontSizeOverride("font_size", 11);
+        _questHelperLabel.AddThemeColorOverride("font_color", new Color(0.95f, 0.92f, 0.82f));
+        questContent.AddChild(_questHelperLabel);
 
         _combatLabel = new Label
         {
@@ -1248,15 +1281,24 @@ public partial class HudController : CanvasLayer
         };
         root.AddChild(_perfLabel);
 
+        // Match timer: small label to the right of the karma duality
+        // bar at the top center. Shows just the timer; phase + leader
+        // names are tracked elsewhere (or via the karma bar/badge).
         _matchLabel = new Label
         {
-            OffsetLeft = 16,
-            OffsetTop = 544,
-            OffsetRight = 1000,
-            OffsetBottom = 588,
-            Text = "Match: 30:00 remaining",
-            AutowrapMode = TextServer.AutowrapMode.WordSmart
+            Name = "MatchLabel",
+            AnchorLeft = 0.5f,
+            AnchorRight = 0.5f,
+            OffsetLeft = KarmaDualityBar.BarWidth * 0.5f + 12,
+            OffsetRight = KarmaDualityBar.BarWidth * 0.5f + 120,
+            OffsetTop = 14,
+            OffsetBottom = 36,
+            Text = "30:00",
+            VerticalAlignment = VerticalAlignment.Center
         };
+        _matchLabel.AddThemeFontSizeOverride("font_size", 14);
+        _matchLabel.AddThemeColorOverride("font_color", new Color(0.92f, 0.78f, 0.42f));
+        _matchLabel.SetMeta(PaletteOptOutMeta, true);
         root.AddChild(_matchLabel);
 
         _promptPanel = new PanelContainer
@@ -2379,6 +2421,26 @@ public partial class HudController : CanvasLayer
     private void OnQuestsChanged(string questsText)
     {
         _questsLabel.Text = questsText;
+        if (_questHelperPanel is null || _questHelperLabel is null) return;
+
+        // Empty state: FormatActiveSummary emits "Quests: none" when
+        // there are no active quests; hide the helper card in that case.
+        var hasQuests = !string.IsNullOrWhiteSpace(questsText)
+                         && !string.Equals(questsText, "Quests: none", StringComparison.Ordinal);
+        _questHelperPanel.Visible = hasQuests;
+        if (hasQuests)
+        {
+            // FormatActiveSummary emits "Quests: <a>, <b>, <c>" — for
+            // the helper card we only want the first entry so the panel
+            // stays compact. The full list lives in the quest log.
+            const string prefix = "Quests: ";
+            var body = questsText.StartsWith(prefix, StringComparison.Ordinal)
+                ? questsText.Substring(prefix.Length)
+                : questsText;
+            var firstComma = body.IndexOf(',');
+            if (firstComma > 0) body = body.Substring(0, firstComma);
+            _questHelperLabel.Text = body;
+        }
     }
 
     private void OnCombatChanged(string combatText)
@@ -2463,7 +2525,13 @@ public partial class HudController : CanvasLayer
 
             var combatRange = serverSession.Server.Config.CombatRangeTiles;
             _targetLabel.Text = FormatAttackTargetLine(snapshot, snapshot.PlayerId, combatRange);
-            _bountyLabel.Text = FormatBountyLeaderboard(snapshot);
+            var bountyText = FormatBountyLeaderboard(snapshot);
+            // FormatBountyLeaderboard emits "Bounties: none active" when
+            // no players have bounties; hide the panel in that case.
+            var hasBounties = !string.IsNullOrEmpty(bountyText)
+                              && !bountyText.Contains("none active", StringComparison.Ordinal);
+            _bountyPanel.Visible = hasBounties;
+            _bountyLabel.Text = bountyText;
             RefreshFactionPanel(snapshot);
             RefreshNpcTooltip(snapshot);
             RefreshDeathPileOwnershipPrompt(snapshot);
@@ -3090,12 +3158,16 @@ public partial class HudController : CanvasLayer
 
     public static string FormatMatchStatus(MatchSnapshot match)
     {
+        // HUD label shows just the remaining time. Detailed summary +
+        // post-match results live on the match summary panel that opens
+        // when the round ends.
         if (match.Status == MatchStatus.Running)
         {
-            return match.Summary;
+            var seconds = Math.Max(0, match.DurationSeconds - match.ElapsedSeconds);
+            return $"{seconds / 60:00}:{seconds % 60:00}";
         }
 
-        return $"RESULTS LOCKED — Saint: {match.SaintWinnerName} ({match.SaintWinnerScore:+#;-#;0}) | Scourge: {match.ScourgeWinnerName} ({match.ScourgeWinnerScore:+#;-#;0})\nPost-match free roam: movement/dialogue only. Winners paid +{ServerConfig.DefaultMatchWinnerScripReward} scrip.";
+        return match.Status == MatchStatus.Lobby ? "Lobby" : "Match Over";
     }
 
     public static string FormatMatchSummary(MatchSummarySnapshot summary)
