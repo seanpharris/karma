@@ -1367,19 +1367,17 @@ public partial class HudController : CanvasLayer
             OffsetRight = 760,
             OffsetBottom = 680
         };
+        _hotbarPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakeHudPanelStyle());
+        _hotbarPanel.SetMeta(PaletteOptOutMeta, true);
         root.AddChild(_hotbarPanel);
 
-        var hotbarContent = new VBoxContainer();
-        _hotbarPanel.AddChild(hotbarContent);
-
-        _hotbarLabel = new Label
-        {
-            Text = FormatHotbar(System.Array.Empty<GameItem>(), -1)
-        };
-        hotbarContent.AddChild(_hotbarLabel);
-
+        // _hotbarLabel is the legacy "[1: --] [2: --]..." text row;
+        // detached so callers that still set its Text compile, but no
+        // longer added to the panel since the slot Buttons cover the
+        // same info more clearly.
         _hotbarSlotsContainer = new HBoxContainer();
-        hotbarContent.AddChild(_hotbarSlotsContainer);
+        _hotbarSlotsContainer.AddThemeConstantOverride("separation", 4);
+        _hotbarPanel.AddChild(_hotbarSlotsContainer);
 
         // Karma tier badge replaces the minimap — top-down view means
         // the player always knows orientation, so a tier crest with
@@ -1418,6 +1416,8 @@ public partial class HudController : CanvasLayer
             OffsetRight = 1280,
             OffsetBottom = 360
         };
+        _bountyPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakeHudPanelStyle());
+        _bountyPanel.SetMeta(PaletteOptOutMeta, true);
         root.AddChild(_bountyPanel);
 
         _bountyLabel = new Label
@@ -1454,6 +1454,8 @@ public partial class HudController : CanvasLayer
             OffsetRight = 1280,
             OffsetBottom = 520
         };
+        _factionPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakeHudPanelStyle());
+        _factionPanel.SetMeta(PaletteOptOutMeta, true);
         root.AddChild(_factionPanel);
 
         _factionPanelLabel = new Label
@@ -2879,6 +2881,8 @@ public partial class HudController : CanvasLayer
             TooltipText = item is null
                 ? $"Drop an inventory item to bind slot {slotIndex + 1}"
                 : $"Slot {slotIndex + 1}: {item.Name}";
+            MenuTheme.StyleHudSlot(this);
+            SetMeta(PaletteOptOutMeta, true);
             AddItemButtonContent(this, themeId, item?.Id ?? string.Empty, label, new Vector2(24f, 24f));
         }
 

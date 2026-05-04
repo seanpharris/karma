@@ -16,6 +16,7 @@ internal static class MenuTheme
     // painted splash without competing with it.
     private const string HudPanelTexturePath = "res://assets/art/third_party/Fantasy Minimal Pixel Art GUI by eta-commercial-free/UI/RectangleBox_96x96.png";
     private const string HudButtonTexturePath = "res://assets/art/third_party/Fantasy Minimal Pixel Art GUI by eta-commercial-free/UI/Button_52x14.png";
+    private const string HudSlotTexturePath = "res://assets/art/third_party/Fantasy Minimal Pixel Art GUI by eta-commercial-free/UI/HotkeyBox_34x34.png";
 
     // Palette
     public static readonly Color PanelBg       = new(0.06f, 0.09f, 0.14f, 0.96f);
@@ -133,6 +134,43 @@ internal static class MenuTheme
     private static readonly Color HudBtnHover = new(1.10f, 1.05f, 0.92f);
     private static readonly Color HudBtnPressed = new(0.85f, 0.82f, 0.75f);
     private static readonly Color HudBtnDisabled = new(0.65f, 0.65f, 0.65f);
+
+    // Hotbar / inventory slot — uses the etahoshi pack's 34×34
+    // HotkeyBox texture 9-sliced. Modulates lightly on hover so the
+    // slot reads as interactive without overriding the slot art.
+    public static void StyleHudSlot(Button slot)
+    {
+        slot.AddThemeStyleboxOverride("normal", MakeHudSlotStyle(HudBtnNormal));
+        slot.AddThemeStyleboxOverride("hover", MakeHudSlotStyle(HudBtnHover));
+        slot.AddThemeStyleboxOverride("pressed", MakeHudSlotStyle(HudBtnPressed));
+        slot.AddThemeStyleboxOverride("focus", MakeHudSlotStyle(HudBtnHover));
+        slot.AddThemeStyleboxOverride("disabled", MakeHudSlotStyle(HudBtnDisabled));
+        slot.AddThemeColorOverride("font_color", BtnText);
+        slot.AddThemeColorOverride("font_hover_color", BtnTextHover);
+        slot.AddThemeColorOverride("font_pressed_color", BtnTextHover);
+        slot.AddThemeColorOverride("font_focus_color", BtnTextHover);
+    }
+
+    private static StyleBox MakeHudSlotStyle(Color modulate)
+    {
+        var texture = AtlasTextureLoader.Load(HudSlotTexturePath, forceImageLoad: true);
+        if (texture is not null)
+        {
+            return new StyleBoxTexture
+            {
+                Texture = texture,
+                // 34×34 source: ~4-5px frame, with a 4px shadow band along
+                // the bottom for the keybind chip — keep top/sides at 5
+                // and pull bottom to 8 so the chip stays visible.
+                TextureMarginLeft = 5, TextureMarginRight = 5,
+                TextureMarginTop = 5, TextureMarginBottom = 8,
+                ContentMarginLeft = 6, ContentMarginRight = 6,
+                ContentMarginTop = 4, ContentMarginBottom = 8,
+                ModulateColor = modulate
+            };
+        }
+        return MakeButtonStyle(BtnBg, BtnBorder);
+    }
 
     private static StyleBoxFlat MakeButtonStyle(Color bg, Color border)
     {
