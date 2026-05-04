@@ -1301,12 +1301,20 @@ public partial class HudController : CanvasLayer
         _matchLabel.SetMeta(PaletteOptOutMeta, true);
         root.AddChild(_matchLabel);
 
+        // Interaction prompt: anchored to bottom-center so it sits
+        // beneath the player (where they're looking), and stays at the
+        // bottom regardless of window resolution. Above the hotbar at
+        // y=624 so it doesn't overlap.
         _promptPanel = new PanelContainer
         {
-            OffsetLeft = 16,
-            OffsetTop = 592,
-            OffsetRight = 580,
-            OffsetBottom = 704,
+            AnchorLeft = 0.5f,
+            AnchorRight = 0.5f,
+            AnchorTop = 1.0f,
+            AnchorBottom = 1.0f,
+            OffsetLeft = -260,
+            OffsetRight = 260,
+            OffsetTop = -180,
+            OffsetBottom = -120,
             Visible = false
         };
         root.AddChild(_promptPanel);

@@ -30,28 +30,12 @@ public partial class KarmaDualityBar : Control
 
     private int _score;
     private Texture2D _gradientTexture;
-    private Label _yourKarmaLabel;
 
     public override void _Ready()
     {
         MouseFilter = MouseFilterEnum.Ignore;
-        CustomMinimumSize = new Vector2(BarWidth, BarHeight + 22);
+        CustomMinimumSize = new Vector2(BarWidth, BarHeight);
         _gradientTexture = MakeGradientTexture((int)BarWidth, 1);
-
-        // "YOUR KARMA" label below the bar, centered under the marker.
-        _yourKarmaLabel = new Label
-        {
-            Text = "YOUR KARMA",
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-            AnchorLeft = 0f, AnchorRight = 1f,
-            OffsetTop = BarHeight + 2,
-            OffsetBottom = BarHeight + 22,
-            MouseFilter = MouseFilterEnum.Ignore
-        };
-        _yourKarmaLabel.AddThemeFontSizeOverride("font_size", 11);
-        _yourKarmaLabel.AddThemeColorOverride("font_color", new Color(0.92f, 0.78f, 0.42f));
-        AddChild(_yourKarmaLabel);
     }
 
     public void SetScore(int score)
