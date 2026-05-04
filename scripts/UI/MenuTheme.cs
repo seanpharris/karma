@@ -10,10 +10,12 @@ namespace Karma.UI;
 // world rather than generic Godot defaults.
 internal static class MenuTheme
 {
-    // Pack asset paths. Only the in-game HUD adopts the etahoshi pack;
-    // the main menu + pause menu intentionally keep their procedural
-    // karma-duality look (deep navy + gold border + drop shadow).
+    // Pack asset paths. The in-game HUD and the pause menu adopt the
+    // etahoshi pack; the main menu Options + Credits overlays keep
+    // their procedural karma-duality look so they read against the
+    // painted splash without competing with it.
     private const string HudPanelTexturePath = "res://assets/art/third_party/Fantasy Minimal Pixel Art GUI by eta-commercial-free/UI/RectangleBox_96x96.png";
+    private const string HudButtonTexturePath = "res://assets/art/third_party/Fantasy Minimal Pixel Art GUI by eta-commercial-free/UI/Button_52x14.png";
 
     // Palette
     public static readonly Color PanelBg       = new(0.06f, 0.09f, 0.14f, 0.96f);
@@ -91,6 +93,46 @@ internal static class MenuTheme
         button.AddThemeColorOverride("font_pressed_color", BtnTextHover);
         button.AddThemeColorOverride("font_focus_color", BtnTextHover);
     }
+
+    // Pack-textured button — used by the pause menu for visual
+    // consistency with MakeHudPanelStyle. Modulate variants per state
+    // since the pack's HighlightButton bracket overlay can't compose
+    // into a single stylebox; font color carries the rest of the punch.
+    public static void StyleHudButton(Button button)
+    {
+        button.AddThemeStyleboxOverride("normal", MakeHudButtonStyle(HudBtnNormal));
+        button.AddThemeStyleboxOverride("hover", MakeHudButtonStyle(HudBtnHover));
+        button.AddThemeStyleboxOverride("pressed", MakeHudButtonStyle(HudBtnPressed));
+        button.AddThemeStyleboxOverride("focus", MakeHudButtonStyle(HudBtnHover));
+        button.AddThemeStyleboxOverride("disabled", MakeHudButtonStyle(HudBtnDisabled));
+        button.AddThemeColorOverride("font_color", BtnText);
+        button.AddThemeColorOverride("font_hover_color", BtnTextHover);
+        button.AddThemeColorOverride("font_pressed_color", BtnTextHover);
+        button.AddThemeColorOverride("font_focus_color", BtnTextHover);
+    }
+
+    private static StyleBox MakeHudButtonStyle(Color modulate)
+    {
+        var texture = AtlasTextureLoader.Load(HudButtonTexturePath, forceImageLoad: true);
+        if (texture is not null)
+        {
+            return new StyleBoxTexture
+            {
+                Texture = texture,
+                TextureMarginLeft = 7, TextureMarginRight = 7,
+                TextureMarginTop = 3, TextureMarginBottom = 3,
+                ContentMarginLeft = 14, ContentMarginRight = 14,
+                ContentMarginTop = 4, ContentMarginBottom = 4,
+                ModulateColor = modulate
+            };
+        }
+        return MakeButtonStyle(BtnBg, BtnBorder);
+    }
+
+    private static readonly Color HudBtnNormal = new(1.00f, 1.00f, 1.00f);
+    private static readonly Color HudBtnHover = new(1.10f, 1.05f, 0.92f);
+    private static readonly Color HudBtnPressed = new(0.85f, 0.82f, 0.75f);
+    private static readonly Color HudBtnDisabled = new(0.65f, 0.65f, 0.65f);
 
     private static StyleBoxFlat MakeButtonStyle(Color bg, Color border)
     {

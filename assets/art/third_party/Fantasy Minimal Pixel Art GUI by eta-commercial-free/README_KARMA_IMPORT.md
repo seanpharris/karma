@@ -12,17 +12,21 @@ pause / in-game HUD widgets.
 
 ## Scope
 
-Pack art is reserved for the **in-game HUD** only. The main menu and
-pause menu intentionally keep their procedural karma-duality look
-(deep navy + gold border) so the menus and the diegetic HUD can each
-have their own visual language.
+Pack art is used by the **in-game HUD** and the **pause menu**. The
+main menu Options + Credits overlays keep their procedural
+karma-duality look so they read against the painted splash without
+competing with it.
 
 ## Wired into
 
 - `BlackBigCircleBoxWithBorder_27x27.png` — `KarmaTierBadge` medallion
   outer frame (replaces the procedural gold ring).
 - `RectangleBox_96x96.png` — `MenuTheme.MakeHudPanelStyle()`, applied
-  only to the HUD vitals panel.
+  to the HUD vitals panel + the pause menu and pause options
+  sub-panel.
+- `Button_52x14.png` — `MenuTheme.StyleHudButton()`, applied to every
+  pause menu button (Resume / Options / Main Menu / Quit + Back).
+  Modulate variants per state (normal / hover / pressed / disabled).
 - `AttributesIcons_17x17.png` — HUD vitals icons. Sliced via
   `AtlasTexture` into 4 individual 17×17 icons; assigned per-vital:
   Health → slot 0 (heart), Ammo → slot 1, Stamina → slot 2,

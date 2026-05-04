@@ -2202,7 +2202,7 @@ public partial class HudController : CanvasLayer
             OffsetBottom = 620,
             Visible = false
         };
-        _escapeMenuPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakePanelStyle());
+        _escapeMenuPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakeHudPanelStyle());
         // Opt this entire subtree (and its sub-panels) out of the
         // medieval UI palette walker so MenuTheme styling sticks.
         _escapeMenuPanel.SetMeta(PaletteOptOutMeta, true);
@@ -2231,7 +2231,7 @@ public partial class HudController : CanvasLayer
         _backToMenuButton = new Button { Name = "MainMenuButton", Text = "Main Menu" };
         _quitButton = new Button { Name = "QuitButton", Text = "Quit" };
         foreach (var b in new[] { _resumeButton, _escapeOptionsButton, _backToMenuButton, _quitButton })
-            MenuTheme.StyleButton(b);
+            MenuTheme.StyleHudButton(b);
         content.AddChild(_resumeButton);
         content.AddChild(_escapeOptionsButton);
         content.AddChild(_backToMenuButton);
@@ -2246,7 +2246,7 @@ public partial class HudController : CanvasLayer
             OffsetBottom = 620,
             Visible = false
         };
-        _escapeOptionsPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakePanelStyle());
+        _escapeOptionsPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakeHudPanelStyle());
         _escapeOptionsPanel.SetMeta(PaletteOptOutMeta, true);
         // Sibling of the pause panel, not a child — clicking Options
         // swaps views (hides pause, shows this) instead of expanding it.
@@ -2274,7 +2274,7 @@ public partial class HudController : CanvasLayer
             Name = "CloseOptionsButton",
             Text = "Back"
         };
-        MenuTheme.StyleButton(_closeEscapeOptionsButton);
+        MenuTheme.StyleHudButton(_closeEscapeOptionsButton);
         optionsContent.AddChild(_closeEscapeOptionsButton);
     }
 
