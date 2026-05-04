@@ -1570,7 +1570,7 @@ public partial class HudController : CanvasLayer
             OffsetRight = 540,
             OffsetBottom = 220
         };
-        panel.AddThemeStyleboxOverride("panel", MenuTheme.MakePanelStyle());
+        panel.AddThemeStyleboxOverride("panel", MenuTheme.MakeHudPanelStyle());
         panel.SetMeta(PaletteOptOutMeta, true);
         root.AddChild(panel);
 

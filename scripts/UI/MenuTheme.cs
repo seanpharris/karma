@@ -9,9 +9,10 @@ namespace Karma.UI;
 // world rather than generic Godot defaults.
 internal static class MenuTheme
 {
-    // Pack asset paths.
-    private const string PanelTexturePath = "res://assets/art/third_party/Fantasy Minimal Pixel Art GUI by eta-commercial-free/UI/RectangleBox_96x96.png";
-    private const string ButtonTexturePath = "res://assets/art/third_party/Fantasy Minimal Pixel Art GUI by eta-commercial-free/UI/Button_52x14.png";
+    // Pack asset paths. Only the in-game HUD adopts the etahoshi pack;
+    // the main menu + pause menu intentionally keep their procedural
+    // karma-duality look (deep navy + gold border + drop shadow).
+    private const string HudPanelTexturePath = "res://assets/art/third_party/Fantasy Minimal Pixel Art GUI by eta-commercial-free/UI/RectangleBox_96x96.png";
 
     // Palette
     public static readonly Color PanelBg       = new(0.06f, 0.09f, 0.14f, 0.96f);
@@ -33,27 +34,11 @@ internal static class MenuTheme
     public static readonly Color SliderTrack   = new(0.04f, 0.07f, 0.11f, 1.00f);
     public static readonly Color SliderFill    = new(0.85f, 0.68f, 0.32f, 1.00f);
 
-    // Panel — used by the Options / Credits / Pause overlays. Uses the
-    // etahoshi pack's 96×96 frame texture 9-sliced; falls back to a flat
-    // navy box if the texture can't be loaded.
-    public static StyleBox MakePanelStyle()
+    // Panel — used by the main menu Options / Credits overlays and the
+    // in-game pause menu. Procedural deep-navy box with a gold border;
+    // matches the karma duality splash language.
+    public static StyleBoxFlat MakePanelStyle()
     {
-        var texture = ResourceLoader.Load<Texture2D>(PanelTexturePath);
-        if (texture is not null)
-        {
-            return new StyleBoxTexture
-            {
-                Texture = texture,
-                // 9-slice the gold border + corner accents (~10px thick
-                // in the 96×96 source). Corners stay native; middle
-                // stretches to fit the panel.
-                TextureMarginLeft = 10, TextureMarginRight = 10,
-                TextureMarginTop = 10, TextureMarginBottom = 10,
-                // Leave room inside the gold frame for content padding.
-                ContentMarginLeft = 24, ContentMarginRight = 24,
-                ContentMarginTop = 20, ContentMarginBottom = 20,
-            };
-        }
         return new StyleBoxFlat
         {
             BgColor = PanelBg,
@@ -69,47 +54,48 @@ internal static class MenuTheme
         };
     }
 
+    // In-game HUD panel — uses the etahoshi pack's 96×96 frame texture
+    // 9-sliced. Restricted to HUD surfaces (vitals, etc.) so the menus
+    // keep their cleaner procedural look while the diegetic in-game UI
+    // gets the pixel-art frame.
+    public static StyleBox MakeHudPanelStyle()
+    {
+        var texture = ResourceLoader.Load<Texture2D>(HudPanelTexturePath);
+        if (texture is not null)
+        {
+            return new StyleBoxTexture
+            {
+                Texture = texture,
+                TextureMarginLeft = 10, TextureMarginRight = 10,
+                TextureMarginTop = 10, TextureMarginBottom = 10,
+                ContentMarginLeft = 18, ContentMarginRight = 18,
+                ContentMarginTop = 14, ContentMarginBottom = 14,
+            };
+        }
+        return MakePanelStyle();
+    }
+
     // Buttons — applied to every Button inside an overlay panel so they
     // read as part of the same world as the splash buttons.
     public static void StyleButton(Button button)
     {
-        button.AddThemeStyleboxOverride("normal", MakeButtonStyle(BtnModulateNormal, BtnBg, BtnBorder));
-        button.AddThemeStyleboxOverride("hover", MakeButtonStyle(BtnModulateHover, BtnBgHover, BtnBorderHov));
-        button.AddThemeStyleboxOverride("pressed", MakeButtonStyle(BtnModulatePressed, BtnBgPressed, BtnBorderHov));
-        button.AddThemeStyleboxOverride("focus", MakeButtonStyle(BtnModulateHover, BtnBgHover, BtnBorderHov));
-        button.AddThemeStyleboxOverride("disabled", MakeButtonStyle(BtnModulateDisabled, BtnBg, BtnBorder));
+        button.AddThemeStyleboxOverride("normal", MakeButtonStyle(BtnBg, BtnBorder));
+        button.AddThemeStyleboxOverride("hover", MakeButtonStyle(BtnBgHover, BtnBorderHov));
+        button.AddThemeStyleboxOverride("pressed", MakeButtonStyle(BtnBgPressed, BtnBorderHov));
+        button.AddThemeStyleboxOverride("focus", MakeButtonStyle(BtnBgHover, BtnBorderHov));
+        button.AddThemeStyleboxOverride("disabled", MakeButtonStyle(BtnBg, BtnBorder));
         button.AddThemeColorOverride("font_color", BtnText);
         button.AddThemeColorOverride("font_hover_color", BtnTextHover);
         button.AddThemeColorOverride("font_pressed_color", BtnTextHover);
         button.AddThemeColorOverride("font_focus_color", BtnTextHover);
     }
 
-    // Button stylebox — uses the etahoshi pack's 52×14 Button texture
-    // 9-sliced (rounded ends preserved, middle stretches). The modulate
-    // tint differentiates state since the bracket-overlay HighlightButton
-    // doesn't compose cleanly into a single stylebox; state feedback
-    // comes mostly from the font color shift configured in StyleButton.
-    private static StyleBox MakeButtonStyle(Color modulate, Color fallbackBg, Color fallbackBorder)
+    private static StyleBoxFlat MakeButtonStyle(Color bg, Color border)
     {
-        var texture = ResourceLoader.Load<Texture2D>(ButtonTexturePath);
-        if (texture is not null)
-        {
-            return new StyleBoxTexture
-            {
-                Texture = texture,
-                // Native source is 52×14 with ~6-7px rounded caps and
-                // ~3px top/bottom border. 9-slice keeps caps native.
-                TextureMarginLeft = 7, TextureMarginRight = 7,
-                TextureMarginTop = 3, TextureMarginBottom = 3,
-                ContentMarginLeft = 14, ContentMarginRight = 14,
-                ContentMarginTop = 4, ContentMarginBottom = 4,
-                ModulateColor = modulate
-            };
-        }
         return new StyleBoxFlat
         {
-            BgColor = fallbackBg,
-            BorderColor = fallbackBorder,
+            BgColor = bg,
+            BorderColor = border,
             BorderWidthLeft = 2, BorderWidthRight = 2,
             BorderWidthTop = 2, BorderWidthBottom = 2,
             CornerRadiusTopLeft = 4, CornerRadiusTopRight = 4,
@@ -119,31 +105,23 @@ internal static class MenuTheme
         };
     }
 
-    // Modulate values for each button state. Subtle tints since the
-    // pack texture is already styled; font color carries the punch.
-    private static readonly Color BtnModulateNormal = new(1.00f, 1.00f, 1.00f);
-    private static readonly Color BtnModulateHover = new(1.10f, 1.05f, 0.92f);  // warm bright
-    private static readonly Color BtnModulatePressed = new(0.85f, 0.82f, 0.75f); // dimmed
-    private static readonly Color BtnModulateDisabled = new(0.65f, 0.65f, 0.65f);
-
     // OptionButton (resolution dropdown) reuses the button stylebox; its
     // popup is themed separately so it matches when expanded.
     public static void StyleOptionButton(OptionButton optionButton)
     {
-        optionButton.AddThemeStyleboxOverride("normal", MakeButtonStyle(BtnModulateNormal, BtnBg, BtnBorder));
-        optionButton.AddThemeStyleboxOverride("hover", MakeButtonStyle(BtnModulateHover, BtnBgHover, BtnBorderHov));
-        optionButton.AddThemeStyleboxOverride("pressed", MakeButtonStyle(BtnModulatePressed, BtnBgPressed, BtnBorderHov));
-        optionButton.AddThemeStyleboxOverride("focus", MakeButtonStyle(BtnModulateHover, BtnBgHover, BtnBorderHov));
+        optionButton.AddThemeStyleboxOverride("normal", MakeButtonStyle(BtnBg, BtnBorder));
+        optionButton.AddThemeStyleboxOverride("hover", MakeButtonStyle(BtnBgHover, BtnBorderHov));
+        optionButton.AddThemeStyleboxOverride("pressed", MakeButtonStyle(BtnBgPressed, BtnBorderHov));
+        optionButton.AddThemeStyleboxOverride("focus", MakeButtonStyle(BtnBgHover, BtnBorderHov));
         optionButton.AddThemeColorOverride("font_color", BtnText);
         optionButton.AddThemeColorOverride("font_hover_color", BtnTextHover);
         optionButton.AddThemeColorOverride("font_pressed_color", BtnTextHover);
         optionButton.AddThemeColorOverride("font_focus_color", BtnTextHover);
 
-        // Theme the popup so the dropdown list reads the same. Popup
-        // panel keeps the panel-style frame; rows use the button stylebox.
+        // Theme the popup so the dropdown list reads the same.
         var popup = optionButton.GetPopup();
-        popup.AddThemeStyleboxOverride("panel", MakePanelStyle());
-        popup.AddThemeStyleboxOverride("hover", MakeButtonStyle(BtnModulateHover, BtnBgHover, BtnBorderHov));
+        popup.AddThemeStyleboxOverride("panel", MakeButtonStyle(BtnBg, BtnBorder));
+        popup.AddThemeStyleboxOverride("hover", MakeButtonStyle(BtnBgHover, BtnBorderHov));
         popup.AddThemeColorOverride("font_color", BtnText);
         popup.AddThemeColorOverride("font_hover_color", BtnTextHover);
         popup.AddThemeColorOverride("font_separator_color", HeadingGold);

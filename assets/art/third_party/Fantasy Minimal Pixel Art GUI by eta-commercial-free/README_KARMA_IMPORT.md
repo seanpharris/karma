@@ -10,31 +10,27 @@ pause / in-game HUD widgets.
   current terms; the empty `commercial-free.txt` ships with the
   download as the author's licence marker.
 
+## Scope
+
+Pack art is reserved for the **in-game HUD** only. The main menu and
+pause menu intentionally keep their procedural karma-duality look
+(deep navy + gold border) so the menus and the diegetic HUD can each
+have their own visual language.
+
 ## Wired into
 
 - `BlackBigCircleBoxWithBorder_27x27.png` — `KarmaTierBadge` medallion
   outer frame (replaces the procedural gold ring).
-- `RectangleBox_96x96.png` — `MenuTheme.MakePanelStyle()` panel
-  background, applied to: Main Menu options/credits overlays, the
-  in-game pause panel + audio-options sub-panel, the HUD vitals
-  panel. Single source of truth, so any future panel that calls
-  `MakePanelStyle()` inherits the same gold frame.
-- `Button_52x14.png` — `MenuTheme.MakeButtonStyle()` button background,
-  applied to every button styled through `StyleButton` or
-  `StyleOptionButton`. Modulate variants per state (normal / hover /
-  pressed / disabled); state feedback comes from the modulate tint
-  plus the existing font color shift.
+- `RectangleBox_96x96.png` — `MenuTheme.MakeHudPanelStyle()`, applied
+  only to the HUD vitals panel.
 - `AttributesIcons_17x17.png` — HUD vitals icons. Sliced via
   `AtlasTexture` into 4 individual 17×17 icons; assigned per-vital:
   Health → slot 0 (heart), Ammo → slot 1, Stamina → slot 2,
   Hunger → slot 3.
 
-## On deck
+## On deck (HUD-only)
 
-- `HighlightButton_60x23.png` — bracket overlay for hovered buttons.
-  Doesn't compose into a single stylebox, so deferred until a custom
-  Button subclass is justified.
-- `HealthBarPanel_160x41.png` / `ValueBar_128x16.png` — bar frames
-  for the vitals + KarmaDualityBar (custom-draw rework needed for
-  the duality bar's marker layering).
+- `HealthBarPanel_160x41.png` / `ValueBar_128x16.png` — vitals bar
+  frames + KarmaDualityBar frame (custom-draw rework needed for the
+  duality bar's marker layering).
 - `HotkeyBox_34x34.png` / `ItemBox_24x24.png` — hotbar slot frames.
