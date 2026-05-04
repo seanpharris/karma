@@ -19,13 +19,14 @@ public partial class KarmaTierBadge : Control
 {
     private const string MedallionTexturePath = "res://assets/art/third_party/Fantasy Minimal Pixel Art GUI by eta-commercial-free/UI/BlackBigCircleBoxWithBorder_27x27.png";
 
-    private const float MedallionDiameter = 140f;
-    // The pack's circle frame is 27×27. 5× nearest-neighbour scale →
-    // 135×135 keeps the pixel art crisp and fits the 140-wide badge.
-    private const float TextureScale = 5f;
+    private const float MedallionDiameter = 100f;
+    // The pack's circle frame is 27×27. 4× nearest-neighbour scale →
+    // 108×108 → fits the 100-wide badge with slight overscan, keeping
+    // pixel art crisp.
+    private const float TextureScale = 4f;
     private const float TextureSize = 27f * TextureScale;
-    private const float ProgressRingRadius = 56f;  // sits just inside the texture's gold ring
-    private const float MedallionRadius = 44f;     // sits just inside the progress ring
+    private const float ProgressRingRadius = 40f;  // sits just inside the texture's gold ring
+    private const float MedallionRadius = 30f;     // sits just inside the progress ring
 
     private static readonly Color BackingColor = new(0.06f, 0.09f, 0.14f, 0.96f);
     private static readonly Color FrameGold = new(0.85f, 0.68f, 0.32f, 1f);
@@ -53,20 +54,20 @@ public partial class KarmaTierBadge : Control
     {
         MouseFilter = MouseFilterEnum.Ignore;
         TextureFilter = CanvasItem.TextureFilterEnum.Nearest;
-        CustomMinimumSize = new Vector2(MedallionDiameter, MedallionDiameter + 56);
+        CustomMinimumSize = new Vector2(MedallionDiameter, MedallionDiameter + 42);
         // Routed through AtlasTextureLoader so we work even when the
         // pack PNGs don't yet have .import sidecars (raw load fallback).
         _medallionTexture = AtlasTextureLoader.Load(MedallionTexturePath, forceImageLoad: true);
 
-        _scoreLabel = MakeLabel(ScoreCream, fontSize: 28, top: MedallionDiameter * 0.5f - 22, height: 44);
+        _scoreLabel = MakeLabel(ScoreCream, fontSize: 22, top: MedallionDiameter * 0.5f - 16, height: 32);
         _scoreLabel.Text = "0";
         AddChild(_scoreLabel);
 
-        _tierLabel = MakeLabel(TierGold, fontSize: 14, top: MedallionDiameter + 4, height: 22);
+        _tierLabel = MakeLabel(TierGold, fontSize: 12, top: MedallionDiameter + 2, height: 18);
         _tierLabel.Text = "UNMARKED";
         AddChild(_tierLabel);
 
-        _progressLabel = MakeLabel(SubtleCream, fontSize: 11, top: MedallionDiameter + 28, height: 22);
+        _progressLabel = MakeLabel(SubtleCream, fontSize: 10, top: MedallionDiameter + 22, height: 18);
         _progressLabel.Text = string.Empty;
         AddChild(_progressLabel);
     }

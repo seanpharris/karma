@@ -63,6 +63,7 @@ public partial class HudController : CanvasLayer
     private Label _inventoryLabel = new();
     private Label _leaderboardLabel = new();
     private Label _perksLabel = new();
+    private HBoxContainer _perksRow;
     private Label _relationshipsLabel = new();
     private Label _factionsLabel = new();
     private Label _questsLabel = new();
@@ -1134,25 +1135,23 @@ public partial class HudController : CanvasLayer
         };
         root.AddChild(_inventoryLabel);
 
-        _leaderboardLabel = new Label
+        // _leaderboardLabel + _perksLabel are kept as detached fields
+        // (no AddChild) so the OnLeaderboardChanged / OnPerksChanged
+        // signal handlers compile. The leaderboard text is redundant
+        // with the karma duality bar + tier badge; perks moved to an
+        // icon row that's hidden until the player has perks.
+        _perksRow = new HBoxContainer
         {
+            Name = "PerksRow",
             OffsetLeft = 16,
-            OffsetTop = 160,
-            OffsetRight = 760,
-            OffsetBottom = 190,
-            Text = "Saint: -- | Scourge: --"
+            OffsetTop = 220,
+            OffsetRight = 320,
+            OffsetBottom = 256,
+            Visible = false
         };
-        root.AddChild(_leaderboardLabel);
-
-        _perksLabel = new Label
-        {
-            OffsetLeft = 16,
-            OffsetTop = 192,
-            OffsetRight = 900,
-            OffsetBottom = 222,
-            Text = "Perks: none"
-        };
-        root.AddChild(_perksLabel);
+        _perksRow.AddThemeConstantOverride("separation", 4);
+        _perksRow.SetMeta(PaletteOptOutMeta, true);
+        root.AddChild(_perksRow);
 
         _relationshipsLabel = new Label
         {
@@ -1198,15 +1197,8 @@ public partial class HudController : CanvasLayer
         };
         root.AddChild(_combatLabel);
 
-        _targetLabel = new Label
-        {
-            OffsetLeft = 16,
-            OffsetTop = 350,
-            OffsetRight = 900,
-            OffsetBottom = 380,
-            Text = "Target: none in range"
-        };
-        root.AddChild(_targetLabel);
+        // _targetLabel kept detached so callers that set Text compile.
+        _targetLabel = new Label { Text = string.Empty };
 
         _entanglementsLabel = new Label
         {
@@ -1362,10 +1354,12 @@ public partial class HudController : CanvasLayer
 
         _hotbarPanel = new PanelContainer
         {
+            // 4 slots × 64 + separations + panel padding ≈ 300 wide.
+            // Anchored to the bottom so it stays in place across heights.
             OffsetLeft = 16,
-            OffsetTop = 640,
-            OffsetRight = 760,
-            OffsetBottom = 680
+            OffsetTop = 624,
+            OffsetRight = 320,
+            OffsetBottom = 704
         };
         _hotbarPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakeHudPanelStyle());
         _hotbarPanel.SetMeta(PaletteOptOutMeta, true);
@@ -1411,10 +1405,10 @@ public partial class HudController : CanvasLayer
 
         _bountyPanel = new PanelContainer
         {
-            OffsetLeft = 1100,
+            OffsetLeft = 1140,
             OffsetTop = 220,
-            OffsetRight = 1280,
-            OffsetBottom = 360
+            OffsetRight = 1270,
+            OffsetBottom = 290
         };
         _bountyPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakeHudPanelStyle());
         _bountyPanel.SetMeta(PaletteOptOutMeta, true);
@@ -1446,25 +1440,9 @@ public partial class HudController : CanvasLayer
         };
         _bountyBoardPanel.AddChild(_bountyBoardLabel);
 
-        _factionPanel = new PanelContainer
-        {
-            Name = "FactionPanel",
-            OffsetLeft = 1100,
-            OffsetTop = 376,
-            OffsetRight = 1280,
-            OffsetBottom = 520
-        };
-        _factionPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakeHudPanelStyle());
-        _factionPanel.SetMeta(PaletteOptOutMeta, true);
-        root.AddChild(_factionPanel);
-
-        _factionPanelLabel = new Label
-        {
-            Name = "FactionPanelLabel",
-            Text = "Factions: --",
-            AutowrapMode = TextServer.AutowrapMode.WordSmart
-        };
-        _factionPanel.AddChild(_factionPanelLabel);
+        // Factions panel removed from the HUD. Field stays detached so
+        // RefreshFactionPanel still compiles (sets Text harmlessly).
+        _factionPanelLabel = new Label { Text = string.Empty };
 
         _questLogPanel = new PanelContainer
         {
@@ -2317,7 +2295,7 @@ public partial class HudController : CanvasLayer
             var item = ResolveHotbarSlotItem(_gameState.Inventory, _hotbarBindings, i);
             var slot = new HotbarDropSlot(this, i, item, activeThemeId)
             {
-                CustomMinimumSize = new Vector2(82, 34)
+                CustomMinimumSize = new Vector2(64, 64)
             };
             _hotbarSlotsContainer.AddChild(slot);
         }
@@ -2837,7 +2815,7 @@ public partial class HudController : CanvasLayer
             : $"{pile.DropOwnerName}'s drop ownership expires in {remainingTicks} ticks.";
     }
 
-    public const int HotbarSlots = 9;
+    public const int HotbarSlots = 4;
 
     private sealed partial class InventoryDragRow : Button
     {
@@ -2877,13 +2855,43 @@ public partial class HudController : CanvasLayer
         {
             _hud = hud;
             _slotIndex = slotIndex;
-            var label = item is null ? $"{slotIndex + 1}: --" : $"{slotIndex + 1}: {Trim(item.Name, 8)}";
+            Text = string.Empty;
             TooltipText = item is null
                 ? $"Drop an inventory item to bind slot {slotIndex + 1}"
                 : $"Slot {slotIndex + 1}: {item.Name}";
             MenuTheme.StyleHudSlot(this);
             SetMeta(PaletteOptOutMeta, true);
-            AddItemButtonContent(this, themeId, item?.Id ?? string.Empty, label, new Vector2(24f, 24f));
+            AddCenteredSlotContent(this, themeId, item?.Id ?? string.Empty, slotIndex + 1);
+        }
+
+        private static void AddCenteredSlotContent(Button button, string themeId, string itemId, int hotkeyNumber)
+        {
+            // Centered item icon — fills most of the slot, drops a placeholder
+            // when the slot is empty so the slot still reads as a slot.
+            var icon = CreateItemIconRect(themeId, itemId, new Vector2(40f, 40f));
+            icon.AnchorLeft = 0.5f; icon.AnchorRight = 0.5f;
+            icon.AnchorTop = 0.5f;  icon.AnchorBottom = 0.5f;
+            icon.OffsetLeft = -20f; icon.OffsetRight = 20f;
+            icon.OffsetTop = -22f;  icon.OffsetBottom = 18f;
+            icon.MouseFilter = Control.MouseFilterEnum.Ignore;
+            button.AddChild(icon);
+
+            // Hotkey number in the slot's bottom band — etahoshi
+            // HotkeyBox texture has a dedicated gold band there.
+            var hotkey = new Label
+            {
+                Name = "HotkeyLabel",
+                Text = hotkeyNumber.ToString(),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                AnchorLeft = 0f, AnchorRight = 1f,
+                AnchorTop = 1f, AnchorBottom = 1f,
+                OffsetTop = -14f, OffsetBottom = -1f,
+                MouseFilter = Control.MouseFilterEnum.Ignore
+            };
+            hotkey.AddThemeFontSizeOverride("font_size", 10);
+            hotkey.AddThemeColorOverride("font_color", new Color(0.20f, 0.16f, 0.10f));
+            button.AddChild(hotkey);
         }
 
         public override bool _CanDropData(Vector2 atPosition, Variant data)

@@ -9,8 +9,8 @@ namespace Karma.UI;
 // spectrum. Drawn programmatically — no asset dependency.
 public partial class KarmaDualityBar : Control
 {
-    public const float BarWidth = 720f;
-    public const float BarHeight = 22f;
+    public const float BarWidth = 600f;
+    public const float BarHeight = 14f;
 
     // Score range that the bar covers end-to-end. Beyond this the
     // marker pins to the appropriate edge (Paragon / Renegade are
@@ -69,35 +69,26 @@ public partial class KarmaDualityBar : Control
         if (_gradientTexture is not null)
             DrawTextureRect(_gradientTexture, rect, tile: false);
 
-        // Tier tick marks — small vertical pips reaching from the bar's
-        // bottom edge into the lower third.
-        var tickHeight = MathF.Max(4f, BarHeight * 0.4f);
+        // Tier tick marks — short vertical pips along the bottom edge.
         foreach (var tick in TierTicks)
         {
             var tickX = ScoreToX(tick);
             DrawLine(
-                new Vector2(tickX, BarHeight - tickHeight),
-                new Vector2(tickX, BarHeight - 1),
+                new Vector2(tickX, BarHeight * 0.55f),
+                new Vector2(tickX, BarHeight - 1f),
                 TickColor, 1f, antialiased: true);
         }
 
-        // Center line at score 0.
-        var midX = BarWidth * 0.5f;
-        DrawLine(new Vector2(midX, 2), new Vector2(midX, BarHeight - 2),
-            CenterLine, 1.2f, antialiased: true);
+        // Single gold border, thinner so it doesn't dominate the slim bar.
+        DrawRect(rect, FrameColor, filled: false, width: 1.5f);
+        DrawRect(rect.Grow(1f), FrameDarkColor, filled: false, width: 1f);
 
-        // Gold frame (dark inner stroke for depth, then bright gold).
-        DrawRect(rect.Grow(1f), FrameDarkColor, filled: false, width: 1.5f);
-        DrawRect(rect, FrameColor, filled: false, width: 2f);
-
-        // Marker: downward triangle pip + thin vertical guide.
+        // Marker: downward triangle pip pointing at the player's score.
         var markerX = ScoreToX(_score);
-        DrawLine(new Vector2(markerX, 1), new Vector2(markerX, BarHeight - 1),
-            new Color(1, 1, 1, 0.40f), 1f, antialiased: true);
         DrawTriangle(
-            tip: new Vector2(markerX, -2),
-            baseHalfWidth: 5f,
-            baseY: -10f,
+            tip: new Vector2(markerX, -1),
+            baseHalfWidth: 4f,
+            baseY: -8f,
             fill: MarkerFill,
             border: MarkerBorder);
     }
