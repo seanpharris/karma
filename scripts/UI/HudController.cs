@@ -756,10 +756,7 @@ public partial class HudController : CanvasLayer
 
     public void ShowStamina(float stamina, float maxStamina, bool isExhausted)
     {
-        _staminaLabel.Text = FormatMovementStamina(stamina, maxStamina, isExhausted);
-        var safeMax = MathF.Max(1f, maxStamina);
-        var clamped = Math.Clamp(stamina, 0f, safeMax);
-        _staminaBar.Value = clamped / safeMax * 100.0;
+        SetVital(VitalKind.Stamina, stamina, maxStamina);
     }
 
     public static string FormatMovementStamina(float stamina, float maxStamina, bool isExhausted)
@@ -1125,15 +1122,10 @@ public partial class HudController : CanvasLayer
         };
         _npcTooltipPanel.AddChild(_npcTooltipLabel);
 
-        _inventoryLabel = new Label
-        {
-            OffsetLeft = 16,
-            OffsetTop = 158,
-            OffsetRight = 700,
-            OffsetBottom = 188,
-            Text = "Inventory: empty"
-        };
-        root.AddChild(_inventoryLabel);
+        // _inventoryLabel removed from HUD — kept detached so the
+        // OnInventoryChanged signal handler still compiles. The hotbar
+        // slot row + inventory overlay carry the same info.
+        _inventoryLabel = new Label { Text = string.Empty };
 
         // _leaderboardLabel + _perksLabel are kept as detached fields
         // (no AddChild) so the OnLeaderboardChanged / OnPerksChanged
@@ -1352,25 +1344,26 @@ public partial class HudController : CanvasLayer
         _dialogueChoicesContainer = new VBoxContainer();
         _dialogueContainer.AddChild(_dialogueChoicesContainer);
 
+        // Hotbar slots float as independent framed boxes — no outer
+        // panel frame around them. _hotbarPanel stays as a transparent
+        // positioning anchor so existing references compile.
         _hotbarPanel = new PanelContainer
         {
-            // 4 slots × 64 + separations + panel padding ≈ 300 wide.
-            // Anchored to the bottom so it stays in place across heights.
             OffsetLeft = 16,
             OffsetTop = 624,
             OffsetRight = 320,
-            OffsetBottom = 704
+            OffsetBottom = 704,
+            // Empty stylebox so the panel renders transparent; only
+            // the slot buttons inside have visible frames.
+            MouseFilter = Control.MouseFilterEnum.Ignore
         };
-        _hotbarPanel.AddThemeStyleboxOverride("panel", MenuTheme.MakeHudPanelStyle());
+        _hotbarPanel.AddThemeStyleboxOverride("panel", new StyleBoxEmpty());
         _hotbarPanel.SetMeta(PaletteOptOutMeta, true);
         root.AddChild(_hotbarPanel);
 
-        // _hotbarLabel is the legacy "[1: --] [2: --]..." text row;
-        // detached so callers that still set its Text compile, but no
-        // longer added to the panel since the slot Buttons cover the
-        // same info more clearly.
+        // _hotbarLabel kept detached — slot Buttons render the same info.
         _hotbarSlotsContainer = new HBoxContainer();
-        _hotbarSlotsContainer.AddThemeConstantOverride("separation", 4);
+        _hotbarSlotsContainer.AddThemeConstantOverride("separation", 10);
         _hotbarPanel.AddChild(_hotbarSlotsContainer);
 
         // Karma tier badge replaces the minimap — top-down view means
@@ -1514,97 +1507,175 @@ public partial class HudController : CanvasLayer
         BuildFirstRunTutorialOverlay(root);
     }
 
-    // Themed vitals readout — pack icon + name/value label + slim
-    // gold-fill progress bar per row. The panel uses MenuTheme so it
-    // matches the karma duality main + pause menus, and opts out of the
-    // medieval palette walker so the styling sticks.
-    private static readonly Color HealthBarColor = new(0.86f, 0.22f, 0.22f);
-    private static readonly Color StaminaBarColor = new(0.95f, 0.80f, 0.32f);
-    private static readonly Color AmmoBarColor = new(0.78f, 0.84f, 0.95f);
-    private static readonly Color HungerBarColor = new(0.95f, 0.55f, 0.18f);
+    // Themed vitals readout — circular sprite portrait on the left,
+    // stack of horizontal bars + value text on the right. Layout is
+    // data-driven via EnabledVitalsConfig so adding/removing a vital
+    // is a one-line edit.
+    public enum VitalKind { Health, Stamina, Hunger, Ammo, Mana, Cleanliness, Hydration }
 
-    // 4-icon strip from the etahoshi pack — 68×17 = 4 icons of 17×17.
-    // Slot 0 is the heart; remaining slots are weapon-ish glyphs +
-    // gold/coin. Each vital row picks one slot.
-    private const string AttributesIconsPath = "res://assets/art/third_party/Fantasy Minimal Pixel Art GUI by eta-commercial-free/UI/AttributesIcons_17x17.png";
-    private const int AttributesIconSize = 17;
+    private static readonly Color HealthBarColor       = new(0.86f, 0.22f, 0.22f);
+    private static readonly Color StaminaBarColor      = new(0.95f, 0.80f, 0.32f);
+    private static readonly Color AmmoBarColor         = new(0.78f, 0.84f, 0.95f);
+    private static readonly Color HungerBarColor       = new(0.95f, 0.55f, 0.18f);
+    private static readonly Color ManaBarColor         = new(0.45f, 0.55f, 0.92f);
+    private static readonly Color CleanlinessBarColor  = new(0.78f, 0.92f, 0.95f);
+    private static readonly Color HydrationBarColor    = new(0.32f, 0.65f, 0.85f);
+
+    // Edit this array to add / remove / reorder vitals. Each entry:
+    // (kind, fill color, display name, hideWhenInactive).
+    // hideWhenInactive=true → row is hidden when max <= 0 (e.g. Ammo
+    // when no ranged weapon equipped, Hunger when no hunger system).
+    private static readonly (VitalKind Kind, Color Color, string Name, bool HideWhenInactive)[] EnabledVitalsConfig =
+    {
+        (VitalKind.Health,  HealthBarColor,  "Health",  false),
+        (VitalKind.Stamina, StaminaBarColor, "Stamina", false),
+        (VitalKind.Hunger,  HungerBarColor,  "Hunger",  true),
+    };
+
+    private const string PortraitFramePath = "res://assets/art/third_party/Fantasy Minimal Pixel Art GUI by eta-commercial-free/UI/BlackBigCircleBoxWithBorder_27x27.png";
+
+    private sealed class VitalRowControls
+    {
+        public Control Container;
+        public ProgressBar Bar;
+        public Label Value;
+        public bool HideWhenInactive;
+    }
+
+    private readonly Dictionary<VitalKind, VitalRowControls> _vitalRows = new();
 
     private void BuildVitalsPanel(Control root)
     {
         var panel = new PanelContainer
         {
             Name = "VitalsPanel",
+            // Wider to fit the portrait + bars layout; shorter since
+            // bars are now horizontal stripes instead of stacked rows.
             OffsetLeft = 16,
             OffsetTop = 16,
-            OffsetRight = 256,
-            OffsetBottom = 220
+            OffsetRight = 312,
+            OffsetBottom = 124
         };
         panel.AddThemeStyleboxOverride("panel", MenuTheme.MakeHudPanelStyle());
         panel.SetMeta(PaletteOptOutMeta, true);
         root.AddChild(panel);
 
-        var content = new VBoxContainer { Name = "VitalsContent" };
-        content.AddThemeConstantOverride("separation", 8);
-        panel.AddChild(content);
+        // Layout: [portrait circle] [VBox of bar rows]
+        var hbox = new HBoxContainer { Name = "VitalsContent" };
+        hbox.AddThemeConstantOverride("separation", 10);
+        panel.AddChild(hbox);
 
-        // Pack icon assignments — slot 0 is the heart, so Health gets
-        // it. Remaining slots (1-3) are mapped by visual fit.
-        _healthRow = BuildVitalRow(content, "Health", HealthBarColor, iconSlot: 0, out _healthLabel, out _healthBar);
-        _healthLabel.Text = "Health 100 / 100";
-        _healthBar.Value = 100;
-
-        _staminaRow = BuildVitalRow(content, "Stamina", StaminaBarColor, iconSlot: 2, out _staminaLabel, out _staminaBar);
-        _staminaLabel.Text = "Stamina 100 / 100";
-        _staminaBar.Value = 100;
-
-        _ammoRow = BuildVitalRow(content, "Ammo", AmmoBarColor, iconSlot: 1, out _ammoLabel, out _ammoBar);
-        _ammoRow.Visible = false;
-
-        _hungerRow = BuildVitalRow(content, "Hunger", HungerBarColor, iconSlot: 3, out _hungerLabel, out _hungerBar);
-        _hungerRow.Visible = false;
-    }
-
-    private static Control BuildVitalRow(VBoxContainer parent, string name, Color tint, int iconSlot, out Label valueLabel, out ProgressBar bar)
-    {
-        var row = new VBoxContainer { Name = $"{name}VitalRow" };
-        row.AddThemeConstantOverride("separation", 2);
-        parent.AddChild(row);
-
-        var header = new HBoxContainer();
-        header.AddThemeConstantOverride("separation", 8);
-        row.AddChild(header);
-
-        // Icon: 17×17 region from the AttributesIcons strip, scaled 2×
-        // (34×34 on screen) so the pixel art reads at HUD distance.
-        // Falls back to a colored dot if the texture didn't load.
-        var iconTexture = MakeAttributesIcon(iconSlot, tint);
-        var icon = new TextureRect
+        // Portrait circle — empty for now; sprite portrait will be
+        // dropped in here when the asset arrives.
+        var portrait = new TextureRect
         {
-            Texture = iconTexture,
-            CustomMinimumSize = new Vector2(AttributesIconSize * 2, AttributesIconSize * 2),
+            Name = "PortraitFrame",
+            Texture = Karma.Art.AtlasTextureLoader.Load(PortraitFramePath, forceImageLoad: true),
+            CustomMinimumSize = new Vector2(72, 72),
             StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
             ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
             MouseFilter = Control.MouseFilterEnum.Ignore
         };
-        header.AddChild(icon);
+        hbox.AddChild(portrait);
 
-        valueLabel = MenuTheme.MakeBodyLabel(name);
-        valueLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        header.AddChild(valueLabel);
+        var barsColumn = new VBoxContainer { Name = "VitalsBars" };
+        barsColumn.AddThemeConstantOverride("separation", 4);
+        barsColumn.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        barsColumn.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
+        hbox.AddChild(barsColumn);
 
-        bar = new ProgressBar
+        // Build a row per configured vital and stash the controls in a
+        // dictionary keyed by VitalKind so SetVital(...) can update any
+        // of them. To add a new vital, add an entry to
+        // EnabledVitalsConfig and a setter that calls SetVital.
+        foreach (var (kind, color, name, hideWhenInactive) in EnabledVitalsConfig)
+        {
+            var controls = BuildVitalRow(barsColumn, name, color);
+            controls.HideWhenInactive = hideWhenInactive;
+            _vitalRows[kind] = controls;
+        }
+
+        // Bind back-compat fields so existing setter code (SetHealth,
+        // ShowStamina, SetHungerFromSnapshot, etc.) keeps working
+        // against the same controls.
+        BindLegacyVitalField(VitalKind.Health,  out _healthBar,  out _healthLabel,  out _healthRow);
+        BindLegacyVitalField(VitalKind.Stamina, out _staminaBar, out _staminaLabel, out _staminaRow);
+        BindLegacyVitalField(VitalKind.Ammo,    out _ammoBar,    out _ammoLabel,    out _ammoRow);
+        BindLegacyVitalField(VitalKind.Hunger,  out _hungerBar,  out _hungerLabel,  out _hungerRow);
+    }
+
+    private void BindLegacyVitalField(VitalKind kind, out ProgressBar bar, out Label label, out Control row)
+    {
+        if (_vitalRows.TryGetValue(kind, out var controls))
+        {
+            bar = controls.Bar;
+            label = controls.Value;
+            row = controls.Container;
+        }
+        else
+        {
+            // Vital not in EnabledVitalsConfig — return detached
+            // placeholders so legacy setter code still compiles
+            // without throwing.
+            bar = new ProgressBar();
+            label = new Label();
+            row = new Control { Visible = false };
+        }
+    }
+
+    public void SetVital(VitalKind kind, double current, double max)
+    {
+        if (!_vitalRows.TryGetValue(kind, out var controls)) return;
+        if (controls.HideWhenInactive && max <= 0)
+        {
+            controls.Container.Visible = false;
+            return;
+        }
+        var safeMax = Math.Max(1.0, max);
+        var clamped = Math.Clamp(current, 0.0, safeMax);
+        controls.Bar.Value = clamped / safeMax * 100.0;
+        controls.Value.Text = $"{Math.Round(clamped)} / {Math.Round(safeMax)}";
+        controls.Container.Visible = true;
+    }
+
+    private static VitalRowControls BuildVitalRow(VBoxContainer parent, string name, Color tint)
+    {
+        var row = new HBoxContainer { Name = $"{name}VitalRow" };
+        row.AddThemeConstantOverride("separation", 6);
+        parent.AddChild(row);
+
+        var bar = new ProgressBar
         {
             Name = $"{name}Bar",
             MinValue = 0,
             MaxValue = 100,
             Value = 0,
             ShowPercentage = false,
-            CustomMinimumSize = new Vector2(0, 6)
+            CustomMinimumSize = new Vector2(0, 8),
+            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+            SizeFlagsVertical = Control.SizeFlags.ShrinkCenter
         };
         StyleVitalBar(bar, tint);
         row.AddChild(bar);
 
-        return row;
+        var value = new Label
+        {
+            Name = $"{name}Value",
+            Text = "100 / 100",
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Center,
+            CustomMinimumSize = new Vector2(56, 0)
+        };
+        value.AddThemeFontSizeOverride("font_size", 11);
+        value.AddThemeColorOverride("font_color", new Color(0.95f, 0.92f, 0.82f));
+        row.AddChild(value);
+
+        return new VitalRowControls
+        {
+            Container = row,
+            Bar = bar,
+            Value = value
+        };
     }
 
     private static void StyleVitalBar(ProgressBar bar, Color fillTint)
@@ -1626,22 +1697,6 @@ public partial class HudController : CanvasLayer
         };
         bar.AddThemeStyleboxOverride("background", track);
         bar.AddThemeStyleboxOverride("fill", fill);
-    }
-
-    // Slices one 17×17 icon out of AttributesIcons_17x17.png (a 4-icon
-    // horizontal strip). Falls back to a procedural colored dot if the
-    // pack texture can't be loaded so the HUD still functions.
-    private static Texture2D MakeAttributesIcon(int slot, Color fallbackTint)
-    {
-        // Routed through AtlasTextureLoader so the icons work pre-import.
-        var atlas = Karma.Art.AtlasTextureLoader.Load(AttributesIconsPath, forceImageLoad: true);
-        if (atlas is null) return MakeCircleIcon(14, fallbackTint);
-        var clampedSlot = Math.Max(0, slot);
-        return new AtlasTexture
-        {
-            Atlas = atlas,
-            Region = new Rect2(clampedSlot * AttributesIconSize, 0, AttributesIconSize, AttributesIconSize)
-        };
     }
 
     // Procedurally-drawn antialiased circle, used as a fallback vitals
@@ -2437,8 +2492,7 @@ public partial class HudController : CanvasLayer
 
     private void SetHealth(int health, int maxHealth)
     {
-        _healthLabel.Text = FormatHealth(health, maxHealth);
-        _healthBar.Value = CalculateHealthPercent(health, maxHealth);
+        SetVital(VitalKind.Health, health, maxHealth);
     }
 
     public static string FormatHealth(int health, int maxHealth)
@@ -2451,17 +2505,9 @@ public partial class HudController : CanvasLayer
     private void SetAmmoFromSnapshot(PlayerSnapshot localPlayer)
     {
         if (localPlayer.EquippedWeaponKind == WeaponKind.Ranged)
-        {
-            var safeMax = Mathf.Max(0, localPlayer.MaxAmmo);
-            var clamped = Mathf.Clamp(localPlayer.CurrentAmmo, 0, safeMax);
-            _ammoLabel.Text = FormatAmmo(localPlayer.CurrentAmmo, localPlayer.MaxAmmo);
-            _ammoBar.Value = safeMax == 0 ? 0 : clamped / (double)safeMax * 100.0;
-            if (_ammoRow is not null) _ammoRow.Visible = true;
-        }
+            SetVital(VitalKind.Ammo, localPlayer.CurrentAmmo, localPlayer.MaxAmmo);
         else
-        {
-            if (_ammoRow is not null) _ammoRow.Visible = false;
-        }
+            SetVital(VitalKind.Ammo, 0, 0); // hides the row since HideWhenInactive
     }
 
 
@@ -2478,18 +2524,7 @@ public partial class HudController : CanvasLayer
 
     private void SetHungerFromSnapshot(PlayerSnapshot localPlayer)
     {
-        if (localPlayer.MaxHunger > 0)
-        {
-            var safeMax = Mathf.Max(1, localPlayer.MaxHunger);
-            var clamped = Mathf.Clamp(localPlayer.Hunger, 0, safeMax);
-            _hungerLabel.Text = FormatHunger(localPlayer.Hunger, localPlayer.MaxHunger);
-            _hungerBar.Value = clamped / (double)safeMax * 100.0;
-            if (_hungerRow is not null) _hungerRow.Visible = true;
-        }
-        else
-        {
-            if (_hungerRow is not null) _hungerRow.Visible = false;
-        }
+        SetVital(VitalKind.Hunger, localPlayer.Hunger, localPlayer.MaxHunger);
     }
 
     public static string FormatHunger(int hunger, int maxHunger)
