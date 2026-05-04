@@ -1010,21 +1010,10 @@ public partial class HudController : CanvasLayer
         };
         AddChild(root);
 
-        var statusPanel = new PanelContainer
-        {
-            OffsetLeft = 16,
-            OffsetTop = 16,
-            OffsetRight = 290,
-            OffsetBottom = 104
-        };
-        root.AddChild(statusPanel);
-
-        _karmaLabel = new Label
-        {
-            Text = "Karma: 0\nTier: Unmarked\nPath: Unmarked\nProgress: 0/10 toward Trusted",
-            VerticalAlignment = VerticalAlignment.Center
-        };
-        statusPanel.AddChild(_karmaLabel);
+        // Karma score / tier / progress is now rendered by the
+        // KarmaTierBadge in the top-right corner. _karmaLabel is kept as
+        // a detached field so OnKarmaChanged can still write to it
+        // (harmlessly, no-op visually) until callers are migrated.
 
         _eventIcon = new TextureRect
         {
@@ -1565,9 +1554,9 @@ public partial class HudController : CanvasLayer
         var panel = new PanelContainer
         {
             Name = "VitalsPanel",
-            OffsetLeft = 300,
+            OffsetLeft = 16,
             OffsetTop = 16,
-            OffsetRight = 540,
+            OffsetRight = 256,
             OffsetBottom = 220
         };
         panel.AddThemeStyleboxOverride("panel", MenuTheme.MakeHudPanelStyle());
