@@ -26,6 +26,7 @@ public partial class HudController : CanvasLayer
     private GameState _gameState = null!;
     private Label _karmaLabel = new();
     private KarmaTierBadge _karmaBadge;
+    private KarmaDualityBar _karmaDualityBar;
     private Label _eventLabel = new();
     private TextureRect _eventIcon = new();
     private Label _chatLabel = new();
@@ -1405,6 +1406,22 @@ public partial class HudController : CanvasLayer
         _karmaBadge.SetMeta(PaletteOptOutMeta, true);
         root.AddChild(_karmaBadge);
 
+        // Karma duality spectrum bar: top-center, anchored so it
+        // stays centered as the window resizes. Shows the player's
+        // position on the Paragon ↔ Renegade spectrum.
+        _karmaDualityBar = new KarmaDualityBar
+        {
+            Name = "KarmaDualityBar",
+            AnchorLeft = 0.5f,
+            AnchorRight = 0.5f,
+            OffsetLeft = -KarmaDualityBar.BarWidth * 0.5f,
+            OffsetRight = KarmaDualityBar.BarWidth * 0.5f,
+            OffsetTop = 18,
+            OffsetBottom = 18 + KarmaDualityBar.BarHeight + 22
+        };
+        _karmaDualityBar.SetMeta(PaletteOptOutMeta, true);
+        root.AddChild(_karmaDualityBar);
+
         _bountyPanel = new PanelContainer
         {
             OffsetLeft = 1100,
@@ -2249,6 +2266,7 @@ public partial class HudController : CanvasLayer
         var progress = Karma.Data.KarmaTiers.GetRankProgress(score);
         _karmaLabel.Text = $"Karma: {score:+#;-#;0}\nTier: {tierName}\nPath: {pathName}\n{progress.Summary}";
         _karmaBadge?.SetKarma(score, progress, _gameState?.LocalKarma.Path ?? Karma.Data.KarmaDirection.Neutral);
+        _karmaDualityBar?.SetScore(score);
     }
 
     private void OnKarmaEvent(string message)
