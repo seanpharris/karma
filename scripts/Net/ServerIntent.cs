@@ -229,7 +229,8 @@ public sealed record NpcDialogueChoice(
     string Id,
     string Label,
     string ActionId,
-    string RequiredItemId = "");
+    string RequiredItemId = "",
+    string ResponseLine = "");
 
 public sealed record NpcDialogueSnapshot(
     string NpcId,

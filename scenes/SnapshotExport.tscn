@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://karma_snapshot_export"]
+
+[ext_resource type="Script" path="res://scripts/Tests/SnapshotExportRunner.cs" id="1_export"]
+
+[node name="SnapshotExport" type="Node"]
+script = ExtResource("1_export")

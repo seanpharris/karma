@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using Godot;
 using Karma.Art;
+using Karma.Audio;
 using Karma.Core;
 using Karma.Data;
 using Karma.Generation;
@@ -3048,6 +3049,9 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             HudController.FormatLatestServerEvent(new[] { startDialogue.Event }).Contains("talking with Mara Venn"),
             "HUD formats dialogue start events");
+        ExpectEqual(StarterNpcs.Mara.Name, startDialogue.Event.Data["npcName"], "dialogue start event includes NPC name for TTS");
+        ExpectTrue(startDialogue.Event.Data["npcPrompt"].Contains(StarterNpcs.Mara.Need), "dialogue start event includes speakable NPC prompt");
+        ExpectEqual("npc_dialogue_prompt", startDialogue.Event.Data["ttsType"], "dialogue start event marks TTS payload type");
         var karmaBeforeDialogueChoice = state.LocalKarma.Score;
         var selectDialogueChoice = server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
@@ -3064,6 +3068,11 @@ public partial class GameplaySmokeTest : Node
         ExpectTrue(
             HudController.FormatLatestServerEvent(new[] { selectDialogueChoice.Event }).Contains("Repair the filters"),
             "HUD formats dialogue choice events");
+        ExpectTrue(selectDialogueChoice.Event.Data["npcResponse"].Length > 0, "dialogue choice event includes NPC spoken response");
+        ExpectEqual("npc_dialogue_response", selectDialogueChoice.Event.Data["ttsType"], "dialogue choice event marks TTS payload type");
+        ExpectTrue(
+            NpcTextToSpeechController.BuildUtterance("Mara Venn", "  Needs   filters.\nNow.  ") == "Needs filters. Now.",
+            "NPC TTS utterance formatting collapses whitespace without prefixing speaker");
         ExpectFalse(server.ProcessIntent(new ServerIntent(
             GameState.LocalPlayerId,
             17,

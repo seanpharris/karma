@@ -38,6 +38,7 @@ public partial class PlayerController : CharacterBody2D
     private PlayerAppearanceSelection _lastAppliedAppearance = null;
     private string _lastAppliedLpcBundleId = string.Empty;
     private string _lastAppliedEquipmentSignature = string.Empty;
+    private bool _controlsEnabled = true;
 
     public override void _Ready()
     {
@@ -68,6 +69,15 @@ public partial class PlayerController : CharacterBody2D
 
     public override void _PhysicsProcess(double delta)
     {
+        if (!_controlsEnabled)
+        {
+            Velocity = Vector2.Zero;
+            MoveAndSlide();
+            _predictedPosition = GlobalPosition;
+            TopDownDepth.Apply(this);
+            return;
+        }
+
         var direction = Input.GetVector("move_left", "move_right", "move_up", "move_down");
         if (direction.LengthSquared() > 0)
         {
@@ -105,6 +115,11 @@ public partial class PlayerController : CharacterBody2D
 
     public override void _UnhandledInput(InputEvent @event)
     {
+        if (!_controlsEnabled)
+        {
+            return;
+        }
+
         if (@event.IsActionPressed("attack"))
         {
             AttackNearestThroughServer();
@@ -200,6 +215,18 @@ public partial class PlayerController : CharacterBody2D
         {
             ToggleShopOverlayForNearestVendor(sellMode: true);
         }
+    }
+
+    public void SetControlsEnabled(bool enabled)
+    {
+        _controlsEnabled = enabled;
+        if (_controlsEnabled)
+        {
+            return;
+        }
+
+        Velocity = Vector2.Zero;
+        UpdateStaminaHud();
     }
 
     private void ToggleShopOverlayForNearestVendor(bool sellMode)

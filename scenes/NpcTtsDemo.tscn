@@ -1,0 +1,65 @@
+[gd_scene load_steps=6 format=3 uid="uid://karma_tts_demo_small"]
+
+[ext_resource type="Script" path="res://scripts/Player/PlayerController.cs" id="1_player"]
+[ext_resource type="Script" path="res://scripts/Npc/NpcController.cs" id="2_npc"]
+[ext_resource type="Script" path="res://scripts/UI/NpcTtsDemoController.cs" id="3_demo"]
+[ext_resource type="Script" path="res://scripts/Audio/VoiceboxSpeechPlayer.cs" id="4_tts"]
+
+[sub_resource type="CircleShape2D" id="1_player_collision"]
+radius = 10.0
+
+[sub_resource type="CircleShape2D" id="2_npc_collision"]
+radius = 24.0
+
+[node name="Main" type="Node2D"]
+script = ExtResource("3_demo")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+offset_left = -320.0
+offset_top = -220.0
+offset_right = 640.0
+offset_bottom = 480.0
+color = Color(0.137255, 0.180392, 0.121569, 1)
+
+[node name="GroundTile" type="Sprite2D" parent="."]
+position = Vector2(112, 128)
+scale = Vector2(10, 8)
+
+[node name="Smithy" type="Sprite2D" parent="."]
+position = Vector2(176, 80)
+scale = Vector2(0.5, 0.5)
+
+[node name="Player" type="CharacterBody2D" parent="."]
+position = Vector2(-240, 128)
+script = ExtResource("1_player")
+
+[node name="PlayerSprite" type="Sprite2D" parent="Player"]
+position = Vector2(0, -12)
+region_enabled = true
+region_rect = Rect2(0, 0, 32, 64)
+
+[node name="PlayerCollision" type="CollisionShape2D" parent="Player"]
+shape = SubResource("1_player_collision")
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+enabled = true
+zoom = Vector2(4, 4)
+
+[node name="Npc" type="Area2D" parent="."]
+position = Vector2(96, 128)
+script = ExtResource("2_npc")
+
+[node name="NpcSprite" type="Sprite2D" parent="Npc"]
+position = Vector2(0, -12)
+region_enabled = true
+region_rect = Rect2(0, 0, 32, 64)
+
+[node name="NpcCollision" type="CollisionShape2D" parent="Npc"]
+shape = SubResource("2_npc_collision")
+
+[node name="VoiceboxSpeechPlayer" type="Node" parent="."]
+script = ExtResource("4_tts")
+VoiceboxBaseUrl = "http://127.0.0.1:17493"
+VoiceboxProfile = "Deep Voice"
+VoiceboxLeadTrimMs = 120
+VolumePercent = 38

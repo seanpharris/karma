@@ -3195,6 +3195,9 @@ public sealed class AuthoritativeWorldServer
             {
                 ["playerId"] = intent.PlayerId,
                 ["npcId"] = npcId,
+                ["npcName"] = dialogue.NpcName,
+                ["npcPrompt"] = dialogue.Prompt,
+                ["ttsType"] = "npc_dialogue_prompt",
                 ["choiceIds"] = string.Join(",", dialogue.Choices.Select(choice => choice.Id)),
                 ["audioCue"] = "dialogue_started"
             });
@@ -3316,11 +3319,14 @@ public sealed class AuthoritativeWorldServer
             {
                 ["playerId"] = intent.PlayerId,
                 ["npcId"] = npcId,
+                ["npcName"] = dialogue.NpcName,
                 ["choiceId"] = choice.Id,
                 ["action"] = choice.ActionId,
                 ["amount"] = shift.Amount.ToString(),
                 ["targetId"] = action.TargetId,
                 ["paragonGift"] = paragonGift.ToString(),
+                ["npcResponse"] = choice.ResponseLine,
+                ["ttsType"] = "npc_dialogue_response",
                 ["audioCue"] = "dialogue_choice_selected"
             });
 
@@ -5685,7 +5691,9 @@ public sealed class AuthoritativeWorldServer
             LeaderboardRole.Scourge => $"[Scourge] {npc.Name} sizes you up warily. ",
             _ => string.Empty
         };
-        var prompt = $"{greeting}{npc.Name} needs {npc.Need}.";
+        var prompt = npc.Id == StarterNpcs.Mara.Id
+            ? $"{greeting}Well hello there, traveler. Mind the sparks. What brings you by?"
+            : $"{greeting}{npc.Name} needs {npc.Need}.";
         return string.IsNullOrWhiteSpace(stationState)
             ? prompt
             : $"{prompt} Their station is currently {stationState}.";
@@ -5730,11 +5738,16 @@ public sealed class AuthoritativeWorldServer
 
         var maraChoices = new List<NpcDialogueChoice>
         {
-            new("help_filters", "Repair the filters", PrototypeActions.HelpMaraId),
-            new("prank_stool", "Plant a whoopie cushion", PrototypeActions.WhoopieCushionMaraId, StarterItems.WhoopieCushionId),
-            new("steal_parts", "Steal spare parts", PrototypeActions.StealFromMaraId),
-            new("gift_balloon", "Offer a deflated balloon", PrototypeActions.GiftBalloonToMaraId, StarterItems.DeflatedBalloonId),
-            new("mock_balloon", "Mock with a deflated balloon", PrototypeActions.MockMaraWithBalloonId, StarterItems.DeflatedBalloonId)
+            new("help_filters", "Repair the filters", PrototypeActions.HelpMaraId, "",
+                "I would be grateful. The clinic filters have been choking since dawn, and I have not had a free hand to set them right."),
+            new("prank_stool", "Plant a whoopie cushion", PrototypeActions.WhoopieCushionMaraId, StarterItems.WhoopieCushionId,
+                "Very funny. Save the fooling for when the work is finished."),
+            new("steal_parts", "Steal spare parts", PrototypeActions.StealFromMaraId, "",
+                "Those parts were spoken for. Put them back."),
+            new("gift_balloon", "Offer a deflated balloon", PrototypeActions.GiftBalloonToMaraId, StarterItems.DeflatedBalloonId,
+                "That is kind of you. I will find a place for it."),
+            new("mock_balloon", "Mock with a deflated balloon", PrototypeActions.MockMaraWithBalloonId, StarterItems.DeflatedBalloonId,
+                "If that is your idea of help, you can keep walking.")
         };
         if (role == LeaderboardRole.Saint)
         {

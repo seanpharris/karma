@@ -26,6 +26,16 @@ debug/**/*.json
 debug/**/*.png
 debug/**/*.txt
 tools/last_test_output.txt
+tmp/*.wav
+data/*.db
+
+# Local AI runtime payloads are large machine-specific dependencies.
+third_party/llama.cpp/bin/*
+!third_party/llama.cpp/bin/.gitkeep
+third_party/models/**
+!third_party/models/
+!third_party/models/**/
+!third_party/models/**/.gitkeep
 
 # Sprite pipeline generated assets
 input_raw/*
