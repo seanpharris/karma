@@ -1653,7 +1653,8 @@ public partial class HudController : CanvasLayer
     // pack texture can't be loaded so the HUD still functions.
     private static Texture2D MakeAttributesIcon(int slot, Color fallbackTint)
     {
-        var atlas = ResourceLoader.Load<Texture2D>(AttributesIconsPath);
+        // Routed through AtlasTextureLoader so the icons work pre-import.
+        var atlas = Karma.Art.AtlasTextureLoader.Load(AttributesIconsPath, forceImageLoad: true);
         if (atlas is null) return MakeCircleIcon(14, fallbackTint);
         var clampedSlot = Math.Max(0, slot);
         return new AtlasTexture

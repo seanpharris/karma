@@ -1,4 +1,5 @@
 using Godot;
+using Karma.Art;
 
 namespace Karma.UI;
 
@@ -60,7 +61,8 @@ internal static class MenuTheme
     // gets the pixel-art frame.
     public static StyleBox MakeHudPanelStyle()
     {
-        var texture = ResourceLoader.Load<Texture2D>(HudPanelTexturePath);
+        // Routed through AtlasTextureLoader so the panel works pre-import.
+        var texture = AtlasTextureLoader.Load(HudPanelTexturePath, forceImageLoad: true);
         if (texture is not null)
         {
             return new StyleBoxTexture

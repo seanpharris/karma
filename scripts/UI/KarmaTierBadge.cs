@@ -1,5 +1,6 @@
 using System;
 using Godot;
+using Karma.Art;
 using Karma.Data;
 
 namespace Karma.UI;
@@ -53,7 +54,9 @@ public partial class KarmaTierBadge : Control
         MouseFilter = MouseFilterEnum.Ignore;
         TextureFilter = CanvasItem.TextureFilterEnum.Nearest;
         CustomMinimumSize = new Vector2(MedallionDiameter, MedallionDiameter + 56);
-        _medallionTexture = ResourceLoader.Load<Texture2D>(MedallionTexturePath);
+        // Routed through AtlasTextureLoader so we work even when the
+        // pack PNGs don't yet have .import sidecars (raw load fallback).
+        _medallionTexture = AtlasTextureLoader.Load(MedallionTexturePath, forceImageLoad: true);
 
         _scoreLabel = MakeLabel(ScoreCream, fontSize: 28, top: MedallionDiameter * 0.5f - 22, height: 44);
         _scoreLabel.Text = "0";
