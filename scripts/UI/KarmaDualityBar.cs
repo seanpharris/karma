@@ -10,7 +10,7 @@ namespace Karma.UI;
 public partial class KarmaDualityBar : Control
 {
     public const float BarWidth = 720f;
-    public const float BarHeight = 56f;
+    public const float BarHeight = 22f;
 
     // Score range that the bar covers end-to-end. Beyond this the
     // marker pins to the appropriate edge (Paragon / Renegade are
@@ -69,20 +69,22 @@ public partial class KarmaDualityBar : Control
         if (_gradientTexture is not null)
             DrawTextureRect(_gradientTexture, rect, tile: false);
 
-        // Tier tick marks — small vertical pips along the bottom 10px.
+        // Tier tick marks — small vertical pips reaching from the bar's
+        // bottom edge into the lower third.
+        var tickHeight = MathF.Max(4f, BarHeight * 0.4f);
         foreach (var tick in TierTicks)
         {
             var tickX = ScoreToX(tick);
             DrawLine(
-                new Vector2(tickX, BarHeight - 10),
-                new Vector2(tickX, BarHeight - 2),
+                new Vector2(tickX, BarHeight - tickHeight),
+                new Vector2(tickX, BarHeight - 1),
                 TickColor, 1f, antialiased: true);
         }
 
         // Center line at score 0.
         var midX = BarWidth * 0.5f;
-        DrawLine(new Vector2(midX, 4), new Vector2(midX, BarHeight - 4),
-            CenterLine, 1.5f, antialiased: true);
+        DrawLine(new Vector2(midX, 2), new Vector2(midX, BarHeight - 2),
+            CenterLine, 1.2f, antialiased: true);
 
         // Gold frame (dark inner stroke for depth, then bright gold).
         DrawRect(rect.Grow(1f), FrameDarkColor, filled: false, width: 1.5f);
@@ -90,12 +92,12 @@ public partial class KarmaDualityBar : Control
 
         // Marker: downward triangle pip + thin vertical guide.
         var markerX = ScoreToX(_score);
-        DrawLine(new Vector2(markerX, 2), new Vector2(markerX, BarHeight - 2),
+        DrawLine(new Vector2(markerX, 1), new Vector2(markerX, BarHeight - 1),
             new Color(1, 1, 1, 0.40f), 1f, antialiased: true);
         DrawTriangle(
             tip: new Vector2(markerX, -2),
-            baseHalfWidth: 7f,
-            baseY: -14f,
+            baseHalfWidth: 5f,
+            baseY: -10f,
             fill: MarkerFill,
             border: MarkerBorder);
     }
