@@ -14,6 +14,11 @@ pause / in-game HUD widgets.
 
 - `BlackBigCircleBoxWithBorder_27x27.png` — `KarmaTierBadge` medallion
   outer frame (replaces the procedural gold ring).
+- `RectangleBox_96x96.png` — `MenuTheme.MakePanelStyle()` panel
+  background, applied to: Main Menu options/credits overlays, the
+  in-game pause panel + audio-options sub-panel, the HUD vitals
+  panel. Single source of truth, so any future panel that calls
+  `MakePanelStyle()` inherits the same gold frame.
 
 ## On deck
 
@@ -22,5 +27,6 @@ pause / in-game HUD widgets.
 - `AttributesIcons_17x17.png` — vitals row icons (heart / bolt /
   shield / etc.) replacing the procedural colored dots.
 - `ValueBar_128x16.png` — vitals bar frames.
-- `RectangleBox_96x96.png` — generic panel background (could replace
-  `MenuTheme.MakePanelStyle()` for the pause + options overlays).
+- `Button_52x14.png` / `HighlightButton_60x23.png` — replace
+  `MenuTheme.StyleButton` styleboxes.
+- `HotkeyBox_34x34.png` / `ItemBox_24x24.png` — hotbar slot frames.

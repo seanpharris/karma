@@ -9,6 +9,9 @@ namespace Karma.UI;
 // world rather than generic Godot defaults.
 internal static class MenuTheme
 {
+    // Pack asset paths.
+    private const string PanelTexturePath = "res://assets/art/third_party/Fantasy Minimal Pixel Art GUI by eta-commercial-free/UI/RectangleBox_96x96.png";
+
     // Palette
     public static readonly Color PanelBg       = new(0.06f, 0.09f, 0.14f, 0.96f);
     public static readonly Color PanelBorder   = new(0.85f, 0.68f, 0.32f, 1.00f);
@@ -29,9 +32,27 @@ internal static class MenuTheme
     public static readonly Color SliderTrack   = new(0.04f, 0.07f, 0.11f, 1.00f);
     public static readonly Color SliderFill    = new(0.85f, 0.68f, 0.32f, 1.00f);
 
-    // Panel — used by the Options + Credits overlays.
-    public static StyleBoxFlat MakePanelStyle()
+    // Panel — used by the Options / Credits / Pause overlays. Uses the
+    // etahoshi pack's 96×96 frame texture 9-sliced; falls back to a flat
+    // navy box if the texture can't be loaded.
+    public static StyleBox MakePanelStyle()
     {
+        var texture = ResourceLoader.Load<Texture2D>(PanelTexturePath);
+        if (texture is not null)
+        {
+            return new StyleBoxTexture
+            {
+                Texture = texture,
+                // 9-slice the gold border + corner accents (~10px thick
+                // in the 96×96 source). Corners stay native; middle
+                // stretches to fit the panel.
+                TextureMarginLeft = 10, TextureMarginRight = 10,
+                TextureMarginTop = 10, TextureMarginBottom = 10,
+                // Leave room inside the gold frame for content padding.
+                ContentMarginLeft = 24, ContentMarginRight = 24,
+                ContentMarginTop = 20, ContentMarginBottom = 20,
+            };
+        }
         return new StyleBoxFlat
         {
             BgColor = PanelBg,
